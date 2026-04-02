@@ -6,3 +6,5 @@ AGENTS.md
 /target
 .cargo/config.toml
 __pycache__
+/dist
+/repack-config.json
