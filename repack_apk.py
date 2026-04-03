@@ -465,6 +465,7 @@ def build_parser() -> argparse.ArgumentParser:
 		"--no-strip",
 		dest="strip",
 		action="store_false",
+		default=None,
 		help="Disable strip even if config enables it",
 	)
 	repack.add_argument("-o", "--out-dir", help="Output directory override (default: dist)")
