@@ -34,7 +34,7 @@ fn dump_process_info(label: &str) {
     );
 }
 
-pub fn run(package_name: &String) -> Result<()> {
+pub fn run(package_name: &String, kmi: Option<String>) -> Result<()> {
     utils::daemonize(false)?;
     info!("late-load command triggered!");
     dump_process_info("late-load start");
@@ -44,8 +44,10 @@ pub fn run(package_name: &String) -> Result<()> {
         info!("KernelSU already loaded, skip loading ko");
     } else {
         // 2. Detect current KMI version
-        let kmi =
-            crate::boot_patch::get_current_kmi().context("Failed to detect current KMI version")?;
+        let kmi = kmi.map_or_else(
+            || crate::boot_patch::get_current_kmi().context("Failed to detect current KMI version"),
+            Ok,
+        )?;
         info!("Detected KMI: {kmi}");
 
         // 3. Get kernelsu.ko from embedded assets

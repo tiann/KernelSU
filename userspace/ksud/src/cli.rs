@@ -49,6 +49,10 @@ enum Commands {
         #[arg(long)]
         post_magica: bool,
 
+        /// Specify kernel KMI version instead of auto-detection
+        #[arg(long)]
+        kmi: Option<String>,
+
         /// manager package name
         #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
         package_name: String,
@@ -606,6 +610,7 @@ pub fn run() -> Result<()> {
         Commands::LateLoad {
             magica,
             post_magica,
+            kmi,
             package_name,
         } => {
             if let Some(port) = magica {
@@ -614,7 +619,7 @@ pub fn run() -> Result<()> {
                     e
                 });
             }
-            let result = crate::late_load::run(&package_name);
+            let result = crate::late_load::run(&package_name, kmi);
             if post_magica {
                 info!("Restoring adb properties (post-magica cleanup)...");
                 if let Err(e) = crate::magica::disable_adb_root() {
