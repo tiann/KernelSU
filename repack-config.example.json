@@ -1,0 +1,19 @@
+{
+    // Keystore settings used for re-signing
+    "signing": {
+        "keystore_path": "",
+        "key_alias": "",
+        "keystore_pass": "",
+        "key_pass": ""
+    },
+    // APK build type to use, e.g. debug or release
+    "app_build_type": "",
+    // ksud build type to use, e.g. debug or release
+    "ksud_build_type": "",
+    // Native library architectures to keep in the APK
+    "arch": [],
+    // Base output APK filename (uses input APK stem if empty)
+    "output_name": "",
+    // Whether to strip libksud.so
+    "strip": false
+}
