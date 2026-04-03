@@ -64,11 +64,13 @@ endif
 ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
 ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h
 
-ifdef KBUILD_EXTMOD
-ccflags-y += -I$(src) -I$(src)/include
+ifeq ($(filter /%,$(src)),)
+KSU_KERNEL_DIR := $(srctree)/$(src)
 else
-ccflags-y += -I$(srctree)/$(src) -I$(srctree)/$(src)/include
+KSU_KERNEL_DIR := $(src)
 endif
+
+ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
 
 obj-$(CONFIG_KSU) += kernelsu.o
 
