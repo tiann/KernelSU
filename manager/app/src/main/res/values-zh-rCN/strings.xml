@@ -16,6 +16,12 @@
     <string name="selinux_status_enforcing">强制执行</string>
     <string name="selinux_status_permissive">宽容模式</string>
     <string name="selinux_status_unknown">未知</string>
+    <string name="home_seccomp_status">Seccomp 状态</string>
+    <string name="seccomp_status_not_supported">内核未开启</string>
+    <string name="seccomp_status_disabled">未启用</string>
+    <string name="seccomp_status_strict">严格模式</string>
+    <string name="seccomp_status_filter">过滤模式</string>
+    <string name="seccomp_status_unknown">未知</string>
     <string name="superuser">超级用户</string>
     <string name="module_failed_to_enable">无法启用模块：%s</string>
     <string name="module_failed_to_disable">无法禁用模块：%s</string>

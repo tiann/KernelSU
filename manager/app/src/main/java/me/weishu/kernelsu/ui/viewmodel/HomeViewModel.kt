@@ -72,6 +72,9 @@ class HomeViewModel : ViewModel() {
                 managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode})",
                 fingerprint = Build.FINGERPRINT,
                 selinuxStatus = getSELinuxStatusRaw(),
+                seccompStatus = runCatching {
+                    Os.prctl(21 /* PR_GET_SECCOMP */, 0, 0, 0, 0)
+                }.getOrDefault(-1),
             ),
         )
     }

@@ -17,6 +17,12 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
+    <string name="home_seccomp_status">Seccomp status</string>
+    <string name="seccomp_status_not_supported">Not supported</string>
+    <string name="seccomp_status_disabled">Disabled</string>
+    <string name="seccomp_status_strict">Strict</string>
+    <string name="seccomp_status_filter">Filter</string>
+    <string name="seccomp_status_unknown">Unknown</string>
     <string name="superuser">Superuser</string>
     <string name="sulog_log_files">Log files</string>
     <string name="sulog_failed_to_load">Failed to load sulog</string>

@@ -518,6 +518,17 @@ private fun InfoCard(systemInfo: SystemInfo) {
             InfoText(
                 title = stringResource(R.string.home_selinux_status),
                 content = selinuxDisplay,
+            )
+            val seccompDisplay = when (systemInfo.seccompStatus) {
+                -1 -> stringResource(R.string.seccomp_status_not_supported)
+                0 -> stringResource(R.string.seccomp_status_disabled)
+                1 -> stringResource(R.string.seccomp_status_strict)
+                2 -> stringResource(R.string.seccomp_status_filter)
+                else -> stringResource(R.string.seccomp_status_unknown)
+            }
+            InfoText(
+                title = stringResource(R.string.home_seccomp_status),
+                content = seccompDisplay,
                 bottomPadding = 0.dp
             )
         }
@@ -561,7 +572,8 @@ private val previewSystemInfo = SystemInfo(
     kernelVersion = "6.1.0-android14-0-g1234567",
     managerVersion = "1.0.0 (10000)",
     fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
-    selinuxStatus = "Enforcing"
+    selinuxStatus = "Enforcing",
+    seccompStatus = 2
 )
 
 private val previewUriHandler = object : UriHandler {
