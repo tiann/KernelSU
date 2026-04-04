@@ -7,7 +7,7 @@ static const struct ksu_feature_handler *feature_handlers[KSU_FEATURE_MAX];
 
 static DEFINE_MUTEX(feature_mutex);
 
-int __init ksu_register_feature_handler(const struct ksu_feature_handler *handler)
+int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
 {
     if (!handler) {
         pr_err("feature: register handler is NULL\n");
