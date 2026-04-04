@@ -1,4 +1,5 @@
 kernelsu-objs := core/init.o
+kernelsu-objs += api/ksu_api.o
 
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sulog.o
