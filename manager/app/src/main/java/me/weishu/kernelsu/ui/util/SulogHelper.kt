@@ -1,10 +1,8 @@
 package me.weishu.kernelsu.ui.util
 
 import android.os.SystemClock
-import androidx.annotation.StringRes
 import com.topjohnwu.superuser.io.SuFile
 import com.topjohnwu.superuser.io.SuFileInputStream
-import java.io.File
 import java.io.InputStreamReader
 import java.time.Instant
 import java.time.LocalDate
@@ -12,7 +10,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.ArrayDeque
 import java.util.Locale
-import me.weishu.kernelsu.R
 
 private const val SULOG_DIR = "/data/adb/ksu/log"
 private const val SULOG_LINE_LIMIT = 1000
@@ -32,144 +29,45 @@ enum class SulogFileCleanAction {
     Delete,
 }
 
-enum class SulogEventType(val rawType: String) {
-    RootExecve("root_execve"),
-    SuCompat("sucompat"),
-    IoctlGrantRoot("ioctl_grant_root"),
-    DaemonRestart("daemon_restart"),
-    Dropped("dropped"),
-    Unknown("unknown"),
+enum class SulogEventType {
+    RootExecve,
+    SuCompat,
+    IoctlGrantRoot,
+    DaemonEvent,
+    Dropped,
+    Unknown,
 }
 
 enum class SulogEventFilter(val eventType: SulogEventType?) {
     RootExecve(SulogEventType.RootExecve),
     SuCompat(SulogEventType.SuCompat),
     IoctlGrantRoot(SulogEventType.IoctlGrantRoot),
-    DaemonRestart(SulogEventType.DaemonRestart),
+    DaemonEvent(SulogEventType.DaemonEvent),
 }
 
 fun defaultSulogEventFilters(): Set<SulogEventFilter> = SulogEventFilter.entries.toSet()
 
-sealed interface SulogEntry {
-    val key: String
-    val eventType: SulogEventType
-    val rawLine: String
-    val title: String?
-    @get:StringRes val titleRes: Int?
-    val timestampText: String?
-    val summaryTags: List<String>
-    val description: String?
-    @get:StringRes val descriptionRes: Int?
-    val status: String?
-    val detailText: String
-
-    data class RootExecve(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String,
-        override val detailText: String,
-        val seq: String?,
-        val pid: String?,
-        val uid: String?,
-        val comm: String,
-        val file: String,
-        val argv: String,
-        val retval: Int,
-    ) : SulogEntry
-
-    data class SuCompat(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String,
-        override val detailText: String,
-        val seq: String?,
-        val pid: String?,
-        val uid: String?,
-        val comm: String,
-        val file: String,
-        val argv: String,
-        val retval: Int,
-    ) : SulogEntry
-
-    data class IoctlGrantRoot(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String,
-        override val detailText: String,
-        val seq: String?,
-        val pid: String?,
-        val uid: String?,
-        val comm: String,
-        val retval: Int,
-    ) : SulogEntry
-
-    data class DaemonRestart(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String?,
-        override val detailText: String,
-        val bootId: String,
-        val restart: String,
-    ) : SulogEntry
-
-    data class Dropped(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String?,
-        override val detailText: String,
-        val dropped: String,
-        val firstSeq: String?,
-        val lastSeq: String?,
-    ) : SulogEntry
-
-    data class Unknown(
-        override val key: String,
-        override val eventType: SulogEventType,
-        override val rawLine: String,
-        override val title: String?,
-        override val titleRes: Int?,
-        override val timestampText: String?,
-        override val summaryTags: List<String>,
-        override val description: String?,
-        override val descriptionRes: Int?,
-        override val status: String?,
-        override val detailText: String,
-    ) : SulogEntry
+data class SulogEntry(
+    val key: String,
+    val eventType: SulogEventType,
+    val rawLine: String,
+    val timestampText: String?,
+    val fields: Map<String, String>,
+) {
+    val searchableText: String by lazy {
+        buildString {
+            append(rawLine)
+            append('\n')
+            timestampText?.let {
+                append(it)
+                append('\n')
+            }
+            fields.values.forEach {
+                append(it)
+                append(' ')
+            }
+        }.lowercase()
+    }
 }
 
 internal fun parseSulogFileNames(fileNames: List<String>): List<String> {
@@ -248,8 +146,9 @@ fun buildVisibleSulogEntries(
     val normalizedQuery = searchText.trim().lowercase()
     val activeEventTypes = selectedFilters.mapNotNull { it.eventType }.toSet()
     return entries.asReversed().filter { entry ->
-        val filterMatches = entry.eventType == SulogEventType.Dropped || entry.eventType in activeEventTypes
-        val queryMatches = normalizedQuery.isEmpty() || entry.searchableText().contains(normalizedQuery)
+        val alwaysVisible = entry.eventType == SulogEventType.Dropped || entry.eventType == SulogEventType.Unknown
+        val filterMatches = alwaysVisible || entry.eventType in activeEventTypes
+        val queryMatches = normalizedQuery.isEmpty() || entry.searchableText.contains(normalizedQuery)
         filterMatches && queryMatches
     }
 }
@@ -257,262 +156,35 @@ fun buildVisibleSulogEntries(
 fun parseSulogLine(
     line: String,
     currentTimeMillis: Long = System.currentTimeMillis(),
-    uptimeMillis: Long = SystemClock.uptimeMillis(),
+    uptimeMillis: Long = -1L,
     zoneId: ZoneId = ZoneId.systemDefault(),
 ): SulogEntry {
     val fields = parseKeyValueLine(line)
+    val eventType = when (fields["type"]) {
+        "root_execve" -> SulogEventType.RootExecve
+        "sucompat" -> SulogEventType.SuCompat
+        "ioctl_grant_root" -> SulogEventType.IoctlGrantRoot
+        "daemon_restart", "daemon_start" -> SulogEventType.DaemonEvent
+        "dropped" -> SulogEventType.Dropped
+        else -> SulogEventType.Unknown
+    }
+    val key = when (eventType) {
+        SulogEventType.DaemonEvent -> "daemon_restart_${fields["restart"]}_${fields["boot_id"]}"
+        else -> fields["seq"] ?: line
+    }
     val timestampText = parseSulogTimestampText(
         timestampNs = fields["ts_ns"],
         currentTimeMillis = currentTimeMillis,
         uptimeMillis = uptimeMillis,
         zoneId = zoneId,
     )
-    return when (fields["type"]) {
-        "root_execve" -> parseRootExecve(line, fields, timestampText)
-        "sucompat" -> parseSuCompat(line, fields, timestampText)
-        "ioctl_grant_root" -> parseIoctlGrantRoot(line, fields, timestampText)
-        "daemon_restart" -> parseDaemonRestart(line, fields, timestampText)
-        "dropped" -> parseDropped(line, fields, timestampText)
-        else -> SulogEntry.Unknown(
-            key = fields["seq"] ?: line,
-            eventType = SulogEventType.Unknown,
-            rawLine = line,
-            title = fields["type"]?.replace('_', ' ')?.replaceFirstChar(Char::uppercase),
-            titleRes = if (fields["type"] == null) R.string.sulog_entry_unknown_event else null,
-            timestampText = timestampText,
-            summaryTags = listOf(line.take(120)),
-            description = null,
-            descriptionRes = null,
-            status = null,
-            detailText = line,
-        )
-    }
-}
-
-private fun parseRootExecve(
-    line: String,
-    fields: Map<String, String>,
-    timestampText: String?,
-): SulogEntry.RootExecve {
-    val file = fields["file"].orEmpty()
-    val argv = fields["argv"].orEmpty()
-    val comm = fields["comm"].orEmpty()
-    val pid = fields["pid"]
-    val uid = fields["uid"]
-    val retval = fields["retval"]?.toIntOrNull() ?: 0
-    val title = File(file).name.ifBlank { comm.ifBlank { "root_execve" } }
-    val detailLines = buildList {
-        add("Type: root_execve")
-        fields["seq"]?.let { add("Sequence: $it") }
-        add("Result: ${formatStatus(retval)}")
-        timestampText?.let { add("Date: $it") }
-        fields["ts_ns"]?.let { add("Timestamp(ns): $it") }
-        add("Command: $file")
-        if (argv.isNotBlank()) add("Arguments: $argv")
-        if (comm.isNotBlank()) add("Caller: $comm")
-        pid?.let { add("PID: $it") }
-        fields["tgid"]?.let { add("TGID: $it") }
-        fields["ppid"]?.let { add("PPID: $it") }
-        uid?.let { add("UID: $it") }
-        fields["euid"]?.let { add("EUID: $it") }
-        fields["version"]?.let { add("Version: $it") }
-    }
-    return SulogEntry.RootExecve(
-        key = fields["seq"] ?: line,
-        eventType = SulogEventType.RootExecve,
+    return SulogEntry(
+        key = key,
+        eventType = eventType,
         rawLine = line,
-        title = title,
-        titleRes = null,
         timestampText = timestampText,
-        summaryTags = listOfNotNull(comm.takeIf { it.isNotBlank() }, pid?.let { "PID $it" }, uid?.let { "UID $it" }),
-        description = argv.ifBlank { file },
-        descriptionRes = null,
-        status = formatStatus(retval),
-        detailText = detailLines.joinToString("\n"),
-        seq = fields["seq"],
-        pid = pid,
-        uid = uid,
-        comm = comm,
-        file = file,
-        argv = argv,
-        retval = retval,
+        fields = fields,
     )
-}
-
-private fun parseSuCompat(
-    line: String,
-    fields: Map<String, String>,
-    timestampText: String?,
-): SulogEntry.SuCompat {
-    val file = fields["file"].orEmpty()
-    val argv = fields["argv"].orEmpty()
-    val comm = fields["comm"].orEmpty()
-    val pid = fields["pid"]
-    val uid = fields["uid"]
-    val retval = fields["retval"]?.toIntOrNull() ?: 0
-    val detailLines = buildList {
-        add("Type: sucompat")
-        fields["seq"]?.let { add("Sequence: $it") }
-        add("Result: ${formatStatus(retval)}")
-        timestampText?.let { add("Date: $it") }
-        fields["ts_ns"]?.let { add("Timestamp(ns): $it") }
-        add("Command: $file")
-        if (argv.isNotBlank()) add("Arguments: $argv")
-        if (comm.isNotBlank()) add("Caller: $comm")
-        pid?.let { add("PID: $it") }
-        fields["tgid"]?.let { add("TGID: $it") }
-        fields["ppid"]?.let { add("PPID: $it") }
-        uid?.let { add("UID: $it") }
-        fields["euid"]?.let { add("EUID: $it") }
-        fields["version"]?.let { add("Version: $it") }
-    }
-    return SulogEntry.SuCompat(
-        key = fields["seq"] ?: line,
-        eventType = SulogEventType.SuCompat,
-        rawLine = line,
-        title = null,
-        titleRes = R.string.settings_sucompat,
-        timestampText = timestampText,
-        summaryTags = listOfNotNull(comm.takeIf { it.isNotBlank() }, pid?.let { "PID $it" }, uid?.let { "UID $it" }),
-        description = null,
-        descriptionRes = R.string.sulog_entry_description_sucompat,
-        status = formatStatus(retval),
-        detailText = detailLines.joinToString("\n"),
-        seq = fields["seq"],
-        pid = pid,
-        uid = uid,
-        comm = comm,
-        file = file,
-        argv = argv,
-        retval = retval,
-    )
-}
-
-private fun parseIoctlGrantRoot(
-    line: String,
-    fields: Map<String, String>,
-    timestampText: String?,
-): SulogEntry.IoctlGrantRoot {
-    val comm = fields["comm"].orEmpty()
-    val pid = fields["pid"]
-    val uid = fields["uid"]
-    val retval = fields["retval"]?.toIntOrNull() ?: 0
-    val detailLines = buildList {
-        add("Type: ioctl_grant_root")
-        fields["seq"]?.let { add("Sequence: $it") }
-        add("Result: ${formatStatus(retval)}")
-        timestampText?.let { add("Date: $it") }
-        fields["ts_ns"]?.let { add("Timestamp(ns): $it") }
-        if (comm.isNotBlank()) add("Caller: $comm")
-        pid?.let { add("PID: $it") }
-        fields["tgid"]?.let { add("TGID: $it") }
-        fields["ppid"]?.let { add("PPID: $it") }
-        uid?.let { add("UID: $it") }
-        fields["euid"]?.let { add("EUID: $it") }
-        fields["version"]?.let { add("Version: $it") }
-    }
-    return SulogEntry.IoctlGrantRoot(
-        key = fields["seq"] ?: line,
-        eventType = SulogEventType.IoctlGrantRoot,
-        rawLine = line,
-        title = null,
-        titleRes = R.string.sulog_entry_title_root_grant_request,
-        timestampText = timestampText,
-        summaryTags = listOfNotNull(comm.takeIf { it.isNotBlank() }, pid?.let { "PID $it" }, uid?.let { "UID $it" }),
-        description = null,
-        descriptionRes = R.string.sulog_entry_description_ioctl_grant_root,
-        status = formatStatus(retval),
-        detailText = detailLines.joinToString("\n"),
-        seq = fields["seq"],
-        pid = pid,
-        uid = uid,
-        comm = comm,
-        retval = retval,
-    )
-}
-
-private fun parseDaemonRestart(
-    line: String,
-    fields: Map<String, String>,
-    timestampText: String?,
-): SulogEntry.DaemonRestart {
-    val restart = fields["restart"].orEmpty()
-    val bootId = fields["boot_id"].orEmpty()
-    val detailLines = buildList {
-        add("Type: daemon_restart")
-        timestampText?.let { add("Date: $it") }
-        if (restart.isNotBlank()) add("Restart: #$restart")
-        if (bootId.isNotBlank()) add("Boot ID: $bootId")
-    }
-    return SulogEntry.DaemonRestart(
-        key = "daemon_restart_${restart}_${bootId}",
-        eventType = SulogEventType.DaemonRestart,
-        rawLine = line,
-        title = null,
-        titleRes = R.string.sulog_entry_title_daemon_restarted,
-        timestampText = timestampText,
-        summaryTags = if (restart.isNotBlank()) listOf("Restart #$restart") else listOf("Daemon restarted"),
-        description = bootId.takeIf { it.isNotBlank() }?.let { "Boot ${it.take(8)}…" },
-        descriptionRes = null,
-        status = null,
-        detailText = detailLines.joinToString("\n"),
-        bootId = bootId,
-        restart = restart,
-    )
-}
-
-private fun parseDropped(
-    line: String,
-    fields: Map<String, String>,
-    timestampText: String?,
-): SulogEntry.Dropped {
-    val dropped = fields["dropped"].orEmpty()
-    val firstSeq = fields["first_seq"]
-    val lastSeq = fields["last_seq"]
-    val detailLines = buildList {
-        add("Type: dropped")
-        timestampText?.let { add("Date: $it") }
-        if (dropped.isNotBlank()) add("Dropped events: $dropped")
-        firstSeq?.let { add("First sequence: $it") }
-        lastSeq?.let { add("Last sequence: $it") }
-        fields["ts_ns"]?.let { add("Timestamp(ns): $it") }
-    }
-    return SulogEntry.Dropped(
-        key = fields["seq"] ?: line,
-        eventType = SulogEventType.Dropped,
-        rawLine = line,
-        title = null,
-        titleRes = R.string.sulog_entry_title_dropped_events,
-        timestampText = timestampText,
-        summaryTags = listOfNotNull(dropped.takeIf { it.isNotBlank() }?.let { "$it lost" }),
-        description = if (dropped.isNotBlank()) "$dropped sulog events were dropped" else "Sulog events were dropped",
-        descriptionRes = null,
-        status = null,
-        detailText = detailLines.joinToString("\n"),
-        dropped = dropped,
-        firstSeq = firstSeq,
-        lastSeq = lastSeq,
-    )
-}
-
-private fun SulogEntry.searchableText(): String {
-    return buildString {
-        append(title)
-        append('\n')
-        timestampText?.let {
-            append(it)
-            append('\n')
-        }
-        append(summaryTags.joinToString(" "))
-        append('\n')
-        description?.let {
-            append(it)
-            append('\n')
-        }
-        append(detailText)
-        append('\n')
-        append(rawLine)
-    }.lowercase()
 }
 
 private fun parseKeyValueLine(line: String): Map<String, String> {
@@ -625,14 +297,10 @@ private fun appendHexEscapedSulogChar(line: String, xIndex: Int, value: StringBu
     return xIndex + 1
 }
 
-private fun formatStatus(ret: Int): String {
-    return if (ret == 0) "Success" else "Exit $ret"
-}
-
 internal fun parseSulogTimestampText(
     timestampNs: String?,
     currentTimeMillis: Long = System.currentTimeMillis(),
-    uptimeMillis: Long = SystemClock.uptimeMillis(),
+    uptimeMillis: Long = -1L,
     zoneId: ZoneId = ZoneId.systemDefault(),
 ): String? {
     val timestampNanos = timestampNs?.toLongOrNull() ?: return null

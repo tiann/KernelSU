@@ -282,7 +282,7 @@ private fun LazyListScope.sulogEntriesSection(
         }
 
         else -> {
-            itemsIndexed(entries, key = { _, entry -> entry.key }) { index, entry ->
+            itemsIndexed(entries, key = { index, entry -> "$index-${entry.key}" }) { index, entry ->
                 SegmentedItem(index = index, count = entries.size) {
                     SegmentedListItem(
                         modifier = if (index < entries.lastIndex) {
@@ -315,7 +315,7 @@ private fun LazyListScope.sulogEntriesSection(
                                         colorScheme.secondary to colorScheme.onSecondary,
                                         colorScheme.tertiary to colorScheme.onTertiary,
                                     )
-                                    entry.summaryTags.forEachIndexed { index, tag ->
+                                    sulogEntrySummaryTags(entry).forEachIndexed { index, tag ->
                                         val (bg, fg) = colors.getOrElse(index) { colors.last() }
                                         StatusTag(label = tag, backgroundColor = bg, contentColor = fg)
                                     }
@@ -323,7 +323,7 @@ private fun LazyListScope.sulogEntriesSection(
                             }
                         },
                         trailingContent = {
-                            entry.status?.let { Text(it) }
+                            sulogEntryStatus(entry)?.let { Text(it) }
                         },
                     )
                 }
@@ -432,7 +432,7 @@ private fun SulogDetailDialog(
             ) {
                 SelectionContainer {
                     Text(
-                        text = entry.detailText,
+                        text = sulogEntryDetailText(entry),
                         fontFamily = FontFamily.Monospace,
                     )
                 }

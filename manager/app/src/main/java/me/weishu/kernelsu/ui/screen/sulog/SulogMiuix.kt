@@ -28,7 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -47,12 +47,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -385,7 +382,7 @@ private fun LazyListScope.sulogEntriesSection(
             )
         }
 
-        else -> items(entries, key = { it.key }) { entry ->
+        else -> itemsIndexed(entries, key = { index, entry -> "$index-${entry.key}" }) { index, entry ->
             SulogEntryCard(
                 entry = entry,
                 onClick = { onEntryClick(entry) },
@@ -450,13 +447,13 @@ private fun SulogEntryCard(
                         colorScheme.secondaryContainer to colorScheme.onSecondaryContainer,
                         colorScheme.tertiaryContainer to colorScheme.onTertiaryContainer,
                     )
-                    entry.summaryTags.forEachIndexed { index, tag ->
+                    sulogEntrySummaryTags(entry).forEachIndexed { index, tag ->
                         val (bg, fg) = colors.getOrElse(index) { colors.last() }
                         StatusTag(label = tag, backgroundColor = bg, contentColor = fg)
                     }
                 }
             }
-            entry.status?.let {
+            sulogEntryStatus(entry)?.let {
                 Text(
                     text = it,
                     color = colorScheme.onSurfaceVariantActions,
@@ -533,7 +530,7 @@ private fun SulogDetailDialog(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     Text(
-                        text = formatDetailText(displayEntry.detailText),
+                        text = sulogEntryDetailText(displayEntry),
                         fontSize = 14.sp,
                         fontFamily = FontFamily.Monospace,
                     )
@@ -548,19 +545,4 @@ private fun SulogDetailDialog(
             }
         },
     )
-}
-
-private fun formatDetailText(text: String) = buildAnnotatedString {
-    text.lineSequence().forEachIndexed { index, line ->
-        if (index > 0) append('\n')
-        val colonIndex = line.indexOf(": ")
-        if (colonIndex >= 0) {
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(line, 0, colonIndex + 2)
-            }
-            append(line, colonIndex + 2, line.length)
-        } else {
-            append(line)
-        }
-    }
 }
