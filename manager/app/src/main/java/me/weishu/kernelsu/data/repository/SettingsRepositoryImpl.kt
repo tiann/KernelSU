@@ -119,6 +119,8 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun setSulogEnabled(enabled: Boolean): Boolean = execKsud("feature set sulog ${if (enabled) 1 else 0}", true)
 
+    override suspend fun getAdbRootStatus(): String = getFeatureStatus("adb_root")
+
     override suspend fun getAdbRootPersistValue(): Long? = getFeaturePersistValue("adb_root")
 
     override fun setAdbRootEnabled(enabled: Boolean): Boolean =

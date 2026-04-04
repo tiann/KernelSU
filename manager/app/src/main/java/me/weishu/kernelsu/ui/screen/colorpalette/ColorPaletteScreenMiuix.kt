@@ -29,7 +29,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Adb
+import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
@@ -355,7 +355,7 @@ fun ColorPaletteScreenMiuix(
                             summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.Adb,
+                                    Icons.AutoMirrored.Rounded.MenuOpen,
                                     modifier = Modifier.padding(end = 6.dp),
                                     contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
                                     tint = colorScheme.onBackground

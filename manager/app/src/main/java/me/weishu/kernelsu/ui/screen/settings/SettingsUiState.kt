@@ -39,6 +39,7 @@ data class SettingsUiState(
     val isDefaultUmountModules: Boolean = false,
 
     // ADB Root
+    val adbRootStatus: String = "",
     val isAdbRootEnabled: Boolean = false,
 
     val isLkmMode: Boolean = false,
