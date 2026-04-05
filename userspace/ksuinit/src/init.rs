@@ -113,7 +113,7 @@ pub fn init() -> Result<()> {
 
     // Currently, only qualcomm's minidump is supported.
     // See https://xtuly.cn/article/oneplus-ace-5-panic-log
-    if let Ok(true) = fs::exists("/preload_minidump") {
+    if let Ok(true) = fs::exists("/preload_dumpers") {
         log::info!("preload minidump requested!");
         if let Err(e) = module_loader::load_modules_in_dependency_order(
             Path::new("/lib/modules"),
