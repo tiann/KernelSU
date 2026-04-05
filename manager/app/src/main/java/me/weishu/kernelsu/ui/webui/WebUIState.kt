@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.topjohnwu.superuser.Shell
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.webui.file.KsuIO
 
 sealed class WebUIEvent {
     data object Loading : WebUIEvent()
@@ -77,6 +78,10 @@ class WebUIState {
             view.destroy()
         }
         webView = null
+        filePathCallback?.onReceiveValue(null)
+        filePathCallback = null
         rootShell?.close()
+        rootShell = null
+        KsuIO.destroy()
     }
 }
