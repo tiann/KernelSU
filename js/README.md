@@ -186,3 +186,182 @@ Exit the current WebUI activity.
 import { exit } from 'kernelsu';
 exit();
 ```
+
+### io
+
+The exported `io` object provides file system operations with root access. It acts as a small facade over the WebUI file APIs, exposing Java-IO-style factory methods such as `io.File()`, `io.FileInputStream()`, `io.FileOutputStream()`, and `io.RandomAccessFile()`.
+
+```javascript
+import { io } from 'kernelsu';
+```
+
+#### io.File
+
+Represents a file or directory path. All operations execute via root shell.
+
+**Error handling**: Methods return default values (false, empty arrays, -1, etc.) on error.
+Check return values carefully. For example, `exists()` returns false both when a file doesn't
+exist and when permission is denied. Use multiple checks to disambiguate (e.g., check parent
+directory permissions if a file operation fails).
+
+```javascript
+const file = io.File('/data/adb/modules');
+
+if (file.exists()) {
+    console.log(file.listFiles());
+}
+```
+
+##### Methods
+
+- `exists(): boolean` — Check if path exists
+- `isFile(): boolean` — Check if path is a regular file
+- `isDirectory(): boolean` — Check if path is a directory
+- `canRead(): boolean` — Check read permission
+- `canWrite(): boolean` — Check write permission
+- `canExecute(): boolean` — Check execute permission
+- `createNewFile(): boolean` — Create a new empty file
+- `delete(): boolean` — Delete file or empty directory
+- `deleteRecursive(): boolean` — Recursively delete directory
+- `mkdir(): boolean` — Create directory
+- `mkdirs(): boolean` — Create directory and all parent directories
+- `renameTo(destPath: string): boolean` — Rename or move file
+- `list(): string[]` — List filenames in directory
+- `listFiles(): string[]` — List full paths of files in directory
+- `length(): number` — File size in bytes
+- `lastModified(): number` — Last modified timestamp (ms)
+- `setLastModified(time: number): boolean` — Set last modified time
+- `getAbsolutePath(): string` — Absolute path
+- `getCanonicalPath(): string` — Canonical path (resolves symlinks)
+- `getParent(): string | null` — Parent directory path
+- `getPath(): string` — Path string
+- `getName(): string` — File/directory name
+- `isHidden(): boolean` — Check if hidden
+- `isBlock(): boolean` — Check if block device
+- `isCharacter(): boolean` — Check if character device
+- `isSymlink(): boolean` — Check if symbolic link
+- `createNewSymlink(target: string): boolean` — Create symbolic link
+- `createNewLink(existing: string): boolean` — Create hard link
+- `clear(): boolean` — Truncate file to zero length
+- `setReadOnly(): boolean` — Set read-only
+- `setReadable(readable: boolean, ownerOnly: boolean): boolean` — Set read permission
+- `setWritable(writable: boolean, ownerOnly: boolean): boolean` — Set write permission
+- `setExecutable(executable: boolean, ownerOnly: boolean): boolean` — Set execute permission
+- `getFreeSpace(): number` — Free space on partition
+- `getTotalSpace(): number` — Total space on partition
+- `getUsableSpace(): number` — Usable space on partition
+- `newInputStream(): string` — Open input stream, returns stream ID
+- `newOutputStream(append?: boolean): string` — Open output stream, returns stream ID
+
+#### io.FileInputStream
+
+Read file contents as base64-encoded chunks.
+
+**Error handling**: Methods return empty string or 0 on error. Always check `open()` return
+value before using the stream ID. Close streams when done to avoid resource leaks.
+
+```javascript
+const reader = io.FileInputStream();
+const id = reader.open('/data/adb/ksu.log');
+
+if (!id) {
+    console.error('Failed to open file');
+} else {
+    let chunk;
+    while ((chunk = reader.read(id)) !== '') {
+        console.log(atob(chunk));
+    }
+    reader.close(id);
+}
+```
+
+##### Methods
+
+- `open(path: string): string` — Open file for reading, returns stream ID
+- `read(id: string): string` — Read chunk (up to 8KB), returns base64 string (empty on EOF)
+- `read(id: string, maxBytes: number): string` — Read up to maxBytes, returns base64 string
+- `available(id: string): number` — Estimated bytes available
+- `close(id: string): boolean` — Close stream
+
+#### io.FileOutputStream
+
+Write file contents from base64-encoded data.
+
+**Error handling**: Methods return false on error. Always check `open()` and `write()` return
+values. Close streams when done to avoid resource leaks.
+
+```javascript
+const writer = io.FileOutputStream();
+const id = writer.open('/data/adb/output.txt');
+
+if (!id) {
+    console.error('Failed to open file for writing');
+} else {
+    if (!writer.write(id, btoa('Hello, World!'))) {
+        console.error('Write failed');
+    }
+    writer.close(id);
+}
+```
+
+##### Methods
+
+- `open(path: string, append?: boolean): string` — Open file for writing, returns stream ID
+- `write(id: string, base64: string): boolean` — Write base64 data. For large sequential writes, prefer large chunks (for example 1-2 MiB) to reduce WebView bridge overhead.
+- `writeByte(id: string, b: number): boolean` — Write single byte
+- `flush(id: string): boolean` — Flush buffer
+- `close(id: string): boolean` — Close stream
+
+#### io.RandomAccessFile
+
+Random access file I/O with seek support. Uses `dd` under the hood, so each operation has overhead. Prefer `FileInputStream`/`FileOutputStream` for sequential access.
+
+**Error handling**: Methods return default values on error (0, -1, false, empty string, null).
+Always check `open()` return value before using the file ID. Close files when done to avoid
+resource leaks.
+
+```javascript
+const raf = io.RandomAccessFile();
+const id = raf.open('/data/adb/data.bin', 'rw');
+
+if (!id) {
+    console.error('Failed to open file');
+} else {
+    raf.seek(id, 1024);
+    raf.writeInt(id, 42);
+    raf.seek(id, 1024);
+    console.log(raf.readInt(id));
+    
+    raf.close(id);
+}
+```
+
+##### Methods
+
+- `open(path: string, mode: string): string` — Open file with mode (`"r"`, `"rw"`, etc.), returns file ID
+- `read(id: string): number` — Read single byte (0-255, or -1 on EOF)
+- `readBytes(id: string, len: number): string` — Read bytes, returns base64 string
+- `readBoolean(id: string): boolean` — Read boolean
+- `readByte(id: string): number` — Read signed byte
+- `readInt(id: string): number` — Read 32-bit integer
+- `readLong(id: string): number` — Read 64-bit integer
+- `readShort(id: string): number` — Read 16-bit short
+- `readFloat(id: string): number` — Read 32-bit float
+- `readDouble(id: string): number` — Read 64-bit double
+- `readUTF(id: string): string` — Read UTF string
+- `readLine(id: string): string | null` — Read line
+- `write(id: string, b: number): void` — Write single byte
+- `writeBase64(id: string, data: string): void` — Write base64 data
+- `writeBoolean(id: string, v: boolean): void` — Write boolean
+- `writeByte(id: string, v: number): void` — Write byte
+- `writeInt(id: string, v: number): void` — Write 32-bit integer
+- `writeLong(id: string, v: number): void` — Write 64-bit integer
+- `writeShort(id: string, v: number): void` — Write 16-bit short
+- `writeFloat(id: string, v: number): void` — Write 32-bit float
+- `writeDouble(id: string, v: number): void` — Write 64-bit double
+- `writeUTF(id: string, str: string): void` — Write UTF string
+- `seek(id: string, pos: number): boolean` — Set file pointer position
+- `getFilePointer(id: string): number` — Get current file pointer position
+- `length(id: string): number` — Get file length
+- `setLength(id: string, newLength: number): boolean` — Truncate or extend file
+- `close(id: string): boolean` — Close file
