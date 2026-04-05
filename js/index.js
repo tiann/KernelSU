@@ -74,6 +74,7 @@ function Stdio() {
     } else if (!(args instanceof Array)) {
         // allow for (command, options) signature
         options = args;
+        args = [];
     }
     
     if (typeof options === "undefined") {
