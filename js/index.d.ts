@@ -46,13 +46,18 @@ interface PackagesInfo {
     versionName: string;
     versionCode: number;
     appLabel: string;
-    isSystem: boolean;
-    uid: number;
+    isSystem: boolean | null;
+    uid: number | null;
+}
+
+interface PackageInfoError {
+    packageName: string;
+    error: string;
 }
 
 declare function listPackages(type: string): string[];
 
-declare function getPackagesInfo(packages: string[]): PackagesInfo[];
+declare function getPackagesInfo(packages: string[]): Array<PackagesInfo | PackageInfoError>;
 
 declare function exit();
 
