@@ -158,7 +158,7 @@ img.src = "ksu://icon/" + packageName;
 
 Get information for a list of packages.
 
-Returns an array of `PackagesInfo` objects.
+Returns an array containing `PackagesInfo` objects for packages that were resolved. If a package is missing or inaccessible, the corresponding entry contains `packageName` and `error` instead.
 
 - `packages` `<string[]>` The list of package names.
 
@@ -175,8 +175,13 @@ An object contains:
 - `versionName` `<string>` Version of the application.
 - `versionCode` `<number>` Version code of the application.
 - `appLabel` `<string>` Display name of the application.
-- `isSystem` `<boolean>` Whether the application is a system app.
-- `uid` `<number>` UID of the application.
+- `isSystem` `<boolean | null>` Whether the application is a system app.
+- `uid` `<number | null>` UID of the application.
+
+If a package could not be resolved, the returned object contains:
+
+- `packageName` `<string>` The requested package name.
+- `error` `<string>` Reason the package information could not be returned.
 
 ### exit
 
