@@ -44,7 +44,9 @@ pub fn load_modules_in_dependency_order(
         if dry_run {
             println!("loading {}", module.display());
         } else {
-            load_single_module(&module)?;
+            log::info!("preloading {}", module.display());
+            load_single_module(&module)
+                .with_context(|| format!("preload {} failed", module.display()))?;
         }
     }
 
