@@ -1,4 +1,4 @@
-# How to build
+tools/bazel build --config=fast //common:kernel_aarch64_dist# How to build
 
 ::: warning
 This document is for archival reference only and is no longer maintained.
