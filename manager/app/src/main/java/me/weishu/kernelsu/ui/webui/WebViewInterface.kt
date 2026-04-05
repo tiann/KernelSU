@@ -18,6 +18,7 @@ import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.weishu.kernelsu.ui.webui.file.KsuIO
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -257,6 +258,13 @@ class WebViewInterface(private val state: WebUIState) {
     @JavascriptInterface
     fun exit() {
         state.requestExit()
+    }
+
+    @JavascriptInterface
+    fun io() = KsuIO
+
+    fun destroy() {
+        KsuIO.destroy()
     }
 }
 
