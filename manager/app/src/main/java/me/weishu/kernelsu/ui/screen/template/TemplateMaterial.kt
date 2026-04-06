@@ -127,7 +127,7 @@ fun AppProfileTemplateScreenMaterial(
         modifier = Modifier.pullToRefresh(
             state = pullToRefreshState,
             isRefreshing = state.isRefreshing,
-            onRefresh = { actions.onRefresh(false) },
+            onRefresh = { actions.onRefresh(true) },
         ),
         topBar = {
             TopBar(
