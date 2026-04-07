@@ -10,7 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -85,8 +84,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
@@ -105,7 +104,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.FixedScale
@@ -157,11 +155,6 @@ fun ModulePagerMaterial(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val pullToRefreshState = rememberPullToRefreshState()
-
-    val scaleFraction = {
-        if (uiState.isRefreshing) 1f
-        else LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
-    }
 
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
@@ -265,16 +258,6 @@ fun ModulePagerMaterial(
     }
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .pullToRefresh(
-                state = pullToRefreshState,
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = {
-                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    actions.onRefresh()
-                },
-            ),
         topBar = {
             SearchAppBar(
                 title = { Text(stringResource(R.string.module)) },
@@ -392,21 +375,38 @@ fun ModulePagerMaterial(
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
-        if (uiState.magiskInstalled) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.module_magisk_conflict),
-                    textAlign = TextAlign.Center,
+        PullToRefreshBox(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = {
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                actions.onRefresh()
+            },
+            state = pullToRefreshState,
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = uiState.isRefreshing,
+                    state = pullToRefreshState,
                 )
+            },
+        ) {
+            if (uiState.magiskInstalled) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.module_magisk_conflict),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                return@PullToRefreshBox
             }
-            return@Scaffold
-        }
-        Box(modifier = Modifier.padding(innerPadding)) {
             ModuleList(
                 bottomInnerPadding = bottomInnerPadding,
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -421,19 +421,6 @@ fun ModulePagerMaterial(
                 },
                 onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
             )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .graphicsLayer {
-                        scaleX = scaleFraction()
-                        scaleY = scaleFraction()
-                    }
-            ) {
-                PullToRefreshDefaults.LoadingIndicator(
-                    state = pullToRefreshState,
-                    isRefreshing = uiState.isRefreshing,
-                )
-            }
         }
     }
 
