@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.template
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -41,8 +40,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -54,7 +53,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
@@ -78,6 +76,7 @@ fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
     actions: TemplateActions,
 ) {
+    val haptic = LocalHapticFeedback.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
@@ -118,17 +117,7 @@ fun AppProfileTemplateScreenMaterial(
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
     }
 
-    val scaleFraction = {
-        if (state.isRefreshing) 1f
-        else LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
-    }
-
     Scaffold(
-        modifier = Modifier.pullToRefresh(
-            state = pullToRefreshState,
-            isRefreshing = state.isRefreshing,
-            onRefresh = { actions.onRefresh(true) },
-        ),
         topBar = {
             TopBar(
                 onBack = actions.onBack,
@@ -151,34 +140,49 @@ fun AppProfileTemplateScreenMaterial(
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        val isLoading = state.templateList.isEmpty()
+        PullToRefreshBox(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            isRefreshing = state.isRefreshing,
+            onRefresh = {
+                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                actions.onRefresh(true)
+            },
+            state = pullToRefreshState,
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = state.isRefreshing,
+                    state = pullToRefreshState,
+                )
+            },
+        ) {
+            val isLoading = state.templateList.isEmpty()
 
-        if (isLoading && !state.isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                if (state.offline) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
-                        Spacer(Modifier.height(12.dp))
-                        Button(
-                            onClick = { actions.onRefresh(false) },
-                        ) {
-                            Text(stringResource(R.string.network_retry))
+            if (isLoading && !state.isRefreshing) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (state.offline) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { actions.onRefresh(false) },
+                            ) {
+                                Text(stringResource(R.string.network_retry))
+                            }
                         }
+                    } else {
+                        LoadingIndicator()
                     }
-                } else {
-                    LoadingIndicator()
                 }
-            }
-        } else {
-            val templateList = state.templateList
-            val navBars = WindowInsets.navigationBars.asPaddingValues()
-            val captionBar = WindowInsets.captionBar.asPaddingValues()
-            Box(Modifier.padding(innerPadding)) {
+            } else {
+                val templateList = state.templateList
+                val navBars = WindowInsets.navigationBars.asPaddingValues()
+                val captionBar = WindowInsets.captionBar.asPaddingValues()
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -200,16 +204,6 @@ fun AppProfileTemplateScreenMaterial(
                             )
                         }
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            scaleX = scaleFraction()
-                            scaleY = scaleFraction()
-                        }
-                ) {
-                    PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = state.isRefreshing)
                 }
             }
         }
