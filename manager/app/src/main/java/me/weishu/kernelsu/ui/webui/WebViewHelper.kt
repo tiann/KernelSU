@@ -111,7 +111,11 @@ internal suspend fun prepareWebView(
                             if (icon != null) {
                                 val stream = java.io.ByteArrayOutputStream()
                                 icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                                return WebResourceResponse("image/png", null, java.io.ByteArrayInputStream(stream.toByteArray()))
+                                return WebResourceResponse(
+                                    "image/png", null, 200, "OK",
+                                    mapOf("Access-Control-Allow-Origin" to "*"),
+                                    java.io.ByteArrayInputStream(stream.toByteArray())
+                                )
                             }
                         }
                     }
