@@ -21,6 +21,9 @@ object DownloadManager {
         val id: Int,
         val fileName: String,
         val url: String,
+        val targetPath: String? = null,
+        val mimeType: String? = null,
+        val completionAction: DownloadCompletionAction = DownloadCompletionAction.INSTALL_MODULE,
         val progress: Int = 0,
         val status: Status = Status.PENDING,
         val resultUri: Uri? = null,
@@ -34,19 +37,54 @@ object DownloadManager {
     private val completionCallbacks = ConcurrentHashMap<Int, (Uri) -> Unit>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    internal fun registerLocalSave(
+        fileName: String,
+        targetPath: String,
+        mimeType: String? = null,
+        completionAction: DownloadCompletionAction = DownloadCompletionAction.OPEN_FILE,
+    ): Int {
+        val id = idCounter.incrementAndGet()
+        val state = DownloadState(
+            id = id,
+            fileName = fileName,
+            url = targetPath,
+            targetPath = targetPath,
+            mimeType = mimeType,
+            completionAction = completionAction,
+        )
+        _downloads.update { it + (id to state) }
+        return id
+    }
+
     fun enqueue(
         context: Context,
         url: String,
         fileName: String,
+        targetPath: String? = null,
+        mimeType: String? = null,
+        cookie: String? = null,
+        userAgent: String? = null,
+        completionAction: DownloadCompletionAction = DownloadCompletionAction.INSTALL_MODULE,
         onCompleted: ((Uri) -> Unit)? = null,
     ): Int {
         val existing = _downloads.value.values.find {
-            it.url == url && (it.status == Status.PENDING || it.status == Status.DOWNLOADING)
+            it.url == url &&
+                it.fileName == fileName &&
+                it.targetPath == targetPath &&
+                it.completionAction == completionAction &&
+                (it.status == Status.PENDING || it.status == Status.DOWNLOADING)
         }
         if (existing != null) return existing.id
 
         val id = idCounter.incrementAndGet()
-        val state = DownloadState(id = id, fileName = fileName, url = url)
+        val state = DownloadState(
+            id = id,
+            fileName = fileName,
+            url = url,
+            targetPath = targetPath,
+            mimeType = mimeType,
+            completionAction = completionAction,
+        )
         _downloads.update { it + (id to state) }
 
         if (onCompleted != null) {
@@ -58,6 +96,11 @@ object DownloadManager {
             putExtra(DownloadService.EXTRA_DOWNLOAD_ID, id)
             putExtra(DownloadService.EXTRA_URL, url)
             putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
+            putExtra(DownloadService.EXTRA_TARGET_PATH, targetPath)
+            putExtra(DownloadService.EXTRA_MIME_TYPE, mimeType)
+            putExtra(DownloadService.EXTRA_COOKIE, cookie)
+            putExtra(DownloadService.EXTRA_USER_AGENT, userAgent)
+            putExtra(DownloadService.EXTRA_COMPLETION_ACTION, completionAction.name)
         }
         ContextCompat.startForegroundService(context, intent)
 

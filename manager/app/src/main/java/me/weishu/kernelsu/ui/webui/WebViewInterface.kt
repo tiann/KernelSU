@@ -1,26 +1,49 @@
 package me.weishu.kernelsu.ui.webui
 
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.text.TextUtils
+import android.util.Base64
+import android.util.Log
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.UiThreadHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import me.weishu.kernelsu.BuildConfig
+import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.util.DownloadManager
+import me.weishu.kernelsu.ui.util.DownloadService
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
+import me.weishu.kernelsu.ui.util.resolveDownloadMimeType
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.webui.file.KsuIO
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
@@ -39,9 +62,7 @@ class WebViewInterface(private val state: WebUIState) {
     }
 
     private fun processOptions(sb: StringBuilder, options: String?) {
-        val opts = if (options == null) JSONObject() else {
-            JSONObject(options)
-        }
+        val opts = if (options == null) JSONObject() else JSONObject(options)
 
         val cwd = opts.optString("cwd")
         if (!TextUtils.isEmpty(cwd)) {
@@ -88,13 +109,11 @@ class WebViewInterface(private val state: WebUIState) {
 
         processOptions(finalCommand, options)
 
-        if (!TextUtils.isEmpty(args)) {
+        if (args.isNotEmpty()) {
             finalCommand.append(command).append(" ")
-            JSONArray(args).let { argsArray ->
-                for (i in 0 until argsArray.length()) {
-                    finalCommand.append(argsArray.getString(i))
-                    finalCommand.append(" ")
-                }
+            val argsArray = JSONArray(args)
+            for (i in 0 until argsArray.length()) {
+                finalCommand.append(argsArray.getString(i)).append(" ")
             }
         } else {
             finalCommand.append(command)
@@ -242,7 +261,7 @@ class WebViewInterface(private val state: WebUIState) {
                 obj.put("versionName", pkg.versionName ?: "")
                 obj.put("versionCode", PackageInfoCompat.getLongVersionCode(pkg))
                 obj.put("appLabel", appInfo.label)
-                obj.put("isSystem", if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL)
+                obj.put("isSystem", app?.let { (it.flags and ApplicationInfo.FLAG_SYSTEM) != 0 } ?: JSONObject.NULL)
                 obj.put("uid", app?.uid ?: JSONObject.NULL)
                 jsonArray.put(obj)
             } else {
@@ -266,6 +285,209 @@ class WebViewInterface(private val state: WebUIState) {
     fun destroy() {
         KsuIO.destroy()
     }
+}
+
+class WebUIDownloadInterface(private val state: WebUIState) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val webView get() = state.webView
+
+    companion object {
+        // Use a different notification ID range to avoid collision with DownloadService
+        private const val WEBUI_NOTIFICATION_ID_BASE = 200000
+    }
+
+    @JavascriptInterface
+    fun openExternal(url: String) {
+        val currentWebView = webView ?: return
+        val uri = Uri.parse(url)
+        if (uri.scheme != "http" && uri.scheme != "https") return
+
+        runCatching {
+            currentWebView.context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+        }.onFailure { throwable ->
+            Log.e("WebUIDownload", "Failed to open $url", throwable)
+        }
+    }
+
+    @JavascriptInterface
+    fun save(base64: String, fileName: String?) {
+        val currentWebView = webView ?: return
+        val target = resolveDownloadTarget(fileName)
+        val context = currentWebView.context
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        val downloadId = DownloadManager.registerLocalSave(
+            fileName = target.name,
+            targetPath = target.absolutePath,
+        )
+
+        ensureNotificationChannel(notificationManager, context)
+        notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildProgressNotification(context, target.name, 0))
+
+        scope.launch {
+            runCatching {
+                val decoded = Base64.decode(base64, Base64.DEFAULT)
+                var lastProgress = -1
+                ByteArrayInputStream(decoded).use { input ->
+                    writeWebUIDownload(target, input) { written ->
+                        val progress = if (decoded.isEmpty()) 100 else ((written * 100L) / decoded.size.toLong()).toInt().coerceIn(0, 100)
+                        DownloadManager.updateProgress(downloadId, progress)
+                        if (progress - lastProgress >= 2 || progress == 100) {
+                            notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildProgressNotification(context, target.name, progress))
+                            lastProgress = progress
+                        }
+                    }
+                }
+            }.onSuccess {
+                val uri = Uri.fromFile(target)
+                DownloadManager.markCompleted(downloadId, uri)
+                notificationManager.notify(
+                    WEBUI_NOTIFICATION_ID_BASE + downloadId,
+                    buildCompletionNotification(context, downloadId, target)
+                )
+                postToast(currentWebView.context.getString(R.string.download_complete_content, target.name))
+            }.onFailure { throwable ->
+                Log.e("WebUIDownload", "Failed to save ${target.absolutePath}", throwable)
+                DownloadManager.markFailed(downloadId, throwable.message ?: "Unknown error")
+                notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildFailureNotification(context, target.name))
+                postToast(currentWebView.context.getString(R.string.download_failed_content, target.name))
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun startChunkedDownload(fileName: String?, mimeType: String?): String {
+        val sanitizedFileName = resolveDownloadTarget(fileName).name
+        return BlobDownloadHandler.registerBlobDownload(sanitizedFileName, mimeType)
+    }
+
+    @JavascriptInterface
+    fun writeDownloadChunk(downloadId: String, base64Chunk: String): Boolean {
+        return BlobDownloadHandler.writeChunk(downloadId, base64Chunk)
+    }
+
+    @JavascriptInterface
+    fun completeChunkedDownload(downloadId: String): Boolean {
+        return BlobDownloadHandler.completeDownload(downloadId)
+    }
+
+    @JavascriptInterface
+    fun cancelChunkedDownload(downloadId: String) {
+        BlobDownloadHandler.cancelDownload(downloadId)
+    }
+
+    fun destroy() {
+        scope.cancel()
+        BlobDownloadHandler.cleanup()
+    }
+
+    private fun postToast(message: String) {
+        webView?.let { currentWebView ->
+            currentWebView.post {
+                Toast.makeText(currentWebView.context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun resolveDownloadTarget(fileName: String?): File {
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        return resolveWebUIDownloadFile(downloadsDir, fileName)
+    }
+
+    private fun ensureNotificationChannel(notificationManager: NotificationManager, context: android.content.Context) {
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                DownloadService.CHANNEL_ID,
+                context.getString(R.string.download_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+        )
+    }
+
+    private fun buildProgressNotification(
+        context: android.content.Context,
+        fileName: String,
+        progress: Int,
+    ) = NotificationCompat.Builder(context, DownloadService.CHANNEL_ID)
+        .setContentTitle(context.getString(R.string.download_progress_title, fileName))
+        .setContentText("$progress%")
+        .setSmallIcon(android.R.drawable.stat_sys_download)
+        .setProgress(100, progress, progress == 0)
+        .setOngoing(true)
+        .setSilent(true)
+        .build()
+
+    private fun buildCompletionNotification(
+        context: android.content.Context,
+        downloadId: Int,
+        target: File,
+    ): android.app.Notification {
+        val contentUri = getMediaStoreUriForFile(context, target)
+        val openIntent = Intent.createChooser(
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(contentUri, resolveDownloadMimeType(target.name, null))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+            },
+            context.getString(R.string.open),
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            downloadId,
+            openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return NotificationCompat.Builder(context, DownloadService.CHANNEL_ID)
+            .setContentTitle(context.getString(R.string.download_complete_title))
+            .setContentText(context.getString(R.string.download_complete_content, target.name))
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .addAction(android.R.drawable.ic_menu_view, context.getString(R.string.open), pendingIntent)
+            .build()
+    }
+
+    private fun getMediaStoreUriForFile(context: android.content.Context, file: File): Uri {
+        val resolver = context.contentResolver
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Files.getContentUri("external")
+        }
+
+        val projection = arrayOf(MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DISPLAY_NAME)
+        val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ?"
+        val selectionArgs = arrayOf(file.name)
+
+        resolver.query(collection, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val id = cursor.getLong(idColumn)
+                return Uri.withAppendedPath(collection, id.toString())
+            }
+        }
+
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+            put(MediaStore.MediaColumns.MIME_TYPE, resolveDownloadMimeType(file.name, null))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                put(MediaStore.MediaColumns.IS_PENDING, 0)
+            }
+        }
+
+        return resolver.insert(collection, values) ?: Uri.fromFile(file)
+    }
+
+    private fun buildFailureNotification(
+        context: android.content.Context,
+        fileName: String,
+    ) = NotificationCompat.Builder(context, DownloadService.CHANNEL_ID)
+        .setContentTitle(context.getString(R.string.download_failed_title))
+        .setContentText(context.getString(R.string.download_failed_content, fileName))
+        .setSmallIcon(android.R.drawable.stat_notify_error)
+        .setAutoCancel(true)
+        .build()
 }
 
 fun hideSystemUI(window: Window) =
