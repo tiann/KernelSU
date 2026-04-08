@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.MainActivity
@@ -25,7 +27,22 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.URLConnection
 import java.util.concurrent.ConcurrentHashMap
+
+enum class DownloadCompletionAction {
+    INSTALL_MODULE,
+    OPEN_FILE,
+}
+
+internal fun resolveDownloadMimeType(fileName: String, providedMimeType: String?): String {
+    val explicitMimeType = providedMimeType?.trim().orEmpty()
+    if (explicitMimeType.isNotEmpty()) {
+        return explicitMimeType
+    }
+
+    return URLConnection.guessContentTypeFromName(fileName) ?: "application/octet-stream"
+}
 
 class DownloadService : Service() {
 
@@ -40,6 +57,12 @@ class DownloadService : Service() {
         const val EXTRA_DOWNLOAD_ID = "downloadId"
         const val EXTRA_MODULE_URI = "moduleUri"
         const val EXTRA_FILE_PATH = "filePath"
+        const val EXTRA_TARGET_PATH = "targetPath"
+        const val EXTRA_MIME_TYPE = "mimeType"
+        const val EXTRA_COOKIE = "cookie"
+        const val EXTRA_USER_AGENT = "userAgent"
+        const val EXTRA_COMPLETION_ACTION = "completionAction"
+        const val EXTRA_DELETE_FILE_ON_DISMISS = "deleteFileOnDismiss"
 
         private const val COMPLETION_NOTIFICATION_ID_BASE = 100000
     }
@@ -62,6 +85,13 @@ class DownloadService : Service() {
                 val url = intent.getStringExtra(EXTRA_URL) ?: return START_NOT_STICKY
                 val fileName = intent.getStringExtra(EXTRA_FILE_NAME) ?: return START_NOT_STICKY
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
+                val targetPath = intent.getStringExtra(EXTRA_TARGET_PATH)
+                val mimeType = intent.getStringExtra(EXTRA_MIME_TYPE)
+                val cookie = intent.getStringExtra(EXTRA_COOKIE)
+                val userAgent = intent.getStringExtra(EXTRA_USER_AGENT)
+                val completionAction = intent.getStringExtra(EXTRA_COMPLETION_ACTION)
+                    ?.let(DownloadCompletionAction::valueOf)
+                    ?: DownloadCompletionAction.INSTALL_MODULE
                 if (downloadId == -1) return START_NOT_STICKY
 
                 val notification = buildProgressNotification(downloadId, fileName, 0)
@@ -74,7 +104,7 @@ class DownloadService : Service() {
                     startForeground(downloadId, notification)
                 }
 
-                startDownload(downloadId, url, fileName)
+                startDownload(downloadId, url, fileName, targetPath, mimeType, cookie, userAgent, completionAction)
             }
 
             ACTION_CANCEL -> {
@@ -91,10 +121,11 @@ class DownloadService : Service() {
             ACTION_DISMISS_DOWNLOAD -> {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
                 val filePath = intent.getStringExtra(EXTRA_FILE_PATH)
+                val deleteFileOnDismiss = intent.getBooleanExtra(EXTRA_DELETE_FILE_ON_DISMISS, false)
                 if (downloadId != -1) {
                     notificationManager.cancel(COMPLETION_NOTIFICATION_ID_BASE + downloadId)
                 }
-                if (!filePath.isNullOrEmpty()) {
+                if (deleteFileOnDismiss && !filePath.isNullOrEmpty()) {
                     File(filePath).delete()
                 }
             }
@@ -102,14 +133,34 @@ class DownloadService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun startDownload(id: Int, url: String, fileName: String) {
+    private fun startDownload(
+        id: Int,
+        url: String,
+        fileName: String,
+        targetPath: String?,
+        mimeType: String?,
+        cookie: String?,
+        userAgent: String?,
+        completionAction: DownloadCompletionAction,
+    ) {
         val job = serviceScope.launch {
-            val target = resolveAvailableTarget(
+            val target = targetPath?.let(::File) ?: resolveAvailableTarget(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 fileName
             )
             try {
-                ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
+                target.parentFile?.mkdirs()
+
+                val request = Request.Builder().url(url).apply {
+                    if (!cookie.isNullOrEmpty()) {
+                        addHeader("Cookie", cookie)
+                    }
+                    if (!userAgent.isNullOrEmpty()) {
+                        addHeader("User-Agent", userAgent)
+                    }
+                }.build()
+
+                ksuApp.okhttpClient.newCall(request).execute()
                     .use { resp ->
                         if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
                         val body = resp.body
@@ -151,7 +202,7 @@ class DownloadService : Service() {
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, target.name, uri)
+                    buildCompletionNotification(id, fileName, target, uri, mimeType, completionAction)
                 )
             } catch (e: CancellationException) {
                 throw e
@@ -215,7 +266,10 @@ class DownloadService : Service() {
     private fun buildCompletionNotification(
         id: Int,
         fileName: String,
-        uri: Uri
+        targetFile: File,
+        uri: Uri,
+        mimeType: String?,
+        completionAction: DownloadCompletionAction,
     ): android.app.Notification {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.download_complete_title))
@@ -223,36 +277,64 @@ class DownloadService : Service() {
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setAutoCancel(true)
 
-        // Add "Install" action button
-        val installIntent = Intent(this, MainActivity::class.java).apply {
-            action = ACTION_INSTALL_MODULE
-            putExtra(EXTRA_MODULE_URI, uri.toString())
-            putExtra(EXTRA_DOWNLOAD_ID, id)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        val installPendingIntent = PendingIntent.getActivity(
-            this,
-            id,
-            installIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.addAction(
-            android.R.drawable.ic_menu_save,
-            getString(R.string.download_install),
-            installPendingIntent
-        )
-        builder.setContentIntent(installPendingIntent)
+        val deleteFileOnDismiss = completionAction == DownloadCompletionAction.INSTALL_MODULE
 
-        // Add "Cancel" action button
-        val dismissIntent = Intent(this, DownloadService::class.java).apply {
-            action = ACTION_DISMISS_DOWNLOAD
-            putExtra(EXTRA_DOWNLOAD_ID, id)
-            putExtra(EXTRA_FILE_PATH, uri.path)
+        val primaryPendingIntent = when (completionAction) {
+            DownloadCompletionAction.INSTALL_MODULE -> PendingIntent.getActivity(
+                this,
+                id,
+                Intent(this, MainActivity::class.java).apply {
+                    action = ACTION_INSTALL_MODULE
+                    putExtra(EXTRA_MODULE_URI, uri.toString())
+                    putExtra(EXTRA_DOWNLOAD_ID, id)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also { pendingIntent ->
+                builder.addAction(
+                    android.R.drawable.ic_menu_save,
+                    getString(R.string.download_install),
+                    pendingIntent
+                )
+            }
+
+            DownloadCompletionAction.OPEN_FILE -> PendingIntent.getActivity(
+                this,
+                id,
+                Intent.createChooser(
+                    Intent(Intent.ACTION_VIEW).apply {
+                        val contentUri = FileProvider.getUriForFile(
+                            this@DownloadService,
+                            "${BuildConfig.APPLICATION_ID}.fileprovider",
+                            targetFile
+                        )
+                        setDataAndType(contentUri, resolveDownloadMimeType(fileName, mimeType))
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    },
+                    getString(R.string.open)
+                ).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also { pendingIntent ->
+                builder.addAction(
+                    android.R.drawable.ic_menu_view,
+                    getString(R.string.open),
+                    pendingIntent
+                )
+            }
         }
+        builder.setContentIntent(primaryPendingIntent)
+
         val dismissPendingIntent = PendingIntent.getService(
             this,
             COMPLETION_NOTIFICATION_ID_BASE + id,
-            dismissIntent,
+            Intent(this, DownloadService::class.java).apply {
+                action = ACTION_DISMISS_DOWNLOAD
+                putExtra(EXTRA_DOWNLOAD_ID, id)
+                putExtra(EXTRA_FILE_PATH, targetFile.absolutePath)
+                putExtra(EXTRA_DELETE_FILE_ON_DISMISS, deleteFileOnDismiss)
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         builder.addAction(
@@ -294,7 +376,7 @@ class DownloadService : Service() {
     }
 
     private fun stopForegroundIfIdle() {
-        if (activeJobs.isEmpty() || activeJobs.values.none { it.isActive }) {
+        if (activeJobs.isEmpty()) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
