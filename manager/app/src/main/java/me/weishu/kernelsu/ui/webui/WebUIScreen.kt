@@ -11,12 +11,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -53,19 +53,21 @@ fun rememberFileLauncher(webUIState: WebUIState): ActivityResultLauncher<Intent>
 fun WebUIScreen(webUIState: WebUIState) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    val windowInsets = WindowInsets.safeDrawing
-    val innerPadding = if (webUIState.isInsetsEnabled) PaddingValues(0.dp) else windowInsets.asPaddingValues()
+    val drawingInsets = WindowInsets.safeDrawing
+    val systemBarsInsets = WindowInsets.systemBars
+    val imeInsets = WindowInsets.ime
+    val innerPadding = if (webUIState.isInsetsEnabled) imeInsets.asPaddingValues() else drawingInsets.asPaddingValues()
     val fileLauncher = rememberFileLauncher(webUIState)
 
-    LaunchedEffect(density, layoutDirection, windowInsets, webUIState.isInsetsEnabled) {
+    LaunchedEffect(density, layoutDirection, systemBarsInsets, webUIState.isInsetsEnabled) {
         if (!webUIState.isInsetsEnabled) {
             return@LaunchedEffect
         }
         snapshotFlow {
-            val top = (windowInsets.getTop(density) / density.density).toInt()
-            val bottom = (windowInsets.getBottom(density) / density.density).toInt()
-            val left = (windowInsets.getLeft(density, layoutDirection) / density.density).toInt()
-            val right = (windowInsets.getRight(density, layoutDirection) / density.density).toInt()
+            val top = (systemBarsInsets.getTop(density) / density.density).toInt()
+            val bottom = (systemBarsInsets.getBottom(density) / density.density).toInt()
+            val left = (systemBarsInsets.getLeft(density, layoutDirection) / density.density).toInt()
+            val right = (systemBarsInsets.getRight(density, layoutDirection) / density.density).toInt()
             Insets(top, bottom, left, right)
         }.collect { newInsets ->
             if (webUIState.currentInsets != newInsets) {
@@ -114,6 +116,9 @@ fun WebUIScreen(webUIState: WebUIState) {
                             }
                         }
                     }
+                },
+                update = { view ->
+                    view.requestLayout()
                 }
             )
         }
