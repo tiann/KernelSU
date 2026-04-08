@@ -155,7 +155,7 @@ export const io = {
     const impl = ksu.io().FileInputStream();
     return {
       open(path) { return impl.open(path); },
-      read(id, maxBytes) { return impl.read(id, maxBytes); },
+      read(id, maxBytes) { return maxBytes !== undefined ? impl.read(id, maxBytes) : impl.read(id); },
       available(id) { return impl.available(id); },
       close(id) { return impl.close(id); },
     };
@@ -164,7 +164,7 @@ export const io = {
   FileOutputStream() {
     const impl = ksu.io().FileOutputStream();
     return {
-      open(path, append) { return impl.open(path, append); },
+      open(path, append) { return append !== undefined ? impl.open(path, append) : impl.open(path); },
       write(id, data) { return impl.write(id, data); },
       writeByte(id, b) { return impl.writeByte(id, b); },
       flush(id) { return impl.flush(id); },

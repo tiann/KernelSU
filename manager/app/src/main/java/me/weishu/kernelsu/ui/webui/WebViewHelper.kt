@@ -27,6 +27,10 @@ import me.weishu.kernelsu.ui.util.withMainUserUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import java.io.File
 
+private fun loadDownloadJs(context: Context): String {
+    return context.assets.open("webview/download.js").bufferedReader(Charsets.UTF_8).use { it.readText() }
+}
+
 fun Activity.setTaskDescription(label: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         @Suppress("DEPRECATION")
@@ -106,6 +110,9 @@ internal suspend fun prepareWebView(
             webView.webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                     val url = request.url
+
+                    BlobDownloadHandler.shouldInterceptRequest(request)?.let { return it }
+
                     if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
                         val packageName = url.path?.substring(1)
                         if (!packageName.isNullOrEmpty()) {
@@ -141,6 +148,7 @@ internal suspend fun prepareWebView(
                 override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
                     webUIState.webCanGoBack = view?.canGoBack() ?: false
                     if (webUIState.isInsetsEnabled) webUIState.webView?.evaluateJavascript(webUIState.currentInsets.js, null)
+                    view?.evaluateJavascript(loadDownloadJs(activity), null)
                     super.doUpdateVisitedHistory(view, url, isReload)
                 }
             }
@@ -188,8 +196,16 @@ internal suspend fun prepareWebView(
 
             // JS Interface
             val webviewInterface = WebViewInterface(webUIState)
+            val downloadInterface = WebUIDownloadInterface(webUIState)
+            webUIState.webViewInterface = webviewInterface
+            webUIState.downloadInterface = downloadInterface
             webUIState.webView = webView
             webView.addJavascriptInterface(webviewInterface, "ksu")
+            webView.addJavascriptInterface(downloadInterface, "ksu_download")
+            webView.setDownloadListener { url, _, _, _, _ ->
+                downloadInterface.openExternal(url)
+            }
+            webView.evaluateJavascript(loadDownloadJs(activity), null)
             webUIState.uiEvent = WebUIEvent.WebViewReady
         }
     }
