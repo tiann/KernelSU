@@ -118,7 +118,13 @@ pub fn init() -> Result<()> {
         if let Err(e) = module_loader::load_modules_in_dependency_order(
             Path::new("/lib/modules"),
             Path::new("/"),
-            &["qcom_hwspinlock.ko", "minidump.ko", "qcom-scm.ko", "qcom_wdt_core.ko"],
+            &[
+                "qcom_hwspinlock.ko",
+                "minidump.ko",
+                "qcom-scm.ko",
+                "qcom_wdt_core.ko",
+                "memory_dump_v2.ko",
+            ],
             false,
         ) {
             log::error!("could not preload minidump modules: {e:?}");

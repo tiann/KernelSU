@@ -11,6 +11,9 @@ use std::{
 /// `module_dir` should contain `.ko` files and a `modules.dep` file.
 /// `requested_modules` entries follow the same path rules as `modules.dep`:
 /// absolute paths are used as-is, and relative paths are resolved against `module_dir`.
+/// See also:
+/// https://cs.android.com/android/platform/superproject/+/android-latest-release:system/core/init/first_stage_init.cpp;l=215;drc=f6b6a7513924c37621f52e9468b88ba85c46b0a2
+/// https://cs.android.com/android/platform/superproject/+/android-latest-release:system/core/libmodprobe/libmodprobe.cpp;l=41;drc=da9f36ee4abbfac184fc17378fa4a3137cbc1303
 pub fn load_modules_in_dependency_order(
     module_dir: &Path,
     root_dir: &Path,
