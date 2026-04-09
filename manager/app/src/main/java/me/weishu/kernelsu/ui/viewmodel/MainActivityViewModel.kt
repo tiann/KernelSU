@@ -41,6 +41,7 @@ class MainActivityViewModel : ViewModel() {
             enableBlur = settingRepo.enableBlur,
             enableFloatingBottomBar = settingRepo.enableFloatingBottomBar,
             enableFloatingBottomBarBlur = settingRepo.enableFloatingBottomBarBlur,
+            enableSmoothCorner = settingRepo.enableSmoothCorner,
             uiMode = UiMode.fromValue(settingRepo.uiMode),
         )
     }
@@ -55,6 +56,7 @@ class MainActivityViewModel : ViewModel() {
             "enable_blur",
             "enable_floating_bottom_bar",
             "enable_floating_bottom_bar_blur",
+            "enable_smooth_corner",
             "ui_mode",
         )
     }

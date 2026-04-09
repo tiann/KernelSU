@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +58,6 @@ import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
-import com.kyant.capsule.ContinuousCapsule
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -79,7 +79,7 @@ fun RowScope.FloatingBottomBarItem(
     val scale = LocalFloatingBottomBarTabScale.current
     Column(
         modifier
-            .clip(ContinuousCapsule)
+            .clip(CircleShape)
             .clickable(
                 interactionSource = null,
                 indication = null,
@@ -234,7 +234,7 @@ fun FloatingBottomBar(
                 )
                 .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { ContinuousCapsule },
+                    shape = { CircleShape },
                     effects = {
                         if (isBlurEnabled) {
                             vibrancy()
@@ -281,7 +281,7 @@ fun FloatingBottomBar(
                     .graphicsLayer { translationX = panelOffset }
                     .drawBackdrop(
                         backdrop = backdrop,
-                        shape = { ContinuousCapsule },
+                        shape = { CircleShape },
                         effects = {
                             if (isBlurEnabled) {
                                 val progress = dampedDragAnimation.pressProgress
@@ -324,7 +324,7 @@ fun FloatingBottomBar(
                     .then(dampedDragAnimation.modifier)
                     .drawBackdrop(
                         backdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop),
-                        shape = { ContinuousCapsule },
+                        shape = { CircleShape },
                         effects = {
                             if (isBlurEnabled) {
                                 val progress = dampedDragAnimation.pressProgress

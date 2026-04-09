@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.DesignServices
+import androidx.compose.material.icons.rounded.RoundedCorner
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
@@ -57,19 +58,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.miuix.ScaleDialog
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.keyColorOptions
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.BlurredBar
+import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -80,12 +77,14 @@ import top.yukonga.miuix.kmp.basic.SliderDefaults
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 
 @Composable
@@ -95,334 +94,341 @@ fun ColorPaletteScreenMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlurState = LocalEnableBlur.current
-    val hazeState = remember { HazeState() }
-    val hazeStyle = if (enableBlurState) {
-        HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
-        )
-    } else {
-        HazeStyle.Unspecified
-    }
+    val backdrop = rememberBlurBackdrop(enableBlurState)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     val uiState = state.uiState
     val currentColorMode = state.currentColorMode
     val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                modifier = if (enableBlurState) {
-                    Modifier.defaultHazeEffect(hazeState, hazeStyle)
-                } else {
-                    Modifier
-                },
-                color = if (enableBlurState) Color.Transparent else colorScheme.surface,
-                title = stringResource(R.string.settings_theme),
-                navigationIcon = {
-                    IconButton(
-                        modifier = Modifier.padding(start = 16.dp),
-                        onClick = actions.onBack
-                    ) {
-                        val layoutDirection = LocalLayoutDirection.current
-                        Icon(
-                            modifier = Modifier.graphicsLayer {
-                                if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
-                            },
-                            imageVector = MiuixIcons.Back,
-                            contentDescription = null,
-                            tint = colorScheme.onBackground
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
+            BlurredBar(backdrop) {
+                TopAppBar(
+                    color = barColor,
+                    title = stringResource(R.string.settings_theme),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = actions.onBack
+                        ) {
+                            val layoutDirection = LocalLayoutDirection.current
+                            Icon(
+                                modifier = Modifier.graphicsLayer {
+                                    if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+                                },
+                                imageVector = MiuixIcons.Back,
+                                contentDescription = null,
+                                tint = colorScheme.onBackground
+                            )
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            }
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val showScaleDialog = rememberSaveable { mutableStateOf(false) }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .let { if (enableBlurState) it.hazeSource(state = hazeState) else it }
-                .padding(horizontal = 12.dp),
-            contentPadding = innerPadding,
-            overscrollEffect = null,
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-                ThemePreviewCardMiuix(
-                    keyColor = uiState.keyColor,
-                    isDark = isDark,
-                    miuixMonet = uiState.miuixMonet,
-                    enableFloatingBottomBar = uiState.enableFloatingBottomBar,
-                    enableFloatingBottomBarBlur = uiState.enableFloatingBottomBarBlur,
-                    paletteStyle = state.currentPaletteStyle,
-                    colorSpec = state.currentColorSpec,
-                )
-                Spacer(modifier = Modifier.height(72.dp))
+        Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    .padding(horizontal = 12.dp),
+                contentPadding = innerPadding,
+                overscrollEffect = null,
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(32.dp))
+                    ThemePreviewCardMiuix(
+                        keyColor = uiState.keyColor,
+                        isDark = isDark,
+                        miuixMonet = uiState.miuixMonet,
+                        enableFloatingBottomBar = uiState.enableFloatingBottomBar,
+                        enableFloatingBottomBarBlur = uiState.enableFloatingBottomBarBlur,
+                        paletteStyle = state.currentPaletteStyle,
+                        colorSpec = state.currentColorSpec,
+                    )
+                    Spacer(modifier = Modifier.height(72.dp))
 
-                val themeItems = listOf(
-                    stringResource(id = R.string.settings_theme_mode_system),
-                    stringResource(id = R.string.settings_theme_mode_light),
-                    stringResource(id = R.string.settings_theme_mode_dark),
-                )
-                TabRow(
-                    tabs = themeItems,
-                    selectedTabIndex = (if (uiState.themeMode >= 3) uiState.themeMode - 3 else uiState.themeMode).coerceIn(0, 2),
-                    onTabSelected = { index ->
-                        actions.onSetThemeMode(index)
-                    },
-                    height = 48.dp,
-                )
-
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                ) {
-                    SuperSwitch(
-                        title = stringResource(id = R.string.settings_monet),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.Wallpaper,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_monet),
-                                tint = colorScheme.onBackground
-                            )
+                    val themeItems = listOf(
+                        stringResource(id = R.string.settings_theme_mode_system),
+                        stringResource(id = R.string.settings_theme_mode_light),
+                        stringResource(id = R.string.settings_theme_mode_dark),
+                    )
+                    TabRow(
+                        tabs = themeItems,
+                        selectedTabIndex = (if (uiState.themeMode >= 3) uiState.themeMode - 3 else uiState.themeMode).coerceIn(0, 2),
+                        onTabSelected = { index ->
+                            actions.onSetThemeMode(index)
                         },
-                        checked = uiState.miuixMonet,
-                        onCheckedChange = {
-                            actions.onSetMiuixMonet(it)
-                        }
+                        height = 48.dp,
                     )
 
-                    AnimatedVisibility(
-                        visible = uiState.miuixMonet
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
                     ) {
-                        Column {
-                            val colorItems = listOf(
-                                stringResource(id = R.string.settings_key_color_default),
-                                stringResource(id = R.string.color_red),
-                                stringResource(id = R.string.color_pink),
-                                stringResource(id = R.string.color_purple),
-                                stringResource(id = R.string.color_deep_purple),
-                                stringResource(id = R.string.color_indigo),
-                                stringResource(id = R.string.color_blue),
-                                stringResource(id = R.string.color_cyan),
-                                stringResource(id = R.string.color_teal),
-                                stringResource(id = R.string.color_green),
-                                stringResource(id = R.string.color_yellow),
-                                stringResource(id = R.string.color_amber),
-                                stringResource(id = R.string.color_orange),
-                                stringResource(id = R.string.color_brown),
-                                stringResource(id = R.string.color_blue_grey),
-                                stringResource(id = R.string.color_sakura),
-                            )
-                            val colorValues = listOf(0) + keyColorOptions
-                            SuperDropdown(
-                                title = stringResource(id = R.string.settings_key_color),
-                                items = colorItems,
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_monet),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Wallpaper,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_monet),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.miuixMonet,
+                            onCheckedChange = {
+                                actions.onSetMiuixMonet(it)
+                            }
+                        )
+
+                        AnimatedVisibility(
+                            visible = uiState.miuixMonet
+                        ) {
+                            Column {
+                                val colorItems = listOf(
+                                    stringResource(id = R.string.settings_key_color_default),
+                                    stringResource(id = R.string.color_red),
+                                    stringResource(id = R.string.color_pink),
+                                    stringResource(id = R.string.color_purple),
+                                    stringResource(id = R.string.color_deep_purple),
+                                    stringResource(id = R.string.color_indigo),
+                                    stringResource(id = R.string.color_blue),
+                                    stringResource(id = R.string.color_cyan),
+                                    stringResource(id = R.string.color_teal),
+                                    stringResource(id = R.string.color_green),
+                                    stringResource(id = R.string.color_yellow),
+                                    stringResource(id = R.string.color_amber),
+                                    stringResource(id = R.string.color_orange),
+                                    stringResource(id = R.string.color_brown),
+                                    stringResource(id = R.string.color_blue_grey),
+                                    stringResource(id = R.string.color_sakura),
+                                )
+                                val colorValues = listOf(0) + keyColorOptions
+                                OverlayDropdownPreference(
+                                    title = stringResource(id = R.string.settings_key_color),
+                                    items = colorItems,
+                                    startAction = {
+                                        Icon(
+                                            Icons.Rounded.Colorize,
+                                            modifier = Modifier.padding(end = 6.dp),
+                                            contentDescription = stringResource(id = R.string.settings_key_color),
+                                            tint = colorScheme.onBackground
+                                        )
+                                    },
+                                    selectedIndex = colorValues.indexOf(uiState.keyColor).takeIf { it >= 0 } ?: 0,
+                                    onSelectedIndexChange = { index ->
+                                        actions.onSetKeyColor(colorValues[index])
+                                    }
+                                )
+
+                                AnimatedVisibility(
+                                    visible = uiState.keyColor != 0
+                                ) {
+                                    Column {
+                                        val styles = PaletteStyle.entries
+                                        OverlayDropdownPreference(
+                                            title = stringResource(R.string.settings_color_style),
+                                            startAction = {
+                                                Icon(
+                                                    Icons.Rounded.Style,
+                                                    modifier = Modifier.padding(end = 6.dp),
+                                                    contentDescription = stringResource(id = R.string.settings_color_style),
+                                                    tint = colorScheme.onBackground
+                                                )
+                                            },
+                                            items = styles.map { it.name },
+                                            selectedIndex = styles.indexOfFirst { it.name == uiState.colorStyle }.coerceAtLeast(0),
+                                            onSelectedIndexChange = { index ->
+                                                actions.onSetColorStyle(styles[index].name)
+                                            }
+                                        )
+
+                                        val specs = ColorSpec.SpecVersion.entries
+                                        OverlayDropdownPreference(
+                                            title = stringResource(R.string.settings_color_spec),
+                                            startAction = {
+                                                Icon(
+                                                    Icons.Rounded.DesignServices,
+                                                    modifier = Modifier.padding(end = 6.dp),
+                                                    contentDescription = stringResource(id = R.string.settings_color_spec),
+                                                    tint = colorScheme.onBackground
+                                                )
+                                            },
+                                            items = specs.map { it.name },
+                                            selectedIndex = specs.indexOfFirst { it.name == uiState.colorSpec }.coerceAtLeast(0),
+                                            onSelectedIndexChange = { index ->
+                                                actions.onSetColorSpec(specs[index].name)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_enable_blur),
+                                summary = stringResource(id = R.string.settings_enable_blur_summary),
                                 startAction = {
                                     Icon(
-                                        Icons.Rounded.Colorize,
+                                        Icons.Rounded.BlurOn,
                                         modifier = Modifier.padding(end = 6.dp),
-                                        contentDescription = stringResource(id = R.string.settings_key_color),
+                                        contentDescription = stringResource(id = R.string.settings_enable_blur),
                                         tint = colorScheme.onBackground
                                     )
                                 },
-                                selectedIndex = colorValues.indexOf(uiState.keyColor).takeIf { it >= 0 } ?: 0,
-                                onSelectedIndexChange = { index ->
-                                    actions.onSetKeyColor(colorValues[index])
+                                checked = uiState.enableBlur,
+                                onCheckedChange = {
+                                    actions.onSetEnableBlur(it)
                                 }
                             )
-
-                            AnimatedVisibility(
-                                visible = uiState.keyColor != 0
-                            ) {
-                                Column {
-                                    val styles = PaletteStyle.entries
-                                    SuperDropdown(
-                                        title = stringResource(R.string.settings_color_style),
-                                        startAction = {
-                                            Icon(
-                                                Icons.Rounded.Style,
-                                                modifier = Modifier.padding(end = 6.dp),
-                                                contentDescription = stringResource(id = R.string.settings_color_style),
-                                                tint = colorScheme.onBackground
-                                            )
-                                        },
-                                        items = styles.map { it.name },
-                                        selectedIndex = styles.indexOfFirst { it.name == uiState.colorStyle }.coerceAtLeast(0),
-                                        onSelectedIndexChange = { index ->
-                                            actions.onSetColorStyle(styles[index].name)
-                                        }
+                        }
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_floating_bottom_bar),
+                            summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.CallToAction,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.enableFloatingBottomBar,
+                            onCheckedChange = {
+                                actions.onSetEnableFloatingBottomBar(it)
+                            }
+                        )
+                        AnimatedVisibility(visible = uiState.enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_enable_glass),
+                                summary = stringResource(id = R.string.settings_enable_glass_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.WaterDrop,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_enable_glass),
+                                        tint = colorScheme.onBackground
                                     )
-
-                                    val specs = ColorSpec.SpecVersion.entries
-                                    SuperDropdown(
-                                        title = stringResource(R.string.settings_color_spec),
-                                        startAction = {
-                                            Icon(
-                                                Icons.Rounded.DesignServices,
-                                                modifier = Modifier.padding(end = 6.dp),
-                                                contentDescription = stringResource(id = R.string.settings_color_spec),
-                                                tint = colorScheme.onBackground
-                                            )
-                                        },
-                                        items = specs.map { it.name },
-                                        selectedIndex = specs.indexOfFirst { it.name == uiState.colorSpec }.coerceAtLeast(0),
-                                        onSelectedIndexChange = { index ->
-                                            actions.onSetColorSpec(specs[index].name)
-                                        }
-                                    )
+                                },
+                                checked = uiState.enableFloatingBottomBarBlur,
+                                onCheckedChange = {
+                                    actions.onSetEnableFloatingBottomBarBlur(it)
                                 }
-                            }
+                            )
                         }
-                    }
-                }
-
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_blur),
-                            summary = stringResource(id = R.string.settings_enable_blur_summary),
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_smooth_corner),
+                            summary = stringResource(id = R.string.settings_smooth_corner_summary),
                             startAction = {
                                 Icon(
-                                    Icons.Rounded.BlurOn,
+                                    Icons.Rounded.RoundedCorner,
                                     modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_blur),
+                                    contentDescription = stringResource(id = R.string.settings_smooth_corner),
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            checked = uiState.enableBlur,
+                            checked = uiState.enableSmoothCorner,
                             onCheckedChange = {
-                                actions.onSetEnableBlur(it)
-                            }
-                        )
-                    }
-                    SuperSwitch(
-                        title = stringResource(id = R.string.settings_floating_bottom_bar),
-                        summary = stringResource(id = R.string.settings_floating_bottom_bar_summary),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.CallToAction,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_floating_bottom_bar),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        checked = uiState.enableFloatingBottomBar,
-                        onCheckedChange = {
-                            actions.onSetEnableFloatingBottomBar(it)
-                        }
-                    )
-                    AnimatedVisibility(visible = uiState.enableFloatingBottomBar && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_glass),
-                            summary = stringResource(id = R.string.settings_enable_glass_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.WaterDrop,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_glass),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enableFloatingBottomBarBlur,
-                            onCheckedChange = {
-                                actions.onSetEnableFloatingBottomBarBlur(it)
-                            }
-                        )
-                    }
-                }
-
-                Card(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        SuperSwitch(
-                            title = stringResource(id = R.string.settings_enable_predictive_back),
-                            summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.MenuOpen,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
-                                    tint = colorScheme.onBackground
-                                )
-                            },
-                            checked = uiState.enablePredictiveBack,
-                            onCheckedChange = {
-                                actions.onSetEnablePredictiveBack(it)
+                                actions.onSetEnableSmoothCorner(it)
                             }
                         )
                     }
 
-                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
-                    SuperArrow(
-                        title = stringResource(id = R.string.settings_page_scale),
-                        summary = stringResource(id = R.string.settings_page_scale_summary),
-                        startAction = {
-                            Icon(
-                                Icons.Rounded.AspectRatio,
-                                modifier = Modifier.padding(end = 6.dp),
-                                contentDescription = stringResource(id = R.string.settings_page_scale),
-                                tint = colorScheme.onBackground
-                            )
-                        },
-                        endActions = {
-                            Text(
-                                text = "${(sliderValue * 100).toInt()}%",
-                                color = colorScheme.onSurfaceVariantActions,
-                            )
-                        },
-                        onClick = { showScaleDialog.value = !showScaleDialog.value },
-                        holdDownState = showScaleDialog.value,
-                        bottomAction = {
-                            Slider(
-                                value = sliderValue,
-                                onValueChange = {
-                                    sliderValue = it
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_enable_predictive_back),
+                                summary = stringResource(id = R.string.settings_enable_predictive_back_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.AutoMirrored.Rounded.MenuOpen,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_enable_predictive_back),
+                                        tint = colorScheme.onBackground
+                                    )
                                 },
-                                onValueChangeFinished = {
-                                    actions.onSetPageScale(sliderValue)
-                                },
-                                valueRange = 0.8f..1.1f,
-                                showKeyPoints = true,
-                                keyPoints = listOf(0.8f, 0.9f, 1f, 1.1f),
-                                magnetThreshold = 0.01f,
-                                hapticEffect = SliderDefaults.SliderHapticEffect.Step,
+                                checked = uiState.enablePredictiveBack,
+                                onCheckedChange = {
+                                    actions.onSetEnablePredictiveBack(it)
+                                }
                             )
-                        },
-                    )
-                    ScaleDialog(
-                        show = showScaleDialog.value,
-                        onDismissRequest = { showScaleDialog.value = false },
-                        volumeState = { uiState.pageScale },
-                        onVolumeChange = {
-                            actions.onSetPageScale(it)
                         }
+
+                        var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+                        ArrowPreference(
+                            title = stringResource(id = R.string.settings_page_scale),
+                            summary = stringResource(id = R.string.settings_page_scale_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.AspectRatio,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_page_scale),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            endActions = {
+                                Text(
+                                    text = "${(sliderValue * 100).toInt()}%",
+                                    color = colorScheme.onSurfaceVariantActions,
+                                )
+                            },
+                            onClick = { showScaleDialog.value = !showScaleDialog.value },
+                            holdDownState = showScaleDialog.value,
+                            bottomAction = {
+                                Slider(
+                                    value = sliderValue,
+                                    onValueChange = {
+                                        sliderValue = it
+                                    },
+                                    onValueChangeFinished = {
+                                        actions.onSetPageScale(sliderValue)
+                                    },
+                                    valueRange = 0.8f..1.1f,
+                                    showKeyPoints = true,
+                                    keyPoints = listOf(0.8f, 0.9f, 1f, 1.1f),
+                                    magnetThreshold = 0.01f,
+                                    hapticEffect = SliderDefaults.SliderHapticEffect.Step,
+                                )
+                            },
+                        )
+                        ScaleDialog(
+                            show = showScaleDialog.value,
+                            onDismissRequest = { showScaleDialog.value = false },
+                            volumeState = { uiState.pageScale },
+                            onVolumeChange = {
+                                actions.onSetPageScale(it)
+                            }
+                        )
+                    }
+                }
+                item {
+                    Spacer(
+                        Modifier.height(
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() +
+                                    12.dp
+                        )
                     )
                 }
-            }
-            item {
-                Spacer(
-                    Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding() +
-                                12.dp
-                    )
-                )
             }
         }
     }
@@ -477,9 +483,9 @@ private fun ThemePreviewCardMiuix(
             modifier = Modifier
                 .fillMaxWidth(0.4f)
                 .aspectRatio(screenRatio)
-                .clip(ContinuousRoundedRectangle(20.dp))
+                .clip(miuixShape(20.dp))
                 .background(bgColor)
-                .border(1.dp, colorScheme.outline, ContinuousRoundedRectangle(20.dp))
+                .border(1.dp, colorScheme.outline, miuixShape(20.dp))
         ) {
             Column {
                 Row(

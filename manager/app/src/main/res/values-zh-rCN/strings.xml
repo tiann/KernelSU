@@ -228,6 +228,8 @@
     <string name="settings_floating_bottom_bar_summary">使用 Apple 风格的悬浮底栏</string>
     <string name="settings_enable_glass">液态玻璃</string>
     <string name="settings_enable_glass_summary">启用悬浮底栏的液态玻璃效果</string>
+    <string name="settings_smooth_corner">平滑圆角</string>
+    <string name="settings_smooth_corner_summary">启用全局平滑圆角效果</string>
     <string name="show_only_primary_user_apps">只显示主用户应用</string>
     <string name="settings_auto_jailbreak">自动越狱</string>
     <string name="settings_auto_jailbreak_summary">开机检测到 Permissive SELinux 时自动使用 Magica 提权。需要授予本应用自启动权限。</string>

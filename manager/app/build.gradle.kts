@@ -9,6 +9,7 @@ plugins {
 }
 
 val androidCompileSdkVersion: Int by rootProject.extra
+val androidCompileSdkVersionMinor: Int by rootProject.extra
 val androidCompileNdkVersion: String by rootProject.extra
 val androidBuildToolsVersion: String by rootProject.extra
 val androidMinSdkVersion: Int by rootProject.extra
@@ -104,10 +105,14 @@ android {
     androidResources {
         generateLocaleConfig = true
     }
-
-    compileSdk = androidCompileSdkVersion
-    ndkVersion = androidCompileNdkVersion
+    compileSdk {
+        version =
+            release(androidCompileSdkVersion) {
+                minorApiLevel = androidCompileSdkVersionMinor
+            }
+    }
     buildToolsVersion = androidBuildToolsVersion
+    ndkVersion = androidCompileNdkVersion
 
     defaultConfig {
         minSdk = androidMinSdkVersion
@@ -189,16 +194,17 @@ dependencies {
 
     implementation(libs.hiddenapibypass)
 
-    implementation(libs.miuix)
+    implementation(libs.miuix.ui)
     implementation(libs.miuix.icons)
     implementation(libs.miuix.navigation3.ui)
+    implementation(libs.miuix.preference)
+    implementation(libs.miuix.blur)
+    implementation(libs.miuix.shapes)
 
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 
     implementation(libs.backdrop)
-    implementation(libs.capsule)
-    implementation(libs.haze)
 
     implementation(libs.material.kolor)
 

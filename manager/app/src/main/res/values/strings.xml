@@ -249,6 +249,8 @@
     <string name="settings_floating_bottom_bar_summary">Use Apple style floating bottom bar.</string>
     <string name="settings_enable_glass">Liquid glass</string>
     <string name="settings_enable_glass_summary">Enable liquid glass effect for floating bottom bar.</string>
+    <string name="settings_smooth_corner">Smooth corner</string>
+    <string name="settings_smooth_corner_summary">Enable global smooth rounded corners.</string>
     <string name="show_only_primary_user_apps">Show only primary user apps</string>
     <string name="settings_auto_jailbreak">Auto jailbreak</string>
     <string name="settings_auto_jailbreak_summary">Automatically use Magica to escalate privileges when Permissive SELinux is detected at boot. Requires granting autostart permission to this app.</string>

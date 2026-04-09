@@ -57,6 +57,7 @@ fun MiuixKernelSUTheme(
 
     MiuixTheme(
         controller = controller,
+        smoothRounding = appSettings.enableSmoothCorner,
         content = {
             LaunchedEffect(darkTheme) {
                 val window = (context as? Activity)?.window ?: return@LaunchedEffect

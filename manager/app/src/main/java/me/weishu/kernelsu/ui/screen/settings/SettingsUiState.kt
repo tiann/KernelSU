@@ -21,6 +21,7 @@ data class SettingsUiState(
     val enableFloatingBottomBarBlur: Boolean = false,
     val pageScale: Float = 1.0f,
     val enableWebDebugging: Boolean = false,
+    val enableSmoothCorner: Boolean = true,
 
     // Su Compat
     val suCompatStatus: String = "",

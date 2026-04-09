@@ -60,15 +60,13 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
+import me.weishu.kernelsu.ui.component.ListPopupDefaults
 import me.weishu.kernelsu.ui.component.miuix.DropdownItem
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.BlurredBar
+import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -76,7 +74,6 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
@@ -86,10 +83,12 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState
-import top.yukonga.miuix.kmp.extra.SuperListPopup
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Copy
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
@@ -138,15 +137,9 @@ fun AppProfileTemplateScreenMiuix(
         animationSpec = tween(durationMillis = 350)
     )
     val enableBlur = LocalEnableBlur.current
-    val hazeState = remember { HazeState() }
-    val hazeStyle = if (enableBlur) {
-        HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
-        )
-    } else {
-        HazeStyle.Unspecified
-    }
+    val backdrop = rememberBlurBackdrop(enableBlur)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
 
     Scaffold(
         topBar = {
@@ -155,9 +148,8 @@ fun AppProfileTemplateScreenMiuix(
                 onImport = actions.onImport,
                 onExport = actions.onExport,
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle,
-                enableBlur = enableBlur,
+                backdrop = backdrop,
+                barColor = barColor,
             )
         },
         floatingActionButton = {
@@ -236,34 +228,35 @@ fun AppProfileTemplateScreenMiuix(
                 end = innerPadding.calculateEndPadding(layoutDirection)
             ),
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .scrollEndHaptic()
-                    .overScrollVertical()
-                    .nestedScroll(nestedScrollConnection)
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                    .let { if (enableBlur) it.hazeSource(state = hazeState) else it }
-                    .padding(horizontal = 12.dp),
-                contentPadding = innerPadding,
-                overscrollEffect = null
-            ) {
-                item {
-                    Spacer(Modifier.height(12.dp))
-                }
-                items(state.templateList, key = { it.id }) { app ->
-                    TemplateItem(
-                        template = app,
-                        onClick = { actions.onOpenTemplate(app) },
-                    )
-                }
-                item {
-                    Spacer(
-                        Modifier.height(
-                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+            Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .scrollEndHaptic()
+                        .overScrollVertical()
+                        .nestedScroll(nestedScrollConnection)
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .padding(horizontal = 12.dp),
+                    contentPadding = innerPadding,
+                    overscrollEffect = null
+                ) {
+                    item {
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    items(state.templateList, key = { it.id }) { app ->
+                        TemplateItem(
+                            template = app,
+                            onClick = { actions.onOpenTemplate(app) },
                         )
-                    )
+                    }
+                    item {
+                        Spacer(
+                            Modifier.height(
+                                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                        WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -380,79 +373,73 @@ private fun TopBar(
     onImport: () -> Unit = {},
     onExport: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle,
-    enableBlur: Boolean
+    backdrop: LayerBackdrop?,
+    barColor: Color,
 ) {
-    TopAppBar(
-        modifier = if (enableBlur) {
-            Modifier.defaultHazeEffect(hazeState, hazeStyle)
-        } else {
-            Modifier
-        },
-        color = if (enableBlur) Color.Transparent else colorScheme.surface,
-        title = stringResource(R.string.settings_profile_template),
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onBack
-            ) {
-                val layoutDirection = LocalLayoutDirection.current
-                Icon(
-                    modifier = Modifier.graphicsLayer {
-                        if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+    BlurredBar(backdrop) {
+        TopAppBar(
+            color = barColor,
+            title = stringResource(R.string.settings_profile_template),
+            navigationIcon = {
+                IconButton(
+                    onClick = onBack
+                ) {
+                    val layoutDirection = LocalLayoutDirection.current
+                    Icon(
+                        modifier = Modifier.graphicsLayer {
+                            if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+                        },
+                        imageVector = MiuixIcons.Back,
+                        contentDescription = null,
+                        tint = colorScheme.onBackground
+                    )
+                }
+            },
+            actions = {
+                val showTopPopup = remember { mutableStateOf(false) }
+                OverlayListPopup(
+                    show = showTopPopup.value,
+                    popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                    alignment = PopupPositionProvider.Align.TopEnd,
+                    onDismissRequest = {
+                        showTopPopup.value = false
                     },
-                    imageVector = MiuixIcons.Back,
-                    contentDescription = null,
-                    tint = colorScheme.onBackground
-                )
-            }
-        },
-        actions = {
-            val showTopPopup = remember { mutableStateOf(false) }
-            SuperListPopup(
-                show = showTopPopup.value,
-                popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                alignment = PopupPositionProvider.Align.TopEnd,
-                onDismissRequest = {
-                    showTopPopup.value = false
-                },
-                content = {
-                    ListPopupColumn {
-                        val items = listOf(
-                            stringResource(id = R.string.app_profile_import_from_clipboard),
-                            stringResource(id = R.string.app_profile_export_to_clipboard)
-                        )
-                        items.forEachIndexed { index, text ->
-                            DropdownItem(
-                                text = text,
-                                optionSize = items.size,
-                                index = index,
-                                onSelectedIndexChange = { selectedIndex ->
-                                    if (selectedIndex == 0) {
-                                        onImport()
-                                    } else {
-                                        onExport()
-                                    }
-                                    showTopPopup.value = false
-                                }
+                    content = {
+                        ListPopupColumn {
+                            val items = listOf(
+                                stringResource(id = R.string.app_profile_import_from_clipboard),
+                                stringResource(id = R.string.app_profile_export_to_clipboard)
                             )
+                            items.forEachIndexed { index, text ->
+                                DropdownItem(
+                                    text = text,
+                                    optionSize = items.size,
+                                    index = index,
+                                    onSelectedIndexChange = { selectedIndex ->
+                                        if (selectedIndex == 0) {
+                                            onImport()
+                                        } else {
+                                            onExport()
+                                        }
+                                        showTopPopup.value = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-            )
-            IconButton(
-                modifier = Modifier.padding(end = 16.dp),
-                onClick = { showTopPopup.value = true },
-                holdDownState = showTopPopup.value
-            ) {
-                Icon(
-                    imageVector = MiuixIcons.Copy,
-                    contentDescription = stringResource(id = R.string.app_profile_import_export),
-                    tint = colorScheme.onBackground
                 )
-            }
-        },
-        scrollBehavior = scrollBehavior
-    )
+                IconButton(
+                    onClick = { showTopPopup.value = true },
+                    holdDownState = showTopPopup.value
+                ) {
+                    Icon(
+                        imageVector = MiuixIcons.Copy,
+                        contentDescription = stringResource(id = R.string.app_profile_import_export),
+                        tint = colorScheme.onBackground
+                    )
+                }
+            },
+            scrollBehavior = scrollBehavior
+        )
+    }
 }

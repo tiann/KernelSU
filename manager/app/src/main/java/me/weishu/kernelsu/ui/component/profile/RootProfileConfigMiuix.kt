@@ -35,11 +35,11 @@ import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
-import top.yukonga.miuix.kmp.extra.CheckboxLocation
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
-import top.yukonga.miuix.kmp.extra.SuperDialog
-import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.CheckboxLocation
+import top.yukonga.miuix.kmp.preference.CheckboxPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 
 @Composable
@@ -163,7 +163,7 @@ private fun GroupsPanel(
 
     val currentSelection = remember { mutableStateOf(selected.toSet()) }
 
-    SuperDialog(
+    OverlayDialog(
         show = showDialog.value,
         title = stringResource(R.string.profile_groups),
         summary = "${currentSelection.value.size} / 32",
@@ -173,7 +173,7 @@ private fun GroupsPanel(
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                     items(groups) { group ->
-                        SuperCheckbox(
+                        CheckboxPreference(
                             title = group.display,
                             summary = group.desc,
                             insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
@@ -225,7 +225,7 @@ private fun GroupsPanel(
     } else {
         selected.joinToString(separator = ",", transform = { it.display })
     }
-    SuperArrow(
+    ArrowPreference(
         enabled = enabled,
         title = stringResource(R.string.profile_groups),
         summary = tag,
@@ -242,7 +242,7 @@ private fun MountNameSpacePanel(
     profile: Natives.Profile,
     onMntNamespaceChange: (namespaceType: Int) -> Unit
 ) {
-    SuperDropdown(
+    OverlayDropdownPreference(
         enabled = enabled,
         title = stringResource(id = R.string.profile_namespace),
         items = listOf(
@@ -270,7 +270,7 @@ private fun CapsPanel(
 
     val currentSelection = remember { mutableStateOf(selected.toSet()) }
 
-    SuperDialog(
+    OverlayDialog(
         show = showDialog.value,
         title = stringResource(R.string.profile_capabilities),
         onDismissRequest = { showDialog.value = false },
@@ -279,7 +279,7 @@ private fun CapsPanel(
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                     items(caps) { cap ->
-                        SuperCheckbox(
+                        CheckboxPreference(
                             title = cap.display,
                             summary = cap.desc,
                             insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
@@ -331,7 +331,7 @@ private fun CapsPanel(
     } else {
         selected.joinToString(separator = ",", transform = { it.display })
     }
-    SuperArrow(
+    ArrowPreference(
         enabled = enabled,
         title = stringResource(R.string.profile_capabilities),
         summary = tag,
@@ -359,7 +359,7 @@ private fun SELinuxPanel(
     }
     val isRulesValid = remember(rules) { isSepolicyValid(rules) }
 
-    SuperDialog(
+    OverlayDialog(
         show = showDialog.value,
         title = stringResource(R.string.profile_selinux_context),
         onDismissRequest = { showDialog.value = false },
@@ -427,7 +427,7 @@ private fun SELinuxPanel(
         }
     )
 
-    SuperArrow(
+    ArrowPreference(
         enabled = enabled,
         title = stringResource(R.string.profile_selinux_context),
         summary = profile.context,
