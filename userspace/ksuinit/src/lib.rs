@@ -3,7 +3,8 @@ use goblin::elf::{Elf, section_header, sym::Sym};
 use rustix::{cstr, system::init_module};
 use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
-use std::fs;
+use std::fs::{self, File};
+use std::io::{BufRead, BufReader};
 
 struct Kptr {
     value: String,
@@ -23,31 +24,66 @@ impl Drop for Kptr {
     }
 }
 
-fn parse_kallsyms() -> Result<HashMap<String, u64>> {
-    let _dontdrop = Kptr::new()?;
+pub struct KptrOwnedIter<I> {
+    _kptr: Kptr,
+    iter: I,
+}
 
-    let allsyms = fs::read_to_string("/proc/kallsyms")?
+impl<I: Iterator> Iterator for KptrOwnedIter<I> {
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next()
+    }
+}
+
+pub fn kernel_symbols_iter() -> Result<impl Iterator<Item = (String, u64)>> {
+    let kptr = Kptr::new()?;
+
+    let iter = BufReader::new(File::open("/proc/kallsyms")?)
         .lines()
-        .map(|line| line.split_whitespace())
-        .filter_map(|mut splits| {
-            splits
-                .next()
-                .and_then(|addr| u64::from_str_radix(addr, 16).ok())
-                .and_then(|addr| splits.nth(1).map(|symbol| (symbol, addr)))
-        })
-        .map(|(symbol, addr)| {
-            (
-                symbol
-                    .find("$")
-                    .or_else(|| symbol.find(".llvm."))
-                    .map_or(symbol, |pos| &symbol[0..pos])
-                    .to_owned(),
-                addr,
-            )
-        })
-        .collect::<HashMap<_, _>>();
+        // https://github.com/torvalds/linux/blob/7f87a5ea75f011d2c9bc8ac0167e5e2d1adb1594/kernel/kallsyms.c#L727
+        // We can stop read as soon as we read all kernel symbols
+        .map_while(|line| {
+            line.ok().and_then(|line| {
+                let mut splits = line.split_whitespace();
+                splits
+                    .next()
+                    .and_then(|addr| u64::from_str_radix(addr, 16).ok())
+                    .and_then(|addr| {
+                        splits
+                            .nth(1)
+                            .take_if(|_| splits.next().is_none()) // stop at module symbols
+                            .map(|symbol| {
+                                (
+                                    symbol
+                                        .find("$")
+                                        .or_else(|| symbol.find(".llvm."))
+                                        .map(|pos| &symbol[0..pos])
+                                        .unwrap_or(symbol)
+                                        .to_owned(),
+                                    addr,
+                                )
+                            })
+                    })
+            })
+        });
 
-    Ok(allsyms)
+    Ok(KptrOwnedIter { _kptr: kptr, iter })
+}
+
+pub fn for_each_kernel_symbols<F: FnMut(&(String, u64)) -> Result<bool>>(mut f: F) -> Result<()> {
+    for item in kernel_symbols_iter()? {
+        if !f(&item)? {
+            break;
+        }
+    }
+    Ok(())
+}
+
+/// Parse `/proc/kallsyms` and return a symbol -> address map.
+pub fn parse_kallsyms() -> Result<HashMap<String, u64>> {
+    Ok(kernel_symbols_iter()?.collect::<HashMap<_, _>>())
 }
 
 /// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
@@ -55,11 +91,10 @@ fn parse_kallsyms() -> Result<HashMap<String, u64>> {
 pub fn load_module(data: &[u8]) -> Result<()> {
     let mut buffer = data.to_vec();
     let elf = Elf::parse(&buffer)?;
+    let ctx = *elf.syms.ctx();
 
-    let kernel_symbols = parse_kallsyms().context("Cannot parse kallsyms")?;
-
-    let mut modifications = Vec::new();
-    for (index, mut sym) in elf.syms.iter().enumerate() {
+    let mut unresolved_symbols: HashMap<String, (Sym, usize)> = HashMap::new();
+    for (index, sym) in elf.syms.iter().enumerate() {
         if index == 0 {
             continue;
         }
@@ -73,19 +108,27 @@ pub fn load_module(data: &[u8]) -> Result<()> {
         };
 
         let offset = elf.syms.offset() + index * Sym::size_with(elf.syms.ctx());
-        let Some(real_addr) = kernel_symbols.get(name) else {
-            log::warn!("Cannot find symbol: {}", &name);
-            continue;
-        };
-        sym.st_shndx = section_header::SHN_ABS as usize;
-        sym.st_value = *real_addr;
-        modifications.push((sym, offset));
+        unresolved_symbols.insert(name.to_owned(), (sym, offset));
     }
 
-    let ctx = *elf.syms.ctx();
-    for ele in modifications {
-        buffer.pwrite_with(ele.0, ele.1, ctx)?;
+    if !unresolved_symbols.is_empty() {
+        for_each_kernel_symbols(|(symbol, addr)| {
+            if let Some((mut sym, offset)) = unresolved_symbols.remove(symbol) {
+                sym.st_shndx = section_header::SHN_ABS as usize;
+                sym.st_value = *addr;
+                log::debug!("{} -> {:x}", symbol, *addr);
+                buffer.pwrite_with(sym, offset, ctx)?;
+            }
+
+            Ok(!unresolved_symbols.is_empty())
+        })
+        .context("Cannot parse kallsyms")?;
     }
+
+    for name in unresolved_symbols.keys() {
+        log::warn!("Cannot find symbol: {}", name);
+    }
+
     let param = if fs::exists("/ksu_allow_shell").unwrap_or(false) {
         log::warn!("ksu allow shell at init!");
         cstr!("allow_shell=1")

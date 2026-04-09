@@ -3,6 +3,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
     process::Command,
+    time::Instant,
 };
 
 use crate::ksucalls;
@@ -61,6 +62,22 @@ pub fn insmod(module: &Path) -> Result<()> {
         .with_context(|| format!("load module failed: {}", module.display()))?;
 
     println!("Loaded kernel module: {}", module.display());
+    Ok(())
+}
+
+pub fn kallsyms() -> Result<()> {
+    let started = Instant::now();
+    let symbols = ksuinit::parse_kallsyms().context("parse kallsyms failed")?;
+    let elapsed = started.elapsed();
+
+    println!("kallsyms parse result:");
+    println!(
+        "  elapsed: {}.{:03} ms",
+        elapsed.as_millis(),
+        elapsed.subsec_micros() % 1000
+    );
+    println!("  symbol_count: {}", symbols.len());
+
     Ok(())
 }
 

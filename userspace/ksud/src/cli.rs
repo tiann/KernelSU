@@ -199,6 +199,9 @@ enum Debug {
         module: PathBuf,
     },
 
+    /// Benchmark parsing /proc/kallsyms
+    Kallsyms,
+
     /// Process mark management
     Mark {
         #[command(subcommand)]
@@ -684,6 +687,7 @@ pub fn run() -> Result<()> {
                 utils::ensure_binary(&path, &data, false)
             }
             Debug::Insmod { module } => debug::insmod(&module),
+            Debug::Kallsyms => debug::kallsyms(),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),
