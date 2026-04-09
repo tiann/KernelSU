@@ -55,6 +55,7 @@ fun ColorPaletteScreen() {
             KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
             activity?.recreate()
         },
+        onSetEnableSmoothCorner = viewModel::setEnableSmoothCorner,
         onSetPageScale = viewModel::setPageScale,
     )
 

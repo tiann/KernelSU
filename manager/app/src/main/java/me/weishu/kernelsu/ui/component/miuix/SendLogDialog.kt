@@ -31,8 +31,8 @@ import me.weishu.kernelsu.ui.util.getBugreportFile
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import java.time.LocalDateTime
@@ -65,7 +65,7 @@ fun SendLogDialog(
             }
         }
     }
-    SuperDialog(
+    OverlayDialog(
         show = show,
         onDismissRequest = onDismissRequest,
         insideMargin = DpSize(0.dp, 0.dp),
@@ -80,7 +80,7 @@ fun SendLogDialog(
                 textAlign = TextAlign.Center,
                 color = colorScheme.onSurface
             )
-            SuperArrow(
+            ArrowPreference(
                 title = stringResource(id = R.string.save_log),
                 startAction = {
                     Icon(
@@ -98,7 +98,7 @@ fun SendLogDialog(
                 },
                 insideMargin = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
             )
-            SuperArrow(
+            ArrowPreference(
                 title = stringResource(id = R.string.send_log),
                 startAction = {
                     Icon(

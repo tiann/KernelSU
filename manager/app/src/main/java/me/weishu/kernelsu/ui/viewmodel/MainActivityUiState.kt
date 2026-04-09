@@ -11,5 +11,6 @@ data class MainActivityUiState(
     val enableBlur: Boolean,
     val enableFloatingBottomBar: Boolean,
     val enableFloatingBottomBarBlur: Boolean,
+    val enableSmoothCorner: Boolean,
     val uiMode: UiMode,
 )

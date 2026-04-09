@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen.templateeditor
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -28,15 +29,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.miuix.EditText
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.BlurredBar
+import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -44,6 +42,8 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.Delete
@@ -63,15 +63,9 @@ fun TemplateEditorScreenMiuix(
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlur = LocalEnableBlur.current
-    val hazeState = remember { HazeState() }
-    val hazeStyle = if (enableBlur) {
-        HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
-        )
-    } else {
-        HazeStyle.Unspecified
-    }
+    val backdrop = rememberBlurBackdrop(enableBlur)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
 
     Scaffold(
         topBar = {
@@ -89,71 +83,71 @@ fun TemplateEditorScreenMiuix(
                 onDelete = actions.onDelete,
                 onSave = actions.onSave,
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle,
-                enableBlur = enableBlur,
+                backdrop = backdrop,
+                barColor = barColor,
             )
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .scrollEndHaptic()
-                .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
-            contentPadding = innerPadding,
-            overscrollEffect = null
-        ) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                ) {
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_name),
-                        text = state.template.name,
-                        enabled = !state.readOnly,
-                        onValueChange = actions.onNameChange,
-                    )
+        Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .scrollEndHaptic()
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = innerPadding,
+                overscrollEffect = null
+            ) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                    ) {
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_name),
+                            text = state.template.name,
+                            enabled = !state.readOnly,
+                            onValueChange = actions.onNameChange,
+                        )
 
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_id),
-                        text = state.template.id,
-                        isError = state.idErrorHint.isNotEmpty(),
-                        enabled = !state.readOnly,
-                        onValueChange = actions.onIdChange,
-                    )
-                    TextEdit(
-                        label = stringResource(R.string.module_author),
-                        text = state.template.author,
-                        enabled = !state.readOnly,
-                        onValueChange = actions.onAuthorChange,
-                    )
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_id),
+                            text = state.template.id,
+                            isError = state.idErrorHint.isNotEmpty(),
+                            enabled = !state.readOnly,
+                            onValueChange = actions.onIdChange,
+                        )
+                        TextEdit(
+                            label = stringResource(R.string.module_author),
+                            text = state.template.author,
+                            enabled = !state.readOnly,
+                            onValueChange = actions.onAuthorChange,
+                        )
 
-                    TextEdit(
-                        label = stringResource(id = R.string.app_profile_template_description),
-                        text = state.template.description,
-                        enabled = !state.readOnly,
-                        onValueChange = actions.onDescriptionChange,
-                    )
+                        TextEdit(
+                            label = stringResource(id = R.string.app_profile_template_description),
+                            text = state.template.description,
+                            enabled = !state.readOnly,
+                            onValueChange = actions.onDescriptionChange,
+                        )
 
-                    RootProfileConfig(
-                        fixedName = true,
-                        enabled = !state.readOnly,
-                        profile = toNativeProfile(state.template),
-                        onProfileChange = actions.onProfileChange,
+                        RootProfileConfig(
+                            fixedName = true,
+                            enabled = !state.readOnly,
+                            profile = toNativeProfile(state.template),
+                            onProfileChange = actions.onProfileChange,
+                        )
+                    }
+                    Spacer(
+                        Modifier.height(
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        )
                     )
                 }
-                Spacer(
-                    Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
-                    )
-                )
             }
         }
     }
@@ -169,65 +163,58 @@ private fun TopBar(
     onDelete: () -> Unit = {},
     onSave: () -> Unit = {},
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle,
-    enableBlur: Boolean
+    backdrop: LayerBackdrop?,
+    barColor: Color,
 ) {
-    TopAppBar(
-        modifier = if (enableBlur) {
-            Modifier.defaultHazeEffect(hazeState, hazeStyle)
-        } else {
-            Modifier
-        },
-        color = if (enableBlur) Color.Transparent else colorScheme.surface,
-        title = title,
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onBack
-            ) {
-                val layoutDirection = LocalLayoutDirection.current
-                Icon(
-                    modifier = Modifier.graphicsLayer {
-                        if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
-                    },
-                    imageVector = MiuixIcons.Back,
-                    contentDescription = null,
-                    tint = colorScheme.onSurface
-                )
-            }
-        },
-        actions = {
-            when {
-                !readOnly && !isCreation -> {
-                    IconButton(
-                        modifier = Modifier.padding(end = 16.dp),
-                        onClick = onDelete
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Delete,
-                            contentDescription = stringResource(id = R.string.app_profile_template_delete),
-                            tint = colorScheme.onBackground
-                        )
-                    }
+    BlurredBar(backdrop) {
+        TopAppBar(
+            color = barColor,
+            title = title,
+            navigationIcon = {
+                IconButton(
+                    onClick = onBack
+                ) {
+                    val layoutDirection = LocalLayoutDirection.current
+                    Icon(
+                        modifier = Modifier.graphicsLayer {
+                            if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+                        },
+                        imageVector = MiuixIcons.Back,
+                        contentDescription = null,
+                        tint = colorScheme.onSurface
+                    )
                 }
+            },
+            actions = {
+                when {
+                    !readOnly && !isCreation -> {
+                        IconButton(
+                            onClick = onDelete
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Delete,
+                                contentDescription = stringResource(id = R.string.app_profile_template_delete),
+                                tint = colorScheme.onBackground
+                            )
+                        }
+                    }
 
-                isCreation -> {
-                    IconButton(
-                        modifier = Modifier.padding(end = 16.dp),
-                        onClick = onSave
-                    ) {
-                        Icon(
-                            imageVector = MiuixIcons.Ok,
-                            contentDescription = stringResource(id = R.string.app_profile_template_save),
-                            tint = colorScheme.onBackground
-                        )
+                    isCreation -> {
+                        IconButton(
+                            onClick = onSave
+                        ) {
+                            Icon(
+                                imageVector = MiuixIcons.Ok,
+                                contentDescription = stringResource(id = R.string.app_profile_template_save),
+                                tint = colorScheme.onBackground
+                            )
+                        }
                     }
                 }
-            }
-        },
-        scrollBehavior = scrollBehavior
-    )
+            },
+            scrollBehavior = scrollBehavior
+        )
+    }
 }
 
 @Composable

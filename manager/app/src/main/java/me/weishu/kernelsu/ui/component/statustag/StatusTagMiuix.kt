@@ -9,8 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.theme.miuixShape
 
 @Composable
 fun StatusTagMiuix(
@@ -22,7 +22,7 @@ fun StatusTagMiuix(
         modifier = Modifier
             .background(
                 color = backgroundColor,
-                shape = ContinuousRoundedRectangle(6.dp)
+                shape = miuixShape(6.dp)
             )
     ) {
         Text(

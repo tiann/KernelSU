@@ -25,9 +25,9 @@ import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.screen.superuser.GroupedApps
 import me.weishu.kernelsu.ui.screen.superuser.SuperUserUiState
 import me.weishu.kernelsu.ui.util.HanziToPinyin
-import me.weishu.kernelsu.ui.util.withCurrentUserUid
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
+import me.weishu.kernelsu.ui.util.withCurrentUserUid
 import java.text.Collator
 import java.util.Locale
 

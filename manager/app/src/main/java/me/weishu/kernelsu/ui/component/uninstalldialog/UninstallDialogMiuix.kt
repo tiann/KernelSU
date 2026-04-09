@@ -27,8 +27,8 @@ import me.weishu.kernelsu.ui.screen.flash.UninstallType.TEMPORARY
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -60,7 +60,7 @@ fun UninstallDialogMiuix(
         }
     }
 
-    SuperDialog(
+    OverlayDialog(
         show = show,
         onDismissRequest = onDismissRequest,
         insideMargin = DpSize(0.dp, 0.dp),
@@ -76,7 +76,7 @@ fun UninstallDialogMiuix(
                 color = MiuixTheme.colorScheme.onSurface
             )
             options.forEach { type ->
-                SuperArrow(
+                ArrowPreference(
                     onClick = {
                         showConfirmDialog.value = true
                         runType.value = type

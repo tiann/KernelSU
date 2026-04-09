@@ -23,29 +23,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.component.FloatingBottomBar
 import me.weishu.kernelsu.ui.component.FloatingBottomBarItem
-import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BottomBarMiuix(
-    hazeState: HazeState,
-    hazeStyle: HazeStyle,
+    blurBackdrop: LayerBackdrop?,
     backdrop: Backdrop,
     modifier: Modifier,
 ) {
@@ -54,7 +51,6 @@ fun BottomBarMiuix(
     if (!fullFeatured) return
 
     val mainState = LocalMainPagerState.current
-    val enableBlur = LocalEnableBlur.current
     val enableFloatingBottomBar = LocalEnableFloatingBottomBar.current
     val enableFloatingBottomBarBlur = LocalEnableFloatingBottomBarBlur.current
 
@@ -65,28 +61,25 @@ fun BottomBarMiuix(
         )
     }
     if (!enableFloatingBottomBar) {
-        NavigationBar(
-            modifier = modifier
-                .then(
-                    if (enableBlur) {
-                        Modifier.defaultHazeEffect(hazeState, hazeStyle)
-                    } else Modifier
-                ),
-            color = if (enableBlur) Color.Transparent else MiuixTheme.colorScheme.surface,
-            content = {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        modifier = Modifier.weight(1f),
-                        icon = item.icon,
-                        label = item.label,
-                        selected = mainState.selectedPage == index,
-                        onClick = {
-                            mainState.animateToPage(index)
-                        }
-                    )
+        BlurredBar(blurBackdrop) {
+            NavigationBar(
+                modifier = modifier,
+                color = if (blurBackdrop != null) Color.Transparent else MiuixTheme.colorScheme.surface,
+                content = {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            modifier = Modifier.weight(1f),
+                            icon = item.icon,
+                            label = item.label,
+                            selected = mainState.selectedPage == index,
+                            onClick = {
+                                mainState.animateToPage(index)
+                            }
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
     } else {
         FloatingBottomBar(
             modifier = modifier

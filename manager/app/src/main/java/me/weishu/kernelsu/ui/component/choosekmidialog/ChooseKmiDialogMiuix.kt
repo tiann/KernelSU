@@ -25,9 +25,9 @@ import me.weishu.kernelsu.ui.util.getCurrentKmi
 import me.weishu.kernelsu.ui.util.getSupportedKmis
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
-import top.yukonga.miuix.kmp.extra.CheckboxLocation
-import top.yukonga.miuix.kmp.extra.SuperCheckbox
-import top.yukonga.miuix.kmp.extra.SuperDialog
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.preference.CheckboxLocation
+import top.yukonga.miuix.kmp.preference.CheckboxPreference
 
 @Composable
 fun ChooseKmiDialogMiuix(
@@ -42,7 +42,7 @@ fun ChooseKmiDialogMiuix(
         value = getCurrentKmi()
     }
     val currentSelection = rememberSaveable(currentKmi) { mutableStateOf(currentKmi) }
-    SuperDialog(
+    OverlayDialog(
         show = show,
         title = stringResource(R.string.select_kmi),
         summary = stringResource(R.string.current_kmi, currentKmi.let { it.ifBlank { "Unknown" } }),
@@ -55,7 +55,7 @@ fun ChooseKmiDialogMiuix(
             Column(modifier = Modifier.heightIn(max = 500.dp)) {
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                     items(supportedKMIs) { kmi ->
-                        SuperCheckbox(
+                        CheckboxPreference(
                             title = kmi,
                             summary = if (kmi == currentKmi) stringResource(R.string.current_device_kmi) else null,
                             insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),

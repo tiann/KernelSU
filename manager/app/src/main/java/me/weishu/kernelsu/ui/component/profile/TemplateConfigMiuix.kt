@@ -18,8 +18,8 @@ import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.getTemplateInfoById
 import top.yukonga.miuix.kmp.basic.Icon
-import top.yukonga.miuix.kmp.extra.SuperArrow
-import top.yukonga.miuix.kmp.extra.SuperDropdown
+import top.yukonga.miuix.kmp.preference.ArrowPreference
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
@@ -38,7 +38,7 @@ fun TemplateConfigMiuix(
     val noTemplates = profileTemplates.isEmpty()
 
     if (noTemplates) {
-        SuperArrow(
+        ArrowPreference(
             modifier = modifier,
             title = stringResource(R.string.app_profile_template_create),
             startAction = {
@@ -55,12 +55,12 @@ fun TemplateConfigMiuix(
         var template by rememberSaveable { mutableStateOf(profile.rootTemplate ?: profileTemplates[0]) }
 
         Column(modifier = modifier) {
-            SuperDropdown(
+            OverlayDropdownPreference(
                 title = stringResource(R.string.profile_template),
                 items = profileTemplates,
                 selectedIndex = profileTemplates.indexOf(template).takeIf { it >= 0 } ?: 0,
                 onSelectedIndexChange = { index ->
-                    if (index < 0 || index >= profileTemplates.size) return@SuperDropdown
+                    if (index < 0 || index >= profileTemplates.size) return@OverlayDropdownPreference
                     template = profileTemplates[index]
                     val templateInfo = getTemplateInfoById(template)
                     if (templateInfo != null && setSepolicy(template, templateInfo.rules.joinToString("\n"))) {
@@ -80,7 +80,7 @@ fun TemplateConfigMiuix(
                 },
                 maxHeight = 280.dp
             )
-            SuperArrow(
+            ArrowPreference(
                 title = stringResource(R.string.app_profile_template_view),
                 onClick = { onViewTemplate(template) }
             )

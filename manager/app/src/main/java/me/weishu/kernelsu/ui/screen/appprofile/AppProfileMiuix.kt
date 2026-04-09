@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -46,22 +47,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeSource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
+import me.weishu.kernelsu.ui.component.ListPopupDefaults
 import me.weishu.kernelsu.ui.component.miuix.DropdownItem
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.util.defaultHazeEffect
+import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.listAppProfileTemplates
 import me.weishu.kernelsu.ui.util.ownerNameForUid
+import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import me.weishu.kernelsu.ui.util.setSepolicy
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.BasicComponent
@@ -69,7 +68,6 @@ import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -77,12 +75,14 @@ import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.extra.SuperDropdown
-import top.yukonga.miuix.kmp.extra.SuperListPopup
-import top.yukonga.miuix.kmp.extra.SuperSwitch
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.MoreCircle
+import top.yukonga.miuix.kmp.overlay.OverlayListPopup
+import top.yukonga.miuix.kmp.preference.OverlayDropdownPreference
+import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -98,15 +98,9 @@ fun AppProfileScreenMiuix(
 ) {
     val enableBlur = LocalEnableBlur.current
     val scrollBehavior = MiuixScrollBehavior()
-    val hazeState = remember { HazeState() }
-    val hazeStyle = if (enableBlur) {
-        HazeStyle(
-            backgroundColor = colorScheme.surface,
-            tint = HazeTint(colorScheme.surface.copy(0.8f))
-        )
-    } else {
-        HazeStyle.Unspecified
-    }
+    val backdrop = rememberBlurBackdrop(enableBlur)
+    val blurActive = backdrop != null
+    val barColor = if (blurActive) Color.Transparent else colorScheme.surface
     Scaffold(
         topBar = {
             TopBar(
@@ -118,53 +112,53 @@ fun AppProfileScreenMiuix(
                 onForceStopApp = actions.onForceStopApp,
                 onRestartApp = actions.onRestartApp,
                 scrollBehavior = scrollBehavior,
-                hazeState = hazeState,
-                hazeStyle = hazeStyle,
-                enableBlur = enableBlur,
+                backdrop = backdrop,
+                barColor = barColor,
             )
         },
         popupHost = { },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = 16.dp)
-                .scrollEndHaptic()
-                .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .let { if (enableBlur) it.hazeSource(state = hazeState) else it },
-            contentPadding = innerPadding,
-            overscrollEffect = null
-        ) {
-            item {
-                AppProfileInner(
-                    packageName = if (state.isUidGroup) "" else state.appGroup.primary.packageName,
-                    appLabel = if (state.isUidGroup) ownerNameForUid(state.appGroup.primary.uid) else state.appGroup.primary.label,
-                    appIcon = {
-                        AppIconImage(
-                            packageInfo = state.appGroup.primary.packageInfo,
-                            label = state.appGroup.primary.label,
-                            modifier = Modifier.size(64.dp)
-                        )
-                    },
-                    appUid = state.uid,
-                    sharedUserId = if (state.isUidGroup) state.sharedUserId else "",
-                    appVersionName = if (state.isUidGroup) "" else (state.appGroup.primary.packageInfo.versionName ?: ""),
-                    appVersionCode = if (state.isUidGroup) 0L else state.appGroup.primary.packageInfo.longVersionCode,
-                    profile = state.profile,
-                    isUidGroup = state.isUidGroup,
-                    affectedApps = state.appGroup.apps,
-                    onViewTemplate = actions.onViewTemplate,
-                    onManageTemplate = actions.onManageTemplate,
-                    onProfileChange = actions.onProfileChange,
-                )
-                Spacer(
-                    Modifier.height(
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-                                WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+        Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(top = 16.dp)
+                    .scrollEndHaptic()
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = innerPadding,
+                overscrollEffect = null
+            ) {
+                item {
+                    AppProfileInner(
+                        packageName = if (state.isUidGroup) "" else state.appGroup.primary.packageName,
+                        appLabel = if (state.isUidGroup) ownerNameForUid(state.appGroup.primary.uid) else state.appGroup.primary.label,
+                        appIcon = {
+                            AppIconImage(
+                                packageInfo = state.appGroup.primary.packageInfo,
+                                label = state.appGroup.primary.label,
+                                modifier = Modifier.size(64.dp)
+                            )
+                        },
+                        appUid = state.uid,
+                        sharedUserId = if (state.isUidGroup) state.sharedUserId else "",
+                        appVersionName = if (state.isUidGroup) "" else (state.appGroup.primary.packageInfo.versionName ?: ""),
+                        appVersionCode = if (state.isUidGroup) 0L else state.appGroup.primary.packageInfo.longVersionCode,
+                        profile = state.profile,
+                        isUidGroup = state.isUidGroup,
+                        affectedApps = state.appGroup.apps,
+                        onViewTemplate = actions.onViewTemplate,
+                        onManageTemplate = actions.onManageTemplate,
+                        onProfileChange = actions.onProfileChange,
                     )
-                )
+                    Spacer(
+                        Modifier.height(
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
+                                    WindowInsets.captionBar.asPaddingValues().calculateBottomPadding()
+                        )
+                    )
+                }
             }
         }
     }
@@ -299,7 +293,7 @@ private fun AppProfileInner(
                 .padding(horizontal = 12.dp)
                 .padding(bottom = 12.dp),
         ) {
-            SuperSwitch(
+            SwitchPreference(
                 startAction = {
                     Icon(
                         imageVector = Icons.Rounded.Security,
@@ -481,83 +475,77 @@ private fun TopBar(
     onForceStopApp: (String, Int) -> Unit = { _, _ -> },
     onRestartApp: (String, Int) -> Unit = { _, _ -> },
     scrollBehavior: ScrollBehavior,
-    hazeState: HazeState,
-    hazeStyle: HazeStyle,
-    enableBlur: Boolean
+    backdrop: LayerBackdrop?,
+    barColor: Color,
 ) {
-    TopAppBar(
-        modifier = if (enableBlur) {
-            Modifier.defaultHazeEffect(hazeState, hazeStyle)
-        } else {
-            Modifier
-        },
-        color = if (enableBlur) Color.Transparent else colorScheme.surface,
-        title = stringResource(R.string.profile),
-        navigationIcon = {
-            IconButton(
-                modifier = Modifier.padding(start = 16.dp),
-                onClick = onBack
-            ) {
-                val layoutDirection = LocalLayoutDirection.current
-                Icon(
-                    modifier = Modifier.graphicsLayer {
-                        if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
-                    },
-                    imageVector = MiuixIcons.Back,
-                    contentDescription = null,
-                    tint = colorScheme.onBackground
-                )
-            }
-        },
-        actions = {
-            if (showActions) {
-                val showTopPopup = remember { mutableStateOf(false) }
+    BlurredBar(backdrop) {
+        TopAppBar(
+            color = barColor,
+            title = stringResource(R.string.profile),
+            navigationIcon = {
                 IconButton(
-                    modifier = Modifier.padding(end = 16.dp),
-                    onClick = { showTopPopup.value = true },
-                    holdDownState = showTopPopup.value
+                    onClick = onBack
                 ) {
+                    val layoutDirection = LocalLayoutDirection.current
                     Icon(
-                        imageVector = MiuixIcons.MoreCircle,
-                        tint = colorScheme.onSurface,
-                        contentDescription = stringResource(id = R.string.settings)
+                        modifier = Modifier.graphicsLayer {
+                            if (layoutDirection == LayoutDirection.Rtl) scaleX = -1f
+                        },
+                        imageVector = MiuixIcons.Back,
+                        contentDescription = null,
+                        tint = colorScheme.onBackground
                     )
                 }
-                SuperListPopup(
-                    show = showTopPopup.value,
-                    popupPositionProvider = ListPopupDefaults.ContextMenuPositionProvider,
-                    alignment = PopupPositionProvider.Align.TopEnd,
-                    onDismissRequest = { showTopPopup.value = false },
-                    content = {
-                        ListPopupColumn {
-                            val items = listOf(
-                                stringResource(id = R.string.launch_app),
-                                stringResource(id = R.string.force_stop_app),
-                                stringResource(id = R.string.restart_app)
-                            )
-
-                            items.forEachIndexed { index, text ->
-                                DropdownItem(
-                                    text = text,
-                                    optionSize = items.size,
-                                    index = index,
-                                    onSelectedIndexChange = { selectedIndex ->
-                                        when (selectedIndex) {
-                                            0 -> onLaunchApp(packageName, userId)
-                                            1 -> onForceStopApp(packageName, userId)
-                                            2 -> onRestartApp(packageName, userId)
-                                        }
-                                        showTopPopup.value = false
-                                    }
+            },
+            actions = {
+                if (showActions) {
+                    val showTopPopup = remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = { showTopPopup.value = true },
+                        holdDownState = showTopPopup.value
+                    ) {
+                        Icon(
+                            imageVector = MiuixIcons.MoreCircle,
+                            tint = colorScheme.onSurface,
+                            contentDescription = stringResource(id = R.string.settings)
+                        )
+                    }
+                    OverlayListPopup(
+                        show = showTopPopup.value,
+                        popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                        alignment = PopupPositionProvider.Align.TopEnd,
+                        onDismissRequest = { showTopPopup.value = false },
+                        content = {
+                            ListPopupColumn {
+                                val items = listOf(
+                                    stringResource(id = R.string.launch_app),
+                                    stringResource(id = R.string.force_stop_app),
+                                    stringResource(id = R.string.restart_app)
                                 )
+
+                                items.forEachIndexed { index, text ->
+                                    DropdownItem(
+                                        text = text,
+                                        optionSize = items.size,
+                                        index = index,
+                                        onSelectedIndexChange = { selectedIndex ->
+                                            when (selectedIndex) {
+                                                0 -> onLaunchApp(packageName, userId)
+                                                1 -> onForceStopApp(packageName, userId)
+                                                2 -> onRestartApp(packageName, userId)
+                                            }
+                                            showTopPopup.value = false
+                                        }
+                                    )
+                                }
                             }
                         }
-                    }
-                )
-            }
-        },
-        scrollBehavior = scrollBehavior
-    )
+                    )
+                }
+            },
+            scrollBehavior = scrollBehavior
+        )
+    }
 }
 
 @Composable
@@ -595,7 +583,7 @@ private fun ProfileBox(
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
     ) {
-        SuperDropdown(
+        OverlayDropdownPreference(
             title = stringResource(R.string.profile),
             items = list,
             startAction = {
