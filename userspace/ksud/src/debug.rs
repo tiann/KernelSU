@@ -1,9 +1,9 @@
 use anyhow::{Context, Ok, Result, bail, ensure};
 use std::{
+    ffi::CString,
     fs,
     path::{Path, PathBuf},
     process::Command,
-    time::Instant,
 };
 
 use crate::ksucalls;
@@ -51,33 +51,18 @@ pub fn set_manager(pkg: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn insmod(module: &Path) -> Result<()> {
+pub fn insmod(module: &Path, params: &[String]) -> Result<()> {
     let module = module
         .canonicalize()
         .with_context(|| format!("resolve module path failed: {}", module.display()))?;
     let module_data =
         fs::read(&module).with_context(|| format!("read module failed: {}", module.display()))?;
+    let cparams = CString::new(params.join(" "))?;
 
-    ksuinit::load_module(&module_data)
+    ksuinit::load_module(&module_data, &cparams)
         .with_context(|| format!("load module failed: {}", module.display()))?;
 
     println!("Loaded kernel module: {}", module.display());
-    Ok(())
-}
-
-pub fn kallsyms() -> Result<()> {
-    let started = Instant::now();
-    let symbols = ksuinit::parse_kallsyms().context("parse kallsyms failed")?;
-    let elapsed = started.elapsed();
-
-    println!("kallsyms parse result:");
-    println!(
-        "  elapsed: {}.{:03} ms",
-        elapsed.as_millis(),
-        elapsed.subsec_micros() % 1000
-    );
-    println!("  symbol_count: {}", symbols.len());
-
     Ok(())
 }
 

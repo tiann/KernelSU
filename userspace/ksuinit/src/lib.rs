@@ -1,8 +1,9 @@
 use anyhow::{Context, Result};
 use goblin::elf::{Elf, section_header, sym::Sym};
-use rustix::{cstr, system::init_module};
+use rustix::system::init_module;
 use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
+use std::ffi::CStr;
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader};
 
@@ -81,14 +82,9 @@ pub fn for_each_kernel_symbols<F: FnMut(&(String, u64)) -> Result<bool>>(mut f: 
     Ok(())
 }
 
-/// Parse `/proc/kallsyms` and return a symbol -> address map.
-pub fn parse_kallsyms() -> Result<HashMap<String, u64>> {
-    Ok(kernel_symbols_iter()?.collect::<HashMap<_, _>>())
-}
-
 /// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
 /// then load it via init_module syscall.
-pub fn load_module(data: &[u8]) -> Result<()> {
+pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
     let mut buffer = data.to_vec();
     let elf = Elf::parse(&buffer)?;
     let ctx = *elf.syms.ctx();
@@ -129,13 +125,7 @@ pub fn load_module(data: &[u8]) -> Result<()> {
         log::warn!("Cannot find symbol: {}", name);
     }
 
-    let param = if fs::exists("/ksu_allow_shell").unwrap_or(false) {
-        log::warn!("ksu allow shell at init!");
-        cstr!("allow_shell=1")
-    } else {
-        cstr!("")
-    };
-    init_module(&buffer, param).context("init_module failed.")?;
+    init_module(&buffer, params).context("init_module failed.")?;
     Ok(())
 }
 
