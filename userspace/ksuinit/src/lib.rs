@@ -112,7 +112,6 @@ pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
             if let Some((mut sym, offset)) = unresolved_symbols.remove(symbol) {
                 sym.st_shndx = section_header::SHN_ABS as usize;
                 sym.st_value = *addr;
-                log::debug!("{} -> {:x}", symbol, *addr);
                 buffer.pwrite_with(sym, offset, ctx)?;
             }
 
