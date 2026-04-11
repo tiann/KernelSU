@@ -37,7 +37,9 @@ Hiện tại, các kiến trúc `arm64-v8a` và `x86_64` được hỗ trợ.
 
 ## Hỗ trợ dịch
 
-Nếu bạn muốn hỗ trợ dịch KernelSU sang một ngôn ngữ khác hoặc cải thiện các bản dịch trước, vui lòng sử dụng [Weblate](https://hosted.weblate.org/engage/kernelsu/).
+KernelSU không còn chấp nhận đóng góp bản dịch qua Weblate. Tất cả bản dịch hiện được xử lý bằng LLMs.
+
+Nếu bạn muốn thêm hỗ trợ cho một ngôn ngữ mới, hãy mở PR. Lưu ý rằng các chỉnh sửa đối với bản dịch tiếng Anh và tiếng Trung hiện có sẽ không được chấp nhận.
 
 ## Thảo luận
 
