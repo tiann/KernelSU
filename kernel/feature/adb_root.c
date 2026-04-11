@@ -57,6 +57,7 @@ static long is_libadbroot_ok()
         } else {
             pr_err("access libadbroot.so failed: %ld, skip adb root\n", ret);
         }
+        return ret;
     } else {
         ret = 1;
     }
