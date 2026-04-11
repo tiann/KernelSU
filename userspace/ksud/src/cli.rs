@@ -1,5 +1,6 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
+use ksuinit::module_loader;
 use std::path::PathBuf;
 
 use android_logger::Config;
@@ -207,6 +208,15 @@ enum Debug {
 
     /// Launch sulogd daemon manually
     Sulogd,
+
+    /// Test load modules
+    LoadMod {
+        #[arg(long)]
+        dir: PathBuf,
+        #[arg(long)]
+        root: PathBuf,
+        list: Vec<String>,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -691,6 +701,12 @@ pub fn run() -> Result<()> {
                 MarkCommand::Refresh => debug::mark_refresh(),
             },
             Debug::Sulogd => sulog::ensure_sulogd_running(),
+            Debug::LoadMod { dir, root, list } => module_loader::load_modules_in_dependency_order(
+                dir.as_path(),
+                root.as_path(),
+                list.as_slice(),
+                true,
+            ),
         },
 
         Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),

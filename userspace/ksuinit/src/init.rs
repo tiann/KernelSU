@@ -1,6 +1,9 @@
+use std::fs;
 use std::io::{ErrorKind, Write};
+use std::path::Path;
 
 use anyhow::{Context, Result};
+use ksuinit::module_loader;
 use rustix::fs::{Mode, symlink, unlink};
 use rustix::{
     fd::AsFd,
@@ -107,6 +110,26 @@ pub fn init() -> Result<()> {
 
     // This relies on the fact that we have /proc mounted
     unlimit_kmsg();
+
+    // Currently, only qualcomm's minidump is supported.
+    // See https://xtuly.cn/article/oneplus-ace-5-panic-log
+    if let Ok(true) = fs::exists("/preload_dumpers") {
+        log::info!("preload minidump requested!");
+        if let Err(e) = module_loader::load_modules_in_dependency_order(
+            Path::new("/lib/modules"),
+            Path::new("/"),
+            &[
+                "qcom_hwspinlock.ko",
+                "minidump.ko",
+                "qcom-scm.ko",
+                "qcom_wdt_core.ko",
+                "memory_dump_v2.ko",
+            ],
+            false,
+        ) {
+            log::error!("could not preload minidump modules: {e:?}");
+        }
+    }
 
     if ksuinit::has_kernelsu() {
         log::info!("KernelSU may be already loaded in kernel, skip!");

@@ -526,6 +526,11 @@ pub struct BootPatchArgs {
     /// Do not (re-)install kernelsu, only modify configs (allow_shell, etc.)
     #[arg(long, default_value = "false")]
     no_install: bool,
+
+    /// Preload kernel modules for crash dump (e.g. Qualcomm's minidump.ko) before loading KernelSU LKM.
+    /// This may help to enable kernel panic dump during early boot stage.
+    #[arg(long, default_value = "false")]
+    preload_dumper_modules: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -550,6 +555,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             flash,
             #[cfg(target_os = "android")]
             partition,
+            preload_dumper_modules,
         } = args;
 
         println!(include_str!("banner"));
@@ -771,6 +777,23 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 println!("- Removing /adb_debug.prop");
                 do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm adb_debug.prop").ok();
             }
+        }
+
+        if preload_dumper_modules {
+            println!("- Enabling preload dumper modules");
+            {
+                let allow_shell_file = workdir.join("preload_dumpers");
+                File::create(allow_shell_file)?;
+            }
+            do_cpio_cmd(
+                &magiskboot,
+                workdir,
+                ramdisk,
+                "add 0644 preload_dumpers preload_dumpers",
+            )?;
+        } else if do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists preload_dumpers").is_ok() {
+            println!("- Disabling preload dumper modules");
+            do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm preload_dumpers").ok();
         }
 
         println!("- Repacking boot image");
