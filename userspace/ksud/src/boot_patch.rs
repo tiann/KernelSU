@@ -458,7 +458,7 @@ pub struct BootPatchArgs {
     pub module: Option<PathBuf>,
 
     /// init to be replaced
-    #[arg(short, long, requires("module"))]
+    #[arg(short, long)]
     pub init: Option<PathBuf>,
 
     /// will use another slot when boot image is not specified
