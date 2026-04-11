@@ -13,11 +13,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -54,21 +56,22 @@ fun WebUIScreen(webUIState: WebUIState) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val drawingInsets = WindowInsets.safeDrawing
-    val systemBarsInsets = WindowInsets.systemBars
+    val deviceInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
     val imeInsets = WindowInsets.ime
     val innerPadding = if (webUIState.isInsetsEnabled) imeInsets.asPaddingValues() else drawingInsets.asPaddingValues()
     val fileLauncher = rememberFileLauncher(webUIState)
 
-    LaunchedEffect(density, layoutDirection, systemBarsInsets, webUIState.isInsetsEnabled) {
+    LaunchedEffect(density, layoutDirection, deviceInsets, webUIState.isInsetsEnabled) {
         if (!webUIState.isInsetsEnabled) {
             return@LaunchedEffect
         }
         snapshotFlow {
-            val top = (systemBarsInsets.getTop(density) / density.density).toInt()
-            val bottom = (systemBarsInsets.getBottom(density) / density.density).toInt()
-            val left = (systemBarsInsets.getLeft(density, layoutDirection) / density.density).toInt()
-            val right = (systemBarsInsets.getRight(density, layoutDirection) / density.density).toInt()
-            Insets(top, bottom, left, right)
+            Insets(
+                top = (deviceInsets.getTop(density) / density.density).toInt(),
+                bottom = (deviceInsets.getBottom(density) / density.density).toInt(),
+                left = (deviceInsets.getLeft(density, layoutDirection) / density.density).toInt(),
+                right = (deviceInsets.getRight(density, layoutDirection) / density.density).toInt()
+            )
         }.collect { newInsets ->
             if (webUIState.currentInsets != newInsets) {
                 webUIState.currentInsets = newInsets
