@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.animation
+package me.weishu.kernelsu.ui.component.miuix.animation
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -14,7 +14,7 @@ import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.ui.modifier.inspectDragGestures
+import me.weishu.kernelsu.ui.component.miuix.modifier.inspectDragGestures
 import kotlin.math.abs
 
 class DampedDragAnimation(
