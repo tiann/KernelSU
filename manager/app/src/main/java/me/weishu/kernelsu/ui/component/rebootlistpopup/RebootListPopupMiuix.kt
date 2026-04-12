@@ -1,13 +1,10 @@
 package me.weishu.kernelsu.ui.component.rebootlistpopup
 
-import android.content.Context
-import android.os.PowerManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
@@ -48,27 +45,12 @@ fun RebootListPopupMiuix(
                 showTopPopup.value = false
             },
             content = {
-                val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
-
-                @Suppress("DEPRECATION")
-                val isRebootingUserspaceSupported = pm?.isRebootingUserspaceSupported == true
+                val rebootOptions = getRebootListOption()
 
                 ListPopupColumn {
-                    val rebootOptions = mutableListOf(
-                        Pair(R.string.reboot, ""),
-                        Pair(R.string.reboot_soft, "soft_reboot"),
-                        Pair(R.string.reboot_recovery, "recovery"),
-                        Pair(R.string.reboot_bootloader, "bootloader"),
-                        Pair(R.string.reboot_download, "download"),
-                        Pair(R.string.reboot_edl, "edl")
-                    )
-                    if (isRebootingUserspaceSupported) {
-                        rebootOptions.add(1, Pair(R.string.reboot_userspace, "userspace"))
-                    }
-                    rebootOptions.forEachIndexed { idx, (id, reason) ->
+                    rebootOptions.forEachIndexed { idx, option ->
                         RebootDropdownItem(
-                            id = id,
-                            reason = reason,
+                            option = option,
                             showTopPopup = showTopPopup,
                             optionSize = rebootOptions.size,
                             index = idx
@@ -82,17 +64,16 @@ fun RebootListPopupMiuix(
 
 @Composable
 fun RebootDropdownItem(
-    id: Int,
-    reason: String = "",
+    option: RebootListOption,
     showTopPopup: MutableState<Boolean>,
     optionSize: Int,
     index: Int,
 ) {
     me.weishu.kernelsu.ui.component.miuix.DropdownItem(
-        text = stringResource(id),
+        text = stringResource(option.labelRes),
         optionSize = optionSize,
         onSelectedIndexChange = {
-            reboot(reason)
+            reboot(option.reason)
             showTopPopup.value = false
         },
         index = index
