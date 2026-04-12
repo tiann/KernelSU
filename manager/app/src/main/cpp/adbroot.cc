@@ -36,7 +36,7 @@ std::string GetProperty(const std::string &key, const std::string &default_value
     return orig_fn(key, default_value);
 }
 
-// If user create ksurc, use ksurc instead of mkshrc
+// If the user creates ksurc, use ksurc instead of mkshrc
 // https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/adb/daemon/shell_service.cpp;l=389-394
 extern "C" [[gnu::visibility("default"), gnu::used]]
 int execle(const char *pathname, const char *arg, ...) {
