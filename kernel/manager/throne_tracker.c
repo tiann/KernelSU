@@ -265,7 +265,11 @@ void track_throne(bool prune_only)
         if (chr != '\n')
             continue;
 
-        count = kernel_read(fp, buf, sizeof(buf), &line_start);
+        count = kernel_read(fp, buf, sizeof(buf) - 1, &line_start);
+        if (count <= 0) {
+            break;
+        }
+        buf[count] = '\0';
 
         struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
         if (!data) {
