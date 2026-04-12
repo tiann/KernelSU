@@ -109,7 +109,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
     }
 
     if (d_type == DT_DIR && my_ctx->depth > 0 && (my_ctx->stop && !*my_ctx->stop)) {
-        struct data_path *data = kzalloc(sizeof(struct data_path), GFP_ATOMIC);
+        struct data_path *data = kzalloc(sizeof(struct data_path), GFP_KERNEL);
 
         if (!data) {
             pr_err("Failed to allocate memory for %s\n", dirpath);
@@ -142,7 +142,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
                     kfree(pos);
                 }
             } else {
-                struct apk_path_hash *apk_data = kzalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
+                struct apk_path_hash *apk_data = kzalloc(sizeof(struct apk_path_hash), GFP_KERNEL);
                 apk_data->hash = hash;
                 apk_data->exists = true;
                 list_add_tail(&apk_data->list, &apk_path_hash_list);
@@ -271,7 +271,7 @@ void track_throne(bool prune_only)
         }
         buf[count] = '\0';
 
-        struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+        struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_KERNEL);
         if (!data) {
             filp_close(fp, 0);
             goto out;
