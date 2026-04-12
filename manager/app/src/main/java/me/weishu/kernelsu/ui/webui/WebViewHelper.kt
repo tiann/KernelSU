@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -23,6 +24,8 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 private const val DOWNLOAD_JS = """
@@ -159,12 +162,15 @@ internal suspend fun prepareWebView(
                         if (!packageName.isNullOrEmpty()) {
                             val icon = AppIconUtil.loadAppIconSync(activity, packageName, 512)
                             if (icon != null) {
-                                val stream = java.io.ByteArrayOutputStream()
-                                icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                val stream = ByteArrayOutputStream()
+                                icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
                                 return WebResourceResponse(
-                                    "image/png", null, 200, "OK",
+                                    "image/png",
+                                    null,
+                                    200,
+                                    "OK",
                                     mapOf("Access-Control-Allow-Origin" to "*"),
-                                    java.io.ByteArrayInputStream(stream.toByteArray())
+                                    ByteArrayInputStream(stream.toByteArray())
                                 )
                             }
                         }

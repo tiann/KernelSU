@@ -9,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KsuIsValid
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
+import me.weishu.kernelsu.ui.component.miuix.DropdownItem
 import me.weishu.kernelsu.ui.util.reboot
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -69,7 +70,7 @@ fun RebootDropdownItem(
     optionSize: Int,
     index: Int,
 ) {
-    me.weishu.kernelsu.ui.component.miuix.DropdownItem(
+    DropdownItem(
         text = stringResource(option.labelRes),
         optionSize = optionSize,
         onSelectedIndexChange = {
