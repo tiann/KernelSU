@@ -107,7 +107,7 @@ import me.weishu.kernelsu.ui.util.rememberContentReady
 import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleRepoScreenMaterial(
     state: ModuleRepoUiState,
@@ -459,7 +459,7 @@ fun ModuleRepoDetailScreenMaterial(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ReadmePage(
     readmeHtml: String?,
@@ -504,7 +504,7 @@ private fun ReadmePage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @SuppressLint("DefaultLocale")
 @Composable
 fun ReleasesPage(
@@ -716,7 +716,6 @@ fun ReleasesPage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfoPage(
     module: RepoModuleArg,

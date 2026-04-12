@@ -28,15 +28,14 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -70,7 +69,7 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
  * @date 2023/10/20.
  */
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
@@ -127,7 +126,7 @@ fun AppProfileTemplateScreenMaterial(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,
                 onClick = actions.onCreateTemplate,
                 icon = { Icon(Icons.Filled.Add, null) },
@@ -262,7 +261,7 @@ private fun TemplateItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
