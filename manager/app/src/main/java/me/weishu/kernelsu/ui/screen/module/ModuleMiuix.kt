@@ -470,16 +470,14 @@ fun ModulePagerMiuix(
             return@Scaffold
         }
         val layoutDirection = LocalLayoutDirection.current
-        val pullToRefreshState = rememberPullToRefreshState()
-        val refreshTexts = listOf(
-            stringResource(R.string.refresh_pulling),
-            stringResource(R.string.refresh_release),
-            stringResource(R.string.refresh_refresh),
-            stringResource(R.string.refresh_complete),
-        )
-        searchStatus.SearchBox(
-            onSearchStatusChange = actions.onSearchStatusChange,
-        ) {
+        searchStatus.SearchBox {
+            val pullToRefreshState = rememberPullToRefreshState()
+            val refreshTexts = listOf(
+                stringResource(R.string.refresh_pulling),
+                stringResource(R.string.refresh_release),
+                stringResource(R.string.refresh_refresh),
+                stringResource(R.string.refresh_complete),
+            )
             val contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 6.dp,
                 start = innerPadding.calculateStartPadding(layoutDirection),
@@ -966,6 +964,7 @@ fun ModuleItem(
                 exit = fadeOut()
             ) {
                 IconButton(
+                    modifier = Modifier.padding(end = 8.dp),
                     backgroundColor = updateBg,
                     enabled = !module.remove,
                     minHeight = 35.dp,

@@ -269,9 +269,7 @@ fun SulogScreenMiuix(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
-        searchStatus.SearchBox(
-            onSearchStatusChange = ::onSearchStatusChange,
-        ) {
+        searchStatus.SearchBox {
             PullToRefresh(
                 isRefreshing = state.isLoading || state.isRefreshing,
                 pullToRefreshState = pullToRefreshState,
