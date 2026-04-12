@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.UploadFile
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -64,7 +63,6 @@ import me.weishu.kernelsu.ui.util.LocalSnackbarHost
  * @author weishu
  * @date 2023/1/1.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingPagerMaterial(
     uiState: SettingsUiState,
@@ -337,7 +335,7 @@ fun SettingPagerMaterial(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
