@@ -79,6 +79,7 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
+import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
@@ -178,36 +179,41 @@ fun SulogScreenMiuix(
                                 )
                             }
 
-                            val showFilterPopup = remember { mutableStateOf(false) }
-                            OverlayListPopup(
-                                show = showFilterPopup.value,
-                                popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
-                                onDismissRequest = { showFilterPopup.value = false },
-                                content = {
-                                    ListPopupColumn {
-                                        SulogEventFilter.entries.forEachIndexed { index, filter ->
-                                            DropdownImpl(
-                                                text = sulogFilterLabel(filter),
-                                                isSelected = filter in state.selectedFilters,
-                                                optionSize = SulogEventFilter.entries.size,
-                                                onSelectedIndexChange = {
-                                                    actions.onToggleFilter(filter)
-                                                },
-                                                index = index,
-                                            )
+                            Box {
+                                val showFilterPopup = remember { mutableStateOf(false) }
+                                OverlayListPopup(
+                                    show = showFilterPopup.value,
+                                    popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                                    alignment = PopupPositionProvider.Align.TopEnd,
+                                    onDismissRequest = {
+                                        showFilterPopup.value = false
+                                    },
+                                    content = {
+                                        ListPopupColumn {
+                                            SulogEventFilter.entries.forEachIndexed { index, filter ->
+                                                DropdownImpl(
+                                                    text = sulogFilterLabel(filter),
+                                                    isSelected = filter in state.selectedFilters,
+                                                    optionSize = SulogEventFilter.entries.size,
+                                                    onSelectedIndexChange = {
+                                                        actions.onToggleFilter(filter)
+                                                    },
+                                                    index = index,
+                                                )
+                                            }
                                         }
-                                    }
-                                },
-                            )
-                            IconButton(
-                                onClick = { showFilterPopup.value = true },
-                                holdDownState = showFilterPopup.value,
-                            ) {
-                                Icon(
-                                    imageVector = MiuixIcons.Filter,
-                                    tint = colorScheme.onSurface,
-                                    contentDescription = stringResource(R.string.sulog_filter_title),
+                                    },
                                 )
+                                IconButton(
+                                    onClick = { showFilterPopup.value = true },
+                                    holdDownState = showFilterPopup.value,
+                                ) {
+                                    Icon(
+                                        imageVector = MiuixIcons.Filter,
+                                        tint = colorScheme.onSurface,
+                                        contentDescription = stringResource(R.string.sulog_filter_title),
+                                    )
+                                }
                             }
                         },
                         scrollBehavior = scrollBehavior,
@@ -269,9 +275,7 @@ fun SulogScreenMiuix(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal),
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
-        searchStatus.SearchBox(
-            onSearchStatusChange = ::onSearchStatusChange,
-        ) {
+        searchStatus.SearchBox {
             PullToRefresh(
                 isRefreshing = state.isLoading || state.isRefreshing,
                 pullToRefreshState = pullToRefreshState,

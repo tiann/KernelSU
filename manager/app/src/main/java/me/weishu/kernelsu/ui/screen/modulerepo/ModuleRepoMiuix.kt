@@ -345,9 +345,7 @@ fun ModuleRepoScreenMiuix(
         val contentReady = hadDataOnEntry || rememberContentReady()
         val offline = state.offline
 
-        searchStatus.SearchBox(
-            onSearchStatusChange = actions.onSearchStatusChange,
-        ) {
+        searchStatus.SearchBox {
             if (!contentReady || isLoading) {
                 Box(
                     modifier = Modifier

@@ -13,9 +13,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +44,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -74,32 +71,9 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 // Search Box Composable
 @Composable
 fun SearchStatus.SearchBox(
-    onSearchStatusChange: (SearchStatus) -> Unit,
     content: @Composable () -> Unit
 ) {
-    val searchStatus = this
-    val density = LocalDensity.current
-    val offsetYPx = with(density) { (searchStatus.offsetY.toPx() * 0.9).toInt() }
-
-    Box {
-        AnimatedVisibility(
-            visible = searchStatus.shouldCollapsed(),
-            enter = fadeIn(tween(300, easing = LinearOutSlowInEasing)) + slideInVertically(
-                tween(
-                    300,
-                    easing = LinearOutSlowInEasing
-                )
-            ) { -offsetYPx },
-            exit = fadeOut(tween(300, easing = LinearOutSlowInEasing)) + slideOutVertically(
-                tween(
-                    300,
-                    easing = LinearOutSlowInEasing
-                )
-            ) { -offsetYPx }
-        ) {
-            content()
-        }
-    }
+    if (shouldCollapsed()) content()
 }
 
 // Search Pager Composable
