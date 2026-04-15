@@ -10,6 +10,7 @@
 
 #include "feature/process_tag.h"
 #include "policy/feature.h"
+#include "hook/lsm_hook.h"
 #include "klog.h" // IWYU pragma: keep
 
 #define PROCESS_TAG_HASH_BITS 10 // 1024 buckets
@@ -18,7 +19,7 @@ static DEFINE_HASHTABLE(process_tag_table, PROCESS_TAG_HASH_BITS);
 static DEFINE_SPINLOCK(process_tag_lock);
 static bool process_tag_enabled __read_mostly = false;
 static bool process_tag_initialized __read_mostly = false;
-static bool process_tag_tracepoint_registered __read_mostly = false;
+static bool process_tag_lsm_hooked __read_mostly = false;
 
 struct process_tag_entry {
     struct hlist_node hnode;
@@ -191,25 +192,37 @@ bool ksu_process_tag_is_enabled(void)
     return process_tag_enabled;
 }
 
-// Tracepoint handlers for fork/exit
-static void process_tag_sched_fork_handler(void *data, struct task_struct *parent, struct task_struct *child)
+// Security hook for task alloc/free
+static int process_tag_task_alloc(struct task_struct *task, unsigned long clone_flags)
 {
+    int err = 0;
     struct process_tag *parent_tag;
 
     rcu_read_lock();
-    parent_tag = ksu_process_tag_get(task_pid_nr(parent));
+    parent_tag = ksu_process_tag_get(current);
     if (parent_tag) {
-        ksu_process_tag_set(child, parent_tag->type, parent_tag->name);
+        err = ksu_process_tag_set(task, parent_tag->type, parent_tag->name);
         ksu_process_tag_put(parent_tag);
-        pr_debug("process_tag: child %d inherited tag from parent %d\n", task_pid_nr(child), task_pid_nr(parent));
+        if (err) {
+            pr_debug("process_tag: child %d parent %d set tag failed: %d\n", task_pid_nr(task), task_pid_nr(current),
+                     err);
+        } else {
+            pr_debug("process_tag: child %d inherited tag from parent %d\n", task_pid_nr(task), task_pid_nr(current));
+        }
     }
     rcu_read_unlock();
+
+    return err;
 }
 
-static void process_tag_sched_exit_handler(void *data, struct task_struct *task)
+static void process_tag_task_free(struct task_struct *task)
 {
     ksu_process_tag_delete(task);
 }
+
+struct ksu_lsm_hook process_tag_task_alloc_hook =
+    KSU_LSM_HOOK_BPF_INIT(inode_create, task_alloc, process_tag_task_alloc);
+struct ksu_lsm_hook process_tag_task_free_hook = KSU_LSM_HOOK_BPF_INIT(inode_create, task_free, process_tag_task_free);
 
 // Feature handler
 static int process_tag_feature_get(u64 *value)
@@ -236,24 +249,24 @@ static int process_tag_feature_set(u64 value)
         return 0;
     }
 
-    ret = register_trace_sched_process_fork(process_tag_sched_fork_handler, NULL);
+    ret = ksu_register_lsm_hook(&process_tag_task_alloc_hook);
     if (ret) {
-        pr_err("process_tag: failed to register sched_process_fork tracepoint: %d\n", ret);
+        pr_err("process_tag: failed to register task_alloc hook: %d\n", ret);
         process_tag_initialized = false;
         process_tag_enabled = false;
         return ret;
     }
 
-    ret = register_trace_sched_process_exit(process_tag_sched_exit_handler, NULL);
+    ret = ksu_register_lsm_hook(&process_tag_task_free_hook);
     if (ret) {
-        pr_err("process_tag: failed to register sched_process_exit tracepoint: %d\n", ret);
-        unregister_trace_sched_process_fork(process_tag_sched_fork_handler, NULL);
+        pr_err("process_tag: failed to register task_free hook: %d\n", ret);
+        ksu_unregister_lsm_hook(&process_tag_task_alloc_hook);
         process_tag_initialized = false;
         process_tag_enabled = false;
         return ret;
     }
 
-    process_tag_tracepoint_registered = true;
+    process_tag_lsm_hooked = true;
     pr_info("process_tag: initialized and enabled\n");
 
     return 0;
@@ -286,10 +299,10 @@ void __exit ksu_process_tag_exit(void)
     process_tag_enabled = false;
     process_tag_initialized = false;
 
-    if (process_tag_tracepoint_registered) {
-        unregister_trace_sched_process_fork(process_tag_sched_fork_handler, NULL);
-        unregister_trace_sched_process_exit(process_tag_sched_exit_handler, NULL);
-        process_tag_tracepoint_registered = false;
+    if (process_tag_lsm_hooked) {
+        ksu_unregister_lsm_hook(&process_tag_task_alloc_hook);
+        ksu_unregister_lsm_hook(&process_tag_task_free_hook);
+        process_tag_lsm_hooked = false;
     }
 
     ksu_process_tag_flush();
