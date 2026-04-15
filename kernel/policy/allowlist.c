@@ -91,15 +91,17 @@ void ksu_show_allow_list(void)
 struct app_profile *ksu_get_app_profile(uid_t uid)
 {
     struct perm_data *p = NULL;
+    bool found = false;
 
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid) {
             // found it, override it with ours
+            found = true;
             break;
         }
     }
 
-    if (!p)
+    if (!found)
         return NULL;
 
     if (!kref_get_unless_zero(&p->ref)) {
