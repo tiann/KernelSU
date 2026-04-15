@@ -108,7 +108,7 @@ int escape_with_root_profile(void)
     struct cred *cred;
     struct task_struct *p = current;
     struct task_struct *t;
-    struct root_profile *profile;
+    struct root_profile *profile = NULL;
     struct user_struct *new_user;
 
     cred = prepare_creds();
@@ -190,6 +190,8 @@ int escape_with_root_profile(void)
     return 0;
 
 out_abort_creds:
+    if (profile)
+        ksu_put_root_profile(profile);
     abort_creds(cred);
     return ret;
 }
