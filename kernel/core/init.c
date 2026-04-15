@@ -140,7 +140,7 @@ int __init kernelsu_init(void)
         // with KSU SELinux domain before enforcing SELinux, so it
         // can continue to access /data/app etc. after enforcement.
         escape_to_root_for_init();
-        ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_KSUD, "late_load");
+        ksu_process_tag_set(current, PROCESS_TAG_KSUD, "late_load");
 
         ksu_allowlist_init();
         ksu_load_allow_list();

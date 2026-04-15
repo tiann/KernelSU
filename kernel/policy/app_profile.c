@@ -191,10 +191,10 @@ int escape_with_root_profile(void)
 
     if (ksu_get_app_profile(&app)) {
         scnprintf(tag_name, sizeof(tag_name), "%s:%u", app.key, current_uid().val);
-        ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_APP, tag_name);
+        ksu_process_tag_set(current, PROCESS_TAG_APP, tag_name);
     } else {
         scnprintf(tag_name, sizeof(tag_name), "uid:%u", current_uid().val);
-        ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_APP, tag_name);
+        ksu_process_tag_set(current, PROCESS_TAG_APP, tag_name);
     }
 
     setup_mount_ns(profile->namespaces);
