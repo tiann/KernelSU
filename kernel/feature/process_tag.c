@@ -208,9 +208,8 @@ static void process_tag_task_free(struct task_struct *task)
     ksu_process_tag_delete(task);
 }
 
-struct ksu_lsm_hook process_tag_task_alloc_hook =
-    KSU_LSM_HOOK_BPF_INIT(inode_create, task_alloc, process_tag_task_alloc);
-struct ksu_lsm_hook process_tag_task_free_hook = KSU_LSM_HOOK_BPF_INIT(inode_create, task_free, process_tag_task_free);
+struct ksu_lsm_hook process_tag_task_alloc_hook = KSU_LSM_HOOK_BPF_INIT(task_alloc, task_alloc, process_tag_task_alloc);
+struct ksu_lsm_hook process_tag_task_free_hook = KSU_LSM_HOOK_BPF_INIT(task_free, task_free, process_tag_task_free);
 
 // Feature handler
 static int process_tag_feature_get(u64 *value)
