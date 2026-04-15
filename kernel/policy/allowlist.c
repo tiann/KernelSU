@@ -85,9 +85,10 @@ void ksu_show_allow_list(void)
 struct app_profile *ksu_get_app_profile(uid_t uid)
 {
     struct perm_data *p = NULL;
-    bool found = false;
+    bool found;
 
 retry:
+    found = false;
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid) {
             // found it, override it with ours
@@ -364,7 +365,7 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
     return &default_root_profile;
 #else
     struct perm_data *p = NULL;
-    struct root_profile *res = NULL;
+    struct root_profile *res;
 
     rcu_read_lock();
     if (is_uid_manager(uid)) {
@@ -376,6 +377,7 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
     }
 
 retry:
+    res = NULL;
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
