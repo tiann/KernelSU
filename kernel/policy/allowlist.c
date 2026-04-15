@@ -37,10 +37,6 @@ static DEFINE_MUTEX(allowlist_mutex);
 static struct root_profile default_root_profile;
 static struct non_root_profile default_non_root_profile;
 
-// protected by rcu
-static struct root_profile *current_default_root_profile;
-static struct non_root_profile *current_default_non_root_profile;
-
 static void __init init_default_profiles()
 {
     kernel_cap_t full_cap = CAP_FULL_SET;
@@ -53,11 +49,9 @@ static void __init init_default_profiles()
            sizeof(default_root_profile.capabilities.effective));
     default_root_profile.namespaces = KSU_NS_INHERITED;
     strcpy(default_root_profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
-    current_default_root_profile = &default_root_profile;
 
     // This means that we will umount modules by default!
     default_non_root_profile.umount_modules = true;
-    current_default_non_root_profile = &default_non_root_profile;
 }
 
 struct perm_data {
@@ -93,6 +87,7 @@ struct app_profile *ksu_get_app_profile(uid_t uid)
     struct perm_data *p = NULL;
     bool found = false;
 
+retry:
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid) {
             // found it, override it with ours
@@ -105,7 +100,7 @@ struct app_profile *ksu_get_app_profile(uid_t uid)
         return NULL;
 
     if (!kref_get_unless_zero(&p->ref)) {
-        return NULL;
+        goto retry;
     }
 
     return &p->profile;
@@ -193,8 +188,6 @@ static void put_perm_data_rcu(struct perm_data *data)
 int ksu_set_app_profile(struct app_profile *profile)
 {
     struct perm_data *p, *np;
-    struct root_profile *old_current_default_root_profile;
-    struct non_root_profile *old_current_default_non_root_profile;
     int result = 0;
 
     if (!profile_valid(profile)) {
@@ -212,6 +205,11 @@ int ksu_set_app_profile(struct app_profile *profile)
         memset(&profile->nrp_config.profile, 0, sizeof(profile->nrp_config.profile));
     }
 #endif
+
+    // only allow default non root profile
+    if (unlikely(profile->curr_uid == KSU_APP_PROFILE_PRESERVE_UID && strcmp(profile->key, "$") != 0)) {
+        return -EINVAL;
+    }
 
     mutex_lock(&allowlist_mutex);
 
@@ -265,30 +263,9 @@ int ksu_set_app_profile(struct app_profile *profile)
 out:
     result = 0;
 
-    // check if the default profiles is changed, cache it to a single struct to accelerate access.
     if (unlikely(profile->curr_uid == KSU_APP_PROFILE_PRESERVE_UID)) {
-        if (unlikely(!strcmp(profile->key, "$"))) {
-            // set default non root profile
-            kref_get(&np->ref);
-            old_current_default_non_root_profile =
-                rcu_dereference_protected(current_default_non_root_profile, lockdep_is_held(&allowlist_mutex));
-            rcu_assign_pointer(current_default_non_root_profile, &np->profile.nrp_config.profile);
-            if (unlikely(old_current_default_non_root_profile != &default_non_root_profile)) {
-                p = container_of(old_current_default_non_root_profile, struct perm_data, profile.nrp_config.profile);
-                put_perm_data_rcu(p);
-            }
-        } else if (unlikely(!strcmp(profile->key, "#"))) {
-            // set default root profile
-            // TODO: Do we really need this?
-            kref_get(&np->ref);
-            old_current_default_root_profile =
-                rcu_dereference_protected(current_default_root_profile, lockdep_is_held(&allowlist_mutex));
-            rcu_assign_pointer(current_default_root_profile, &np->profile.rp_config.profile);
-            if (unlikely(old_current_default_root_profile != &default_root_profile)) {
-                p = container_of(old_current_default_root_profile, struct perm_data, profile.rp_config.profile);
-                put_perm_data_rcu(p);
-            }
-        }
+        // set default non root profile
+        default_non_root_profile.umount_modules = profile->nrp_config.use_default;
     }
 
 out_unlock:
@@ -354,14 +331,14 @@ bool ksu_uid_should_umount(uid_t uid)
     profile = ksu_get_app_profile(uid);
     if (!profile) {
         // no app profile found, it must be non root app
-        res = current_default_non_root_profile->umount_modules;
+        res = default_non_root_profile.umount_modules;
     } else if (profile->allow_su) {
         // if found and it is granted to su, we shouldn't umount for it
         res = false;
     } else {
         // found an app profile
         if (profile->nrp_config.use_default) {
-            res = current_default_non_root_profile->umount_modules;
+            res = default_non_root_profile.umount_modules;
         } else {
             res = profile->nrp_config.profile.umount_modules;
         }
@@ -398,11 +375,14 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
         goto use_default;
     }
 
+retry:
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
             if (!p->profile.rp_config.use_default) {
-                if (kref_get_unless_zero(&p->ref))
-                    res = &p->profile.rp_config.profile;
+                if (!kref_get_unless_zero(&p->ref)) {
+                    goto retry;
+                }
+                res = &p->profile.rp_config.profile;
             }
             break;
         }
@@ -410,11 +390,7 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
 
     if (unlikely(!res)) {
     use_default:
-        res = current_default_root_profile;
-        if (unlikely(res != &default_root_profile)) {
-            if (kref_get_unless_zero(&p->ref))
-                p = container_of(res, struct perm_data, profile.rp_config.profile);
-        }
+        res = &default_root_profile;
     }
 
     rcu_read_unlock();
@@ -626,14 +602,6 @@ void __exit ksu_allowlist_exit(void)
 
     // free allowlist
     mutex_lock(&allowlist_mutex);
-    if (unlikely(current_default_non_root_profile != &default_non_root_profile)) {
-        np = container_of(current_default_non_root_profile, struct perm_data, profile.nrp_config.profile);
-        put_perm_data_rcu(np);
-    }
-    if (unlikely(current_default_root_profile != &default_root_profile)) {
-        np = container_of(current_default_root_profile, struct perm_data, profile.rp_config.profile);
-        put_perm_data_rcu(np);
-    }
     hash_for_each_safe (allow_list, i, tmp, np, list) {
         hlist_del(&np->list);
         put_perm_data_rcu(np);
