@@ -28,18 +28,6 @@ struct process_tag_entry {
     struct rcu_head rcu;
 };
 
-static void process_tag_entry_free(struct rcu_head *rcu)
-{
-    struct process_tag_entry *entry = container_of(rcu, struct process_tag_entry, rcu);
-    kfree(entry);
-}
-
-static void process_tag_free(struct rcu_head *rcu)
-{
-    struct process_tag *tag = container_of(rcu, struct process_tag, rcu);
-    kfree(tag);
-}
-
 int ksu_process_tag_set(struct task_struct *task, enum process_tag_type type, const char *name)
 {
     struct process_tag_entry *entry, *existing = NULL;
@@ -84,7 +72,7 @@ int ksu_process_tag_set(struct task_struct *task, enum process_tag_type type, co
             spin_unlock_irqrestore(&process_tag_lock, flags);
 
             if (old_tag && atomic_dec_and_test(&old_tag->refcount)) {
-                call_rcu(&old_tag->rcu, process_tag_free);
+                kfree_rcu(old_tag, rcu);
             }
             kfree(entry);
 
@@ -131,7 +119,7 @@ void ksu_process_tag_put(struct process_tag *tag)
     }
 
     if (atomic_dec_and_test(&tag->refcount)) {
-        call_rcu(&tag->rcu, process_tag_free);
+        kfree_rcu(tag, rcu);
     }
 }
 
@@ -150,10 +138,10 @@ void ksu_process_tag_delete(struct task_struct *task)
             spin_unlock_irqrestore(&process_tag_lock, flags);
 
             if (tag && atomic_dec_and_test(&tag->refcount)) {
-                call_rcu(&tag->rcu, process_tag_free);
+                kfree_rcu(tag, rcu);
             }
 
-            call_rcu(&entry->rcu, process_tag_entry_free);
+            kfree_rcu(entry, rcu);
             pr_debug("process_tag: deleted tag for task %d\n", task->pid);
             return;
         }
@@ -176,10 +164,10 @@ void ksu_process_tag_flush(void)
         tag = rcu_dereference_protected(entry->tag, lockdep_is_held(&process_tag_lock));
         hash_del_rcu(&entry->hnode);
         if (tag && atomic_dec_and_test(&tag->refcount)) {
-            call_rcu(&tag->rcu, process_tag_free);
+            kfree_rcu(tag, rcu);
         }
 
-        call_rcu(&entry->rcu, process_tag_entry_free);
+        kfree_rcu(entry, rcu);
     }
 
     spin_unlock_irqrestore(&process_tag_lock, flags);
