@@ -222,7 +222,8 @@ int escape_with_root_profile(void)
     }
 
     setup_mount_ns(profile->namespaces);
-    ksu_put_app_profile(app);
+    if (app)
+        ksu_put_app_profile(app);
     return 0;
 
 out_abort_creds:
