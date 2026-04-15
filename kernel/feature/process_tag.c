@@ -188,6 +188,7 @@ static int process_tag_task_alloc(struct task_struct *task, unsigned long clone_
 
     rcu_read_lock();
     parent_tag = ksu_process_tag_get(current);
+    rcu_read_unlock();
     if (parent_tag) {
         err = ksu_process_tag_set(task, parent_tag->type, parent_tag->name);
         ksu_process_tag_put(parent_tag);
@@ -198,7 +199,6 @@ static int process_tag_task_alloc(struct task_struct *task, unsigned long clone_
             pr_debug("process_tag: child %d inherited tag from parent %d\n", task_pid_nr(task), task_pid_nr(current));
         }
     }
-    rcu_read_unlock();
 
     return err;
 }
