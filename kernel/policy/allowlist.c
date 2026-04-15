@@ -265,7 +265,7 @@ out:
 
     if (unlikely(profile->curr_uid == KSU_APP_PROFILE_PRESERVE_UID)) {
         // set default non root profile
-        default_non_root_profile.umount_modules = profile->nrp_config.use_default;
+        default_non_root_profile.umount_modules = profile->nrp_config.profile.umount_modules;
     }
 
 out_unlock:
