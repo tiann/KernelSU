@@ -167,23 +167,12 @@ static bool profile_valid(struct app_profile *profile)
 static void release_perm_data(struct kref *ref)
 {
     struct perm_data *p = container_of(ref, struct perm_data, ref);
-    kfree(p);
+    kfree_rcu(p, rcu);
 }
 
 static void put_perm_data(struct perm_data *data)
 {
     kref_put(&data->ref, release_perm_data);
-}
-
-static void release_perm_data_rcu(struct kref *ref)
-{
-    struct perm_data *p = container_of(ref, struct perm_data, ref);
-    kfree_rcu(p, rcu);
-}
-
-static void put_perm_data_rcu(struct perm_data *data)
-{
-    kref_put(&data->ref, release_perm_data_rcu);
 }
 
 int ksu_set_app_profile(struct app_profile *profile)
@@ -229,7 +218,7 @@ int ksu_set_app_profile(struct app_profile *profile)
             kref_init(&np->ref);
             memcpy(&np->profile, profile, sizeof(*profile));
             hlist_replace_rcu(&p->list, &np->list);
-            put_perm_data_rcu(p);
+            put_perm_data(p);
             goto out;
         }
     }
@@ -579,7 +568,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
             modified = true;
             pr_info("prune uid: %d, package: %s\n", uid, package);
             hlist_del_rcu(&np->list);
-            put_perm_data_rcu(np);
+            put_perm_data(np);
             --allow_list_count;
         }
     }
@@ -606,7 +595,7 @@ void __exit ksu_allowlist_exit(void)
     mutex_lock(&allowlist_mutex);
     hash_for_each_safe (allow_list, i, tmp, np, list) {
         hlist_del(&np->list);
-        put_perm_data_rcu(np);
+        put_perm_data(np);
     }
     mutex_unlock(&allowlist_mutex);
 }
