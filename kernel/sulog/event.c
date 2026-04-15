@@ -106,7 +106,7 @@ static void ksu_sulog_fill_task_info(struct ksu_sulog_event *event, __u16 event_
     event->process_tag_type = PROCESS_TAG_NONE;
     event->process_tag_name[0] = '\0';
 
-    tag = ksu_process_tag_get(task_pid_nr(current));
+    tag = ksu_process_tag_get(current);
     if (tag) {
         event->process_tag_type = tag->type;
         strncpy(event->process_tag_name, tag->name, sizeof(event->process_tag_name) - 1);

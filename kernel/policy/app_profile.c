@@ -243,5 +243,5 @@ void escape_to_root_for_init(void)
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
 
-    ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_KSUD, "init");
+    ksu_process_tag_set(current, PROCESS_TAG_KSUD, "");
 }

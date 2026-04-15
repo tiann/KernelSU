@@ -698,7 +698,7 @@ static int do_get_process_tag(void __user *arg)
     task = find_task_by_vpid(cmd.pid);
     if (task) {
         get_task_struct(task);
-        tag = ksu_process_tag_get(cmd.pid);
+        tag = ksu_process_tag_get(task);
         put_task_struct(task);
         rcu_read_unlock();
     } else {
@@ -897,7 +897,7 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
             }
 
             if (is_manager()) {
-                ksu_process_tag_set(task_pid_nr(current), PROCESS_TAG_MANAGER, "");
+                ksu_process_tag_set(current, PROCESS_TAG_MANAGER, "");
             }
 
             // Execute handler
