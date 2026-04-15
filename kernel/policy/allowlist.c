@@ -384,8 +384,7 @@ struct root_profile *ksu_get_root_profile(uid_t uid)
 {
 #ifdef CONFIG_KSU_DISABLE_POLICY
     (void)uid;
-    memcpy(profile, &default_root_profile, sizeof(*profile));
-    return;
+    return &default_root_profile;
 #else
     struct perm_data *p = NULL;
     struct root_profile *res = NULL;
