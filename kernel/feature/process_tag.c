@@ -22,7 +22,7 @@ static bool process_tag_tracepoint_registered __read_mostly = false;
 
 struct process_tag_entry {
     struct hlist_node hnode;
-    pid_t pid;
+    struct task_struct *task;
     struct process_tag *tag;
     struct rcu_head rcu;
 };
@@ -39,14 +39,14 @@ static void process_tag_free(struct rcu_head *rcu)
     kfree(tag);
 }
 
-int ksu_process_tag_set(pid_t pid, enum process_tag_type type, const char *name)
+int ksu_process_tag_set(struct task_struct *task, enum process_tag_type type, const char *name)
 {
     struct process_tag_entry *entry, *existing = NULL;
     struct process_tag *new_tag;
     unsigned long flags;
 
     if (!process_tag_enabled) {
-        return -ENODEV;
+        return -ENOSYS;
     }
 
     if (!name) {
@@ -55,7 +55,7 @@ int ksu_process_tag_set(pid_t pid, enum process_tag_type type, const char *name)
 
     new_tag = kmalloc(sizeof(struct process_tag), GFP_KERNEL);
     if (!new_tag) {
-        pr_err("process_tag: failed to alloc tag for pid %d\n", pid);
+        pr_err("process_tag: failed to alloc tag for task %d\n", task->pid);
         return -ENOMEM;
     }
 
@@ -66,18 +66,18 @@ int ksu_process_tag_set(pid_t pid, enum process_tag_type type, const char *name)
 
     entry = kmalloc(sizeof(struct process_tag_entry), GFP_KERNEL);
     if (!entry) {
-        pr_err("process_tag: failed to alloc entry for pid %d\n", pid);
+        pr_err("process_tag: failed to alloc entry for pid %d\n", task->pid);
         kfree(new_tag);
         return -ENOMEM;
     }
 
-    entry->pid = pid;
+    entry->task = task;
     entry->tag = new_tag;
 
     spin_lock_irqsave(&process_tag_lock, flags);
 
-    hash_for_each_possible (process_tag_table, existing, hnode, pid) {
-        if (existing->pid == pid) {
+    hash_for_each_possible (process_tag_table, existing, hnode, task) {
+        if (existing->task == task) {
             struct process_tag *old_tag =
                 rcu_replace_pointer(existing->tag, new_tag, lockdep_is_held(&process_tag_lock));
             spin_unlock_irqrestore(&process_tag_lock, flags);
@@ -87,19 +87,19 @@ int ksu_process_tag_set(pid_t pid, enum process_tag_type type, const char *name)
             }
             kfree(entry);
 
-            pr_debug("process_tag: updated tag for pid %d, type=%d, name=%s\n", pid, type, name);
+            pr_debug("process_tag: updated tag for task %d, type=%d, name=%s\n", task->pid, type, name);
             return 0;
         }
     }
 
-    hash_add_rcu(process_tag_table, &entry->hnode, pid);
+    hash_add_rcu(process_tag_table, &entry->hnode, task);
     spin_unlock_irqrestore(&process_tag_lock, flags);
 
-    pr_debug("process_tag: added tag for pid %d, type=%d, name=%s\n", pid, type, name);
+    pr_debug("process_tag: added tag for task %d, type=%d, name=%s\n", task->pid, type, name);
     return 0;
 }
 
-struct process_tag *ksu_process_tag_get(pid_t pid)
+struct process_tag *ksu_process_tag_get(struct task_struct *task)
 {
     struct process_tag_entry *entry;
     struct process_tag *tag = NULL;
@@ -109,8 +109,8 @@ struct process_tag *ksu_process_tag_get(pid_t pid)
     }
 
     rcu_read_lock();
-    hash_for_each_possible_rcu (process_tag_table, entry, hnode, pid) {
-        if (entry->pid == pid) {
+    hash_for_each_possible_rcu (process_tag_table, entry, hnode, task) {
+        if (entry->task == task) {
             tag = rcu_dereference(entry->tag);
             if (tag) {
                 atomic_inc(&tag->refcount);
@@ -134,20 +134,16 @@ void ksu_process_tag_put(struct process_tag *tag)
     }
 }
 
-void ksu_process_tag_delete(pid_t pid)
+void ksu_process_tag_delete(struct task_struct *task)
 {
     struct process_tag_entry *entry;
     struct process_tag *tag;
     unsigned long flags;
 
-    if (!process_tag_enabled) {
-        return;
-    }
-
     spin_lock_irqsave(&process_tag_lock, flags);
 
-    hash_for_each_possible (process_tag_table, entry, hnode, pid) {
-        if (entry->pid == pid) {
+    hash_for_each_possible (process_tag_table, entry, hnode, task) {
+        if (entry->task == task) {
             tag = rcu_dereference_protected(entry->tag, lockdep_is_held(&process_tag_lock));
             hash_del_rcu(&entry->hnode);
             spin_unlock_irqrestore(&process_tag_lock, flags);
@@ -157,7 +153,7 @@ void ksu_process_tag_delete(pid_t pid)
             }
 
             call_rcu(&entry->rcu, process_tag_entry_free);
-            pr_debug("process_tag: deleted tag for pid %d\n", pid);
+            pr_debug("process_tag: deleted tag for task %d\n", task->pid);
             return;
         }
     }
@@ -200,14 +196,10 @@ static void process_tag_sched_fork_handler(void *data, struct task_struct *paren
 {
     struct process_tag *parent_tag;
 
-    if (!process_tag_enabled) {
-        return;
-    }
-
     rcu_read_lock();
     parent_tag = ksu_process_tag_get(task_pid_nr(parent));
     if (parent_tag) {
-        ksu_process_tag_set(task_pid_nr(child), parent_tag->type, parent_tag->name);
+        ksu_process_tag_set(child, parent_tag->type, parent_tag->name);
         ksu_process_tag_put(parent_tag);
         pr_debug("process_tag: child %d inherited tag from parent %d\n", task_pid_nr(child), task_pid_nr(parent));
     }
@@ -216,11 +208,7 @@ static void process_tag_sched_fork_handler(void *data, struct task_struct *paren
 
 static void process_tag_sched_exit_handler(void *data, struct task_struct *task)
 {
-    if (!process_tag_enabled) {
-        return;
-    }
-
-    ksu_process_tag_delete(task_pid_nr(task));
+    ksu_process_tag_delete(task);
 }
 
 // Feature handler

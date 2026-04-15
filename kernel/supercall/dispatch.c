@@ -665,15 +665,11 @@ static int do_set_process_tag(void __user *arg)
         return -EFAULT;
     }
 
-    if (cmd.pid != task_pid_nr(current)) {
+    if (cmd.type != PROCESS_TAG_MODULE) {
         return -EPERM;
     }
 
-    if (cmd.type != PROCESS_TAG_MODULE) {
-        return -EINVAL;
-    }
-
-    current_tag = ksu_process_tag_get(task_pid_nr(current));
+    current_tag = ksu_process_tag_get(current);
     if (!current_tag) {
         return -EPERM;
     }
@@ -684,20 +680,32 @@ static int do_set_process_tag(void __user *arg)
     }
     ksu_process_tag_put(current_tag);
 
-    return ksu_process_tag_set(cmd.pid, cmd.type, cmd.name);
+    return ksu_process_tag_set(current, cmd.type, cmd.name);
 }
 
 static int do_get_process_tag(void __user *arg)
 {
     struct ksu_get_process_tag_cmd cmd;
-    struct process_tag *tag;
+    struct task_struct *task;
+    struct process_tag *tag = NULL;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
         pr_err("get_process_tag: copy_from_user failed\n");
         return -EFAULT;
     }
 
-    tag = ksu_process_tag_get(cmd.pid);
+    rcu_read_lock();
+    task = find_task_by_vpid(cmd.pid);
+    if (task) {
+        get_task_struct(task);
+        tag = ksu_process_tag_get(cmd.pid);
+        put_task_struct(task);
+        rcu_read_unlock();
+    } else {
+        rcu_read_unlock();
+        return -ESRCH;
+    }
+
     if (tag) {
         cmd.type = tag->type;
         strncpy(cmd.name, tag->name, sizeof(cmd.name) - 1);
