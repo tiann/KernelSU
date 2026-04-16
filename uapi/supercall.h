@@ -111,13 +111,13 @@ struct ksu_get_wrapper_fd_cmd {
 
 struct ksu_set_process_tag_cmd {
     __u8 type; /* Input: enum process_tag_type */
-    char name[64]; /* Input: tag name (module name / package name) */
+    unsigned char name[64]; /* Input: tag name (module name / package name) */
 };
 
 struct ksu_get_process_tag_cmd {
     __u32 pid; /* Input: target process pid */
     __u8 type; /* Output: enum process_tag_type, PROCESS_TAG_NONE if no tag */
-    char name[64]; /* Output: tag name */
+    unsigned char name[64]; /* Output: tag name */
 };
 
 struct ksu_manage_mark_cmd {
