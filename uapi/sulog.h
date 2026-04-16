@@ -29,6 +29,6 @@ struct ksu_sulog_event {
     __u32 argv_len;
     __u8 process_tag_type;
     unsigned char process_tag_name[64];
-} __packed;
+} __attribute__((packed));
 
 #endif
