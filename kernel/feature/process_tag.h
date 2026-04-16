@@ -6,13 +6,7 @@
 #include <linux/rcupdate.h>
 #include <linux/types.h>
 
-enum process_tag_type {
-    PROCESS_TAG_NONE = 0,
-    PROCESS_TAG_KSUD = 1,
-    PROCESS_TAG_APP = 2,
-    PROCESS_TAG_MODULE = 3,
-    PROCESS_TAG_MANAGER = 4,
-};
+#include "uapi/process_tag.h"
 
 struct process_tag {
     enum process_tag_type type;

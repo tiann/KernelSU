@@ -256,6 +256,9 @@ static int process_tag_feature_set(u64 value)
     process_tag_lsm_hooked = true;
     pr_info("process_tag: initialized and enabled\n");
 
+    // mark the feature setter as ksud
+    ksu_process_tag_set(current, PROCESS_TAG_KSUD, "");
+
     return 0;
 }
 
