@@ -256,7 +256,7 @@ pub fn set_module_tag(tag: &str) -> std::io::Result<()> {
         name: [0; 64],
     };
     let bytes = tag.as_bytes();
-    let len = bytes.len().max(63);
+    let len = bytes.len().max(cmd.name.len() - 1);
     cmd.name[..len].copy_from_slice(&bytes[..len]);
     ksuctl(ksu_uapi::KSU_IOCTL_SET_PROCESS_TAG, &raw mut cmd)?;
     Ok(())
@@ -274,8 +274,13 @@ pub fn get_process_tag(pid: u32) -> anyhow::Result<ProcessTag> {
         name: [0; 64],
     };
     ksuctl(ksu_uapi::KSU_IOCTL_GET_PROCESS_TAG, &raw mut cmd)?;
+    let name_len = cmd
+        .name
+        .iter()
+        .position(|&b| b == 0)
+        .unwrap_or(cmd.name.len());
     Ok(ProcessTag {
         tag_type: cmd.type_,
-        name: std::ffi::CString::new(cmd.name)?.into_string()?,
+        name: String::from_utf8_lossy(&cmd.name[..name_len]).into_owned(),
     })
 }
