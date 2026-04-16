@@ -252,7 +252,7 @@ pub fn set_init_pgrp() -> std::io::Result<()> {
 
 pub fn set_module_tag(tag: &str) -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_set_process_tag_cmd {
-        type_: ksu_uapi::process_tag_type_PROCESS_TAG_MODULE,
+        type_: ksu_uapi::KSU_PROCESS_TAG_MODULE,
         name: [0; 64],
     };
     let bytes = tag.as_bytes();
@@ -270,7 +270,7 @@ pub struct ProcessTag {
 pub fn get_process_tag(pid: u32) -> anyhow::Result<ProcessTag> {
     let mut cmd = ksu_uapi::ksu_get_process_tag_cmd {
         pid,
-        type_: ksu_uapi::process_tag_type_PROCESS_TAG_NONE,
+        type_: ksu_uapi::KSU_PROCESS_TAG_NONE,
         name: [0; 64],
     };
     ksuctl(ksu_uapi::KSU_IOCTL_GET_PROCESS_TAG, &raw mut cmd)?;

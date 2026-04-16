@@ -3,12 +3,10 @@
 
 #include <linux/types.h>
 
-enum process_tag_type : __u8 {
-    PROCESS_TAG_NONE = 0,
-    PROCESS_TAG_KSUD = 1,
-    PROCESS_TAG_APP = 2,
-    PROCESS_TAG_MODULE = 3,
-    PROCESS_TAG_MANAGER = 4,
-};
+static const __u8 KSU_PROCESS_TAG_NONE = 0;
+static const __u8 KSU_PROCESS_TAG_KSUD = 1;
+static const __u8 KSU_PROCESS_TAG_APP = 2;
+static const __u8 KSU_PROCESS_TAG_MODULE = 3;
+static const __u8 KSU_PROCESS_TAG_MANAGER = 4;
 
 #endif

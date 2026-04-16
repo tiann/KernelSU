@@ -8,6 +8,14 @@
 
 #include "uapi/process_tag.h"
 
+enum process_tag_type {
+    PROCESS_TAG_NONE = KSU_PROCESS_TAG_NONE,
+    PROCESS_TAG_KSUD = KSU_PROCESS_TAG_KSUD,
+    PROCESS_TAG_APP = KSU_PROCESS_TAG_APP,
+    PROCESS_TAG_MODULE = KSU_PROCESS_TAG_MODULE,
+    PROCESS_TAG_MANAGER = KSU_PROCESS_TAG_MANAGER,
+};
+
 struct process_tag {
     enum process_tag_type type;
     char name[64];
