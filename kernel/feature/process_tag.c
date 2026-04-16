@@ -101,8 +101,8 @@ struct process_tag *ksu_process_tag_get(struct task_struct *task)
     hash_for_each_possible_rcu (process_tag_table, entry, hnode, task) {
         if (entry->task == task) {
             tag = rcu_dereference(entry->tag);
-            if (tag) {
-                atomic_inc(&tag->refcount);
+            if (tag && !atomic_inc_not_zero(&tag->refcount)) {
+                tag = NULL;
             }
             break;
         }
