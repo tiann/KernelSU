@@ -24,11 +24,11 @@ struct ksu_sulog_event {
     __u32 ppid;
     __u32 uid;
     __u32 euid;
-    char comm[TASK_COMM_LEN];
+    unsigned char comm[TASK_COMM_LEN];
     __u32 filename_len;
     __u32 argv_len;
     __u8 process_tag_type;
-    char process_tag_name[64];
+    unsigned char process_tag_name[64];
 } __packed;
 
 #endif
