@@ -251,9 +251,9 @@ enum MarkCommand {
 
 #[derive(clap::Subcommand, Debug)]
 enum ProcessTagCommand {
-    /// Get mark status for a process
+    /// Get process tag for a process
     Get {
-        /// target pid (0 for total count)
+        /// target pid
         pid: u32,
     },
 }
