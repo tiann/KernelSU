@@ -4,7 +4,7 @@
 #include <linux/sched.h>
 #include <linux/types.h>
 
-#define KSU_SULOG_EVENT_VERSION 1
+#define KSU_SULOG_EVENT_VERSION 2
 #ifndef TASK_COMM_LEN
 #define TASK_COMM_LEN 16
 #endif

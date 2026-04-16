@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-use crate::ksu_uapi;
+use crate::ksu_uapi::{self, ProcessTag};
 use std::fs;
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
@@ -260,11 +260,6 @@ pub fn set_module_tag(tag: &str) -> std::io::Result<()> {
     cmd.name[..len].copy_from_slice(&bytes[..len]);
     ksuctl(ksu_uapi::KSU_IOCTL_SET_PROCESS_TAG, &raw mut cmd)?;
     Ok(())
-}
-
-pub struct ProcessTag {
-    pub tag_type: u8,
-    pub name: String,
 }
 
 pub fn get_process_tag(pid: u32) -> anyhow::Result<ProcessTag> {
