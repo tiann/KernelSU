@@ -97,7 +97,7 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
     let magic = u32::from_le_bytes(magic_buf);
 
     if magic != FEATURE_MAGIC {
-        bail!("Invalid feature config magic: expected 0x{FEATURE_MAGIC:08x}, got 0x{magic:08x}",);
+        bail!("Invalid feature config magic: expected 0x{FEATURE_MAGIC:08x}, got 0x{magic:08x}");
     }
 
     let mut version_buf = [0u8; 4];

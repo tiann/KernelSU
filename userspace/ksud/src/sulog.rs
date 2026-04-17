@@ -430,11 +430,11 @@ fn open_log_writer_for_day(day: &str, max_file_size: u64) -> Result<(u32, u64, L
 
     let mut index = if found { highest_index } else { 0 };
     let mut path = daily_log_path(day, index);
-    let mut current_size = fs::metadata(&path).map(|meta| meta.len()).unwrap_or(0);
+    let mut current_size = fs::metadata(&path).map_or(0, |meta| meta.len());
     if current_size >= max_file_size && current_size > 0 {
         index = index.saturating_add(1);
         path = daily_log_path(day, index);
-        current_size = fs::metadata(&path).map(|meta| meta.len()).unwrap_or(0);
+        current_size = fs::metadata(&path).map_or(0, |meta| meta.len());
     }
 
     let writer = open_line_writer(&path)?;
