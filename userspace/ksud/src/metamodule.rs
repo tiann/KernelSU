@@ -222,7 +222,7 @@ pub fn exec_metauninstall_script(module_id: &str) -> Result<()> {
         return Ok(());
     };
 
-    info!("Executing metamodule metauninstall.sh for module: {module_id}",);
+    info!("Executing metamodule metauninstall.sh for module: {module_id}");
 
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", metauninstall_path.to_str().unwrap()])
@@ -236,7 +236,7 @@ pub fn exec_metauninstall_script(module_id: &str) -> Result<()> {
         "Metamodule metauninstall.sh failed for module {module_id}: {result:?}"
     );
 
-    info!("Metamodule metauninstall.sh executed successfully for {module_id}",);
+    info!("Metamodule metauninstall.sh executed successfully for {module_id}");
     Ok(())
 }
 
