@@ -64,6 +64,10 @@ fn main() {
         }
     };
     let out_dir = env::var("OUT_DIR").expect("Failed to get $OUT_DIR");
+    println!("cargo:rerun-if-changed={out_dir}/VERSION_CODE");
+    println!("cargo:rerun-if-changed={out_dir}/VERSION_NAME");
+    println!("cargo:rerun-if-changed={out_dir}/KSU_PACKAGE_NAME");
+
     let out_dir = Path::new(&out_dir);
     File::create(Path::new(out_dir).join("VERSION_CODE"))
         .expect("Failed to create VERSION_CODE")
@@ -74,6 +78,11 @@ fn main() {
         .expect("Failed to create VERSION_NAME")
         .write_all(name.trim().as_bytes())
         .expect("Failed to write VERSION_NAME");
+    let ksu_package_name = env::var("KSU_PACKAGE_NAME").unwrap_or("me.weishu.kernelsu".to_owned());
+    File::create(Path::new(out_dir).join("KSU_PACKAGE_NAME"))
+        .expect("Failed to create KSU_PACKAGE_NAME")
+        .write_all(ksu_package_name.trim().as_bytes())
+        .expect("Failed to write KSU_PACKAGE_NAME");
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").expect("CARGO_CFG_TARGET_OS not set");
     if target_os == "android" {

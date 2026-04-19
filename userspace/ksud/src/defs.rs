@@ -49,6 +49,9 @@ mod android {
     pub const KSU_BACKUP_DIR: &str = WORKING_DIR;
     pub const KSU_BACKUP_FILE_PREFIX: &str = "ksu_backup_";
     pub const BACKUP_FILENAME: &str = "stock_image.sha1";
+
+    pub const DEFAULT_PACKAGE_NAME: &str =
+        include_str!(concat!(env!("OUT_DIR"), "/KSU_PACKAGE_NAME"));
 }
 
 #[allow(unused)]
