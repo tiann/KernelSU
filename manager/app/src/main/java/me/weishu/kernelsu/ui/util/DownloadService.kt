@@ -104,13 +104,11 @@ class DownloadService : Service() {
 
     private fun startDownload(id: Int, url: String, fileName: String) {
         val job = serviceScope.launch {
+            val target = resolveAvailableTarget(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                fileName
+            )
             try {
-                val target = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                    fileName
-                )
-                target.parentFile?.mkdirs()
-
                 ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
                     .use { resp ->
                         if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
@@ -137,7 +135,7 @@ class DownloadService : Service() {
                                     if (percent - lastNotifiedProgress >= 2 || percent == 100) {
                                         notificationManager.notify(
                                             id,
-                                            buildProgressNotification(id, fileName, percent)
+                                            buildProgressNotification(id, target.name, percent)
                                         )
                                         lastNotifiedProgress = percent
                                     }
@@ -153,7 +151,7 @@ class DownloadService : Service() {
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, fileName, uri)
+                    buildCompletionNotification(id, target.name, uri)
                 )
             } catch (e: CancellationException) {
                 throw e
@@ -163,7 +161,7 @@ class DownloadService : Service() {
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildFailureNotification(fileName)
+                    buildFailureNotification(target.name)
                 )
             } finally {
                 activeJobs.remove(id)
@@ -171,6 +169,29 @@ class DownloadService : Service() {
             }
         }
         activeJobs[id] = job
+    }
+
+    private fun resolveAvailableTarget(
+        directory: File,
+        fileName: String
+    ): File {
+        val dotIndex = fileName.lastIndexOf('.')
+        val baseName = if (dotIndex > 0) fileName.substring(0, dotIndex) else fileName
+        val extension = if (dotIndex > 0) fileName.substring(dotIndex) else ""
+
+        var index = 0
+        while (true) {
+            val candidateName = if (index == 0) {
+                fileName
+            } else {
+                "$baseName ($index)$extension"
+            }
+            val candidate = File(directory, candidateName)
+            if (!candidate.exists()) {
+                return candidate
+            }
+            index++
+        }
     }
 
     private fun buildProgressNotification(
