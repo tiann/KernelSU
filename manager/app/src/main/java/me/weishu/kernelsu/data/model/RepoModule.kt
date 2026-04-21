@@ -28,6 +28,6 @@ data class RepoModule(
     val createdAt: String,
     val latestRelease: String,
     val latestReleaseTime: String,
-    val latestVersionCode: Int,
+    val latestVersionCode: Long,
     val latestAsset: ReleaseAsset?,
 )

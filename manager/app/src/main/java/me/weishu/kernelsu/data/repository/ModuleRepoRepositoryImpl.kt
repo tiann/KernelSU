@@ -67,7 +67,7 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
 
         var latestRelease = ""
         var latestReleaseTime = ""
-        var latestVersionCode = 0
+        var latestVersionCode = 0L
         var latestAsset: ReleaseAsset? = null
         val lr = item.optJSONObject("latestRelease")
         if (lr != null) {
@@ -83,9 +83,9 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
             }
             val vcAny = lr.opt("versionCode")
             latestVersionCode = when (vcAny) {
-                is Number -> vcAny.toInt()
-                is String -> vcAny.toIntOrNull() ?: 0
-                else -> 0
+                is Number -> vcAny.toLong()
+                is String -> vcAny.toLongOrNull() ?: 0L
+                else -> 0L
             }
             latestRelease = lrName
             latestReleaseTime = lrTime

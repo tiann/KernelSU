@@ -8,7 +8,7 @@ data class Module(
     val name: String,
     val author: String,
     val version: String,
-    val versionCode: Int,
+    val versionCode: Long,
     val description: String,
     val enabled: Boolean,
     val update: Boolean,

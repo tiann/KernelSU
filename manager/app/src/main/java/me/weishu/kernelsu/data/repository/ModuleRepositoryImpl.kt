@@ -31,7 +31,7 @@ class ModuleRepositoryImpl : ModuleRepository {
                         name = obj.optString("name"),
                         author = obj.optString("author", "Unknown"),
                         version = obj.optString("version", "Unknown"),
-                        versionCode = obj.optInt("versionCode", 0),
+                        versionCode = obj.optLong("versionCode", 0L),
                         description = obj.optString("description"),
                         enabled = obj.getBoolean("enabled"),
                         update = obj.optBoolean("update"),
@@ -74,7 +74,7 @@ class ModuleRepositoryImpl : ModuleRepository {
             val updateJson = JSONObject(result)
             var version = updateJson.optString("version", "")
             version = sanitizeVersionString(version)
-            val versionCode = updateJson.optInt("versionCode", 0)
+            val versionCode = updateJson.optLong("versionCode", 0L)
             val zipUrl = updateJson.optString("zipUrl", "")
             val changelog = updateJson.optString("changelog", "")
 

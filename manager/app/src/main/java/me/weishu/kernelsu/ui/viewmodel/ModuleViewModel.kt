@@ -51,7 +51,7 @@ class ModuleViewModel(
 
     private data class ModuleUpdateSignature(
         val updateJson: String,
-        val versionCode: Int,
+        val versionCode: Long,
         val enabled: Boolean,
         val update: Boolean,
         val remove: Boolean
