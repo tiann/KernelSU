@@ -102,7 +102,7 @@ KernelSU doesn't have built-in support for Zygisk, so there is no content relate
 id=<string>
 name=<string>
 version=<string>
-versionCode=<int>
+versionCode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (optional)

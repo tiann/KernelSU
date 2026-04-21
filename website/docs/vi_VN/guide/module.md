@@ -102,7 +102,7 @@ module.prop là tệp cấu hình cho mô-đun. Trong KernelSU, nếu một mô-
 id=<string>
 name=<string>
 version=<string>
-versionCode=<int>
+versionCode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (optional)

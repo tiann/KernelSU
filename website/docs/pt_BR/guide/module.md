@@ -102,7 +102,7 @@ O KernelSU não possui suporte integrado para o Zygisk, portanto não há conte�
 id=<string>
 name=<string>
 version=<string>
-versionCode=<int>
+versionCode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (opcional)

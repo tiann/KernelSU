@@ -108,7 +108,7 @@ module.prop 是一个模块的配置文件，在 KernelSU 中如果模块中不�
 id=<string>
 name=<string>
 version=<string>
-versionCode=<int>
+versionCode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (optional)

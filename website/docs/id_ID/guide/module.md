@@ -100,7 +100,7 @@ module.prop adalah file konfigurasi untuk sebuah modul. Di KernelSU, jika modul 
 id=<string>
 name=<string>
 version=<string>
-versioncode=<int>
+versioncode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (opsional)

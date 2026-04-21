@@ -100,7 +100,7 @@ module.prop - это конфигурационный файл модуля. В 
 id=<string>
 name=<string>
 version=<string>
-versionCode=<int>
+versionCode=<long>
 author=<string>
 description=<string>
 updateJson=<url> (optional)
