@@ -2,9 +2,6 @@
 #include <linux/fs.h>
 #include <linux/gfp.h>
 #include <linux/kernel.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-#include <linux/hex.h>
-#endif
 #include <linux/slab.h>
 #include <linux/version.h>
 #ifdef CONFIG_KSU_DEBUG
@@ -16,6 +13,10 @@
 #else
 #include <crypto/sha.h>
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+#include <linux/hex.h>
+#endif
+
 #include "manager/apk_sign.h"
 #include "uapi/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
