@@ -7,7 +7,7 @@ activity-compose = "1.13.0"
 kotlinx-coroutines = "1.10.2"
 navigation3 = "1.1.1"
 navigationevent = "1.1.0"
-markwon = "4.6.2"
+commonmark = "0.28.0"
 webkit = "1.15.0"
 parcelablelist = "2.0.1"
 material3 = "1.5.0-alpha18"
@@ -59,7 +59,11 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
-markwon = { group = "io.noties.markwon", name = "core", version.ref = "markwon" }
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
+commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
+commonmark-ext-gfm-strikethrough = { module = "org.commonmark:commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
+commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmark" }
+commonmark-ext-task-list-items = { module = "org.commonmark:commonmark-ext-task-list-items", version.ref = "commonmark" }
 
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
