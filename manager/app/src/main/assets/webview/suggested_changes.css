@@ -1,0 +1,141 @@
+.my-2 {
+    margin-top: 8px!important;
+    margin-bottom: 8px!important;
+}
+
+.js-suggested-changes-blob.border {
+    border: 1.1px solid var(--border)!important;
+}
+
+.js-suggested-changes-blob .border-bottom {
+    border-bottom: 1px solid var(--border)!important;
+}
+
+.js-suggested-changes-blob .border-top {
+    border-top: 1px solid var(--border)!important;
+}
+
+.js-suggested-changes-blob .border-0 {
+    border: 0!important;
+}
+
+.rounded-1 {
+    border-radius: 4px!important;
+}
+
+.f6 {
+    font-size: 12px!important;
+}
+
+.p-2 {
+    padding: 8px!important;
+}
+
+.px-2 {
+    padding-right: 8px!important;
+}
+
+.lh-condensed {
+    line-height: 1.25!important;
+}
+
+.d-flex {
+    display: flex!important;
+}
+
+.blob-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.mb-0 {
+    margin-bottom: 0!important;
+}
+
+.width-full {
+    width: 100%!important;
+}
+
+.flex-auto {
+    flex: auto!important;
+}
+
+.flex-items-center {
+    align-items: center!important;
+}
+
+.color-text-secondary {
+    color: var(--textSecondary)!important;
+}
+
+.tooltipped-s {
+  display: none;
+}
+
+.blob-num:before {
+    content: attr(data-line-number);
+}
+
+.blob-num {
+    width: 1%;
+    min-width: 40px;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-family: var(--code-font);
+    font-size: 12px;
+    line-height: 20px;
+    text-align: right;
+    white-space: nowrap;
+    vertical-align: top;
+    cursor: pointer;
+    user-select: none;
+}
+
+.blob-num-deletion {
+    color: var(--diffLineNumberDeletionText);
+    background-color: var(--diffLineNumberDeletionBackground);
+    border-color: var(--diffLineNumberDeletionBackground);
+}
+
+.blob-code-marker-deletion:before {
+    content: "- ";
+}
+
+.blob-code-deletion {
+    background-color: var(--diffLineDeletionBackground);
+    outline: 1px dashed transparent;
+}
+
+.blob-code-deletion .x {
+    color: var(--suggestedChangeDeletionText);
+    background-color: var(--suggestedChangeDeletionBackground);
+}
+
+.blob-code-marker-addition:before {
+    content: "+ ";
+}
+
+.blob-num-addition {
+    color: var(--diffLineNumberAdditionText);
+    background-color: var(--diffLineNumberAdditionBackground);
+    border-color: var(--diffLineNumberAdditionBackground);
+}
+
+.blob-code-addition {
+    background-color: var(--diffLineAdditionBackground);
+    outline: 1px dotted transparent;
+}
+
+.blob-code-addition .x {
+    color: var(--suggestedChangeAdditionText);
+    background-color: var(--suggestedChangeAdditionBackground);
+}
+
+.blob-code-inner {
+    overflow: visible;
+    font-family: var(--code-font);
+    font-size: 12px;
+    color: var(--textPrimary);
+    word-wrap: normal;
+    white-space: pre;
+}
