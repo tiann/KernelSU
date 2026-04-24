@@ -16,6 +16,7 @@
 #include "hook/syscall_hook_manager.h"
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
+#include "feature/process_tag.h"
 #include "feature/sulog.h"
 #include "supercall/supercall.h"
 #include "ksu.h"
@@ -122,6 +123,7 @@ int __init kernelsu_init(void)
     ksu_syscall_hook_init();
 
     ksu_feature_init();
+    ksu_process_tag_init();
     ksu_sulog_init();
     ksu_adb_root_init();
 
@@ -138,6 +140,7 @@ int __init kernelsu_init(void)
         // with KSU SELinux domain before enforcing SELinux, so it
         // can continue to access /data/app etc. after enforcement.
         escape_to_root_for_init();
+        ksu_process_tag_set(current, PROCESS_TAG_KSUD, "");
 
         ksu_allowlist_init();
         ksu_load_allow_list();
@@ -197,6 +200,7 @@ void __exit kernelsu_exit(void)
     ksu_allowlist_exit();
 
     ksu_adb_root_exit();
+    ksu_process_tag_exit();
     ksu_sulog_exit();
     ksu_feature_exit();
 

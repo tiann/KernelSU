@@ -214,6 +214,12 @@ enum Debug {
 
     /// Launch sulogd daemon manually
     Sulogd,
+
+    /// Process tag management
+    Tag {
+        #[command(subcommand)]
+        command: ProcessTagCommand,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -241,6 +247,15 @@ enum MarkCommand {
 
     /// Refresh mark for all running processes
     Refresh,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum ProcessTagCommand {
+    /// Get process tag for a process
+    Get {
+        /// target pid
+        pid: u32,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -700,6 +715,9 @@ pub fn run() -> Result<()> {
                 MarkCommand::Refresh => debug::mark_refresh(),
             },
             Debug::Sulogd => sulog::ensure_sulogd_running(),
+            Debug::Tag { command } => match command {
+                ProcessTagCommand::Get { pid } => debug::get_tag(pid),
+            },
         },
 
         Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),

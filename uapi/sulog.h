@@ -4,7 +4,7 @@
 #include <linux/sched.h>
 #include <linux/types.h>
 
-#define KSU_SULOG_EVENT_VERSION 1
+#define KSU_SULOG_EVENT_VERSION 2
 #ifndef TASK_COMM_LEN
 #define TASK_COMM_LEN 16
 #endif
@@ -24,9 +24,11 @@ struct ksu_sulog_event {
     __u32 ppid;
     __u32 uid;
     __u32 euid;
-    char comm[TASK_COMM_LEN];
+    unsigned char comm[TASK_COMM_LEN];
     __u32 filename_len;
     __u32 argv_len;
-} __packed;
+    __u8 process_tag_type;
+    unsigned char process_tag_name[64];
+} __attribute__((packed));
 
 #endif
