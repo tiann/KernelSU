@@ -88,6 +88,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
+            excludes += "lib/*/libandroidx.graphics.path.so"
         }
     }
 
