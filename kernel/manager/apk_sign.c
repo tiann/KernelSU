@@ -13,6 +13,9 @@
 #else
 #include <crypto/sha.h>
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+#include <linux/hex.h>
+#endif
 
 #include "manager/apk_sign.h"
 #include "uapi/app_profile.h"
