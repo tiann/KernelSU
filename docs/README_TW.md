@@ -37,7 +37,9 @@
 
 ## 多語翻譯
 
-欲要協助 KernelSU 邁向多語化，抑或改進翻譯品質，請前往 [Weblate](https://hosted.weblate.org/engage/kernelsu/) 進行翻譯。為避免與 Weblate 上的翻譯發生衝突，現已不再受理翻譯相關的管理工具 PR。
+KernelSU 已不再接受透過 Weblate 提交的翻譯貢獻。所有翻譯現改由 LLMs 處理。
+
+如果你想新增一種語言支援，歡迎提交 PR。請注意，現有英文與中文翻譯的修改不予受理。
 
 ## 綜合討論
 
