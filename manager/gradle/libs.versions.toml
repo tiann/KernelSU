@@ -11,6 +11,7 @@ commonmark = "0.28.0"
 webkit = "1.15.0"
 parcelablelist = "2.0.1"
 material3 = "1.5.0-alpha18"
+wear-compose = "1.6.1"
 materialKolor = "4.1.1"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
@@ -40,6 +41,10 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wear-compose" }
+androidx-wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wear-compose" }
+androidx-wear-compose-navigation3 = { module = "androidx.wear.compose:compose-navigation3", version.ref = "wear-compose" }
+androidx-wear-compose-ui-tooling = { module = "androidx.wear.compose:compose-ui-tooling", version.ref = "wear-compose" }
 
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }

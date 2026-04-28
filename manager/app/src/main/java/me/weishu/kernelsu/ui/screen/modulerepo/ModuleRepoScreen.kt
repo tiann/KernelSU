@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +17,7 @@ import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
+import me.weishu.kernelsu.ui.util.openExternalUrl
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 
@@ -61,13 +62,14 @@ fun ModuleRepoScreen() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> ModuleRepoScreenMiuix(uiState, actions)
         UiMode.Material -> ModuleRepoScreenMaterial(uiState, actions)
+        UiMode.Wear -> ModuleRepoScreenWear(uiState, actions)
     }
 }
 
 @Composable
 fun ModuleRepoDetailScreen(module: RepoModuleArg) {
     val navigator = LocalNavigator.current
-    val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     var readmeHtml by remember(module.moduleId) { mutableStateOf<String?>(null) }
     var readmeLoaded by remember(module.moduleId) { mutableStateOf(false) }
     var detailReleases by remember(module.moduleId) { mutableStateOf<List<ReleaseArg>>(emptyList()) }
@@ -116,13 +118,14 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
     )
     val actions = ModuleRepoDetailActions(
         onBack = { navigator.pop() },
-        onOpenWebUrl = { if (webUrl.isNotEmpty()) uriHandler.openUri(webUrl) },
-        onOpenUrl = uriHandler::openUri,
+        onOpenWebUrl = { if (webUrl.isNotEmpty()) openExternalUrl(context, webUrl) },
+        onOpenUrl = { openExternalUrl(context, it) },
         onInstallModule = { uri -> navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri)))) },
     )
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> ModuleRepoDetailScreenMiuix(state, actions)
         UiMode.Material -> ModuleRepoDetailScreenMaterial(state, actions)
+        UiMode.Wear -> ModuleRepoDetailScreenWear(state, actions)
     }
 }

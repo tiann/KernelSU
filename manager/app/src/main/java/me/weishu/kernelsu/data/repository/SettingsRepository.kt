@@ -17,6 +17,7 @@ interface SettingsRepository {
     var enableWebDebugging: Boolean
     var enableSmoothCorner: Boolean
     var autoJailbreak: Boolean
+    var screenShape: String
 
     suspend fun getSuCompatStatus(): String
     suspend fun getSuCompatPersistValue(): Long?

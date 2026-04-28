@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.ScreenShape
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.ThemeController
 
@@ -52,6 +53,7 @@ class MainActivityViewModel(
             enableFloatingBottomBarBlur = settingRepo.enableFloatingBottomBarBlur,
             enableSmoothCorner = settingRepo.enableSmoothCorner,
             uiMode = UiMode.fromValue(settingRepo.uiMode),
+            screenShape = ScreenShape.fromValue(settingRepo.screenShape),
         )
     }
 
@@ -67,6 +69,7 @@ class MainActivityViewModel(
             "enable_floating_bottom_bar_blur",
             "enable_smooth_corner",
             "ui_mode",
+            "screen_shape",
         )
     }
 }

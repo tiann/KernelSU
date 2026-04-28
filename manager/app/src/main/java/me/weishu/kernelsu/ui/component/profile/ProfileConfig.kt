@@ -30,6 +30,14 @@ fun AppProfileConfig(
             profile = profile,
             onProfileChange = onProfileChange
         )
+
+        UiMode.Wear -> AppProfileConfigMaterial(
+            modifier = modifier,
+            fixedName = fixedName,
+            enabled = enabled,
+            profile = profile,
+            onProfileChange = onProfileChange
+        )
     }
 }
 
@@ -56,6 +64,13 @@ fun RootProfileConfig(
             profile = profile,
             onProfileChange = onProfileChange
         )
+
+        UiMode.Wear -> RootProfileConfigMaterial(
+            modifier = modifier,
+            enabled = enabled,
+            profile = profile,
+            onProfileChange = onProfileChange
+        )
     }
 }
 
@@ -77,6 +92,13 @@ fun TemplateConfig(
         )
 
         UiMode.Material -> TemplateConfigMaterial(
+            profile = profile,
+            onViewTemplate = onViewTemplate,
+            onManageTemplate = onManageTemplate,
+            onProfileChange = onProfileChange
+        )
+
+        UiMode.Wear -> TemplateConfigMaterial(
             profile = profile,
             onViewTemplate = onViewTemplate,
             onManageTemplate = onManageTemplate,

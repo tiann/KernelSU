@@ -161,5 +161,12 @@ fun ModulePager(
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
+
+        UiMode.Wear -> ModulePagerWear(
+            uiState = rawUiState,
+            confirmDialogState = rawUiState.confirmDialogState,
+            effect = rawUiState.effect,
+            actions = actions,
+        )
     }
 }

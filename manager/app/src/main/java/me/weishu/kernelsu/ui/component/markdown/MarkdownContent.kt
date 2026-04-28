@@ -28,6 +28,7 @@ fun MarkdownContent(
     val containerColor = when (LocalUiMode.current) {
         UiMode.Material -> MaterialTheme.colorScheme.surfaceContainerHigh
         UiMode.Miuix -> null
+        UiMode.Wear -> MaterialTheme.colorScheme.surfaceContainerHigh
     }
     Box(Modifier.fillMaxWidth()) {
         Box(Modifier.verticalScroll(rememberScrollState())) {
@@ -48,6 +49,7 @@ fun MarkdownContent(
                 when (LocalUiMode.current) {
                     UiMode.Material -> LoadingIndicator()
                     UiMode.Miuix -> InfiniteProgressIndicator()
+                    UiMode.Wear -> LoadingIndicator()
                 }
             }
         }

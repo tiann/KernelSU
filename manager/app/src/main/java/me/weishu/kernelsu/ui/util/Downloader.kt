@@ -18,6 +18,7 @@ fun download(
     fileName: String,
     onDownloaded: (Uri) -> Unit = {},
     onDownloading: () -> Unit = {},
+    onFailed: () -> Unit = {},
     onProgress: (Int) -> Unit = {}
 ) {
     onDownloading()
@@ -36,6 +37,9 @@ fun download(
             if (state.status == DownloadManager.Status.COMPLETED ||
                 state.status == DownloadManager.Status.FAILED
             ) {
+                if (state.status == DownloadManager.Status.FAILED) {
+                    onFailed()
+                }
                 cancel()
             }
         }

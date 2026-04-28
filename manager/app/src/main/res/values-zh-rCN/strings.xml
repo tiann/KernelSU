@@ -125,6 +125,9 @@
     <string name="home_pr_kernel_warning">当前内核包含 PR 签名支持，这不是一个生产内核！</string>
     <string name="action">执行</string>
     <string name="open">打开</string>
+    <string name="webui" translatable="false">WebUI</string>
+    <string name="enable">启用</string>
+    <string name="disable">禁用</string>
     <string name="enable_web_debugging">WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI，请仅在需要时启用</string>
     <string name="direct_install">直接安装（推荐）</string>
@@ -180,6 +183,9 @@
     <string name="settings_key_color_default">默认</string>
     <string name="settings_ui_mode">界面风格</string>
     <string name="settings_ui_mode_summary">选择应用的界面风格</string>
+    <string name="settings_screen_shape">屏幕形状</string>
+    <string name="settings_screen_shape_round">圆形</string>
+    <string name="settings_screen_shape_square">方形</string>
     <string name="settings_page_scale">界面缩放</string>
     <string name="settings_page_scale_summary">调整全局显示比例</string>
     <string name="settings_color_spec">色彩标准</string>
@@ -249,4 +255,27 @@
     <string name="download_cancel">取消</string>
     <string name="download_install">安装</string>
     <string name="settings_adb_root_summary">以 root 权限运行 adbd 守护进程</string>
+    <string name="wear_state_on">开</string>
+    <string name="wear_state_off">关</string>
+    <string name="wear_no_apps">没有应用</string>
+    <string name="open_link_unavailable">没有可打开此链接的应用</string>
+    <string name="open_link_failed">打开链接失败</string>
+    <string name="wear_search_modules">搜索模块</string>
+    <string name="wear_search_apps">搜索应用</string>
+    <string name="wear_search_logs">搜索日志</string>
+    <string name="wear_install_required">请先安装 KernelSU 再使用此功能</string>
+    <string name="wear_feature_unavailable">此设备当前无法使用此功能</string>
+    <string name="superuser_allow">允许</string>
+    <string name="superuser_deny">拒绝</string>
+    <string name="superuser_allow_root_access">Root 访问</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="pull_down_refresh">刷新</string>
+    <string name="sulog_enable">启用 SU 日志</string>
+    <string name="sulog_empty">暂无日志</string>
+    <string name="module_action">模块操作</string>
+    <string name="settings_theme_wear_note">Wear OS 上不支持主题设置。</string>
+    <string name="module_repo_open_web">在浏览器中打开</string>
+    <string name="app_profile_template_empty">暂无模版</string>
 </resources>

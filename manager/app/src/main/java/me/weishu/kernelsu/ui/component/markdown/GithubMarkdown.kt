@@ -382,6 +382,20 @@ private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color
             )
         }
 
+        UiMode.Wear -> {
+            val bgArgb =
+                containerColor?.toArgb() ?: MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
+                    .toArgb()
+
+            MarkdownColors(
+                bgDefault = cssColorFromArgb(bgArgb),
+                bgCode = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerHigh.toArgb()),
+                bgRowAlt = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerLow.toArgb()),
+                fgDefault = cssColorFromArgb(MaterialTheme.colorScheme.onSurface.toArgb()),
+                fgLink = cssColorFromArgb(MaterialTheme.colorScheme.primary.toArgb())
+            )
+        }
+
         UiMode.Miuix -> {
             val bgArgb = containerColor?.toArgb() ?: MiuixTheme.colorScheme.surfaceContainer.toArgb()
             val bgLuminance = relativeLuminance(bgArgb)

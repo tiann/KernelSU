@@ -11,6 +11,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -42,8 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -54,6 +57,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.wear.compose.material3.TimeText
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,9 +102,13 @@ import me.weishu.kernelsu.ui.util.rememberContentReady
 import me.weishu.kernelsu.ui.util.rootAvailable
 import me.weishu.kernelsu.ui.viewmodel.MainActivityViewModel
 import me.weishu.kernelsu.ui.viewmodel.MainPagerConfig
+import me.weishu.kernelsu.ui.wear.WearInstallRequiredScreen
+import me.weishu.kernelsu.ui.wear.WearMainScreen
+import me.weishu.kernelsu.ui.wear.WearPlaceholderScreen
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import androidx.wear.compose.material3.MaterialTheme as WearMaterialTheme
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 
 class MainActivity : ComponentActivity() {
@@ -120,6 +128,9 @@ class MainActivity : ComponentActivity() {
             val selectedMainPage by viewModel.selectedMainPage.collectAsStateWithLifecycle()
             val appSettings = uiState.appSettings
             val uiMode = uiState.uiMode
+            val hasKsu = isManager && Natives.version != -1
+            val canUseKernelFeatures = hasKsu && !Natives.requireNewKernel() && rootAvailable()
+            val canInstallKsu = !hasKsu && !Natives.isLateLoadMode
             val darkMode = appSettings.colorMode.isDark || (appSettings.colorMode.isSystem && isSystemInDarkTheme())
 
             DisposableEffect(darkMode) {
@@ -152,17 +163,66 @@ class MainActivity : ComponentActivity() {
                 LocalEnableFloatingBottomBar provides uiState.enableFloatingBottomBar,
                 LocalEnableFloatingBottomBarBlur provides uiState.enableFloatingBottomBarBlur,
                 LocalUiMode provides uiMode,
+                LocalScreenShape provides uiState.screenShape,
                 LocalSnackbarHost provides snackBarHostState
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
                     HandleDeepLink(intentState = intentState.collectAsStateWithLifecycle())
                     ZipFileIntentHandler(intentState = intentState, isManager = isManager)
-                    ShortcutIntentHandler(intentState = intentState)
+                    ShortcutIntentHandler(
+                        intentState = intentState,
+                        canUseKernelFeatures = canUseKernelFeatures
+                    )
                     val mainScreenEntry = @Composable {
-                        MainScreen(
-                            initialPage = selectedMainPage,
-                            onPageChanged = viewModel::setSelectedMainPage,
-                        )
+                        if (uiMode == UiMode.Wear) {
+                            WearMainScreen(
+                                navigator = navigator,
+                                canUseKernelFeatures = canUseKernelFeatures,
+                            )
+                        } else {
+                            MainScreen(
+                                initialPage = selectedMainPage,
+                                onPageChanged = viewModel::setSelectedMainPage,
+                            )
+                        }
+                    }
+
+                    @Composable
+                    fun WearProtectedScreen(
+                        @StringRes title: Int,
+                        showMainScreenOnNonWear: Boolean = false,
+                        content: @Composable () -> Unit,
+                    ) {
+                        if (uiMode == UiMode.Wear) {
+                            if (canUseKernelFeatures) {
+                                content()
+                            } else {
+                                WearInstallRequiredScreen(
+                                    title = title,
+                                    canInstall = canInstallKsu,
+                                    onInstallClick = { navigator.push(Route.Install) },
+                                )
+                            }
+                        } else if (showMainScreenOnNonWear) {
+                            mainScreenEntry()
+                        } else {
+                            content()
+                        }
+                    }
+
+                    @Composable
+                    fun WearModuleInstallProtectedScreen(
+                        @StringRes title: Int,
+                        content: @Composable () -> Unit,
+                    ) {
+                        if (uiMode == UiMode.Wear && Natives.isSafeMode) {
+                            WearPlaceholderScreen(
+                                title = title,
+                                message = stringResource(R.string.safe_mode_module_disabled),
+                            )
+                        } else {
+                            WearProtectedScreen(title = title, content = content)
+                        }
                     }
 
                     val navDisplay = @Composable {
@@ -188,20 +248,74 @@ class MainActivity : ComponentActivity() {
                             entryProvider = entryProvider {
                                 entry<Route.Main> { mainScreenEntry() }
                                 entry<Route.About> { AboutScreen() }
-                                entry<Route.Sulog> { SulogScreen() }
+                                entry<Route.Sulog> { WearProtectedScreen(R.string.settings_sulog) { SulogScreen() } }
                                 entry<Route.ColorPalette> { ColorPaletteScreen() }
-                                entry<Route.AppProfileTemplate> { AppProfileTemplateScreen() }
-                                entry<Route.TemplateEditor> { key -> TemplateEditorScreen(key.template, key.readOnly) }
-                                entry<Route.AppProfile> { key -> AppProfileScreen(key.uid) }
-                                entry<Route.ModuleRepo> { ModuleRepoScreen() }
-                                entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(key.module) }
+                                entry<Route.AppProfileTemplate> {
+                                    WearProtectedScreen(R.string.settings_profile_template) { AppProfileTemplateScreen() }
+                                }
+                                entry<Route.TemplateEditor> { key ->
+                                    WearProtectedScreen(R.string.settings_profile_template) {
+                                        TemplateEditorScreen(key.template, key.readOnly)
+                                    }
+                                }
+                                entry<Route.AppProfile> { key ->
+                                    WearProtectedScreen(R.string.profile) { AppProfileScreen(key.uid) }
+                                }
+                                entry<Route.ModuleRepo> {
+                                    WearModuleInstallProtectedScreen(R.string.module_repos) { ModuleRepoScreen() }
+                                }
+                                entry<Route.ModuleRepoDetail> { key ->
+                                    WearModuleInstallProtectedScreen(R.string.module_repos) {
+                                        ModuleRepoDetailScreen(
+                                            key.module
+                                        )
+                                    }
+                                }
                                 entry<Route.Install> { InstallScreen() }
-                                entry<Route.Flash> { key -> FlashScreen(key.flashIt) }
-                                entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(key.moduleId, key.fromShortcut) }
-                                entry<Route.Home> { mainScreenEntry() }
-                                entry<Route.SuperUser> { mainScreenEntry() }
-                                entry<Route.Module> { mainScreenEntry() }
-                                entry<Route.Settings> { mainScreenEntry() }
+                                entry<Route.Flash> { key ->
+                                    if (key.flashIt is FlashIt.FlashModules) {
+                                        WearModuleInstallProtectedScreen(R.string.module) {
+                                            FlashScreen(
+                                                key.flashIt
+                                            )
+                                        }
+                                    } else {
+                                        FlashScreen(key.flashIt)
+                                    }
+                                }
+                                entry<Route.ExecuteModuleAction> { key ->
+                                    WearProtectedScreen(R.string.module_action) {
+                                        ExecuteModuleActionScreen(key.moduleId, key.fromShortcut)
+                                    }
+                                }
+                                entry<Route.Home> {
+                                    if (uiMode == UiMode.Wear) HomePager(
+                                        navigator,
+                                        0.dp
+                                    ) else mainScreenEntry()
+                                }
+                                entry<Route.SuperUser> {
+                                    WearProtectedScreen(
+                                        R.string.superuser,
+                                        showMainScreenOnNonWear = true
+                                    ) {
+                                        SuperUserPager(navigator, 0.dp)
+                                    }
+                                }
+                                entry<Route.Module> {
+                                    WearProtectedScreen(
+                                        R.string.module,
+                                        showMainScreenOnNonWear = true
+                                    ) {
+                                        ModulePager(0.dp)
+                                    }
+                                }
+                                entry<Route.Settings> {
+                                    if (uiMode == UiMode.Wear) SettingPager(
+                                        navigator,
+                                        0.dp
+                                    ) else mainScreenEntry()
+                                }
                             }
                         )
                     }
@@ -209,6 +323,9 @@ class MainActivity : ComponentActivity() {
                     when (uiMode) {
                         UiMode.Material -> androidx.compose.material3.Scaffold { navDisplay() }
                         UiMode.Miuix -> Scaffold { navDisplay() }
+                        UiMode.Wear -> androidx.wear.compose.material3.AppScaffold(
+                            timeText = { TimeText() }
+                        ) { navDisplay() }
                     }
                 }
             }
@@ -244,6 +361,7 @@ fun MainScreen(
     val surfaceColor = when (uiMode) {
         UiMode.Material -> MaterialTheme.colorScheme.surface // Blur is not used in Material, this is just a placeholder
         UiMode.Miuix -> MiuixTheme.colorScheme.surface
+        UiMode.Wear -> WearMaterialTheme.colorScheme.surfaceContainer
     }
     val blurBackdrop = rememberBlurBackdrop(enableBlur)
 
@@ -322,6 +440,16 @@ fun MainScreen(
                         }
                     }
                 }
+
+                UiMode.Wear -> Row {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .consumeWindowInsets(startInsets)
+                    ) {
+                        pagerContent(navBarBottomPadding)
+                    }
+                }
             }
         } else {
             val bottomBar = @Composable {
@@ -344,11 +472,12 @@ fun MainScreen(
                 UiMode.Miuix -> Scaffold(bottomBar = bottomBar) { innerPadding ->
                     pagerContent(innerPadding.calculateBottomPadding())
                 }
+
+                UiMode.Wear -> pagerContent(0.dp)
             }
         }
     }
 }
-
 
 @Composable
 private fun MainScreenBackHandler(
@@ -432,6 +561,7 @@ private fun ZipFileIntentHandler(
 @Composable
 private fun ShortcutIntentHandler(
     intentState: MutableStateFlow<Int>,
+    canUseKernelFeatures: Boolean,
 ) {
     val activity = LocalActivity.current ?: return
     val context = LocalContext.current
@@ -443,6 +573,11 @@ private fun ShortcutIntentHandler(
 
         when (type) {
             "module_action" -> {
+                if (!canUseKernelFeatures) {
+                    intent.removeExtra("shortcut_type")
+                    intent.removeExtra("module_id")
+                    return@LaunchedEffect
+                }
                 val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
                 navigator.push(Route.ExecuteModuleAction(moduleId, fromShortcut = true))
                 intent.removeExtra("shortcut_type")
@@ -450,6 +585,11 @@ private fun ShortcutIntentHandler(
             }
 
             "module_webui" -> {
+                if (!canUseKernelFeatures) {
+                    intent.removeExtra("shortcut_type")
+                    intent.removeExtra("module_id")
+                    return@LaunchedEffect
+                }
                 val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
                 val webIntent = Intent(context, WebUIActivity::class.java)
                     .setData("kernelsu://webui/$moduleId".toUri())

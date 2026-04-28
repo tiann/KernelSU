@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,6 +25,7 @@ import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.util.openExternalUrl
 import me.weishu.kernelsu.ui.viewmodel.HomeViewModel
 
 @Composable
@@ -36,8 +36,8 @@ fun HomePager(
 ) {
     val viewModel = viewModel<HomeViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val mainState = LocalMainPagerState.current
-    val uriHandler = LocalUriHandler.current
+    val uiMode = LocalUiMode.current
+    val mainState = if (uiMode != UiMode.Wear) LocalMainPagerState.current else null
     val context = LocalContext.current
     val loadingDialog = rememberLoadingDialog()
     val scope = rememberCoroutineScope()
@@ -53,9 +53,9 @@ fun HomePager(
 
     val actions = HomeActions(
         onInstallClick = { navigator.push(Route.Install) },
-        onSuperuserClick = { mainState.animateToPage(1) },
-        onModuleClick = { mainState.animateToPage(2) },
-        onOpenUrl = uriHandler::openUri,
+        onSuperuserClick = { mainState?.animateToPage(1) ?: navigator.push(Route.SuperUser) },
+        onModuleClick = { mainState?.animateToPage(2) ?: navigator.push(Route.Module) },
+        onOpenUrl = { openExternalUrl(context, it) },
         onJailbreakClick = {
             loadingDialog.showLoading()
             context.startService(Intent(context, MagicaService::class.java))
@@ -82,6 +82,11 @@ fun HomePager(
             state = uiState,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+        )
+
+        UiMode.Wear -> HomePagerWear(
+            state = uiState,
+            actions = actions,
         )
     }
 }
