@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
@@ -13,7 +12,7 @@ import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
-import me.weishu.kernelsu.ui.LocalScreenShape
+import me.weishu.kernelsu.ui.wear.wearHorizontalPadding
 
 @Composable
 fun AboutScreenWear(
@@ -21,7 +20,7 @@ fun AboutScreenWear(
     actions: AboutScreenActions,
 ) {
     val listState = rememberTransformingLazyColumnState()
-    val horizontalPadding = if (LocalScreenShape.current == "round") 10.dp else 0.dp
+    val horizontalPadding = wearHorizontalPadding()
 
     ScreenScaffold(
         scrollState = listState,

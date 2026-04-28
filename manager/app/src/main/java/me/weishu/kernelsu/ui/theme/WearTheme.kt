@@ -3,7 +3,6 @@ package me.weishu.kernelsu.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.platform.LocalContext
 import androidx.wear.compose.material3.ColorScheme
 import androidx.wear.compose.material3.MaterialTheme
 import com.materialkolor.rememberDynamicColorScheme
@@ -45,7 +44,6 @@ fun WearKernelSUTheme(
     appSettings: AppSettings,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
     val hasCustomColor = appSettings.keyColor != 0
 
     val wearColorScheme = if (hasCustomColor) {

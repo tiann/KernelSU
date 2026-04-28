@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
+import me.weishu.kernelsu.ui.ScreenShape
 import me.weishu.kernelsu.ui.screen.settings.SettingsUiState
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.util.rootAvailable
@@ -59,7 +60,7 @@ class SettingsViewModel(
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
-            val screenShape = repo.screenShape
+            val screenShape = ScreenShape.fromValue(repo.screenShape)
             val isLateLoadMode = Natives.isLateLoadMode
             val isLkmMode = repo.isLkmMode()
 
@@ -288,8 +289,8 @@ class SettingsViewModel(
         }
     }
 
-    fun setScreenShape(shape: String) {
-        repo.screenShape = shape
+    fun setScreenShape(shape: ScreenShape) {
+        repo.screenShape = shape.value
         _uiState.update { it.copy(screenShape = shape) }
     }
 }

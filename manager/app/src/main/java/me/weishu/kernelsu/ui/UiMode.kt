@@ -17,7 +17,9 @@ enum class UiMode(val value: String) {
         }
 
         val isWatchDevice: Boolean by lazy {
-            ksuApp.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)
+            runCatching {
+                ksuApp.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)
+            }.getOrDefault(false)
         }
 
         val DEFAULT_VALUE: String
@@ -28,6 +30,16 @@ enum class UiMode(val value: String) {
     }
 }
 
-val LocalUiMode = staticCompositionLocalOf { UiMode.defaultUiMode }
+val LocalUiMode = staticCompositionLocalOf { UiMode.Miuix }
 
-val LocalScreenShape = staticCompositionLocalOf { "round" }
+enum class ScreenShape(val value: String) {
+    Round("round"),
+    Square("square");
+
+    companion object {
+        // Defaults to Round for any unrecognized value, matching the SharedPreferences default.
+        fun fromValue(value: String): ScreenShape = if (value == Square.value) Square else Round
+    }
+}
+
+val LocalScreenShape = staticCompositionLocalOf { ScreenShape.Round }

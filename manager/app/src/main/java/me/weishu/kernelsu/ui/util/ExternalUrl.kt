@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.util
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -10,17 +11,17 @@ import me.weishu.kernelsu.R
 fun openExternalUrl(context: Context, url: String) {
     if (url.isBlank()) return
     runCatching {
-        context.startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-        )
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        if (context !is Activity) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
     }.onFailure {
         val messageRes = when (it) {
             is SecurityException,
-            is ActivityNotFoundException -> R.string.wear_open_link_unavailable
+            is ActivityNotFoundException -> R.string.open_link_unavailable
 
-            else -> R.string.wear_open_link_failed
+            else -> R.string.open_link_failed
         }
         Toast.makeText(context, messageRes, Toast.LENGTH_SHORT).show()
     }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.Button
@@ -16,7 +15,7 @@ import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.LocalScreenShape
+import me.weishu.kernelsu.ui.wear.wearHorizontalPadding
 
 @Composable
 fun AppProfileScreenWear(
@@ -24,7 +23,7 @@ fun AppProfileScreenWear(
     actions: AppProfileActions,
 ) {
     val listState = rememberTransformingLazyColumnState()
-    val horizontalPadding = if (LocalScreenShape.current == "round") 10.dp else 0.dp
+    val horizontalPadding = wearHorizontalPadding()
     val profile = state.profile
 
     ScreenScaffold(

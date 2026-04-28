@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.viewmodel
 
 import androidx.compose.runtime.Immutable
+import me.weishu.kernelsu.ui.ScreenShape
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.AppSettings
 
@@ -13,5 +14,5 @@ data class MainActivityUiState(
     val enableFloatingBottomBarBlur: Boolean,
     val enableSmoothCorner: Boolean,
     val uiMode: UiMode,
-    val screenShape: String = if (UiMode.isWatchDevice) "round" else "square",
+    val screenShape: ScreenShape = if (UiMode.isWatchDevice) ScreenShape.Round else ScreenShape.Square,
 )

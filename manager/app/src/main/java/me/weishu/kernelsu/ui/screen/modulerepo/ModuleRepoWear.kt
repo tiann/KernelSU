@@ -201,6 +201,9 @@ fun ModuleRepoDetailScreenWear(
                                             onDownloading = {
                                                 isDownloading = true
                                             },
+                                            onFailed = {
+                                                isDownloading = false
+                                            },
                                             onProgress = { p ->
                                                 progress = p
                                             },

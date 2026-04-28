@@ -9,6 +9,7 @@ import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ScreenScaffold
 import androidx.wear.compose.material3.Text
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.ScreenShape
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.wear.WearTonalButton
 import me.weishu.kernelsu.ui.wear.wearHorizontalPadding
@@ -71,7 +72,7 @@ fun SettingPagerWear(
                 }
             }
             item {
-                val shapeLabel = if (uiState.screenShape == "round")
+                val shapeLabel = if (uiState.screenShape == ScreenShape.Round)
                     stringResource(R.string.settings_screen_shape_round)
                 else
                     stringResource(R.string.settings_screen_shape_square)
@@ -80,7 +81,7 @@ fun SettingPagerWear(
                     secondaryLabel = shapeLabel,
                     modifier = Modifier.wearPaddedFullWidth(horizontalPadding),
                     onClick = {
-                        val next = if (uiState.screenShape == "round") "square" else "round"
+                        val next = if (uiState.screenShape == ScreenShape.Round) ScreenShape.Square else ScreenShape.Round
                         actions.onSetScreenShape(next)
                     }
                 )

@@ -287,8 +287,8 @@
     <string name="wear_state_on">On</string>
     <string name="wear_state_off">Off</string>
     <string name="wear_no_apps">No apps</string>
-    <string name="wear_open_link_unavailable">No available app to open this link on Wear</string>
-    <string name="wear_open_link_failed">Failed to open link</string>
+    <string name="open_link_unavailable">No available app to open this link</string>
+    <string name="open_link_failed">Failed to open link</string>
     <string name="wear_search_modules">Search modules</string>
     <string name="wear_search_apps">Search apps</string>
     <string name="wear_search_logs">Search logs</string>

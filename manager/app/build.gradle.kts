@@ -172,7 +172,7 @@ dependencies {
     implementation(libs.androidx.wear.compose.navigation3) {
         exclude(group = "androidx.navigation3", module = "navigation3-ui")
     }
-    implementation(libs.androidx.wear.compose.ui.tooling)
+    debugImplementation(libs.androidx.wear.compose.ui.tooling)
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)

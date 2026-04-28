@@ -258,11 +258,24 @@
     <string name="wear_state_on">开</string>
     <string name="wear_state_off">关</string>
     <string name="wear_no_apps">没有应用</string>
-    <string name="wear_open_link_unavailable">手表上没有可打开此链接的应用</string>
-    <string name="wear_open_link_failed">打开链接失败</string>
+    <string name="open_link_unavailable">没有可打开此链接的应用</string>
+    <string name="open_link_failed">打开链接失败</string>
     <string name="wear_search_modules">搜索模块</string>
     <string name="wear_search_apps">搜索应用</string>
     <string name="wear_search_logs">搜索日志</string>
     <string name="wear_install_required">请先安装 KernelSU 再使用此功能</string>
     <string name="wear_feature_unavailable">此设备当前无法使用此功能</string>
+    <string name="superuser_allow">允许</string>
+    <string name="superuser_deny">拒绝</string>
+    <string name="superuser_allow_root_access">Root 访问</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="pull_down_refresh">刷新</string>
+    <string name="sulog_enable">启用 SU 日志</string>
+    <string name="sulog_empty">暂无日志</string>
+    <string name="module_action">模块操作</string>
+    <string name="settings_theme_wear_note">Wear OS 上不支持主题设置。</string>
+    <string name="module_repo_open_web">在浏览器中打开</string>
+    <string name="app_profile_template_empty">暂无模版</string>
 </resources>

@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.screen.settings
 import androidx.compose.runtime.Immutable
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import me.weishu.kernelsu.ui.ScreenShape
 import me.weishu.kernelsu.ui.UiMode
 
 @Immutable
@@ -51,7 +52,7 @@ data class SettingsUiState(
     // Auto Jailbreak
     val autoJailbreak: Boolean = false,
 
-    val screenShape: String = "round"
+    val screenShape: ScreenShape = ScreenShape.Round
 )
 
 @Immutable
@@ -68,6 +69,6 @@ data class SettingsScreenActions(
     val onSetDefaultUmountModules: (Boolean) -> Unit,
     val onSetEnableWebDebugging: (Boolean) -> Unit,
     val onSetAutoJailbreak: (Boolean) -> Unit,
-    val onSetScreenShape: (String) -> Unit,
+    val onSetScreenShape: (ScreenShape) -> Unit,
     val onOpenAbout: () -> Unit,
 )

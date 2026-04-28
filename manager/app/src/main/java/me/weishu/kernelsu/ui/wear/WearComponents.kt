@@ -19,9 +19,10 @@ import androidx.wear.compose.material3.Card
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
 import me.weishu.kernelsu.ui.LocalScreenShape
+import me.weishu.kernelsu.ui.ScreenShape
 
 @Composable
-fun wearHorizontalPadding(): Dp = if (LocalScreenShape.current == "round") 10.dp else 0.dp
+fun wearHorizontalPadding(): Dp = if (LocalScreenShape.current == ScreenShape.Round) 10.dp else 0.dp
 
 fun Modifier.wearPaddedFullWidth(horizontalPadding: Dp): Modifier =
     padding(horizontal = horizontalPadding).fillMaxWidth()
