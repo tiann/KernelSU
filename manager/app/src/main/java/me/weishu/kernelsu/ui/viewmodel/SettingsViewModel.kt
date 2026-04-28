@@ -13,6 +13,7 @@ import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.screen.settings.SettingsUiState
 import me.weishu.kernelsu.ui.theme.ColorMode
+import me.weishu.kernelsu.ui.util.rootAvailable
 
 class SettingsViewModel(
     private val repo: SettingsRepository = SettingsRepositoryImpl()
@@ -29,6 +30,8 @@ class SettingsViewModel(
         viewModelScope.launch {
             val checkUpdate = repo.checkUpdate
             val checkModuleUpdate = repo.checkModuleUpdate
+            val hasKsu = Natives.isManager && Natives.version != -1
+            val canUseKernelFeatures = hasKsu && !Natives.requireNewKernel() && rootAvailable()
             val themeMode = repo.themeMode
             val miuixMonet = repo.miuixMonet
             val keyColor = repo.keyColor
@@ -41,9 +44,6 @@ class SettingsViewModel(
             val enableSmoothCorner = repo.enableSmoothCorner
             val colorStyle = repo.colorStyle
             val colorSpec = repo.colorSpec
-            val isLkmMode = repo.isLkmMode()
-
-            // Async loading for natives/features
             val suCompatStatus = repo.getSuCompatStatus()
             val suCompatPersistValue = repo.getSuCompatPersistValue()
             val isSuEnabled = repo.isSuEnabled()
@@ -59,13 +59,17 @@ class SettingsViewModel(
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
+            val screenShape = repo.screenShape
             val isLateLoadMode = Natives.isLateLoadMode
+            val isLkmMode = repo.isLkmMode()
 
             _uiState.update {
                 it.copy(
                     uiMode = uiMode,
                     checkUpdate = checkUpdate,
                     checkModuleUpdate = checkModuleUpdate,
+                    hasKsu = hasKsu,
+                    canUseKernelFeatures = canUseKernelFeatures,
                     themeMode = themeMode,
                     miuixMonet = miuixMonet,
                     keyColor = keyColor,
@@ -90,6 +94,7 @@ class SettingsViewModel(
                     isDefaultUmountModules = isDefaultUmountModules,
                     isLkmMode = isLkmMode,
                     autoJailbreak = autoJailbreak,
+                    screenShape = screenShape,
                     isLateLoadMode = isLateLoadMode,
                 )
             }
@@ -281,5 +286,10 @@ class SettingsViewModel(
                 _uiState.update { it.copy(isDefaultUmountModules = enabled) }
             }
         }
+    }
+
+    fun setScreenShape(shape: String) {
+        repo.screenShape = shape
+        _uiState.update { it.copy(screenShape = shape) }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.material3.MaterialTheme as WearMaterialTheme
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -28,6 +29,7 @@ object MonetColorsProvider {
         when (LocalUiMode.current) {
             UiMode.Miuix -> UpdateCssMiuix()
             UiMode.Material -> UpdateCssMaterial()
+            UiMode.Wear -> UpdateCssWear()
         }
     }
 
@@ -139,6 +141,63 @@ object MonetColorsProvider {
                 "filledCardContainerColor" to colorScheme.primaryContainer.toCssValue(),
                 "filledCardDisabledContentColor" to colorScheme.onSurfaceVariant.toCssValue(),
                 "filledCardDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue()
+            )
+
+            colorsCss.set(monetColors.toCssVars())
+        }
+    }
+
+    @Composable
+    private fun UpdateCssWear() {
+        val colorScheme = WearMaterialTheme.colorScheme
+
+        LaunchedEffect(colorScheme) {
+            val monetColors = mapOf(
+                "primary" to colorScheme.primary.toCssValue(),
+                "onPrimary" to colorScheme.onPrimary.toCssValue(),
+                "primaryContainer" to colorScheme.primaryContainer.toCssValue(),
+                "onPrimaryContainer" to colorScheme.onPrimaryContainer.toCssValue(),
+                "inversePrimary" to colorScheme.primaryContainer.toCssValue(),
+                "secondary" to colorScheme.secondary.toCssValue(),
+                "onSecondary" to colorScheme.onSecondary.toCssValue(),
+                "secondaryContainer" to colorScheme.secondaryContainer.toCssValue(),
+                "onSecondaryContainer" to colorScheme.onSecondaryContainer.toCssValue(),
+                "tertiary" to colorScheme.tertiary.toCssValue(),
+                "onTertiary" to colorScheme.onTertiary.toCssValue(),
+                "tertiaryContainer" to colorScheme.tertiaryContainer.toCssValue(),
+                "onTertiaryContainer" to colorScheme.onTertiaryContainer.toCssValue(),
+                "background" to colorScheme.background.toCssValue(),
+                "onBackground" to colorScheme.onBackground.toCssValue(),
+                "surface" to colorScheme.background.toCssValue(),
+                "tonalSurface" to colorScheme.surfaceContainer.toCssValue(),
+                "onSurface" to colorScheme.onSurface.toCssValue(),
+                "surfaceVariant" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "onSurfaceVariant" to colorScheme.onSurfaceVariant.toCssValue(),
+                "surfaceTint" to colorScheme.primary.toCssValue(),
+                "inverseSurface" to colorScheme.primary.toCssValue(),
+                "inverseOnSurface" to colorScheme.onPrimary.toCssValue(),
+                "error" to colorScheme.error.toCssValue(),
+                "onError" to colorScheme.onError.toCssValue(),
+                "errorContainer" to colorScheme.errorContainer.toCssValue(),
+                "onErrorContainer" to colorScheme.onErrorContainer.toCssValue(),
+                "outline" to colorScheme.outline.toCssValue(),
+                "outlineVariant" to colorScheme.outlineVariant.toCssValue(),
+                "scrim" to Color.Black.toCssValue(),
+                "surfaceBright" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "surfaceDim" to colorScheme.surfaceContainerLow.toCssValue(),
+                "surfaceContainer" to colorScheme.surfaceContainer.toCssValue(),
+                "surfaceContainerHigh" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "surfaceContainerHighest" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "surfaceContainerLow" to colorScheme.surfaceContainerLow.toCssValue(),
+                "surfaceContainerLowest" to colorScheme.surfaceContainerLow.toCssValue(),
+                "filledTonalButtonContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledTonalButtonContainerColor" to colorScheme.secondaryContainer.toCssValue(),
+                "filledTonalButtonDisabledContentColor" to colorScheme.onSurfaceVariant.toCssValue(),
+                "filledTonalButtonDisabledContainerColor" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "filledCardContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledCardContainerColor" to colorScheme.primaryContainer.toCssValue(),
+                "filledCardDisabledContentColor" to colorScheme.onSurfaceVariant.toCssValue(),
+                "filledCardDisabledContainerColor" to colorScheme.surfaceContainerHigh.toCssValue(),
             )
 
             colorsCss.set(monetColors.toCssVars())

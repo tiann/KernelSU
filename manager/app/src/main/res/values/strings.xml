@@ -147,6 +147,7 @@
     <string name="home_pr_kernel_warning">The kernel was built with PR signature support. This is not a production kernel!</string>
     <string name="action">Action</string>
     <string name="open">Open</string>
+    <string name="webui" translatable="false">WebUI</string>
     <string name="enable_web_debugging">WebView debugging</string>
     <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
     <string name="direct_install">Direct install (Recommended)</string>
@@ -204,6 +205,9 @@
     <string name="settings_key_color_default">Default</string>
     <string name="settings_ui_mode">UI Style</string>
     <string name="settings_ui_mode_summary">Choose the interface style.</string>
+    <string name="settings_screen_shape">Screen Shape</string>
+    <string name="settings_screen_shape_round">Round</string>
+    <string name="settings_screen_shape_square">Square</string>
     <string name="settings_page_scale">Page Scale</string>
     <string name="settings_page_scale_summary">Adjust the global display scale.</string>
     <string name="settings_color_spec">Color Spec</string>
@@ -271,4 +275,29 @@
     <string name="download_install">Install</string>
     <string name="settings_adb_root" translatable="false">ADB Root</string>
     <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+    <string name="superuser_allow">Allow</string>
+    <string name="superuser_deny">Deny</string>
+    <string name="superuser_allow_root_access">Root access</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="pull_down_refresh">Refresh</string>
+    <string name="wear_state_on">On</string>
+    <string name="wear_state_off">Off</string>
+    <string name="wear_no_apps">No apps</string>
+    <string name="wear_open_link_unavailable">No available app to open this link on Wear</string>
+    <string name="wear_open_link_failed">Failed to open link</string>
+    <string name="wear_search_modules">Search modules</string>
+    <string name="wear_search_apps">Search apps</string>
+    <string name="wear_search_logs">Search logs</string>
+    <string name="wear_install_required">Install KernelSU first to use this feature</string>
+    <string name="wear_feature_unavailable">This feature is currently unavailable on this device</string>
+    <string name="sulog_enable">Enable SU log</string>
+    <string name="sulog_empty">No log entries</string>
+    <string name="module_action">Module action</string>
+    <string name="settings_theme_wear_note">Theme settings are not available on Wear OS.</string>
+    <string name="module_repo_open_web">Open in browser</string>
+    <string name="app_profile_template_empty">No templates</string>
 </resources>

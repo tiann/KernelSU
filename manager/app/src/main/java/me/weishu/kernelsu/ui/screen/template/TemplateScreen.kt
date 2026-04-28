@@ -111,6 +111,10 @@ fun AppProfileTemplateScreen() {
                 UiMode.Material -> navigator.push(
                     Route.TemplateEditor(TemplateViewModel.TemplateInfo(), false)
                 )
+
+                UiMode.Wear -> navigator.push(
+                    Route.TemplateEditor(TemplateViewModel.TemplateInfo(), false)
+                )
             }
         },
         onOpenTemplate = { template ->
@@ -121,6 +125,10 @@ fun AppProfileTemplateScreen() {
                 )
 
                 UiMode.Material -> navigator.push(
+                    Route.TemplateEditor(template, !template.local)
+                )
+
+                UiMode.Wear -> navigator.push(
                     Route.TemplateEditor(template, !template.local)
                 )
             }
@@ -134,6 +142,11 @@ fun AppProfileTemplateScreen() {
         )
 
         UiMode.Material -> AppProfileTemplateScreenMaterial(
+            state = uiState,
+            actions = actions,
+        )
+
+        UiMode.Wear -> AppProfileTemplateScreenWear(
             state = uiState,
             actions = actions,
         )

@@ -13,4 +13,5 @@ data class MainActivityUiState(
     val enableFloatingBottomBarBlur: Boolean,
     val enableSmoothCorner: Boolean,
     val uiMode: UiMode,
+    val screenShape: String = if (UiMode.isWatchDevice) "round" else "square",
 )

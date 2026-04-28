@@ -52,6 +52,7 @@ class MainActivityViewModel(
             enableFloatingBottomBarBlur = settingRepo.enableFloatingBottomBarBlur,
             enableSmoothCorner = settingRepo.enableSmoothCorner,
             uiMode = UiMode.fromValue(settingRepo.uiMode),
+            screenShape = settingRepo.screenShape,
         )
     }
 
@@ -67,6 +68,7 @@ class MainActivityViewModel(
             "enable_floating_bottom_bar_blur",
             "enable_smooth_corner",
             "ui_mode",
+            "screen_shape",
         )
     }
 }

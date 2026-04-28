@@ -99,6 +99,11 @@ class SettingsRepositoryImpl : SettingsRepository {
             }
         }
 
+    override var screenShape: String
+        get() = prefs.getString("screen_shape", null)
+            ?: if (ksuApp.resources.configuration.isScreenRound) "round" else "square"
+        set(value) = prefs.edit { putString("screen_shape", value) }
+
     override suspend fun getSuCompatStatus(): String = getFeatureStatus("su_compat")
 
     override suspend fun getSuCompatPersistValue(): Long? = getFeaturePersistValue("su_compat")

@@ -188,5 +188,6 @@ fun InstallScreen() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> InstallScreenMiuix(state, actions)
         UiMode.Material -> InstallScreenMaterial(state, actions)
+        UiMode.Wear -> InstallScreenWear(state, actions)
     }
 }

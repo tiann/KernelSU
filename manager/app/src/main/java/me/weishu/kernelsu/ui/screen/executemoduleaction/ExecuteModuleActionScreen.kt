@@ -50,5 +50,6 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     when (LocalUiMode.current) {
         UiMode.Miuix -> ExecuteModuleActionScreenMiuix(state, actions)
         UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions)
+        UiMode.Wear -> ExecuteModuleActionScreenWear(state, actions)
     }
 }
