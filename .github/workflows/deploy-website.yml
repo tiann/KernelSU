@@ -41,7 +41,7 @@ jobs:
           cache: yarn # or pnpm / yarn
           cache-dependency-path: website/yarn.lock
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Build with VitePress
@@ -49,7 +49,7 @@ jobs:
           yarn docs:build
           touch docs/.vitepress/dist/.nojekyll
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: website/docs/.vitepress/dist
 
@@ -64,4 +64,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
