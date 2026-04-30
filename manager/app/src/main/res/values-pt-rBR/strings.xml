@@ -117,3 +117,4 @@
     <string name="failed_to_update_sepolicy">Falha ao atualizar regras do SELinux para %s</string>
     <string name="su_not_allowed">Não foi possível conceder acesso root para %s</string>
 </resources>
+        
