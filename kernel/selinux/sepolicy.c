@@ -20,7 +20,11 @@
 //////////////////////////////////////////////////////
 
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
-                                         struct avtab_extended_perms *xperms);
+                                          struct avtab_extended_perms *xperms);
+
+static bool is_redundant_avtab_node(struct avtab_node *node);
+
+static void remove_avtab_node(struct policydb *db, struct avtab_node *node);
 
 static bool add_rule(struct policydb *db, const char *s, const char *t, const char *c, const char *p, int effect,
                      bool invert);
@@ -79,7 +83,7 @@ static bool add_typeattribute(struct policydb *db, const char *type, const char 
 #define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
 
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
-                                         struct avtab_extended_perms *xperms)
+                                          struct avtab_extended_perms *xperms)
 {
     struct avtab_node *node;
 
@@ -114,6 +118,8 @@ static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *
         }
         /* this is used to get the node - insertion is actually unique */
         node = avtab_insert_nonunique(&db->te_avtab, key, &avdatum);
+        if (!node)
+            return NULL;
 
         int grow_size = sizeof(struct avtab_key);
         grow_size += sizeof(struct avtab_datum);
@@ -128,8 +134,61 @@ static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *
     return node;
 }
 
+static bool is_redundant_avtab_node(struct avtab_node *node)
+{
+    if (node->key.specified & AVTAB_XPERMS)
+        return node->datum.u.xperms == NULL;
+    if (!(node->key.specified & AVTAB_AV))
+        return false;
+    if (node->key.specified & AVTAB_AUDITDENY)
+        return node->datum.u.data == ~0U;
+    return node->datum.u.data == 0U;
+}
+
+static void remove_avtab_node(struct policydb *db, struct avtab_node *node)
+{
+    int i;
+    int ret;
+    bool found = false;
+    int shrink_size = sizeof(struct avtab_key) + sizeof(struct avtab_datum);
+    struct avtab new_avtab;
+    struct avtab_node *n;
+
+    ret = avtab_alloc_dup(&new_avtab, &db->te_avtab);
+    if (ret < 0)
+        return;
+    new_avtab.nel = 0;
+
+    for (i = 0; i < db->te_avtab.nslot; i++) {
+        for (n = db->te_avtab.htable[i]; n; n = n->next) {
+            if (n == node) {
+                found = true;
+                continue;
+            }
+
+            if (!avtab_insert_nonunique(&new_avtab, &n->key, &n->datum)) {
+                avtab_destroy(&new_avtab);
+                return;
+            }
+        }
+    }
+
+    if (!found) {
+        avtab_destroy(&new_avtab);
+        return;
+    }
+
+    if ((node->key.specified & AVTAB_XPERMS) && node->datum.u.xperms)
+        shrink_size += sizeof(u8) + sizeof(u8) + sizeof(u32) * ARRAY_SIZE(node->datum.u.xperms->perms.p);
+
+    avtab_destroy(&db->te_avtab);
+    db->te_avtab = new_avtab;
+    if (db->len >= shrink_size)
+        db->len -= shrink_size;
+}
+
 static bool add_rule(struct policydb *db, const char *s, const char *t, const char *c, const char *p, int effect,
-                     bool invert)
+                      bool invert)
 {
     struct type_datum *src = NULL, *tgt = NULL;
     struct class_datum *cls = NULL;
@@ -226,18 +285,26 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src, struct typ
         key.target_class = cls->value;
         key.specified = effect;
 
-        struct avtab_node *node = get_avtab_node(db, &key, NULL);
+        struct avtab_node *node;
         if (invert) {
+            node = avtab_search_node(&db->te_avtab, &key);
+            if (!node)
+                return;
             if (perm)
                 node->datum.u.data &= ~(1U << (perm->value - 1));
             else
                 node->datum.u.data = 0U;
         } else {
+            node = get_avtab_node(db, &key, NULL);
+            if (!node)
+                return;
             if (perm)
                 node->datum.u.data |= 1U << (perm->value - 1);
             else
                 node->datum.u.data = ~0U;
         }
+        if (is_redundant_avtab_node(node))
+            remove_avtab_node(db, node);
     }
 }
 
@@ -410,6 +477,8 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t, con
     key.specified = effect;
 
     struct avtab_node *node = get_avtab_node(db, &key, NULL);
+    if (!node)
+        return false;
     node->datum.u.data = def->value;
 
     return true;
