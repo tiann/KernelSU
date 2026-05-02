@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////
 
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
-                                          struct avtab_extended_perms *xperms);
+                                         struct avtab_extended_perms *xperms);
 
 static bool is_redundant_avtab_node(struct avtab_node *node);
 
@@ -83,7 +83,7 @@ static bool add_typeattribute(struct policydb *db, const char *type, const char 
 #define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
 
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
-                                          struct avtab_extended_perms *xperms)
+                                         struct avtab_extended_perms *xperms)
 {
     struct avtab_node *node;
 
@@ -188,7 +188,7 @@ static void remove_avtab_node(struct policydb *db, struct avtab_node *node)
 }
 
 static bool add_rule(struct policydb *db, const char *s, const char *t, const char *c, const char *p, int effect,
-                      bool invert)
+                     bool invert)
 {
     struct type_datum *src = NULL, *tgt = NULL;
     struct class_datum *cls = NULL;
