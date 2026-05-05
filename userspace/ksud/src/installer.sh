@@ -473,7 +473,3 @@ NVBASE=/data/adb
 TMPDIR=/dev/tmp
 POSTFSDATAD=$NVBASE/post-fs-data.d
 SERVICED=$NVBASE/service.d
-
-# Some modules dependents on this
-export MAGISK_VER=25.2
-export MAGISK_VER_CODE=25200
