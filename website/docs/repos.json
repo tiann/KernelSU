@@ -740,5 +740,12 @@
         "kernel_name": "KernelSU_on_Huawei",
         "kernel_link": "https://github.com/xixiaobei-bei/KernelSU_on_Huawei",
         "devices": "All Huawei & Honor devices"
+    },
+    {
+        "maintainer": "kaolinite7",
+        "maintainer_link": "https://github.com/kaolinite7",
+        "kernel_name": "kernel_huawei_nova_3i",
+        "kernel_link": "https://github.com/kaolinite7/kernel_huawei_nova_3i",
+        "devices": "Huawei Nova 3i ( INE-L21, INE-L22, INE-AL00, INE-LX1 and INE-LX2 )"
     }
 ]
