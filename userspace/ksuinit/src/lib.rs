@@ -158,6 +158,7 @@ fn has_kernelsu_v2() -> bool {
         version: u32,
         flags: u32,
         features: u32,
+        uapi_version: u32,
     }
 
     // Try new method: get driver fd using reboot syscall with magic numbers

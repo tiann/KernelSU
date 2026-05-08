@@ -47,6 +47,7 @@ class HomeViewModel : ViewModel() {
         val kernelVersion = getKernelVersion()
         val isManager = Natives.isManager
         val ksuVersion = if (isManager) Natives.version else null
+        val kernelUAPIVersion = if (isManager) Natives.kernelUAPIVersion else null
         val lkmMode = ksuVersion?.let { if (kernelVersion.isGKI()) Natives.isLkmMode else null }
         val isRootAvailable = rootAvailable()
         val managerVersion = getManagerVersion(ksuApp)
@@ -59,6 +60,9 @@ class HomeViewModel : ViewModel() {
             isManagerPrBuild = BuildConfig.IS_PR_BUILD,
             isKernelPrBuild = Natives.isPrBuild,
             requiresNewKernel = isManager && Natives.requireNewKernel(),
+            uapiMismatch = isManager && Natives.checkUAPIMismatch(),
+            kernelUAPIVersion = kernelUAPIVersion,
+            managerUAPIVersion = Natives.managerUAPIVersion,
             isRootAvailable = isRootAvailable,
             isSafeMode = Natives.isSafeMode,
             isLateLoadMode = Natives.isLateLoadMode,
