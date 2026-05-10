@@ -72,5 +72,10 @@ fun SuperUserPager(
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
+
+        UiMode.Wear -> SuperUserPagerWear(
+            uiState = uiState,
+            actions = actions,
+        )
     }
 }

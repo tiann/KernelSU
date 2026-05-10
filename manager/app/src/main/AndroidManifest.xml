@@ -8,8 +8,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="com.google.android.wearable.permission.URI_REDIRECT_TO_REMOTE" />
 
     <uses-sdk tools:overrideLibrary="top.yukonga.miuix.kmp.blur" />
+
+    <uses-feature
+        android:name="android.hardware.type.watch"
+        android:required="false" />
 
     <application
         android:name=".KernelSUApplication"
@@ -24,6 +29,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KernelSU"
         android:zygotePreloadName="me.weishu.kernelsu.magica.AppZygotePreload">
+        <meta-data
+                android:name="com.google.android.wearable.standalone"
+                android:value="true" />
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"

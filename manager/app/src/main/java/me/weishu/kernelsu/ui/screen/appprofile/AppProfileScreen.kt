@@ -142,5 +142,10 @@ fun AppProfileScreen(uid: Int) {
             state = state,
             actions = actions,
         )
+
+        UiMode.Wear -> AppProfileScreenWear(
+            state = state,
+            actions = actions,
+        )
     }
 }

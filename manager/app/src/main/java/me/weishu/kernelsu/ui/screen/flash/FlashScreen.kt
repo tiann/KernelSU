@@ -62,5 +62,6 @@ fun FlashScreen(flashIt: FlashIt) {
     when (LocalUiMode.current) {
         UiMode.Miuix -> FlashScreenMiuix(state, actions)
         UiMode.Material -> FlashScreenMaterial(state, actions)
+        UiMode.Wear -> FlashScreenWear(state, actions)
     }
 }

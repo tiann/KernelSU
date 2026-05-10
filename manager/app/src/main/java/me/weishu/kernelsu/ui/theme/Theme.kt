@@ -110,6 +110,11 @@ fun KernelSUTheme(
             appSettings = currentAppSettings,
             content = content
         )
+
+        UiMode.Wear -> WearKernelSUTheme(
+            appSettings = currentAppSettings,
+            content = content
+        )
     }
 }
 

@@ -1,19 +1,45 @@
 package me.weishu.kernelsu.ui
 
+import android.content.pm.PackageManager
 import androidx.compose.runtime.staticCompositionLocalOf
+import me.weishu.kernelsu.ksuApp
 
 enum class UiMode(val value: String) {
     Miuix("miuix"),
-    Material("material");
+    Material("material"),
+    Wear("wear");
 
     companion object {
         fun fromValue(value: String): UiMode = when (value) {
             Material.value -> Material
+            Wear.value -> Wear
             else -> Miuix
         }
 
-        val DEFAULT_VALUE = Miuix.value
+        val isWatchDevice: Boolean by lazy {
+            runCatching {
+                ksuApp.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH)
+            }.getOrDefault(false)
+        }
+
+        val DEFAULT_VALUE: String
+            get() = if (isWatchDevice) Wear.value else Miuix.value
+
+        val defaultUiMode: UiMode
+            get() = if (isWatchDevice) Wear else Miuix
     }
 }
 
 val LocalUiMode = staticCompositionLocalOf { UiMode.Miuix }
+
+enum class ScreenShape(val value: String) {
+    Round("round"),
+    Square("square");
+
+    companion object {
+        // Defaults to Round for any unrecognized value, matching the SharedPreferences default.
+        fun fromValue(value: String): ScreenShape = if (value == Square.value) Square else Round
+    }
+}
+
+val LocalScreenShape = staticCompositionLocalOf { ScreenShape.Round }

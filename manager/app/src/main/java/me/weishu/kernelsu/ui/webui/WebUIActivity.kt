@@ -31,6 +31,7 @@ import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.theme.ThemeController
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
+import androidx.wear.compose.material3.MaterialTheme as WearMaterialTheme
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity() {
@@ -136,6 +137,17 @@ private fun LoadingContent() {
                 contentAlignment = Alignment.Center
             ) {
                 androidx.compose.material3.LoadingIndicator()
+            }
+        }
+
+        UiMode.Wear -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(WearMaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.wear.compose.material3.CircularProgressIndicator()
             }
         }
     }
