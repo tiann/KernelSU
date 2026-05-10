@@ -9,7 +9,6 @@
 #include "runtime/ksud.h"
 #include "manager/manager_observer.h"
 #include "manager/throne_tracker.h"
-#include "feature/selinux_hide.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -30,7 +29,6 @@ void on_post_fs_data(void)
     ksu_observer_init();
     // Sanity check for safe mode only needs early-boot input samples.
     ksu_stop_input_hook_runtime();
-    ksu_selinux_hide_enable();
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);

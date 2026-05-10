@@ -10,6 +10,7 @@
 #include <asm-generic/errno-base.h>
 #include <net/genetlink.h>
 #include <linux/moduleparam.h>
+#include <linux/mutex.h>
 // security/selinux/include/security.h
 #include <security.h>
 #include <ss/context.h>
@@ -22,6 +23,7 @@
 #include "objsec.h"
 #include "hook/patch_memory.h"
 #include "ksu.h"
+#include "policy/feature.h"
 
 enum sel_inos {
     SEL_ROOT_INO = 2,
@@ -191,7 +193,7 @@ out:
     return length;
 }
 
-int ksu_selinux_hide_enable()
+static int ksu_selinux_hide_enable()
 {
     pr_info("selinux_hide: init selinux hide\n");
     if (!backup_sepolicy) {
@@ -235,18 +237,69 @@ int ksu_selinux_hide_enable()
     return ret;
 }
 
-void ksu_selinux_hide_disable()
+static void ksu_selinux_hide_disable()
 {
     pr_info("selinux_hide: exit selinux hide\n");
-    int ret =
-        ksu_patch_text(context_write, &orig_context_write, sizeof(orig_context_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
-    if (ret) {
-        pr_err("selinux_hide: exit: patch_text context_write err: %d\n", ret);
+    int ret;
+    if (orig_context_write) {
+        ret =
+            ksu_patch_text(context_write, &orig_context_write, sizeof(orig_context_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        orig_context_write = NULL;
+        if (ret) {
+            pr_err("selinux_hide: exit: patch_text context_write err: %d\n", ret);
+        }
     }
-    ret = ksu_patch_text(access_write, &orig_access_write, sizeof(orig_access_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
-    if (ret) {
-        pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
+    if (orig_access_write) {
+        ret = ksu_patch_text(access_write, &orig_access_write, sizeof(orig_access_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        orig_access_write = NULL;
+        if (ret) {
+            pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
+        }
     }
+}
+
+static DEFINE_MUTEX(selinux_hide_mutex);
+static bool ksu_selinux_hide_enabled __read_mostly = true;
+
+static int selinux_hide_feature_get(u64 *value)
+{
+    *value = ksu_selinux_hide_enabled ? 1 : 0;
+    return 0;
+}
+
+static int selinux_hide_feature_set(u64 value)
+{
+    bool enable = value != 0;
+    int ret = 0;
+    pr_info("selinux_hide: set to %d\n", enable);
+    mutex_lock(&selinux_hide_mutex);
+    ksu_selinux_hide_enabled = enable;
+    if (enable) {
+        ret = ksu_selinux_hide_enable();
+    } else {
+        ksu_selinux_hide_disable();
+    }
+    mutex_unlock(&selinux_hide_mutex);
+    return ret;
+}
+
+static const struct ksu_feature_handler selinux_hide_handler = {
+    .feature_id = KSU_FEATURE_SELINUX_HIDE,
+    .name = "selinux_hide",
+    .get_handler = selinux_hide_feature_get,
+    .set_handler = selinux_hide_feature_set,
+};
+
+void __init ksu_selinux_hide_init()
+{
+    if (ksu_register_feature_handler(&selinux_hide_handler)) {
+        pr_err("Failed to register selinux_hide feature handler\n");
+    }
+}
+
+void __exit ksu_selinux_hide_exit()
+{
+    ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
