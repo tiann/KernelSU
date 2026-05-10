@@ -202,3 +202,19 @@ bool is_kernel_umount_enabled() {
     }
     return value != 0;
 }
+
+bool set_selinux_hide_enabled(bool enabled) {
+    return set_feature(KSU_FEATURE_SELINUX_HIDE, enabled ? 1 : 0);
+}
+
+bool is_selinux_hide_enabled() {
+    uint64_t value = 0;
+    bool supported = false;
+    if (!get_feature(KSU_FEATURE_SELINUX_HIDE, &value, &supported)) {
+        return false;
+    }
+    if (!supported) {
+        return false;
+    }
+    return value != 0;
+}

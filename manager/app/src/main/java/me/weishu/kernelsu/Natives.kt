@@ -79,6 +79,15 @@ object Natives {
     external fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
     /**
+     * SELinux hide can be disabled temporarily.
+     *  0: disabled
+     *  1: enabled
+     *  negative : error
+     */
+    external fun isSelinuxHideEnabled(): Boolean
+    external fun setSelinuxHideEnabled(enabled: Boolean): Boolean
+
+    /**
      * Get the user name for the uid.
      */
     external fun getUserName(uid: Int): String?

@@ -117,6 +117,12 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun setKernelUmountEnabled(enabled: Boolean): Boolean = Natives.setKernelUmountEnabled(enabled)
 
+    override suspend fun getSelinuxHideStatus(): String = getFeatureStatus("selinux_hide")
+
+    override fun isSelinuxHideEnabled(): Boolean = Natives.isSelinuxHideEnabled()
+
+    override fun setSelinuxHideEnabled(enabled: Boolean): Boolean = Natives.setSelinuxHideEnabled(enabled)
+
     override suspend fun getSulogStatus(): String = getFeatureStatus("sulog")
 
     override suspend fun getSulogPersistValue(): Long? = getFeaturePersistValue("sulog")

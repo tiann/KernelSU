@@ -254,6 +254,27 @@ fun SettingPagerMiuix(
                                 onCheckedChange = actions.onSetKernelUmountEnabled
                             )
 
+                            val selinuxHideSummary = when (uiState.selinuxHideStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_selinux_hide_summary)
+                            }
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_selinux_hide),
+                                summary = selinuxHideSummary,
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.RemoveModerator,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_selinux_hide),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                enabled = uiState.selinuxHideStatus == "supported",
+                                checked = uiState.isSelinuxHideEnabled,
+                                onCheckedChange = actions.onSetSelinuxHideEnabled
+                            )
+
                             val sulogSummary = when (uiState.sulogStatus) {
                                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
