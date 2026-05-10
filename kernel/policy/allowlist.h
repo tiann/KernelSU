@@ -12,6 +12,9 @@
 #define FIRST_ISOLATED_UID 99000
 #define LAST_ISOLATED_UID 99999
 
+#define SHELL_UID 2000
+#define SYSTEM_UID 1000
+
 void ksu_allowlist_init(void);
 
 void ksu_allowlist_exit(void);
@@ -35,14 +38,12 @@ void ksu_persistent_allow_list();
 
 // should be called with rcu read lock
 struct app_profile *ksu_get_app_profile(uid_t uid);
-// only used to put the app_profile returned by ksu_get_app_profile
+struct app_profile *ksu_get_root_app_profile(uid_t uid);
+// only used to put the app_profile returned by ksu_get_app_profile or ksu_get_root_app_profile
 void ksu_put_app_profile(struct app_profile *);
 int ksu_set_app_profile(struct app_profile *);
 
 bool ksu_uid_should_umount(uid_t uid);
-struct root_profile *ksu_get_root_profile(uid_t uid);
-// only used to put the root_profile returned by ksu_get_root_profile
-void ksu_put_root_profile(struct root_profile *);
 
 static inline bool is_appuid(uid_t uid)
 {
@@ -55,4 +56,6 @@ static inline bool is_isolated_process(uid_t uid)
     uid_t appid = uid % PER_USER_RANGE;
     return appid >= FIRST_ISOLATED_UID && appid <= LAST_ISOLATED_UID;
 }
+
+extern struct root_profile default_root_profile;
 #endif

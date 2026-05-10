@@ -1,6 +1,7 @@
 kernelsu-objs := core/init.o
 
 kernelsu-objs += feature/kernel_umount.o
+kernelsu-objs += feature/process_tag.o
 kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
 

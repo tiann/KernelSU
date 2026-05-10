@@ -6,7 +6,7 @@ use std::{
     process::Command,
 };
 
-use crate::ksucalls;
+use crate::{ksu_uapi, ksucalls};
 
 const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
 
@@ -105,5 +105,22 @@ pub fn mark_unset(pid: i32) -> Result<()> {
 pub fn mark_refresh() -> Result<()> {
     ksucalls::mark_refresh()?;
     println!("Refreshed mark for all running processes");
+    Ok(())
+}
+
+pub fn get_tag(pid: u32) -> Result<()> {
+    let tag = ksucalls::get_process_tag(pid)?;
+
+    let tag_type = match tag.tag_type {
+        ksu_uapi::KSU_PROCESS_TAG_NONE => "none".to_owned(),
+        ksu_uapi::KSU_PROCESS_TAG_APP => "app".to_owned(),
+        ksu_uapi::KSU_PROCESS_TAG_KSUD => "ksud".to_owned(),
+        ksu_uapi::KSU_PROCESS_TAG_MODULE => "module".to_owned(),
+        ksu_uapi::KSU_PROCESS_TAG_MANAGER => "manager".to_owned(),
+        _ => format!("{}", tag.tag_type),
+    };
+
+    println!("pid: {pid} type={tag_type} name={}", tag.name);
+
     Ok(())
 }

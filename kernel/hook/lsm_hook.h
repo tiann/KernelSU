@@ -21,22 +21,22 @@ struct ksu_lsm_hook {
     struct security_hook_list *entry;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     struct lsm_static_call *scall;
+#else
+    struct security_hook_list list;
 #endif
+    // the offset from target_name to the real hook target
+    // for example, we'd like to hook task_free, but no target_name can be found
+    // (because none of lsm hook it), then we can find task_alloc and set offset
+    // to 1
+    int offset;
 };
 
-// clang-format off
-#define KSU_LSM_HOOK_INIT(head_member, hook_member, target_symbol, replacement_fn)                                     \
+#define KSU_LSM_HOOK_INIT(member, target_symbol, replacement_fn, off)                                                  \
     {                                                                                                                  \
-        .head_name = #head_member,                                                                                     \
-        .target_name = target_symbol,                                                                                  \
-        .head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, head_member),                                                 \
-        .hook_offset = offsetof(struct security_hook_list, hook.hook_member),                                          \
-        .replacement = (void *)(replacement_fn),                                                                       \
+        .head_name = #member, .target_name = target_symbol, .head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, member),  \
+        .hook_offset = offsetof(struct security_hook_list, hook.member), .replacement = (void *)(replacement_fn),      \
+        .offset = off,                                                                                                 \
     }
-// clang-format on
-
-#define KSU_LSM_HOOK_BPF_INIT(head_member, hook_member, replacement_fn)                                                \
-    KSU_LSM_HOOK_INIT(head_member, hook_member, NULL, replacement_fn)
 
 // This API implements runtime patching of existing LSM hook slots. It is a
 // workaround for out-of-tree modules, not the normal LSM registration path via
@@ -68,7 +68,7 @@ void ksu_unregister_lsm_hook(struct ksu_lsm_hook *hook);
 
 // --- Global lifecycle for tracked hooks ---
 // Initialize the internal tracking state used by hook/unhook and
-// register/unregister.
+// register/unregister. Safe to call more than once.
 void ksu_lsm_hook_init(void);
 
 // Restore all currently tracked LSM hooks in reverse order and clear the

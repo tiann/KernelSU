@@ -1,3 +1,6 @@
+#include "ksu.h"
+#include "linux/compiler.h"
+#include "manager/manager_identity.h"
 #include <linux/capability.h>
 #include <linux/cred.h>
 #include <linux/sched.h>
@@ -5,12 +8,14 @@
 #include <linux/sched/signal.h>
 #include <linux/seccomp.h>
 #include <linux/slab.h>
+#include <linux/kernel.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
+#include "feature/process_tag.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
@@ -105,11 +110,15 @@ static void disable_seccomp(void)
 int escape_with_root_profile(void)
 {
     int ret = 0;
+    char tag_name[64];
+    struct app_profile *app = NULL;
     struct cred *cred;
     struct task_struct *p = current;
     struct task_struct *t;
     struct root_profile *profile = NULL;
     struct user_struct *new_user;
+    bool is_manager = false;
+    uid_t uid;
 
     cred = prepare_creds();
     if (!cred) {
@@ -117,12 +126,28 @@ int escape_with_root_profile(void)
         return -ENOMEM;
     }
 
+    uid = cred->uid.val;
+
     if (cred->euid.val == 0) {
         pr_warn("Already root, don't escape!\n");
         goto out_abort_creds;
     }
 
-    profile = ksu_get_root_profile(cred->uid.val);
+#ifdef CONFIG_KSU_DISABLE_POLICY
+    profile = &default_root_profile;
+#else
+    is_manager = is_uid_manager(uid);
+
+    if (is_manager || unlikely(allow_shell && uid == SHELL_UID)) {
+        profile = &default_root_profile;
+    } else {
+        app = ksu_get_root_app_profile(uid);
+        if (unlikely(!app)) {
+            goto out_abort_creds;
+        }
+        profile = &app->rp_config.profile;
+    }
+#endif
 
     cred->uid.val = profile->uid;
     cred->suid.val = profile->uid;
@@ -185,13 +210,25 @@ int escape_with_root_profile(void)
         ksu_set_task_tracepoint_flag(t);
     }
 
+    if (unlikely(is_manager)) {
+        ksu_process_tag_set(current, PROCESS_TAG_MANAGER, "");
+    } else if (likely(app)) {
+        scnprintf(tag_name, sizeof(tag_name), "%u:%s", uid, app->key);
+        ksu_process_tag_set(current, PROCESS_TAG_APP, tag_name);
+    } else {
+        // This may happens when CONFIG_KSU_DISABLE_POLICY is enabled
+        scnprintf(tag_name, sizeof(tag_name), "%u", uid);
+        ksu_process_tag_set(current, PROCESS_TAG_APP, tag_name);
+    }
+
     setup_mount_ns(profile->namespaces);
-    ksu_put_root_profile(profile);
+    if (app)
+        ksu_put_app_profile(app);
     return 0;
 
 out_abort_creds:
-    if (profile)
-        ksu_put_root_profile(profile);
+    if (app)
+        ksu_put_app_profile(app);
     abort_creds(cred);
     return ret;
 }
@@ -206,4 +243,6 @@ void escape_to_root_for_init(void)
 
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
+
+    ksu_process_tag_set(current, PROCESS_TAG_KSUD, "");
 }

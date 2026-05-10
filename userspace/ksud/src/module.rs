@@ -168,6 +168,16 @@ pub fn load_sepolicy_rule() -> Result<()> {
     Ok(())
 }
 
+fn get_script_tag(module_id: Option<&String>, path: &Path) -> String {
+    module_id.cloned().unwrap_or_else(|| {
+        format!(
+            "script:{}",
+            path.file_name()
+                .map_or_else(|| "unknown".to_owned(), |l| l.to_string_lossy().to_string())
+        )
+    })
+}
+
 pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
@@ -208,19 +218,21 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         );
     }
 
-    let mut command = &mut Command::new(assets::BUSYBOX_PATH);
-    #[cfg(unix)]
-    {
-        command = unsafe {
-            command.pre_exec(|| {
-                detach_process_group(true);
-                // ignore the error?
-                switch_cgroups();
-                Ok(())
-            })
-        };
-    }
-    command = command
+    let tag = get_script_tag(module_id.as_ref(), path.as_ref());
+
+    let mut command = Command::new(assets::BUSYBOX_PATH);
+    unsafe {
+        command.pre_exec(move || {
+            if let Err(e) = ksucalls::set_module_tag(tag.as_str()) {
+                log::warn!("failed to set process tag {tag}: {e:?}");
+            }
+            detach_process_group(true);
+            // ignore the error?
+            switch_cgroups();
+            Ok(())
+        })
+    };
+    command
         .current_dir(path.as_ref().parent().unwrap())
         .arg("sh")
         .arg(path.as_ref())
@@ -228,7 +240,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
 
     // Set KSU_MODULE environment variable if module_id was validated successfully
     if let Some(id) = validated_module_id {
-        command = command.env("KSU_MODULE", id);
+        command.env("KSU_MODULE", id);
     }
 
     let result = if wait {

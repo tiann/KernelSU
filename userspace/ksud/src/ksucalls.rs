@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-use crate::ksu_uapi;
+use crate::ksu_uapi::{self, ProcessTag};
 use std::fs;
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
@@ -248,4 +248,34 @@ pub fn set_init_pgrp() -> std::io::Result<()> {
         std::ptr::null_mut::<u8>(),
     )?;
     Ok(())
+}
+
+pub fn set_module_tag(tag: &str) -> std::io::Result<()> {
+    let mut cmd = ksu_uapi::ksu_set_process_tag_cmd {
+        type_: ksu_uapi::KSU_PROCESS_TAG_MODULE,
+        name: [0; 64],
+    };
+    let bytes = tag.as_bytes();
+    let len = bytes.len().max(cmd.name.len() - 1);
+    cmd.name[..len].copy_from_slice(&bytes[..len]);
+    ksuctl(ksu_uapi::KSU_IOCTL_SET_PROCESS_TAG, &raw mut cmd)?;
+    Ok(())
+}
+
+pub fn get_process_tag(pid: u32) -> anyhow::Result<ProcessTag> {
+    let mut cmd = ksu_uapi::ksu_get_process_tag_cmd {
+        pid,
+        type_: ksu_uapi::KSU_PROCESS_TAG_NONE,
+        name: [0; 64],
+    };
+    ksuctl(ksu_uapi::KSU_IOCTL_GET_PROCESS_TAG, &raw mut cmd)?;
+    let name_len = cmd
+        .name
+        .iter()
+        .position(|&b| b == 0)
+        .unwrap_or(cmd.name.len());
+    Ok(ProcessTag {
+        tag_type: cmd.type_,
+        name: String::from_utf8_lossy(&cmd.name[..name_len]).into_owned(),
+    })
 }

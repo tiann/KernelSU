@@ -109,6 +109,17 @@ struct ksu_get_wrapper_fd_cmd {
     __u32 flags; /* Input: flags of userspace fd */
 };
 
+struct ksu_set_process_tag_cmd {
+    __u8 type; /* Input: enum process_tag_type */
+    unsigned char name[64]; /* Input: tag name (module name / package name) */
+};
+
+struct ksu_get_process_tag_cmd {
+    __u32 pid; /* Input: target process pid */
+    __u8 type; /* Output: enum process_tag_type, PROCESS_TAG_NONE if no tag */
+    unsigned char name[64]; /* Output: tag name */
+};
+
 struct ksu_manage_mark_cmd {
     __u32 operation; /* Input: KSU_MARK_* */
     __s32 pid; /* Input: target pid (0 for all processes) */
@@ -163,5 +174,7 @@ static const __u32 KSU_IOCTL_NUKE_EXT4_SYSFS = _IOC(_IOC_WRITE, 'K', 17, 0);
 static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
+static const __u32 KSU_IOCTL_SET_PROCESS_TAG = _IOW('K', 21, struct ksu_set_process_tag_cmd);
+static const __u32 KSU_IOCTL_GET_PROCESS_TAG = _IOWR('K', 22, struct ksu_get_process_tag_cmd);
 
 #endif

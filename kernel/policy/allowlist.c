@@ -34,7 +34,7 @@
 static DEFINE_MUTEX(allowlist_mutex);
 
 // default profiles, these may be used frequently, so we cache it
-static struct root_profile default_root_profile;
+struct root_profile default_root_profile;
 static struct non_root_profile default_non_root_profile;
 
 static void __init init_default_profiles()
@@ -109,8 +109,6 @@ retry:
 
 static inline bool forbid_system_uid(uid_t uid)
 {
-#define SHELL_UID 2000
-#define SYSTEM_UID 1000
     return uid < SHELL_UID && uid != SYSTEM_UID;
 }
 
@@ -347,54 +345,26 @@ void ksu_put_app_profile(struct app_profile *profile)
     put_perm_data(p);
 }
 
-struct root_profile *ksu_get_root_profile(uid_t uid)
+struct app_profile *ksu_get_root_app_profile(uid_t uid)
 {
-#ifdef CONFIG_KSU_DISABLE_POLICY
-    (void)uid;
-    return &default_root_profile;
-#else
     struct perm_data *p = NULL;
-    struct root_profile *res;
+    struct app_profile *res;
 
     rcu_read_lock();
-    if (is_uid_manager(uid)) {
-        goto use_default;
-    }
-
-    if (unlikely(allow_shell && uid == SHELL_UID)) {
-        goto use_default;
-    }
-
 retry:
     res = NULL;
     hash_for_each_possible_rcu (allow_list, p, list, uid) {
         if (uid == p->profile.curr_uid && p->profile.allow_su) {
-            if (!p->profile.rp_config.use_default) {
-                if (!kref_get_unless_zero(&p->ref)) {
-                    goto retry;
-                }
-                res = &p->profile.rp_config.profile;
+            if (!kref_get_unless_zero(&p->ref)) {
+                goto retry;
             }
+            res = &p->profile;
             break;
         }
     }
 
-    if (unlikely(!res)) {
-    use_default:
-        res = &default_root_profile;
-    }
-
     rcu_read_unlock();
     return res;
-#endif
-}
-
-void ksu_put_root_profile(struct root_profile *profile)
-{
-    if (likely(profile == &default_root_profile))
-        return;
-    struct perm_data *p = container_of(profile, struct perm_data, profile.rp_config.profile);
-    put_perm_data(p);
 }
 
 bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total, bool allow)

@@ -15,6 +15,7 @@
 #endif
 
 #include "feature/sulog.h"
+#include "feature/process_tag.h"
 #include "infra/event_queue.h"
 #include "klog.h" // IWYU pragma: keep
 #include "sulog/event.h"
@@ -90,6 +91,8 @@ static const char __user *ksu_sulog_get_user_arg_ptr(struct user_arg_ptr argv, i
 
 static void ksu_sulog_fill_task_info(struct ksu_sulog_event *event, __u16 event_type, int retval)
 {
+    struct process_tag *tag;
+
     event->version = KSU_SULOG_EVENT_VERSION;
     event->event_type = event_type;
     event->retval = retval;
@@ -99,6 +102,17 @@ static void ksu_sulog_fill_task_info(struct ksu_sulog_event *event, __u16 event_
     event->uid = current_uid().val;
     event->euid = current_euid().val;
     get_task_comm(event->comm, current);
+
+    event->process_tag_type = PROCESS_TAG_NONE;
+    event->process_tag_name[0] = '\0';
+
+    tag = ksu_process_tag_get(current);
+    if (tag) {
+        event->process_tag_type = tag->type;
+        strncpy(event->process_tag_name, tag->name, sizeof(event->process_tag_name) - 1);
+        event->process_tag_name[sizeof(event->process_tag_name) - 1] = '\0';
+        ksu_process_tag_put(tag);
+    }
 }
 
 static void ksu_sulog_set_identity(struct ksu_sulog_event *event, const struct ksu_sulog_identity *identity)
