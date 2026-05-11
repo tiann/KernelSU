@@ -179,7 +179,7 @@
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Unmount modules from kernel in App Profile.</string>
     <string name="settings_selinux_hide">Hide SELinux modification</string>
-    <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications via selinuxfs</string>
+    <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
     <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
     <string name="settings_selinux_hide_failed">Error: %d</string>
     <string name="settings_sulog">SU Log</string>
