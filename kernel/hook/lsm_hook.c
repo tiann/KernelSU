@@ -288,8 +288,8 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         pr_warn("lookup head size failed");
     }
 
-    head = (struct hlist_head *)(heads_addr);
-    struct hlist_head *head_end = heads_addr + heads_size;
+    head = (struct hlist_head *)heads_addr;
+    struct hlist_head *head_end = (struct hlist_head *)(heads_addr + heads_size);
     pr_info("heads_addr 0x%lx head_offset 0x%lx heads_size %ld hook_offset 0x%lx\n", (unsigned long)heads_addr,
             hook->head_offset, heads_size, hook->hook_offset);
 
