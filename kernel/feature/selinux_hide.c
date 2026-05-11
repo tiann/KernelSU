@@ -103,10 +103,6 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
                           SECURITY__CHECK_CONTEXT, NULL);
     if (length)
         goto out;
-    length = avc_has_perm(&selinux_state, current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY,
-                          SECURITY__CHECK_CONTEXT, NULL);
-    if (length)
-        goto out;
 
     length = security_context_to_sid(&fake_state, buf, size, &sid, GFP_KERNEL);
     if (length)
@@ -195,6 +191,7 @@ out:
 
 static int ksu_selinux_hide_enable()
 {
+    int ret;
     pr_info("selinux_hide: init selinux hide\n");
     if (!backup_sepolicy) {
         pr_err("no backup sepolicy available\n");
@@ -220,7 +217,7 @@ static int ksu_selinux_hide_enable()
     pr_info("selinux_hide: context_write: 0x%lx [%pSb]\n", (unsigned long)*context_write, *context_write);
     write_op_fn my = my_write_context;
     orig_context_write = *context_write;
-    int ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
     }
@@ -234,7 +231,9 @@ static int ksu_selinux_hide_enable()
         pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
     }
 
-    return ret;
+    // patch failure doesn't meaning failure, just warning
+
+    return 0;
 }
 
 static void ksu_selinux_hide_disable()
@@ -259,7 +258,7 @@ static void ksu_selinux_hide_disable()
 }
 
 static DEFINE_MUTEX(selinux_hide_mutex);
-static bool ksu_selinux_hide_enabled __read_mostly = true;
+static bool ksu_selinux_hide_enabled __read_mostly = false;
 
 static int selinux_hide_feature_get(u64 *value)
 {
@@ -273,11 +272,18 @@ static int selinux_hide_feature_set(u64 value)
     int ret = 0;
     pr_info("selinux_hide: set to %d\n", enable);
     mutex_lock(&selinux_hide_mutex);
-    ksu_selinux_hide_enabled = enable;
     if (enable) {
-        ret = ksu_selinux_hide_enable();
+        if (!ksu_selinux_hide_enabled) {
+            ret = ksu_selinux_hide_enable();
+            if (!ret) {
+                ksu_selinux_hide_enabled = true;
+            }
+        }
     } else {
-        ksu_selinux_hide_disable();
+        if (ksu_selinux_hide_enabled) {
+            ksu_selinux_hide_disable();
+            ksu_selinux_hide_enabled = false;
+        }
     }
     mutex_unlock(&selinux_hide_mutex);
     return ret;
@@ -299,6 +305,12 @@ void __init ksu_selinux_hide_init()
 
 void __exit ksu_selinux_hide_exit()
 {
+    mutex_lock(&selinux_hide_mutex);
+    if (ksu_selinux_hide_enabled) {
+        ksu_selinux_hide_disable();
+        ksu_selinux_hide_enabled = false;
+    }
+    mutex_unlock(&selinux_hide_mutex);
     ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
 }
 
@@ -502,7 +514,6 @@ static int security_sid_to_context_with_policy(struct selinux_policy *policy, u3
 
     // removed: if (!selinux_initialized())
     // removed: rcu lock
-    policy = rcu_dereference(selinux_state.policy);
     policydb = &policy->policydb;
     sidtab = policy->sidtab;
 
