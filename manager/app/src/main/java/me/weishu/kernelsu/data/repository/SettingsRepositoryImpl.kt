@@ -121,7 +121,7 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun isSelinuxHideEnabled(): Boolean = Natives.isSelinuxHideEnabled()
 
-    override fun setSelinuxHideEnabled(enabled: Boolean): Boolean = Natives.setSelinuxHideEnabled(enabled)
+    override fun setSelinuxHideEnabled(enabled: Boolean): Int = Natives.setSelinuxHideEnabled(enabled)
 
     override suspend fun getSulogStatus(): String = getFeatureStatus("sulog")
 

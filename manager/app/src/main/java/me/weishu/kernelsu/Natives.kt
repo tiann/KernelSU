@@ -85,7 +85,7 @@ object Natives {
      *  negative : error
      */
     external fun isSelinuxHideEnabled(): Boolean
-    external fun setSelinuxHideEnabled(enabled: Boolean): Boolean
+    external fun setSelinuxHideEnabled(enabled: Boolean): Int
 
     /**
      * Get the user name for the uid.

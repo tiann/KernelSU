@@ -245,7 +245,8 @@ unhook:
     return -ENOSYS;
 }
 
-static void ksu_selinux_hide_unhook() {
+static void ksu_selinux_hide_unhook()
+{
     int ret;
     if (orig_context_write) {
         ret =
@@ -272,6 +273,7 @@ static void ksu_selinux_hide_disable()
 
 static DEFINE_MUTEX(selinux_hide_mutex);
 static bool ksu_selinux_hide_enabled __read_mostly = false;
+static bool ksu_selinux_hide_running __read_mostly = false;
 
 static int selinux_hide_feature_get(u64 *value)
 {
@@ -285,17 +287,18 @@ static int selinux_hide_feature_set(u64 value)
     int ret = 0;
     pr_info("selinux_hide: set to %d\n", enable);
     mutex_lock(&selinux_hide_mutex);
+    ksu_selinux_hide_enabled = enable;
     if (enable) {
-        if (!ksu_selinux_hide_enabled) {
+        if (!ksu_selinux_hide_running) {
             ret = ksu_selinux_hide_enable();
             if (!ret) {
-                ksu_selinux_hide_enabled = true;
+                ksu_selinux_hide_running = true;
             }
         }
     } else {
-        if (ksu_selinux_hide_enabled) {
+        if (ksu_selinux_hide_running) {
             ksu_selinux_hide_disable();
-            ksu_selinux_hide_enabled = false;
+            ksu_selinux_hide_running = false;
         }
     }
     mutex_unlock(&selinux_hide_mutex);
@@ -319,17 +322,18 @@ void __init ksu_selinux_hide_init()
 void __exit ksu_selinux_hide_exit()
 {
     mutex_lock(&selinux_hide_mutex);
-    if (ksu_selinux_hide_enabled) {
+    if (ksu_selinux_hide_running) {
         ksu_selinux_hide_disable();
-        ksu_selinux_hide_enabled = false;
+        ksu_selinux_hide_running = false;
     }
     mutex_unlock(&selinux_hide_mutex);
     ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
 }
 
-void ksu_selinux_hide_drop_backup_if_unused() {
+void ksu_selinux_hide_drop_backup_if_unused()
+{
     mutex_lock(&selinux_hide_mutex);
-    if (!ksu_selinux_hide_enabled && backup_sepolicy) {
+    if (!ksu_selinux_hide_running && backup_sepolicy) {
         pr_info("selinux_hide is not enabled - drop backup_sepolicy\n");
         sidtab_destroy(backup_sepolicy->sidtab);
         kfree(backup_sepolicy->sidtab);
