@@ -25,6 +25,7 @@
 #include "hook/patch_memory.h"
 #include "ksu.h"
 #include "policy/feature.h"
+#include "hook/lsm_hook.h"
 
 enum sel_inos {
     SEL_ROOT_INO = 2,
@@ -189,6 +190,52 @@ out:
     return length;
 }
 
+static int my_setprocattr(const char *name, void *value, size_t size);
+struct ksu_lsm_hook selinux_setprocattr_hook = KSU_LSM_HOOK_INIT(setprocattr, "selinux_setprocattr", my_setprocattr, 0);
+
+typedef int (*setprocattr_fn)(const char *name, void *value, size_t size);
+static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
+{
+    int error;
+    u32 mysid, sid;
+    char *str = value;
+    if (likely(current_uid().val < 10000)) {
+        goto call_orig;
+    }
+
+    if (strcmp(name, "current")) {
+        goto call_orig;
+    }
+    mysid = current_sid();
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    error = avc_has_perm(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
+#else
+    error = avc_has_perm(&selinux_state, mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
+#endif
+    if (error) {
+        return error;
+    }
+
+    if (size && str[0] && str[0] != '\n') {
+        if (str[size - 1] == '\n') {
+            str[size - 1] = 0;
+            size--;
+        }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+        error = security_context_to_sid_with_policy(backup_sepolicy, str, size, &sid, SECSID_NULL, GFP_KERNEL);
+#else
+        error = security_context_to_sid(&fake_state, str, size, &sid, GFP_KERNEL);
+#endif
+        if (error) {
+            return error;
+        }
+    }
+
+call_orig:
+    return ((setprocattr_fn)selinux_setprocattr_hook.original)(name, value, size);
+}
+
 static void ksu_selinux_hide_unhook();
 static int ksu_selinux_hide_enable()
 {
@@ -238,6 +285,12 @@ static int ksu_selinux_hide_enable()
         goto unhook;
     }
 
+    ret = ksu_lsm_hook(&selinux_setprocattr_hook);
+    if (ret) {
+        pr_err("selinux_hide: init: selinux_setprocattr_hook err: %d\n", ret);
+        goto unhook;
+    }
+
     return 0;
 
 unhook:
@@ -263,6 +316,7 @@ static void ksu_selinux_hide_unhook()
             pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
         }
     }
+    ksu_lsm_unhook(&selinux_setprocattr_hook);
 }
 
 static void ksu_selinux_hide_disable()
