@@ -25,6 +25,7 @@ import androidx.compose.material.icons.rounded.ElectricalServices
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.RemoveModerator
 import androidx.compose.material.icons.rounded.Update
@@ -264,7 +265,7 @@ fun SettingPagerMiuix(
                                 summary = selinuxHideSummary,
                                 startAction = {
                                     Icon(
-                                        Icons.Rounded.RemoveModerator,
+                                        Icons.Rounded.Policy,
                                         modifier = Modifier.padding(end = 6.dp),
                                         contentDescription = stringResource(id = R.string.settings_selinux_hide),
                                         tint = colorScheme.onBackground
