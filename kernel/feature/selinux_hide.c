@@ -1,4 +1,5 @@
 #include "selinux_hide.h"
+#include "selinux/sepolicy.h"
 #include <linux/cred.h>
 #include <linux/cpu.h>
 #include <linux/memory.h>
@@ -188,13 +189,14 @@ out:
     return length;
 }
 
+static void ksu_selinux_hide_unhook();
 static int ksu_selinux_hide_enable()
 {
     int ret;
     pr_info("selinux_hide: init selinux hide\n");
     if (!backup_sepolicy) {
-        pr_err("no backup sepolicy available\n");
-        return -ENOSYS;
+        pr_err("no backup sepolicy available, please save feature and reboot to retry!\n");
+        return -EAGAIN;
     }
     selinux_write_op = kallsyms_lookup_name("write_op");
     if (!selinux_write_op) {
@@ -223,6 +225,7 @@ static int ksu_selinux_hide_enable()
     ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
+        goto unhook;
     }
 
     access_write = &selinux_write_op[SEL_ACCESS];
@@ -232,16 +235,17 @@ static int ksu_selinux_hide_enable()
     ret = ksu_patch_text(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
+        goto unhook;
     }
 
-    // patch failure doesn't meaning failure, just warning
-
     return 0;
+
+unhook:
+    ksu_selinux_hide_unhook();
+    return -ENOSYS;
 }
 
-static void ksu_selinux_hide_disable()
-{
-    pr_info("selinux_hide: exit selinux hide\n");
+static void ksu_selinux_hide_unhook() {
     int ret;
     if (orig_context_write) {
         ret =
@@ -258,6 +262,12 @@ static void ksu_selinux_hide_disable()
             pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
         }
     }
+}
+
+static void ksu_selinux_hide_disable()
+{
+    pr_info("selinux_hide: exit selinux hide\n");
+    ksu_selinux_hide_unhook();
 }
 
 static DEFINE_MUTEX(selinux_hide_mutex);
@@ -315,6 +325,18 @@ void __exit ksu_selinux_hide_exit()
     }
     mutex_unlock(&selinux_hide_mutex);
     ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
+}
+
+void ksu_selinux_hide_drop_backup_if_unused() {
+    mutex_lock(&selinux_hide_mutex);
+    if (!ksu_selinux_hide_enabled && backup_sepolicy) {
+        pr_info("selinux_hide is not enabled - drop backup_sepolicy\n");
+        sidtab_destroy(backup_sepolicy->sidtab);
+        kfree(backup_sepolicy->sidtab);
+        ksu_destroy_sepolicy(backup_sepolicy);
+        backup_sepolicy = NULL;
+    }
+    mutex_unlock(&selinux_hide_mutex);
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
