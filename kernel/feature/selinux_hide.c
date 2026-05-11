@@ -119,8 +119,6 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
     memcpy(buf, canon, len);
     length = len;
 out:
-    // DEBUG!
-    pr_info("selinux_hide: handle write_context for uid %d ctx: %s ret %ld\n", current_uid().val, buf, length);
     kfree(canon);
     return length;
 }
@@ -185,8 +183,6 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
     length = scnprintf(buf, SIMPLE_TRANSACTION_LIMIT, "%x %x %x %x %u %x", avd.allowed, 0xffffffff, avd.auditallow,
                        avd.auditdeny, avd.seqno, avd.flags);
 out:
-    // DEBUG!
-    pr_info("selinux_hide: handle write_access for uid %d buf: %s ret %ld\n", current_uid().val, buf, length);
     kfree(tcon);
     kfree(scon);
     return length;
