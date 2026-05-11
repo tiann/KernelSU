@@ -62,6 +62,9 @@ static void security_compute_av_user_with_policy(struct selinux_policy *policy, 
                                                  struct av_decision *avd);
 static void (*security_dump_masked_av_fn)(struct policydb *policydb, struct context *scontext, struct context *tcontext,
                                           u16 tclass, u32 permissions, const char *reason) = NULL;
+static void (*context_struct_compute_av_fn)(struct policydb *policydb, struct context *scontext,
+                                            struct context *tcontext, u16 tclass, struct av_decision *avd,
+                                            struct extended_perms *xperms) = NULL;
 #else
 static struct selinux_state fake_state;
 #endif
@@ -207,6 +210,10 @@ static int ksu_selinux_hide_enable()
     security_dump_masked_av_fn = kallsyms_lookup_name("security_dump_masked_av");
     if (!security_dump_masked_av_fn) {
         pr_warn("security_dump_masked_av not found!\n");
+    }
+    context_struct_compute_av_fn = kallsyms_lookup_name("context_struct_compute_av");
+    if (!context_struct_compute_av_fn) {
+        pr_warn("context_struct_compute_av not found!\n");
     }
 #else
     fake_state.initialized = true;
@@ -551,8 +558,8 @@ static void context_struct_compute_av(struct policydb *policydb, struct context 
  * security_boundary_permission - drops violated permissions
  * on boundary constraint.
  */
-static void type_attribute_bounds_av(struct policydb *policydb, struct context *scontext, struct context *tcontext,
-                                     u16 tclass, struct av_decision *avd)
+static void __nocfi type_attribute_bounds_av(struct policydb *policydb, struct context *scontext,
+                                             struct context *tcontext, u16 tclass, struct av_decision *avd)
 {
     struct context lo_scontext;
     struct context lo_tcontext, *tcontextp = tcontext;
@@ -873,8 +880,8 @@ static void context_struct_compute_av(struct policydb *policydb, struct context 
     type_attribute_bounds_av(policydb, scontext, tcontext, tclass, avd);
 }
 
-static void security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
-                                                 struct av_decision *avd)
+static void __nocfi security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
+                                                         struct av_decision *avd)
 {
     struct policydb *policydb;
     struct sidtab *sidtab;
@@ -909,8 +916,11 @@ static void security_compute_av_user_with_policy(struct selinux_policy *policy, 
         goto out;
     }
 
-    // TODO: use context_struct_compute_av from kallsyms directly?
-    context_struct_compute_av(policydb, scontext, tcontext, tclass, avd, NULL);
+    if (context_struct_compute_av_fn) {
+        context_struct_compute_av_fn(policydb, scontext, tcontext, tclass, avd, NULL);
+    } else {
+        context_struct_compute_av(policydb, scontext, tcontext, tclass, avd, NULL);
+    }
 out:
     return;
 allow:
