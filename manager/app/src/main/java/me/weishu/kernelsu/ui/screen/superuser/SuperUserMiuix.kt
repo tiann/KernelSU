@@ -226,7 +226,52 @@ fun SuperUserPagerMiuix(
             }
             searchStatus.SearchPager(
                 onSearchStatusChange = actions.onSearchStatusChange,
-                defaultResult = {},
+                defaultResult = {
+                    val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+                    if (uiState.recentlyInstalledResults.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .overScrollVertical(),
+                        ) {
+                            item {
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    text = stringResource(R.string.recently_installed),
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colorScheme.onSurfaceVariantSummary,
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                                )
+                            }
+                            items(uiState.recentlyInstalledResults, key = { it.uid }, contentType = { "recent-group" }) { group ->
+                                Column {
+                                    GroupItem(
+                                        group = group,
+                                        onToggleExpand = {},
+                                    ) {
+                                        actions.onOpenProfile(group)
+                                    }
+                                    AnimatedVisibility(
+                                        visible = group.apps.size > 1,
+                                        enter = expandVertically() + fadeIn(),
+                                        exit = shrinkVertically() + fadeOut()
+                                    ) {
+                                        Column {
+                                            group.apps.forEach { app ->
+                                                SimpleAppItem(app = app)
+                                            }
+                                            Spacer(Modifier.height(6.dp))
+                                        }
+                                    }
+                                }
+                            }
+                            item {
+                                Spacer(Modifier.height(maxOf(bottomInnerPadding, imeBottomPadding)))
+                            }
+                        }
+                    }
+                },
                 searchBarTopPadding = dynamicTopPadding,
             ) {
                 val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
