@@ -62,6 +62,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
+import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
@@ -146,6 +147,41 @@ fun SuperUserPagerMaterial(
                     }
                 },
                 scrollBehavior = scrollBehavior,
+                defaultContent = { bottomPadding, closeSearch ->
+                    LaunchedEffect(localSearchText) {
+                        searchListState.scrollToItem(0)
+                    }
+                    LazyColumn(
+                        state = searchListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 16.dp + bottomPadding
+                        ),
+                    ) {
+                        if (uiState.recentlyInstalledResults.isNotEmpty()) {
+                            item {
+                                SegmentedColumn(
+                                    title = stringResource(R.string.recently_installed),
+                                    content = uiState.recentlyInstalledResults.map { group ->
+                                        @Composable {
+                                            SearchGroupItem(
+                                                group = group,
+                                                closeSearch = closeSearch,
+                                                onOpenProfile = actions.onOpenProfile,
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                },
                 searchContent = { bottomPadding, closeSearch ->
                     LaunchedEffect(localSearchText) {
                         searchListState.scrollToItem(0)
@@ -165,33 +201,11 @@ fun SuperUserPagerMaterial(
                     ) {
                         itemsIndexed(uiState.searchResults, key = { _, item -> item.uid }) { index, group ->
                             SegmentedItem(index = index, count = uiState.searchResults.size) {
-                                Column {
-                                    GroupItem(
-                                        group = group,
-                                        selected = false,
-                                        onToggleExpand = {},
-                                    ) {
-                                        closeSearch()
-                                        actions.onOpenProfile(group)
-                                    }
-                                    AnimatedVisibility(
-                                        visible = group.apps.size > 1,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Column {
-                                            group.apps.forEach { app ->
-                                                SimpleAppItem(
-                                                    app = app,
-                                                    matched = group.matchedPackageNames.contains(app.packageName),
-                                                ) {
-                                                    closeSearch()
-                                                    actions.onOpenProfile(group)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                SearchGroupItem(
+                                    group = group,
+                                    closeSearch = closeSearch,
+                                    onOpenProfile = actions.onOpenProfile,
+                                )
                             }
                         }
                     }
@@ -267,6 +281,41 @@ fun SuperUserPagerMaterial(
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchGroupItem(
+    group: GroupedApps,
+    closeSearch: () -> Unit,
+    onOpenProfile: (GroupedApps) -> Unit,
+) {
+    Column {
+        GroupItem(
+            group = group,
+            selected = false,
+            onToggleExpand = {},
+        ) {
+            closeSearch()
+            onOpenProfile(group)
+        }
+        AnimatedVisibility(
+            visible = group.apps.size > 1,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Column {
+                group.apps.forEach { app ->
+                    SimpleAppItem(
+                        app = app,
+                        matched = group.matchedPackageNames.contains(app.packageName),
+                    ) {
+                        closeSearch()
+                        onOpenProfile(group)
                     }
                 }
             }

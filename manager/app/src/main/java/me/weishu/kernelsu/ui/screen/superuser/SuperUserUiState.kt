@@ -23,6 +23,7 @@ data class SuperUserUiState(
     val isRefreshing: Boolean = false,
     val hasLoaded: Boolean = false,
     val groupedApps: List<GroupedApps> = emptyList(),
+    val recentlyInstalledResults: List<GroupedApps> = emptyList(),
     val userIds: List<Int> = emptyList(),
     val searchStatus: SearchStatus = SearchStatus(""),
     val searchResults: List<GroupedApps> = emptyList(),

@@ -69,6 +69,7 @@ fun SearchAppBar(
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
+    defaultContent: @Composable BoxScope.(bottomPadding: Dp, closeSearch: () -> Unit) -> Unit = { _, _ -> },
     searchContent: @Composable BoxScope.(bottomPadding: Dp, closeSearch: () -> Unit) -> Unit = { _, _ -> }
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -221,6 +222,8 @@ fun SearchAppBar(
             Box(modifier = Modifier.fillMaxSize()) {
                 if (currentQuery.isNotEmpty()) {
                     searchContent(bottomPadding, collapseAndClear)
+                } else {
+                    defaultContent(bottomPadding, collapseAndClear)
                 }
                 SnackbarHost(
                     hostState = snackBarHostState,

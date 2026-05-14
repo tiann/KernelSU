@@ -31,6 +31,27 @@ import me.weishu.kernelsu.ui.util.withCurrentUserUid
 import java.text.Collator
 import java.util.Locale
 
+internal const val RECENTLY_INSTALLED_WINDOW_MILLIS = 60 * 60 * 1000L
+
+internal fun buildRecentlyInstalledGroups(
+    groups: List<GroupedApps>,
+    nowMillis: Long = System.currentTimeMillis(),
+): List<GroupedApps> {
+    val cutoffMillis = nowMillis - RECENTLY_INSTALLED_WINDOW_MILLIS
+
+    return groups.mapNotNull { group ->
+        val latestInstallTime = group.apps.maxOfOrNull { it.packageInfo.firstInstallTime } ?: return@mapNotNull null
+        if (latestInstallTime < cutoffMillis) {
+            null
+        } else {
+            group.copy(matchedPackageNames = emptySet()) to latestInstallTime
+        }
+    }.sortedWith(
+        compareByDescending<Pair<GroupedApps, Long>> { it.second }
+            .thenBy { it.first.primary.label.lowercase() }
+    ).map { it.first }
+}
+
 class SuperUserViewModel(
     private val repo: SuperUserRepository = SuperUserRepositoryImpl()
 ) : ViewModel() {
@@ -193,9 +214,11 @@ class SuperUserViewModel(
     private fun updateVisibleApps(grouped: List<GroupedApps>) {
         val searchText = _uiState.value.searchStatus.searchText
         val searchResults = filterSearchResults(grouped, searchText)
+        val recentlyInstalledResults = buildRecentlyInstalledGroups(grouped)
         _uiState.update {
             it.copy(
                 groupedApps = grouped.map { group -> group.copy(matchedPackageNames = emptySet()) },
+                recentlyInstalledResults = recentlyInstalledResults,
                 searchResults = searchResults,
                 searchStatus = it.searchStatus.copy(
                     resultStatus = searchResultStatusFor(searchText, searchResults.isEmpty())
