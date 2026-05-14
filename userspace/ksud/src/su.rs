@@ -99,9 +99,9 @@ pub fn root_shell() -> Result<()> {
                 && !(arg[0].starts_with("-g")
                     || arg[0].starts_with("-G")
                     || arg[0].starts_with("-s")
-                    || arg[0].starts_with("--group=")
-                    || arg[0].starts_with("--supp-group=")
-                    || arg[0].starts_with("--shell="))
+                    || arg[0] == "--group"
+                    || arg[0] == "--supp-group="
+                    || arg[0] == "--shell=")
         })
         .map_or(usize::MAX, |idx| idx + 1);
     let args = match first_non_option.cmp(&first_option_c) {
