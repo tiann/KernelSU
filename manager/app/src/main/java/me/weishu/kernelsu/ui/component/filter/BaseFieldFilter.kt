@@ -21,14 +21,14 @@ open class BaseFieldFilter() {
     }
 
     protected fun getNewTextRange(
-        lastTextFiled: TextFieldValue,
+        lastTextField: TextFieldValue,
         inputTextFieldValue: TextFieldValue
     ): TextRange? {
         return null
     }
 
     protected fun getNewText(
-        lastTextFiled: TextFieldValue,
+        lastTextField: TextFieldValue,
         inputTextFieldValue: TextFieldValue
     ): TextRange? {
 
