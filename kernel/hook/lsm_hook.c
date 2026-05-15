@@ -127,7 +127,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
     target = hook->original;
     if (!target)
-        target = ksu_lookup_symbol(target_name);
+        target = ksu_resolve_symbol_for_functable_hook(target_name);
     if (!target) {
         pr_err("lsm_hook: failed to resolve target for %s\n", hook->head_name ?: "unknown");
         ret = -ENOENT;
