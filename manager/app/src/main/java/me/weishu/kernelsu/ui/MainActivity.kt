@@ -54,8 +54,8 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
@@ -101,7 +101,6 @@ import me.weishu.kernelsu.ui.viewmodel.MainPagerConfig
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 
 class MainActivity : ComponentActivity() {
 
@@ -268,7 +267,7 @@ fun MainScreen(
     ) {
         val contentReady = rememberContentReady()
         val pagerContent = @Composable { bottomInnerPadding: Dp ->
-            Box(modifier = if (blurBackdrop != null) Modifier.miuixLayerBackdrop(blurBackdrop) else Modifier) {
+            Box(modifier = if (blurBackdrop != null) Modifier.layerBackdrop(blurBackdrop) else Modifier) {
                 HorizontalPager(
                     modifier = Modifier
                         .then(if (enableFloatingBottomBar && enableFloatingBottomBarBlur) Modifier.layerBackdrop(backdrop) else Modifier),

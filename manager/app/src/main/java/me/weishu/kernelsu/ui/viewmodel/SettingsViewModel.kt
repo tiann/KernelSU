@@ -43,7 +43,6 @@ class SettingsViewModel(
             val enableFloatingBottomBarBlur = repo.enableFloatingBottomBarBlur
             val pageScale = repo.pageScale
             val enableWebDebugging = repo.enableWebDebugging
-            val enableSmoothCorner = repo.enableSmoothCorner
             val colorStyle = repo.colorStyle
             val colorSpec = repo.colorSpec
             val isLkmMode = repo.isLkmMode()
@@ -82,7 +81,6 @@ class SettingsViewModel(
                     enableFloatingBottomBarBlur = enableFloatingBottomBarBlur,
                     pageScale = pageScale,
                     enableWebDebugging = enableWebDebugging,
-                    enableSmoothCorner = enableSmoothCorner,
                     colorStyle = colorStyle,
                     colorSpec = colorSpec,
                     suCompatStatus = suCompatStatus,
@@ -217,11 +215,6 @@ class SettingsViewModel(
     fun setEnableWebDebugging(enabled: Boolean) {
         repo.enableWebDebugging = enabled
         _uiState.update { it.copy(enableWebDebugging = enabled) }
-    }
-
-    fun setEnableSmoothCorner(enabled: Boolean) {
-        repo.enableSmoothCorner = enabled
-        _uiState.update { it.copy(enableSmoothCorner = enabled) }
     }
 
     fun setSuCompatMode(mode: Int) {

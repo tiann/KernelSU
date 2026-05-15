@@ -204,12 +204,9 @@ dependencies {
     implementation(libs.miuix.navigation3.ui)
     implementation(libs.miuix.preference)
     implementation(libs.miuix.blur)
-    implementation(libs.miuix.shapes)
 
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
-
-    implementation(libs.backdrop)
 
     implementation(libs.material.kolor)
 

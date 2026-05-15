@@ -1,22 +1,21 @@
 [versions]
-agp = "9.2.0"
+agp = "9.2.1"
 kotlin = "2.3.21"
-compose-bom = "2026.04.01"
+compose-bom = "2026.05.00"
 lifecycle = "2.10.0"
 activity-compose = "1.13.0"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 navigation3 = "1.1.1"
-navigationevent = "1.1.0"
+navigationevent = "1.1.1"
 commonmark = "0.28.0"
-webkit = "1.15.0"
+webkit = "1.16.0"
 parcelablelist = "2.0.1"
-material3 = "1.5.0-alpha18"
+material3 = "1.5.0-alpha19"
 materialKolor = "4.1.1"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
-miuix = "0.9.0"
-backdrop = "1.0.6"
+miuix = "0.9.1"
 okhttp = "5.3.2"
 hiddenapibypass = "6.1"
 appiconloader = "1.5.0"
@@ -72,9 +71,6 @@ miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.re
 miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version.ref = "miuix" }
 miuix-preference = { module = "top.yukonga.miuix.kmp:miuix-preference-android", version.ref = "miuix" }
 miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur-android", version.ref = "miuix" }
-miuix-shapes = { module = "top.yukonga.miuix.kmp:miuix-shapes-android", version.ref = "miuix" }
-
-backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }

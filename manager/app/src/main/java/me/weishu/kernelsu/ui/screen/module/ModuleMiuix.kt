@@ -52,6 +52,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
@@ -142,7 +143,6 @@ import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 
@@ -586,7 +586,7 @@ private fun ModuleShortcutDialog(
                     modifier = Modifier
                         .padding(vertical = 16.dp)
                         .size(100.dp)
-                        .clip(miuixShape(25.dp))
+                        .clip(RoundedCornerShape(25.dp))
                 ) {
                     val preview = shortcutState.previewIcon
                     if (preview != null) {
@@ -790,7 +790,7 @@ fun ModuleItem(
                                 fontSize = 12.sp,
                                 color = updateTint,
                                 modifier = Modifier
-                                    .clip(miuixShape(6.dp))
+                                    .clip(RoundedCornerShape(6.dp))
                                     .background(updateBg)
                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                                 fontWeight = FontWeight(750),
