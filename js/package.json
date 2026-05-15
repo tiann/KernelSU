@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "npm run test"
+    "test": "node --test test/index.test.mjs"
   },
   "repository": {
     "type": "git",
