@@ -169,8 +169,14 @@ void __init ksu_init_symbol_resolver()
 {
 #if !GUARANTEE_HAVE_ON_EACH_SYMBOL
     kallsyms_on_each_symbol_fn = find_kernel_symbol_exact("kallsyms_on_each_symbol");
+    if (!kallsyms_on_each_symbol_fn) {
+        pr_warn("kallsyms_on_each_symbol not found!\n");
+    }
 #endif
 #if HAVE_ON_EACH_MATCH_SYMBOL
     kallsyms_on_each_match_symbol_fn = find_kernel_symbol_exact("kallsyms_on_each_match_symbol");
+    if (!kallsyms_on_each_match_symbol_fn) {
+        pr_warn("kallsyms_on_each_match_symbol not found!\n");
+    }
 #endif
 }
