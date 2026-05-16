@@ -21,6 +21,7 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     val scope = rememberCoroutineScope()
     var text by rememberSaveable { mutableStateOf("") }
     val logContent = rememberSaveable { StringBuilder() }
+    var isComplete by rememberSaveable { mutableStateOf(false) }
 
     val exitExecute = {
         if (fromShortcut && activity != null) {
@@ -36,15 +37,18 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
         logContent = logContent,
         fromShortcut = fromShortcut,
         onTextUpdate = { text = it },
+        onComplete = { isComplete = true },
         onExit = exitExecute
     )
 
     val state = ExecuteModuleActionUiState(
         text = text,
+        isComplete = isComplete,
     )
     val actions = ExecuteModuleActionScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
         onSaveLog = saveLog(logContent, context, scope),
+        onClose = exitExecute,
     )
 
     when (LocalUiMode.current) {

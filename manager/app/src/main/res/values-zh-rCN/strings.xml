@@ -126,6 +126,7 @@
     <string name="home_pr_kernel_warning">当前内核包含 PR 签名支持，这不是一个生产内核！</string>
     <string name="action">执行</string>
     <string name="open">打开</string>
+    <string name="close">关闭</string>
     <string name="enable_web_debugging">WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI，请仅在需要时启用</string>
     <string name="direct_install">直接安装（推荐）</string>
