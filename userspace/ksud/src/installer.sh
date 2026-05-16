@@ -323,6 +323,48 @@ request_zip_size_check() {
 
 boot_actions() { return; }
 
+# Concatenate all enabled modules' *.rc files (except init.rc) into
+# /metadata/watchdog/ksu/modules.rc so the kernel-side read hook can splice them
+# into /system/etc/init/hw/init.rc on the next boot.
+copy_preinit_files() {
+  local PREINITDIR=/metadata/watchdog/ksu
+  local OUT="$PREINITDIR/modules.rc"
+  local TMP="$PREINITDIR/.modules.rc.tmp"
+
+  [ -d /metadata ] || return 0
+
+  mkdir -p "$PREINITDIR" 2>/dev/null
+  : > "$TMP"
+
+  # Walk modules_update/ first (newer/just-installed wins on id collision),
+  # then modules/. Skip disabled/removed modules.
+  local seen=
+  local SRC
+  for SRC in /data/adb/modules_update /data/adb/modules; do
+    [ -d "$SRC" ] || continue
+    for MODDIR in "$SRC"/*; do
+      [ -d "$MODDIR" ] || continue
+      local MODID
+      MODID=$(basename "$MODDIR")
+      case " $seen " in *" $MODID "*) continue ;; esac
+      [ -f "$MODDIR/disable" ] && continue
+      [ -f "$MODDIR/remove" ] && continue
+      find "$MODDIR" -mindepth 1 -type f -name "*.rc" ! -name "init.rc" 2>/dev/null \
+      | while read -r rcfile; do
+        local rel="${rcfile#$MODDIR/}"
+        printf '# === from %s:%s ===\n' "$MODID" "$rel" >> "$TMP"
+        cat "$rcfile" >> "$TMP"
+        printf '\n' >> "$TMP"
+      done
+      seen="$seen $MODID"
+    done
+  done
+
+  mv -f "$TMP" "$OUT" 2>/dev/null
+  chmod 0644 "$OUT" 2>/dev/null
+  chcon u:object_r:metadata_file:s0 "$OUT" 2>/dev/null
+}
+
 # Require ZIPFILE to be set
 is_legacy_script() {
   unzip -l "$ZIPFILE" install.sh | grep -q install.sh
@@ -452,6 +494,17 @@ install_module() {
   $MODPATH/system/placeholder $MODPATH/customize.sh \
   $MODPATH/README.md $MODPATH/.git*
   rmdir -p $MODPATH 2>/dev/null
+
+  # Modules cannot replace the main init.rc; strip any such file before
+  # the rc preinit mirror is rebuilt.
+  find "$MODPATH" -mindepth 1 -type f -name "init.rc" -exec rm -f {} \; 2>/dev/null
+
+  # If this module ships any other *.rc, rebuild the preinit rc mirror so
+  # init can pick them up on next boot.
+  if [ -n "$(find "$MODPATH" -mindepth 1 -type f -name "*.rc" 2>/dev/null | head -n 1)" ]; then
+    ui_print "- Installing module rc scripts"
+    copy_preinit_files
+  fi
 
   cd /
   $BOOTMODE || recovery_cleanup
