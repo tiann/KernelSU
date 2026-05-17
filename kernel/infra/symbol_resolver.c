@@ -53,7 +53,7 @@ struct ksu_lookup_symbol_ctx {
     void *match;
 };
 
-static unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
+unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
 {
     unsigned long addr = 0;
 #if HAVE_ON_EACH_MATCH_SYMBOL

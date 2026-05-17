@@ -1,4 +1,5 @@
 #include "selinux_hide.h"
+#include "infra/symbol_resolver.h"
 #include "selinux/sepolicy.h"
 #include <linux/cred.h>
 #include <linux/cpu.h>
@@ -245,18 +246,18 @@ static int ksu_selinux_hide_enable()
         pr_err("no backup sepolicy available, please save feature and reboot to retry!\n");
         return -EAGAIN;
     }
-    selinux_write_op = kallsyms_lookup_name("write_op");
+    selinux_write_op = find_kernel_symbol_exact("write_op");
     if (!selinux_write_op) {
         pr_err("selinux_hide: no write_op found!\n");
         return -ENOSYS;
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-    security_dump_masked_av_fn = kallsyms_lookup_name("security_dump_masked_av");
+    security_dump_masked_av_fn = find_kernel_symbol_exact("security_dump_masked_av");
     if (!security_dump_masked_av_fn) {
         pr_warn("security_dump_masked_av not found!\n");
     }
-    context_struct_compute_av_fn = kallsyms_lookup_name("context_struct_compute_av");
+    context_struct_compute_av_fn = find_kernel_symbol_exact("context_struct_compute_av");
     if (!context_struct_compute_av_fn) {
         pr_warn("context_struct_compute_av not found!\n");
     }
