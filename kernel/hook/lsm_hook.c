@@ -127,7 +127,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
     target = hook->original;
     if (!target)
-        target = ksu_lookup_symbol(target_name);
+        target = ksu_resolve_symbol_for_functable_hook(target_name);
     if (!target) {
         pr_err("lsm_hook: failed to resolve target for %s\n", hook->head_name ?: "unknown");
         ret = -ENOENT;
@@ -137,7 +137,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     if (!scalls_addr) {
-        scalls_addr = kallsyms_lookup_name("static_calls_table");
+        scalls_addr = find_kernel_symbol_exact("static_calls_table");
     }
     if (!scalls_addr) {
         pr_err("lsm_hook: failed to resolve static_calls_table\n");
@@ -151,7 +151,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         if (!kallsyms_lookup_size_offset(scalls_addr, &sym_size, NULL)) {
             pr_err("failed to get size\n");
         }
-        unsigned long addr = kallsyms_lookup_name("lsm_active_cnt");
+        unsigned long addr = find_kernel_symbol_exact("lsm_active_cnt");
         if (!addr) {
             pr_err("failed to get lsm_active_cnt\n");
         } else {
@@ -277,7 +277,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
     pr_info("lsm_hook: patched %s hook slot %px from %px to %px\n", hook->head_name ?: "unknown", selected_slot,
             selected_origin, hook->replacement);
 #else
-    heads_addr = kallsyms_lookup_name("security_hook_heads");
+    heads_addr = find_kernel_symbol_exact("security_hook_heads");
     if (!heads_addr) {
         pr_err("lsm_hook: failed to resolve security_hook_heads\n");
         ret = -ENOENT;
