@@ -22,13 +22,14 @@ static const size_t cfi_suffix_len = sizeof(cfi_suffix) - 1;
 // https://github.com/gregkh/linux/commit/2aa861ec72908b4bdc20d74725dc1c8c71a8d214
 // https://github.com/gregkh/linux/commit/318a206633c248d876ea72f7133d2a2e50ad7e35
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)
-#define GUARANTEE_HAVE_ON_EACH_SYMBOL 1
+#define ALWAYS_HAVE_ON_EACH_SYMBOL 1
 #else
-#define GUARANTEE_HAVE_ON_EACH_SYMBOL 0
+#define ALWAYS_HAVE_ON_EACH_SYMBOL 0
 #endif
 
-#if !GUARANTEE_HAVE_ON_EACH_SYMBOL
-int (*kallsyms_on_each_symbol_fn)(int (*fn)(void *, const char *, struct module *, unsigned long), void *data) = NULL;
+#if !ALWAYS_HAVE_ON_EACH_SYMBOL
+static int (*kallsyms_on_each_symbol_fn)(int (*fn)(void *, const char *, struct module *, unsigned long),
+                                         void *data) = NULL;
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
@@ -39,7 +40,7 @@ int (*kallsyms_on_each_symbol_fn)(int (*fn)(void *, const char *, struct module 
 
 // https://github.com/torvalds/linux/commit/4dc533e0f2c04174e1ae4aa98e7cffc1c04b9998
 #if HAVE_ON_EACH_MATCH_SYMBOL
-int (*kallsyms_on_each_match_symbol_fn)(int (*fn)(void *, unsigned long), const char *name, void *data) = NULL;
+static int (*kallsyms_on_each_match_symbol_fn)(int (*fn)(void *, unsigned long), const char *name, void *data) = NULL;
 static int find_kernel_symbol_exact_cb(void *data, unsigned long addr)
 {
     *(unsigned long *)data = addr;
@@ -126,11 +127,11 @@ static __nocfi void *resolve_symbol_variant(const char *symbol_name, size_t symb
         .symbol_len = symbol_len,
     };
 
-#if !GUARANTEE_HAVE_ON_EACH_SYMBOL
+#if !ALWAYS_HAVE_ON_EACH_SYMBOL
     if (kallsyms_on_each_symbol_fn) {
         kallsyms_on_each_symbol_fn(lookup_symbol_variant_cb, &ctx);
     }
-    // TODO: traversal kallsyms by sprint_symbol
+    // TODO: iterate kallsyms by sprint_symbol
 #else
     kallsyms_on_each_symbol(lookup_symbol_variant_cb, &ctx);
 #endif
@@ -147,7 +148,7 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
 
     symbol_len = strlen(symbol_name);
 
-    // Prefer find_kernel_symbol_exact since it uses binary search on higher kernel version
+    // Prefer find_kernel_symbol_exact since it uses binary search in higher kernel version
 
 #if !USE_KCFI
     // Try .cfi_jt suffix first
@@ -167,7 +168,7 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
 
 void __init ksu_init_symbol_resolver()
 {
-#if !GUARANTEE_HAVE_ON_EACH_SYMBOL
+#if !ALWAYS_HAVE_ON_EACH_SYMBOL
     kallsyms_on_each_symbol_fn = find_kernel_symbol_exact("kallsyms_on_each_symbol");
     if (!kallsyms_on_each_symbol_fn) {
         pr_warn("kallsyms_on_each_symbol not found!\n");
