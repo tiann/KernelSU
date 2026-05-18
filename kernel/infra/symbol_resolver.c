@@ -157,6 +157,12 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
     addr = (void *)find_kernel_symbol_exact(cfi_name);
     if (addr)
         return addr;
+
+    addr = resolve_symbol_variant(symbol_name, symbol_len);
+    if (addr)
+        return addr;
+
+    return (void *)find_kernel_symbol_exact(symbol_name);
 #endif
 
     addr = (void *)find_kernel_symbol_exact(symbol_name);
