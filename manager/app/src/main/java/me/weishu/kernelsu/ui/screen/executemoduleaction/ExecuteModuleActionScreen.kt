@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,15 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
             activity.finishAndRemoveTask()
         } else {
             navigator.pop()
+        }
+    }
+
+    // 始终自动关闭来自快捷方式的启动
+    LaunchedEffect(isComplete) {
+        if (isComplete) {
+            if (fromShortcut) {
+                exitExecute()
+            }
         }
     }
 
