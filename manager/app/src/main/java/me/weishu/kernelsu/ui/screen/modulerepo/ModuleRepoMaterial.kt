@@ -4,6 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -77,6 +81,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -401,7 +406,6 @@ fun ModuleRepoDetailScreenMaterial(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 2
             ) { page ->
                 val paddedInnerPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding() + 56.dp + 8.dp,
@@ -468,6 +472,7 @@ private fun ReadmePage(
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val isReady = rememberContentReady()
 
     LazyColumn(
         modifier = Modifier
@@ -481,23 +486,42 @@ private fun ReadmePage(
         ),
     ) {
         item {
-            val contentReady = rememberContentReady()
-            var isLoading by remember { mutableStateOf(true) }
-            if (isLoading) {
+            if (readmeLoaded && readmeHtml != null) {
+                var loaded by remember(readmeHtml) { mutableStateOf(false) }
+                val alpha by animateFloatAsState(
+                    targetValue = if (loaded) 1f else 0f,
+                    animationSpec = tween(durationMillis = 300),
+                    label = "ReadmeAlpha",
+                )
+                Box {
+                    if (isReady) {
+                        Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
+                            GithubMarkdown(
+                                content = readmeHtml,
+                                onLoadingChange = { loaded = !it },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                            )
+                        }
+                    }
+                    AnimatedVisibility(
+                        visible = !loaded,
+                        enter = EnterTransition.None,
+                        exit = fadeOut(animationSpec = tween(durationMillis = 150)),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            LoadingIndicator()
+                        }
+                    }
+                }
+            } else {
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     LoadingIndicator()
-                }
-            }
-            if (contentReady && readmeLoaded && readmeHtml != null) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    GithubMarkdown(
-                        content = readmeHtml,
-                        onLoadingChange = { isLoading = it },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    )
                 }
             }
         }
@@ -579,7 +603,43 @@ fun ReleasesPage(
                                     thickness = Dp.Hairline,
                                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                                 )
-                                GithubMarkdown(content = rel.descriptionHTML)
+                                val descReady = rememberContentReady()
+                                var descLoaded by remember(rel.descriptionHTML) { mutableStateOf(false) }
+                                val descAlpha by animateFloatAsState(
+                                    targetValue = if (descLoaded) 1f else 0f,
+                                    animationSpec = tween(durationMillis = 300),
+                                    label = "ReleaseDescAlpha",
+                                )
+                                val descPlaceholderAlpha by animateFloatAsState(
+                                    targetValue = if (descLoaded) 0f else 1f,
+                                    animationSpec = tween(durationMillis = 150),
+                                    label = "ReleaseDescPlaceholderAlpha",
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateContentSize(animationSpec = tween(durationMillis = 300)),
+                                ) {
+                                    if (descReady) {
+                                        Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
+                                            GithubMarkdown(
+                                                content = rel.descriptionHTML,
+                                                onLoadingChange = { descLoaded = !it },
+                                            )
+                                        }
+                                    }
+                                    if (descPlaceholderAlpha > 0f) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(72.dp)
+                                                .graphicsLayer { this.alpha = descPlaceholderAlpha },
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            LoadingIndicator()
+                                        }
+                                    }
+                                }
                             }
                         }
 

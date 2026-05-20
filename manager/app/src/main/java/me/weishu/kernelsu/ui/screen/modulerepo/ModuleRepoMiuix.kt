@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -76,11 +78,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
@@ -534,6 +536,7 @@ private fun ReadmePage(
     innerPadding: PaddingValues, scrollBehavior: ScrollBehavior, backdrop: LayerBackdrop?
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val isReady = rememberContentReady()
     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
         LazyColumn(
             modifier = Modifier
@@ -550,34 +553,46 @@ private fun ReadmePage(
             overscrollEffect = null,
         ) {
             item {
-                val contentReady = rememberContentReady()
-                var isLoading by remember { mutableStateOf(true) }
-                if (isLoading) {
+                if (readmeLoaded && readmeHtml != null) {
+                    var loaded by remember(readmeHtml) { mutableStateOf(false) }
+                    val alpha by animateFloatAsState(
+                        targetValue = if (loaded) 1f else 0f,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "MiuixReadmeAlpha",
+                    )
+                    val placeholderAlpha by animateFloatAsState(
+                        targetValue = if (loaded) 0f else 1f,
+                        animationSpec = tween(durationMillis = 150),
+                        label = "MiuixReadmePlaceholderAlpha",
+                    )
+                    Box {
+                        if (isReady) {
+                            Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
+                                Column {
+                                    GithubMarkdown(
+                                        content = readmeHtml,
+                                        onLoadingChange = { loaded = !it },
+                                    )
+                                }
+                            }
+                        }
+                        if (placeholderAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxSize()
+                                    .graphicsLayer { this.alpha = placeholderAlpha },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                InfiniteProgressIndicator()
+                            }
+                        }
+                    }
+                } else {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = innerPadding.calculateTopPadding(),
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection),
-                                bottom = innerPadding.calculateBottomPadding(),
-                            ), contentAlignment = Alignment.Center
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
                         InfiniteProgressIndicator()
-                    }
-                }
-                AnimatedVisibility(
-                    visible = contentReady && readmeLoaded && readmeHtml != null,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column {
-                        Spacer(Modifier.height(6.dp))
-                        Card(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                        ) {
-                            GithubMarkdown(content = readmeHtml!!, onLoadingChange = { isLoading = it })
-                        }
                     }
                 }
             }
@@ -676,7 +691,43 @@ fun ReleasesPage(
                                                 thickness = 0.5.dp,
                                                 color = colorScheme.outline.copy(alpha = 0.5f)
                                             )
-                                            GithubMarkdown(content = rel.descriptionHTML)
+                                            val descReady = rememberContentReady()
+                                            var descLoaded by remember(rel.descriptionHTML) { mutableStateOf(false) }
+                                            val descAlpha by animateFloatAsState(
+                                                targetValue = if (descLoaded) 1f else 0f,
+                                                animationSpec = tween(durationMillis = 300),
+                                                label = "MiuixReleaseDescAlpha",
+                                            )
+                                            val descPlaceholderAlpha by animateFloatAsState(
+                                                targetValue = if (descLoaded) 0f else 1f,
+                                                animationSpec = tween(durationMillis = 150),
+                                                label = "MiuixDescPlaceholderAlpha",
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .animateContentSize(animationSpec = tween(durationMillis = 300)),
+                                            ) {
+                                                if (descReady) {
+                                                    Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
+                                                        GithubMarkdown(
+                                                            content = rel.descriptionHTML,
+                                                            onLoadingChange = { descLoaded = !it },
+                                                        )
+                                                    }
+                                                }
+                                                if (descPlaceholderAlpha > 0f) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(72.dp)
+                                                            .graphicsLayer { this.alpha = descPlaceholderAlpha },
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
+                                                        InfiniteProgressIndicator()
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                     HorizontalDivider(
