@@ -327,11 +327,13 @@ boot_actions() { return; }
 # /metadata/watchdog/ksu/modules.rc so the kernel-side read hook can splice them
 # into /system/etc/init/hw/init.rc on the next boot.
 copy_preinit_files() {
-  local PREINITDIR=/metadata/watchdog/ksu
+  [ -d /metadata ] || return 0
+
+  # Prefer /metadata/watchdog/ when present, else /metadata.
+  local PREINITDIR=/metadata/ksu
+  [ -d /metadata/watchdog ] && PREINITDIR=/metadata/watchdog/ksu
   local OUT="$PREINITDIR/modules.rc"
   local TMP="$PREINITDIR/.modules.rc.tmp"
-
-  [ -d /metadata ] || return 0
 
   mkdir -p "$PREINITDIR" 2>/dev/null
   : > "$TMP"

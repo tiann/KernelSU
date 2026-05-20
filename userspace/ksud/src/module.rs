@@ -361,6 +361,15 @@ pub fn prune_modules() -> Result<()> {
 
 const METADATA_FILE_CON: &str = "u:object_r:metadata_file:s0";
 
+// Prefer /metadata/watchdog/ when present, else /metadata.
+fn preinit_ksu_dir() -> &'static str {
+    if Path::new("/metadata/watchdog").is_dir() {
+        defs::PREINIT_DIR_WATCHDOG
+    } else {
+        defs::PREINIT_DIR_DEFAULT
+    }
+}
+
 fn collect_module_rc(root: &Path, dir: &Path, mod_id: &str, out: &mut File) -> Result<()> {
     use std::io::Write;
     let Ok(entries) = std::fs::read_dir(dir) else {
@@ -392,17 +401,19 @@ fn collect_module_rc(root: &Path, dir: &Path, mod_id: &str, out: &mut File) -> R
 pub fn regenerate_preinit_rc() -> Result<()> {
     use std::collections::HashSet;
 
-    let preinit_dir = Path::new(defs::PREINIT_DIR);
     if !Path::new("/metadata").is_dir() {
-        debug!("/metadata not present, skip preinit rc regen");
         return Ok(());
     }
 
+    let preinit_str = preinit_ksu_dir();
+    let preinit_dir = Path::new(preinit_str);
     std::fs::create_dir_all(preinit_dir)
         .with_context(|| format!("Failed to create {}", preinit_dir.display()))?;
 
-    let tmp_path = Path::new(defs::MODULES_RC_TMP_PATH);
-    let out_path = Path::new(defs::MODULES_RC_PATH);
+    let tmp_path_buf = preinit_dir.join(defs::MODULES_RC_TMP_FILE);
+    let out_path_buf = preinit_dir.join(defs::MODULES_RC_FILE);
+    let tmp_path = tmp_path_buf.as_path();
+    let out_path = out_path_buf.as_path();
 
     {
         let mut tmp = File::create(tmp_path)
@@ -448,6 +459,14 @@ pub fn regenerate_preinit_rc() -> Result<()> {
     if let Err(e) = crate::restorecon::lsetfilecon(out_path, METADATA_FILE_CON) {
         debug!("set context on {} failed: {e}", out_path.display());
     }
+
+    // Clear stale file at the other candidate path.
+    let stale_dir = if preinit_str == defs::PREINIT_DIR_WATCHDOG {
+        defs::PREINIT_DIR_DEFAULT
+    } else {
+        defs::PREINIT_DIR_WATCHDOG
+    };
+    std::fs::remove_file(Path::new(stale_dir).join(defs::MODULES_RC_FILE)).ok();
 
     Ok(())
 }

@@ -185,18 +185,35 @@ static struct file_operations fops_proxy;
 static ssize_t ksu_rc_pos = 0;
 const size_t ksu_rc_len = sizeof(KERNEL_SU_RC) - 1;
 
-// Dynamic rc content from /metadata/watchdog/ksu/modules.rc, populated lazily at
-// the first read/fstat of /system/etc/init/hw/init.rc.
-#define MODULE_RC_PATH "/metadata/watchdog/ksu/modules.rc"
-#define MODULE_RC_MAX (1u << 20) /* 1 MiB safety cap */
+// Prefer /metadata/watchdog/ when present, else /metadata.
+#define MODULE_RC_PATH_WATCHDOG "/metadata/watchdog/ksu/modules.rc"
+#define MODULE_RC_PATH_DEFAULT "/metadata/ksu/modules.rc"
+#define MODULE_RC_MAX (1u << 20) /* 1 MiB cap */
 static char *module_rc_buf;
 static size_t module_rc_len;
 static ssize_t module_rc_pos;
+
+static struct file *open_module_rc(const char **chosen_path)
+{
+    struct file *f = filp_open(MODULE_RC_PATH_WATCHDOG, O_RDONLY, 0);
+    if (!IS_ERR(f)) {
+        *chosen_path = MODULE_RC_PATH_WATCHDOG;
+        return f;
+    }
+    f = filp_open(MODULE_RC_PATH_DEFAULT, O_RDONLY, 0);
+    if (!IS_ERR(f)) {
+        *chosen_path = MODULE_RC_PATH_DEFAULT;
+        return f;
+    }
+    *chosen_path = MODULE_RC_PATH_DEFAULT;
+    return f;
+}
 
 static void load_module_rc_once(void)
 {
     static bool loaded = false;
     struct file *f;
+    const char *path = NULL;
     loff_t pos = 0;
     ssize_t r;
     size_t fsize;
@@ -205,14 +222,14 @@ static void load_module_rc_once(void)
         return;
     loaded = true;
 
-    f = filp_open(MODULE_RC_PATH, O_RDONLY, 0);
+    f = open_module_rc(&path);
     if (IS_ERR(f)) {
-        pr_info("module rc: open %s failed: %ld\n", MODULE_RC_PATH, PTR_ERR(f));
+        pr_info("module rc: open failed: %ld\n", PTR_ERR(f));
         return;
     }
 
     if (!S_ISREG(file_inode(f)->i_mode)) {
-        pr_warn("module rc: %s is not a regular file\n", MODULE_RC_PATH);
+        pr_warn("module rc: %s is not a regular file\n", path);
         filp_close(f, NULL);
         return;
     }
@@ -223,7 +240,7 @@ static void load_module_rc_once(void)
         return;
     }
     if (fsize > MODULE_RC_MAX) {
-        pr_warn("module rc: %s too large (%zu), truncating to %u\n", MODULE_RC_PATH, fsize, MODULE_RC_MAX);
+        pr_warn("module rc: %s too large (%zu), truncating to %u\n", path, fsize, MODULE_RC_MAX);
         fsize = MODULE_RC_MAX;
     }
 
@@ -245,7 +262,7 @@ static void load_module_rc_once(void)
     }
 
     module_rc_len = r;
-    pr_info("module rc: loaded %zu bytes from %s\n", module_rc_len, MODULE_RC_PATH);
+    pr_info("module rc: loaded %zu bytes from %s\n", module_rc_len, path);
 }
 
 // https://cs.android.com/android/platform/superproject/main/+/main:system/core/init/parser.cpp;l=144;drc=61197364367c9e404c7da6900658f1b16c42d0da

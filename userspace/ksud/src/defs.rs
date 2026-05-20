@@ -23,9 +23,11 @@ mod android {
     pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
     pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
 
-    pub const PREINIT_DIR: &str = "/metadata/watchdog/ksu/";
-    pub const MODULES_RC_PATH: &str = concatcp!(PREINIT_DIR, "modules.rc");
-    pub const MODULES_RC_TMP_PATH: &str = concatcp!(PREINIT_DIR, ".modules.rc.tmp");
+    // Prefer /metadata/watchdog/ when present, else /metadata
+    pub const PREINIT_DIR_WATCHDOG: &str = "/metadata/watchdog/ksu/";
+    pub const PREINIT_DIR_DEFAULT: &str = "/metadata/ksu/";
+    pub const MODULES_RC_FILE: &str = "modules.rc";
+    pub const MODULES_RC_TMP_FILE: &str = ".modules.rc.tmp";
 
     pub const MODULE_WEB_DIR: &str = "webroot";
     pub const MODULE_ACTION_SH: &str = "action.sh";
