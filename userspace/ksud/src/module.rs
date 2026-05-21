@@ -13,7 +13,6 @@ use java_properties::PropertiesIter;
 use log::{debug, error, info, warn};
 use regex_lite::Regex;
 
-use std::fs::{copy, rename};
 use std::{
     collections::HashMap,
     env::var as env_var,
@@ -22,6 +21,10 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
+};
+use std::{
+    fs::{copy, rename},
+    io::Write,
 };
 use zip_extensions::inflate::zip_extract::zip_extract_file_to_memory;
 
@@ -370,8 +373,7 @@ fn preinit_ksu_dir() -> &'static str {
     }
 }
 
-fn collect_module_rc(root: &Path, dir: &Path, mod_id: &str, out: &mut File) -> Result<()> {
-    use std::io::Write;
+fn collect_module_rc(root: &Path, dir: &Path, mod_id: &str, out: &mut dyn Write) -> Result<()> {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return Ok(());
     };
@@ -410,15 +412,10 @@ pub fn regenerate_preinit_rc() -> Result<()> {
     std::fs::create_dir_all(preinit_dir)
         .with_context(|| format!("Failed to create {}", preinit_dir.display()))?;
 
-    let tmp_path_buf = preinit_dir.join(defs::MODULES_RC_TMP_FILE);
-    let out_path_buf = preinit_dir.join(defs::MODULES_RC_FILE);
-    let tmp_path = tmp_path_buf.as_path();
-    let out_path = out_path_buf.as_path();
+    let out_path = preinit_dir.join(defs::MODULES_RC_FILE);
 
     {
-        let mut tmp = File::create(tmp_path)
-            .with_context(|| format!("Failed to create {}", tmp_path.display()))?;
-
+        let mut tmp = Vec::<u8>::new();
         let mut seen: HashSet<String> = HashSet::new();
         // modules_update/ first so freshly-installed modules win on id collision.
         for src_dir in [defs::MODULE_UPDATE_DIR, defs::MODULE_DIR] {
@@ -445,18 +442,12 @@ pub fn regenerate_preinit_rc() -> Result<()> {
                 collect_module_rc(&module_path, &module_path, id, &mut tmp)?;
             }
         }
+        let mut out_file = File::create(&out_path)?;
+        out_file.write_all(&tmp)?;
     }
 
-    std::fs::rename(tmp_path, out_path).with_context(|| {
-        format!(
-            "Failed to rename {} -> {}",
-            tmp_path.display(),
-            out_path.display()
-        )
-    })?;
-
     // SELinux label so the kernel's filp_open in init context can read it.
-    if let Err(e) = crate::restorecon::lsetfilecon(out_path, METADATA_FILE_CON) {
+    if let Err(e) = crate::restorecon::lsetfilecon(&out_path, METADATA_FILE_CON) {
         debug!("set context on {} failed: {e}", out_path.display());
     }
 
