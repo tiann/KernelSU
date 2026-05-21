@@ -217,28 +217,31 @@ static void load_module_rc_once(void)
     loff_t pos = 0;
     ssize_t r;
     size_t fsize;
+    const struct cred *old_cred;
 
     if (loaded)
         return;
     loaded = true;
 
+    old_cred = override_creds(ksu_cred);
+
     f = open_module_rc(&path);
     if (IS_ERR(f)) {
-        pr_info("module rc: open failed: %ld\n", PTR_ERR(f));
-        return;
+        pr_info("module rc: open %s failed: %ld\n", path, PTR_ERR(f));
+        goto out_revert_creds;
     }
 
     if (!S_ISREG(file_inode(f)->i_mode)) {
         pr_warn("module rc: %s is not a regular file\n", path);
-        filp_close(f, NULL);
-        return;
+        goto out_close_file;
     }
 
     fsize = i_size_read(file_inode(f));
     if (fsize == 0) {
-        filp_close(f, NULL);
-        return;
+        pr_warn("module rc: skip empty module rc\n");
+        goto out_close_file;
     }
+
     if (fsize > MODULE_RC_MAX) {
         pr_warn("module rc: %s too large (%zu), truncating to %u\n", path, fsize, MODULE_RC_MAX);
         fsize = MODULE_RC_MAX;
@@ -247,22 +250,33 @@ static void load_module_rc_once(void)
     module_rc_buf = kvmalloc(fsize, GFP_KERNEL);
     if (!module_rc_buf) {
         pr_err("module rc: alloc %zu failed\n", fsize);
-        filp_close(f, NULL);
-        return;
+        goto out_close_file;
     }
 
     r = kernel_read(f, module_rc_buf, fsize, &pos);
-    filp_close(f, NULL);
 
     if (r <= 0) {
         pr_err("module rc: read failed: %zd\n", r);
         kvfree(module_rc_buf);
         module_rc_buf = NULL;
-        return;
+        goto out_close_file;
     }
 
     module_rc_len = r;
     pr_info("module rc: loaded %zu bytes from %s\n", module_rc_len, path);
+
+out_close_file:
+    filp_close(f, NULL);
+
+out_revert_creds:
+    revert_creds(old_cred);
+}
+
+static void free_module_rc(void)
+{
+    kvfree(module_rc_buf);
+    module_rc_buf = NULL;
+    module_rc_len = 0;
 }
 
 // https://cs.android.com/android/platform/superproject/main/+/main:system/core/init/parser.cpp;l=144;drc=61197364367c9e404c7da6900658f1b16c42d0da
@@ -317,8 +331,10 @@ append_module_rc:
         pr_info("read_proxy: append module %zu\n", append_count);
         module_rc_pos += append_count;
         ret += append_count;
-        if (module_rc_pos == (ssize_t)module_rc_len)
+        if (module_rc_pos == (ssize_t)module_rc_len) {
             pr_info("read_proxy: module append done\n");
+            free_module_rc();
+        }
     }
 
     return ret;
@@ -353,8 +369,10 @@ append_ksu_rc:
         pr_info("read_iter_proxy: append static %zu\n", append_count);
         ksu_rc_pos += append_count;
         ret += append_count;
-        if (ksu_rc_pos == ksu_rc_len)
+        if (ksu_rc_pos == ksu_rc_len) {
             pr_info("read_iter_proxy: static append done\n");
+            free_module_rc();
+        }
     }
 
 append_module_rc:
@@ -637,8 +655,6 @@ void __exit ksu_ksud_exit()
     unregister_kprobe(&input_event_kp);
 
     if (module_rc_buf) {
-        kvfree(module_rc_buf);
-        module_rc_buf = NULL;
-        module_rc_len = 0;
+        free_module_rc();
     }
 }
