@@ -405,13 +405,9 @@ fn collect_rc_files<P: AsRef<Path>>(
 
 /// Rebuild /metadata/watchdog/ksu/modules.rc by concatenating *.rc from every enabled
 /// module. The kernel-side read hook splices this file into init.rc on the
-/// next boot. Best-effort: silently skips if /metadata isn't writable.
+/// next boot.
 pub fn regenerate_preinit_rc() -> Result<()> {
     use std::collections::HashSet;
-
-    if !Path::new("/metadata").is_dir() {
-        return Ok(());
-    }
 
     let preinit_str = preinit_ksu_dir();
     let preinit_dir = Path::new(preinit_str);
