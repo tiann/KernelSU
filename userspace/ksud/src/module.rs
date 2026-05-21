@@ -14,7 +14,7 @@ use log::{debug, error, info, warn};
 use regex_lite::Regex;
 
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     env::var as env_var,
     fs::{File, Permissions, canonicalize, remove_dir_all, set_permissions},
     io::Cursor,
@@ -382,13 +382,16 @@ fn collect_rc_files<P: AsRef<Path>>(
     let Ok(entries) = std::fs::read_dir(dir) else {
         return Ok(());
     };
-    for entry in entries.flatten() {
+    let mut entries: Vec<_> = entries.flatten().collect();
+    entries.sort_by_key(std::fs::DirEntry::file_name);
+    for entry in entries {
         let path = entry.path();
         let Ok(meta) = entry.metadata() else { continue };
         if meta.is_file() && path.extension().and_then(|s| s.to_str()) == Some("rc") {
             if let Some(mod_id) = mod_id {
                 writeln!(out, "# === from {mod_id}:{} ===", path.display())?;
             } else {
+                // Although the rc file itself is not executable, we still use its executable bit as a switch.
                 if !is_executable(&path) {
                     continue;
                 }
@@ -407,8 +410,6 @@ fn collect_rc_files<P: AsRef<Path>>(
 /// module. The kernel-side read hook splices this file into init.rc on the
 /// next boot.
 pub fn regenerate_preinit_rc() -> Result<()> {
-    use std::collections::HashSet;
-
     let preinit_str = preinit_ksu_dir();
     let preinit_dir = Path::new(preinit_str);
     std::fs::create_dir_all(preinit_dir)
@@ -418,7 +419,8 @@ pub fn regenerate_preinit_rc() -> Result<()> {
 
     {
         let mut tmp = Vec::<u8>::new();
-        let mut seen: HashSet<String> = HashSet::new();
+        // collect modules in alphabetical order, with their effective module path in the next boot
+        let mut modules: BTreeMap<String, Option<PathBuf>> = BTreeMap::new();
         // collect common initrc first
         collect_rc_files(Path::new(defs::ADB_DIR).join("initrc.d"), None, &mut tmp)?;
         // modules_update/ first so freshly-installed modules win on id collision.
@@ -434,20 +436,21 @@ pub fn regenerate_preinit_rc() -> Result<()> {
                 let Some(id) = module_path.file_name().and_then(|s| s.to_str()) else {
                     continue;
                 };
-                if !seen.insert(id.to_string()) {
+                let id = id.to_string();
+                if module_path.join(defs::DISABLE_FILE_NAME).exists()
+                    || module_path.join(defs::REMOVE_FILE_NAME).exists()
+                {
+                    modules.insert(id, None);
                     continue;
                 }
-                if module_path.join(defs::DISABLE_FILE_NAME).exists() {
-                    continue;
+                if modules.contains_key(&id) {
+                    modules.insert(id, Some(module_path));
                 }
-                if module_path.join(defs::REMOVE_FILE_NAME).exists() {
-                    continue;
-                }
-                collect_rc_files(
-                    module_path.join(defs::MODULE_INIT_RC_DIR),
-                    Some(id),
-                    &mut tmp,
-                )?;
+            }
+        }
+        for (id, path) in modules {
+            if let Some(path) = path {
+                collect_rc_files(path.join(defs::MODULE_INIT_RC_DIR), Some(&id), &mut tmp)?;
             }
         }
         let mut out_file = File::create(&out_path)?;
