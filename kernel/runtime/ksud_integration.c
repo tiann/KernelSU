@@ -371,7 +371,6 @@ append_ksu_rc:
         ret += append_count;
         if (ksu_rc_pos == ksu_rc_len) {
             pr_info("read_iter_proxy: static append done\n");
-            free_module_rc();
         }
     }
 
@@ -385,8 +384,10 @@ append_module_rc:
         pr_info("read_iter_proxy: append module %zu\n", append_count);
         module_rc_pos += append_count;
         ret += append_count;
-        if (module_rc_pos == (ssize_t)module_rc_len)
+        if (module_rc_pos == (ssize_t)module_rc_len) {
             pr_info("read_iter_proxy: module append done\n");
+            free_module_rc();
+        }
     }
     return ret;
 }

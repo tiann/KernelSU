@@ -443,9 +443,7 @@ pub fn regenerate_preinit_rc() -> Result<()> {
                     modules.insert(id, None);
                     continue;
                 }
-                if modules.contains_key(&id) {
-                    modules.insert(id, Some(module_path));
-                }
+                modules.entry(id).or_insert(Some(module_path));
             }
         }
         for (id, path) in modules {
