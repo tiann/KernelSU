@@ -373,21 +373,27 @@ fn preinit_ksu_dir() -> &'static str {
     }
 }
 
-fn collect_module_rc(root: &Path, dir: &Path, mod_id: &str, out: &mut dyn Write) -> Result<()> {
+fn collect_rc_files<P: AsRef<Path>>(
+    dir: P,
+    mod_id: Option<&str>,
+    out: &mut dyn Write,
+) -> Result<()> {
+    let dir = dir.as_ref();
     let Ok(entries) = std::fs::read_dir(dir) else {
         return Ok(());
     };
     for entry in entries.flatten() {
         let path = entry.path();
         let Ok(meta) = entry.metadata() else { continue };
-        if meta.is_dir() {
-            collect_module_rc(root, &path, mod_id, out)?;
-        } else if meta.is_file()
-            && path.extension().and_then(|s| s.to_str()) == Some("rc")
-            && path.file_name().and_then(|s| s.to_str()) != Some("init.rc")
-        {
-            let rel = path.strip_prefix(root).unwrap_or(&path);
-            writeln!(out, "# === from {mod_id}:{} ===", rel.display())?;
+        if meta.is_file() && path.extension().and_then(|s| s.to_str()) == Some("rc") {
+            if let Some(mod_id) = mod_id {
+                writeln!(out, "# === from {mod_id}:{} ===", path.display())?;
+            } else {
+                if !is_executable(&path) {
+                    continue;
+                }
+                writeln!(out, "# === from {} ===", path.display())?;
+            }
             let content = std::fs::read(&path)
                 .with_context(|| format!("Failed to read rc {}", path.display()))?;
             out.write_all(&content)?;
@@ -417,6 +423,8 @@ pub fn regenerate_preinit_rc() -> Result<()> {
     {
         let mut tmp = Vec::<u8>::new();
         let mut seen: HashSet<String> = HashSet::new();
+        // collect common initrc first
+        collect_rc_files(Path::new(defs::ADB_DIR).join("initrc.d"), None, &mut tmp)?;
         // modules_update/ first so freshly-installed modules win on id collision.
         for src_dir in [defs::MODULE_UPDATE_DIR, defs::MODULE_DIR] {
             let Ok(entries) = std::fs::read_dir(src_dir) else {
@@ -439,7 +447,11 @@ pub fn regenerate_preinit_rc() -> Result<()> {
                 if module_path.join(defs::REMOVE_FILE_NAME).exists() {
                     continue;
                 }
-                collect_module_rc(&module_path, &module_path, id, &mut tmp)?;
+                collect_rc_files(
+                    module_path.join(defs::MODULE_INIT_RC_DIR),
+                    Some(id),
+                    &mut tmp,
+                )?;
             }
         }
         let mut out_file = File::create(&out_path)?;
