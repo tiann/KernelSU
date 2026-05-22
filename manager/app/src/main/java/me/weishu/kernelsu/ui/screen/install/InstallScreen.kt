@@ -12,15 +12,19 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.dropUnlessResumed
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
 import me.weishu.kernelsu.ui.component.choosekmidialog.ChooseKmiDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
@@ -37,6 +41,10 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 fun InstallScreen() {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
+    val snackbarHost = LocalSnackbarHost.current
+    val uiMode = LocalUiMode.current
+    val scope = rememberCoroutineScope()
+    val resources = LocalResources.current
 
     var installMethod by rememberSaveable { mutableStateOf<InstallMethod?>(null) }
     var lkmSelection by rememberSaveable { mutableStateOf<LkmSelection>(LkmSelection.KmiNone) }
@@ -85,6 +93,16 @@ fun InstallScreen() {
         partitions.map { name -> if (defaultPartition == name) "$name (default)" else name }
     }
 
+    fun showMessage(message: String) {
+        scope.launch {
+            if (uiMode == UiMode.Material) {
+                snackbarHost.showSnackbar(message)
+            } else {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     val onInstall = {
         installMethod?.let { method ->
             navigator.push(
@@ -122,7 +140,7 @@ fun InstallScreen() {
                     lkmSelection = LkmSelection.LkmUri(uri)
                 } else {
                     lkmSelection = LkmSelection.KmiNone
-                    Toast.makeText(context, R.string.install_only_support_ko_file, Toast.LENGTH_SHORT).show()
+                    showMessage(resources.getString(R.string.install_only_support_ko_file))
                 }
             }
         }

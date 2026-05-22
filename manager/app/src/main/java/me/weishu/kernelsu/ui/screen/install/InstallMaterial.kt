@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -44,6 +45,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.M3SnackBarHost
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.material.SegmentedCheckboxItem
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
@@ -62,6 +65,7 @@ internal fun InstallScreenMaterial(
     actions: InstallScreenActions,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -74,6 +78,7 @@ internal fun InstallScreenMaterial(
                 scrollBehavior = scrollBehavior,
             )
         },
+        snackbarHost = { M3SnackBarHost(snackBarHost, modifier = Modifier.safeDrawingPadding()) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Column(
