@@ -30,6 +30,7 @@ fun MarkdownContent(
     content: String,
     isMarkdown: Boolean,
 ) {
+    val uiMode = LocalUiMode.current
     var loaded by remember(content, isMarkdown) { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if (loaded) 1f else 0f,
@@ -41,14 +42,14 @@ fun MarkdownContent(
         animationSpec = tween(durationMillis = 150),
         label = "MarkdownContentPlaceholderAlpha",
     )
-    val containerColor = when (LocalUiMode.current) {
+    val containerColor = when (uiMode) {
         UiMode.Material -> MaterialTheme.colorScheme.surfaceContainerHigh
         UiMode.Miuix -> null
     }
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize(animationSpec = tween(durationMillis = 300))
+            .let { if (uiMode == UiMode.Miuix) it.animateContentSize(animationSpec = tween(durationMillis = 300)) else it }
     ) {
         Box(
             modifier = Modifier

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -41,6 +42,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.M3SnackBarHost
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -48,6 +51,7 @@ fun FlashScreenMaterial(
     state: FlashUiState,
     actions: FlashScreenActions,
 ) {
+    val snackBarHost = LocalSnackbarHost.current
     val scrollState = rememberScrollState()
     if (state.showJailbreakWarning) {
         JailbreakFlashWarningDialog(
@@ -57,6 +61,7 @@ fun FlashScreenMaterial(
     }
 
     Scaffold(
+        snackbarHost = { M3SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.showRebootAction) it else it.safeDrawingPadding() }) },
         topBar = {
             TopAppBar(
                 title = {

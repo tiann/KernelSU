@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -57,7 +56,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.M3SnackBarHost
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -225,7 +225,7 @@ fun SearchAppBar(
                 } else {
                     defaultContent(bottomPadding, collapseAndClear)
                 }
-                SnackbarHost(
+                M3SnackBarHost(
                     hostState = snackBarHostState,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)

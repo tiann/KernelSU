@@ -13,11 +13,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
@@ -33,6 +33,7 @@ fun AppProfileTemplateScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val requestKey = "template_edit"
+    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         if (screenState.templateList.isEmpty()) {
@@ -55,9 +56,13 @@ fun AppProfileTemplateScreen() {
     val importSuccessText = stringResource(R.string.app_profile_template_import_success)
     val exportEmptyText = stringResource(R.string.app_profile_template_export_empty)
 
-    val showToast: (String) -> Unit = { message ->
-        scope.launch(Dispatchers.Main) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    fun showMessage(message: String) {
+        scope.launch {
+            if (uiMode == UiMode.Material) {
+                snackBarHost.showSnackbar(message)
+            } else {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -73,16 +78,16 @@ fun AppProfileTemplateScreen() {
             scope.launch {
                 clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let { templateText ->
                     if (templateText.isEmpty()) {
-                        showToast(importEmptyText)
+                        showMessage(importEmptyText)
                         return@let
                     }
                     viewModel.importTemplates(
                         templateText,
                         onSuccess = {
-                            showToast(importSuccessText)
+                            showMessage(importSuccessText)
                             viewModel.fetchTemplates(false)
                         },
-                        onFailure = showToast,
+                        onFailure = { showMessage(it) },
                     )
                 }
             }
@@ -91,7 +96,7 @@ fun AppProfileTemplateScreen() {
             scope.launch {
                 viewModel.exportTemplates(
                     onTemplateEmpty = {
-                        showToast(exportEmptyText)
+                        showMessage(exportEmptyText)
                     },
                     callback = { templateText ->
                         clipboard.setClipEntry(

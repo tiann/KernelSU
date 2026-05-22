@@ -60,6 +60,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
+import me.weishu.kernelsu.ui.component.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.M3SnackBarHost
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
@@ -80,6 +82,7 @@ fun AppProfileTemplateScreenMaterial(
     val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
+    val snackBarHost = LocalSnackbarHost.current
     val fabExpanded by remember {
         var lastIndex = 0
         var lastOffset = 0
@@ -125,6 +128,7 @@ fun AppProfileTemplateScreenMaterial(
                 scrollBehavior = scrollBehavior
             )
         },
+        snackbarHost = { M3SnackBarHost(snackBarHost) },
         floatingActionButton = {
             SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,
