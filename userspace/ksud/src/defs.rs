@@ -27,6 +27,7 @@ mod android {
     pub const PREINIT_DIR_WATCHDOG: &str = "/metadata/watchdog/ksu/";
     pub const PREINIT_DIR_DEFAULT: &str = "/metadata/ksu/";
     pub const MODULES_RC_FILE: &str = "modules.rc";
+    pub const MODULES_RC_TMP_FILE: &str = ".modules.rc.tmp";
 
     pub const MODULE_WEB_DIR: &str = "webroot";
     pub const MODULE_ACTION_SH: &str = "action.sh";

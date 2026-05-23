@@ -415,10 +415,15 @@ pub fn regenerate_preinit_rc() -> Result<()> {
     std::fs::create_dir_all(preinit_dir)
         .with_context(|| format!("Failed to create {}", preinit_dir.display()))?;
 
-    let out_path = preinit_dir.join(defs::MODULES_RC_FILE);
+    let tmp_path_buf = preinit_dir.join(defs::MODULES_RC_TMP_FILE);
+    let out_path_buf = preinit_dir.join(defs::MODULES_RC_FILE);
+    let tmp_path = tmp_path_buf.as_path();
+    let out_path = out_path_buf.as_path();
 
     {
-        let mut tmp = Vec::<u8>::new();
+        let mut tmp = File::create(tmp_path)
+            .with_context(|| format!("Failed to create {}", tmp_path.display()))?;
+
         // collect modules in alphabetical order, with their effective module path in the next boot
         let mut modules: BTreeMap<String, Option<PathBuf>> = BTreeMap::new();
         // collect common initrc first
@@ -451,12 +456,19 @@ pub fn regenerate_preinit_rc() -> Result<()> {
                 collect_rc_files(path.join(defs::MODULE_INIT_RC_DIR), Some(&id), &mut tmp)?;
             }
         }
-        let mut out_file = File::create(&out_path)?;
-        out_file.write_all(&tmp)?;
+        tmp.sync_all()?;
     }
 
+    std::fs::rename(tmp_path, out_path).with_context(|| {
+        format!(
+            "Failed to rename {} -> {}",
+            tmp_path.display(),
+            out_path.display()
+        )
+    })?;
+
     // SELinux label so the kernel's filp_open in init context can read it.
-    if let Err(e) = crate::restorecon::lsetfilecon(&out_path, METADATA_FILE_CON) {
+    if let Err(e) = crate::restorecon::lsetfilecon(out_path, METADATA_FILE_CON) {
         debug!("set context on {} failed: {e}", out_path.display());
     }
 
