@@ -2,7 +2,7 @@
 
 KernelSU is a root solution for Android GKI devices. It works in kernel mode and grants root permission to userspace apps directly in kernel space.
 
-## Features
+## Feature's 
 
 The main feature of KernelSU is that it's **kernel-based**. KernelSU works in kernel mode, enabling it to provide a kernel interface that we never had before. For example, it's possible to add hardware breakpoints to any process in kernel mode, access the physical memory of any process invisibly, intercept any system call (syscall) within the kernel space, among other functionalities.
 
