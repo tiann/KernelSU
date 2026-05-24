@@ -60,10 +60,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
-import me.weishu.kernelsu.ui.component.LocalSnackbarHost
-import me.weishu.kernelsu.ui.component.M3SnackBarHost
+import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
 /**
@@ -128,7 +128,7 @@ fun AppProfileTemplateScreenMaterial(
                 scrollBehavior = scrollBehavior
             )
         },
-        snackbarHost = { M3SnackBarHost(snackBarHost) },
+        snackbarHost = { SnackBarHost(snackBarHost) },
         floatingActionButton = {
             SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,

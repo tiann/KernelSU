@@ -42,8 +42,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.component.LocalSnackbarHost
-import me.weishu.kernelsu.ui.component.M3SnackBarHost
+import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -61,7 +61,7 @@ fun FlashScreenMaterial(
     }
 
     Scaffold(
-        snackbarHost = { M3SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.showRebootAction) it else it.safeDrawingPadding() }) },
+        snackbarHost = { SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.showRebootAction) it else it.safeDrawingPadding() }) },
         topBar = {
             TopAppBar(
                 title = {

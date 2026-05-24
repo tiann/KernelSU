@@ -49,8 +49,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.component.LocalSnackbarHost
-import me.weishu.kernelsu.ui.component.M3SnackBarHost
+import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -88,7 +88,7 @@ fun ExecuteModuleActionScreenMaterial(
     BackHandler(enabled = !state.isComplete) { }
 
     Scaffold(
-        snackbarHost = { M3SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
+        snackbarHost = { SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.action)) },

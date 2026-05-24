@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.component
+package me.weishu.kernelsu.ui.component.material
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
@@ -87,10 +87,10 @@ private fun FadeInFadeOutWithScale(
 }
 
 @Composable
-fun M3SnackBarHost(
+fun SnackBarHost(
     hostState: SnackbarHostState,
     modifier: Modifier = Modifier,
-    snackBar: @Composable (SnackbarData) -> Unit = { M3SnackBar(it) },
+    snackBar: @Composable (SnackbarData) -> Unit = { SnackBar(it) },
 ) {
     val currentSnackBarData = hostState.currentSnackbarData
     val accessibilityManager = LocalAccessibilityManager.current
@@ -132,7 +132,7 @@ private fun SnackbarDuration.toMillis(
 }
 
 @Composable
-fun M3SnackBar(
+fun SnackBar(
     snackBarData: SnackbarData,
     modifier: Modifier = Modifier
 ) {
