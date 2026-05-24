@@ -4,7 +4,8 @@ use std::sync::OnceLock;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static LOGGER: OnceLock<MyLogger> = OnceLock::new();
-static ANDROID_LOG_MAX_LEVEL: AtomicUsize = AtomicUsize::new(level_filter_to_usize(LevelFilter::Off));
+static ANDROID_LOG_MAX_LEVEL: AtomicUsize =
+    AtomicUsize::new(level_filter_to_usize(LevelFilter::Off));
 static STDIO_LOG_MAX_LEVEL: AtomicUsize = AtomicUsize::new(level_filter_to_usize(LevelFilter::Off));
 
 pub struct MyLogger {
@@ -19,7 +20,8 @@ impl MyLogger {
     }
 
     fn println_enabled(level: Level) -> bool {
-        level_filter_to_usize(level.to_level_filter()) <= STDIO_LOG_MAX_LEVEL.load(Ordering::Relaxed)
+        level_filter_to_usize(level.to_level_filter())
+            <= STDIO_LOG_MAX_LEVEL.load(Ordering::Relaxed)
     }
 }
 
