@@ -740,6 +740,10 @@ pub fn run() -> Result<()> {
                     "pr_build: {}",
                     (info.flags & ksu_uapi::KSU_GET_INFO_FLAG_PR_BUILD) != 0
                 );
+                println!(
+                    "unloadable: {}",
+                    (info.flags & ksu_uapi::KSU_GET_INFO_FLAG_UNLOADABLE) != 0
+                );
                 Ok(())
             }
             Debug::Package => {
