@@ -153,6 +153,12 @@ pub fn get_sulog_fd() -> std::io::Result<RawFd> {
     Ok(result)
 }
 
+pub fn check_wrapper_fd(fd: RawFd) -> std::io::Result<bool> {
+    let mut cmd = ksu_uapi::ksu_check_wrapper_fd_cmd { fd: fd as u32 };
+    let result = ksuctl(ksu_uapi::KSU_IOCTL_CHECK_WRAPPER_FD, &raw mut cmd)?;
+    Ok(result == 1)
+}
+
 /// Get mark status for a process (pid=0 returns total marked count)
 pub fn mark_get(pid: i32) -> std::io::Result<u32> {
     let mut cmd = ksu_uapi::ksu_manage_mark_cmd {

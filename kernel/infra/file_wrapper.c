@@ -489,12 +489,36 @@ err:
 }
 #endif
 
+static inline bool is_wrapper_file(struct file *f)
+{
+    return f->f_op->release == ksu_wrapper_release;
+}
+
+int is_wrapper_fd(int fd)
+{
+    int ret;
+    struct file *orig_file = fget(fd);
+    if (!orig_file) {
+        return -EBADF;
+    }
+    ret = is_wrapper_file(orig_file) ? 1 : 0;
+    fput(orig_file);
+    return ret;
+}
+
 int ksu_install_file_wrapper(int fd)
 {
     int out_fd, ret;
     struct file *orig_file = fget(fd);
     if (!orig_file) {
         return -EBADF;
+    }
+
+    if (is_wrapper_file(orig_file)) {
+        // DEBUG
+        pr_info("fd %d is already a wrapper\n", fd);
+        ret = fd;
+        goto done;
     }
 
     out_fd = get_unused_fd_flags(O_CLOEXEC);

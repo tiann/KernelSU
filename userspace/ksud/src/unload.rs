@@ -81,9 +81,15 @@ pub fn unload() -> Result<()> {
         std::process::exit(1);
     }
 
-    info!("unload: starting KernelSU unload sequence");
+    if ksucalls::check_wrapper_fd(0).is_ok_and(|x| x)
+        || ksucalls::check_wrapper_fd(1).is_ok_and(|x| x)
+        || ksucalls::check_wrapper_fd(2).is_ok_and(|x| x)
+    {
+        error!("Please restart root shell with -W!");
+        std::process::exit(1);
+    }
 
-    // TODO: check if we are using ksu fdwrapper
+    info!("unload: starting KernelSU unload sequence");
 
     // 0. Switch cgroups so we don't get killed along with our parent shell
     utils::switch_cgroups();
