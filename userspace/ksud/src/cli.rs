@@ -468,10 +468,12 @@ enum UmountOp {
 }
 
 pub fn run() -> Result<()> {
-    android_logger::init_once(
+    let android_max_level = crate::debug_select!(LevelFilter::Trace, LevelFilter::Info);
+    crate::logger::init_once(
         Config::default()
-            .with_max_level(crate::debug_select!(LevelFilter::Trace, LevelFilter::Info))
+            .with_max_level(android_max_level)
             .with_tag("KernelSU"),
+        android_max_level,
     );
 
     // the kernel executes su with argv[0] = "su" and replace it with us
