@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -64,6 +65,7 @@ fun SearchAppBar(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     onClearClick: () -> Unit,
+    snackbarHostState: SnackbarHostState = LocalSnackbarHost.current,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -215,7 +217,6 @@ fun SearchAppBar(
             )
         ),
         content = {
-            val snackBarHostState = LocalSnackbarHost.current
             val bottomPadding = SearchBarDefaults.fullScreenWindowInsets.asPaddingValues().calculateBottomPadding()
             Box(modifier = Modifier.fillMaxSize()) {
                 if (currentQuery.isNotEmpty()) {
