@@ -51,6 +51,9 @@ static int do_get_info(void __user *arg)
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
     }
+    if (ksu_unloadable) {
+        cmd.flags |= KSU_GET_INFO_FLAG_UNLOADABLE;
+    }
 #ifdef EXPECTED_SIZE2
     cmd.flags |= KSU_GET_INFO_FLAG_PR_BUILD;
 #endif

@@ -80,6 +80,13 @@ bool allow_shell = false;
 #endif
 module_param(allow_shell, bool, 0);
 
+#ifndef CONFIG_KSU_DEBUG
+bool ksu_unloadable = false;
+module_param_named(unloadable, ksu_unloadable, bool, 0);
+#endif
+
+void __init remove_my_kobj(void);
+
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__)
@@ -176,7 +183,14 @@ int __init kernelsu_init(void)
 
 #ifdef MODULE
 #ifndef CONFIG_KSU_DEBUG
-    kobject_del(&THIS_MODULE->mkobj.kobj);
+    if (ksu_unloadable) {
+        pr_info("KernelSU unloadable is enabled\n");
+        remove_my_kobj();
+    } else {
+        kobject_del(&THIS_MODULE->mkobj.kobj);
+        // add a reference to myself to prevent from unloading
+        try_module_get(THIS_MODULE);
+    }
 #endif
 #endif
     return 0;
