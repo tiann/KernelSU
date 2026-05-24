@@ -62,7 +62,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
 }
 
 // API implementations
-fn get_info() -> ksu_uapi::ksu_get_info_cmd {
+pub fn get_info() -> ksu_uapi::ksu_get_info_cmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = ksu_uapi::ksu_get_info_cmd {
             version: 0,
