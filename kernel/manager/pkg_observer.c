@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+#include "linux/completion.h"
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
@@ -35,8 +36,25 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct i
     return 0;
 }
 
+static void my_free_mark(struct fsnotify_mark *mark)
+{
+    kfree(mark);
+}
+
+DECLARE_COMPLETION(free_group_completion);
+
+static void __naked my_free_group_priv(struct fsnotify_group *group)
+{
+    asm(".extern complete\n"
+        ".extern free_group_completion\n"
+        "adr x0, free_group_completion\n"
+        "b complete\n");
+}
+
 static const struct fsnotify_ops ksu_ops = {
     .handle_inode_event = ksu_handle_inode_event,
+    .free_mark = my_free_mark,
+    .free_group_priv = my_free_group_priv,
 };
 
 static int add_mark_on_inode(struct inode *inode, u32 mask, struct fsnotify_mark **out)
@@ -120,5 +138,7 @@ void __exit ksu_observer_exit(void)
 {
     unwatch_one_dir(&g_watch);
     fsnotify_put_group(g);
+    pr_info("waiting for observer exit\n");
+    wait_for_completion(&free_group_completion);
     pr_info("observer exit done\n");
 }
