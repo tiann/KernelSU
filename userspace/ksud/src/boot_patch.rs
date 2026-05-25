@@ -430,6 +430,10 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = None)]
     pub out_name: Option<String>,
 
+    /// Extra cmdline to append to boot image header
+    #[arg(long, default_value = None)]
+    pub cmdline: Option<String>,
+
     /// Always allow shell to get root permission
     #[arg(long, default_value = "false")]
     allow_shell: bool,
@@ -457,6 +461,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             out,
             kmi,
             out_name,
+            cmdline,
             allow_shell,
             enable_adbd,
             adb_debug_prop,
@@ -548,6 +553,11 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         enforce_bootimage_version(&boot_image)?;
 
         let mut patcher = BootImagePatchOption::new(&boot_image);
+
+        if let Some(cmdline_value) = &cmdline {
+            patcher.override_cmdline(cmdline_value.as_bytes());
+            println!("- Set cmdline to: {cmdline_value}");
+        }
 
         if let Some(kernel_path) = kernel {
             println!("- Adding Kernel");
