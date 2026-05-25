@@ -44,6 +44,7 @@ mod android {
     pub const BACKUP_FILENAME: &str = "stock_image.sha1";
 }
 
+#[allow(unused)]
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
 

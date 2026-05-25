@@ -476,6 +476,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         println!(include_str!("banner"));
 
+        #[cfg(target_os = "android")]
         let patch_file = image.is_some();
 
         #[cfg(target_os = "android")]

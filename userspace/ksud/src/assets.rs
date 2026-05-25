@@ -46,6 +46,7 @@ struct Asset;
 #[folder = "bin/aarch64"]
 struct Asset;
 
+#[allow(unused)]
 pub fn get_asset_data(name: &str) -> Result<std::borrow::Cow<'static, [u8]>> {
     let asset = Asset::get(name).ok_or_else(|| anyhow::anyhow!("asset not found: {name}"))?;
     Ok(asset.data)
