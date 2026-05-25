@@ -26,6 +26,7 @@ mod android {
     use anyhow::{Context, anyhow, bail, ensure};
     use regex_lite::Regex;
     use std::io::Write;
+    use std::os::unix::fs::PermissionsExt;
     use std::path::{Path, PathBuf};
     use std::process::Command;
 
@@ -263,11 +264,7 @@ rm -f /data/adb/post-fs-data.d/post_ota.sh
         );
 
         std::fs::write(&post_ota_sh, sh_content)?;
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(post_ota_sh, std::fs::Permissions::from_mode(0o755))?;
-        }
+        std::fs::set_permissions(post_ota_sh, std::fs::Permissions::from_mode(0o755))?;
 
         Ok(())
     }
