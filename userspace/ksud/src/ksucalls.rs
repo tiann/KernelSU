@@ -62,7 +62,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
 }
 
 // API implementations
-fn get_info() -> ksu_uapi::ksu_get_info_cmd {
+pub fn get_info() -> ksu_uapi::ksu_get_info_cmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = ksu_uapi::ksu_get_info_cmd {
             version: 0,
@@ -151,6 +151,12 @@ pub fn get_sulog_fd() -> std::io::Result<RawFd> {
     let mut cmd = ksu_uapi::ksu_get_sulog_fd_cmd { flags: 0 };
     let result = ksuctl(ksu_uapi::KSU_IOCTL_GET_SULOG_FD, &raw mut cmd)?;
     Ok(result)
+}
+
+pub fn check_wrapper_fd(fd: RawFd) -> std::io::Result<bool> {
+    let mut cmd = ksu_uapi::ksu_check_wrapper_fd_cmd { fd: fd as u32 };
+    let result = ksuctl(ksu_uapi::KSU_IOCTL_CHECK_WRAPPER_FD, &raw mut cmd)?;
+    Ok(result == 1)
 }
 
 /// Get mark status for a process (pid=0 returns total marked count)

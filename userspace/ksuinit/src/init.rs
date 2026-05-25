@@ -135,11 +135,19 @@ pub fn init() -> Result<()> {
 fn load_module_from_path(path: &str) -> Result<()> {
     anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
     let buffer = std::fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
-    let params = if std::fs::exists("/ksu_allow_shell").unwrap_or(false) {
+    let allow_shell = std::fs::exists("/ksu_allow_shell").unwrap_or(false);
+    let unloadable = std::fs::exists("/ksu_unloadable").unwrap_or(false);
+    if allow_shell {
         log::warn!("ksu allow shell at init!");
-        cstr!("allow_shell=1")
-    } else {
-        cstr!("")
+    }
+    if unloadable {
+        log::warn!("ksu unloadable is enabled!");
+    }
+    let params = match (allow_shell, unloadable) {
+        (true, true) => cstr!("allow_shell=1 unloadable=1"),
+        (true, false) => cstr!("allow_shell=1"),
+        (false, true) => cstr!("unloadable=1"),
+        (false, false) => cstr!(""),
     };
     ksuinit::load_module(&buffer, params)
 }

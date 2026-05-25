@@ -1,40 +1,9 @@
 use anyhow::Result;
-use log::{info, warn};
+use log::{error, info, warn};
 use std::fs;
 use std::process::Command;
 
-use crate::utils;
-
-/// Find PIDs of processes running in the KernelSU su domain (u:r:ksu:s0).
-/// Returns a list of PIDs excluding our own.
-fn find_su_domain_pids() -> Vec<i32> {
-    let my_pid = std::process::id() as i32;
-    let mut pids = Vec::new();
-
-    let Ok(entries) = fs::read_dir("/proc") else {
-        return pids;
-    };
-
-    for entry in entries.flatten() {
-        let name = entry.file_name();
-        let Some(pid) = name.to_str().and_then(|s| s.parse::<i32>().ok()) else {
-            continue;
-        };
-        if pid == my_pid {
-            continue;
-        }
-
-        let attr_path = format!("/proc/{pid}/attr/current");
-        if let Ok(context) = fs::read_to_string(&attr_path) {
-            let context = context.trim().trim_end_matches('\0');
-            if context == "u:r:ksu:s0" {
-                pids.push(pid);
-            }
-        }
-    }
-
-    pids
-}
+use crate::{ksu_uapi, ksucalls, logger::set_stdio_log_max_level, utils};
 
 /// Find PIDs of processes holding ksu_driver or ksu_fdwrapper file descriptors.
 /// Returns a list of PIDs excluding our own.
@@ -106,6 +75,20 @@ fn close_ksu_fds() {
 }
 
 pub fn unload() -> Result<()> {
+    set_stdio_log_max_level(log::LevelFilter::Info);
+    if (ksucalls::get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_UNLOADABLE) == 0 {
+        error!("KernelSU is not unloadable!");
+        std::process::exit(1);
+    }
+
+    if ksucalls::check_wrapper_fd(0).is_ok_and(|x| x)
+        || ksucalls::check_wrapper_fd(1).is_ok_and(|x| x)
+        || ksucalls::check_wrapper_fd(2).is_ok_and(|x| x)
+    {
+        error!("Please restart root shell with -W!");
+        std::process::exit(1);
+    }
+
     info!("unload: starting KernelSU unload sequence");
 
     // 0. Switch cgroups so we don't get killed along with our parent shell
@@ -115,17 +98,8 @@ pub fn unload() -> Result<()> {
     info!("unload: stopping Android services...");
     let _ = Command::new("stop").status();
 
-    // 2. Kill all su domain processes and processes holding ksu fds (except ourselves)
-    info!("unload: killing su domain processes...");
-    let su_pids = find_su_domain_pids();
-    if !su_pids.is_empty() {
-        info!(
-            "unload: found {} su domain processes, sending SIGKILL",
-            su_pids.len()
-        );
-        kill_pids(&su_pids, libc::SIGKILL);
-    }
-
+    // 2. Kill all processes holding ksu fds (except ourselves)
+    // TODO: scan and kill in kernel
     info!("unload: killing processes holding ksu fds...");
     let fd_pids = find_ksu_fd_holders();
     if !fd_pids.is_empty() {

@@ -526,6 +526,10 @@ pub struct BootPatchArgs {
     /// Do not (re-)install kernelsu, only modify configs (allow_shell, etc.)
     #[arg(long, default_value = "false")]
     no_install: bool,
+
+    /// Allow unload KernelSU LKM at runtime
+    #[arg(long, default_value = "false")]
+    unloadable: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -544,6 +548,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             enable_adbd,
             adb_debug_prop,
             no_install,
+            unloadable,
             #[cfg(target_os = "android")]
             ota,
             #[cfg(target_os = "android")]
@@ -771,6 +776,23 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 println!("- Removing /adb_debug.prop");
                 do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm adb_debug.prop").ok();
             }
+        }
+
+        if unloadable {
+            println!("- Adding unloadable config");
+            {
+                let unloadable_file = workdir.join("ksu_unloadable");
+                File::create(unloadable_file)?;
+            }
+            do_cpio_cmd(
+                &magiskboot,
+                workdir,
+                ramdisk,
+                "add 0644 ksu_unloadable ksu_unloadable",
+            )?;
+        } else if do_cpio_cmd(&magiskboot, workdir, ramdisk, "exists ksu_unloadable").is_ok() {
+            println!("- Removing unloadable config");
+            do_cpio_cmd(&magiskboot, workdir, ramdisk, "rm ksu_unloadable").ok();
         }
 
         println!("- Repacking boot image");
