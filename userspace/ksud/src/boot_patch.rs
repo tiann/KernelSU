@@ -25,7 +25,8 @@ mod android {
     use android_bootimg::cpio::{Cpio, CpioEntry};
     use anyhow::{Context, anyhow, bail, ensure};
     use regex_lite::Regex;
-    use std::io::Write;
+    use std::fs::OpenOptions;
+use std::io::Write;
     use std::os::fd::AsRawFd;
 use std::os::unix::fs::PermissionsExt;
     use std::path::{Path, PathBuf};
@@ -125,7 +126,21 @@ use std::os::unix::fs::PermissionsExt;
 
         println!("- Backup stock boot image");
         let target = format!("{KSU_BACKUP_DIR}{filename}");
-        std::fs::copy(image, &target).with_context(|| format!("backup to {target}"))?;
+        let mut target_file = OpenOptions::new()
+            .create(true)
+            .truncate(true)
+            .write(true)
+            .open(&target)?;
+        let mut source = OpenOptions::new()
+            .create(false)
+            .truncate(false)
+            .read(true)
+            .write(false)
+            .open(image)?;
+
+        // Use io::copy instead of fs::copy to allow copy block device
+        std::io::copy(&mut source, &mut target_file)
+            .with_context(|| format!("failed to backup to {target}"))?;
 
         let backup_file = CpioEntry::regular(0o755, Box::new(sha1));
         cpio.add(BACKUP_FILENAME, backup_file)?;
@@ -616,7 +631,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 && flash
                 && let Err(e) = do_backup(&mut cpio, &boot_image_file)
             {
-                println!("- Backup stock image failed: {e}");
+                println!("- Backup stock image failed: {e:?}");
             }
         }
 
