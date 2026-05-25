@@ -26,7 +26,8 @@ mod android {
     use anyhow::{Context, anyhow, bail, ensure};
     use regex_lite::Regex;
     use std::io::Write;
-    use std::os::unix::fs::PermissionsExt;
+    use std::os::fd::AsRawFd;
+use std::os::unix::fs::PermissionsExt;
     use std::path::{Path, PathBuf};
     use std::process::Command;
 
@@ -156,17 +157,19 @@ mod android {
     }
 
     pub(super) fn flash_partition(partition: &str, data: &[u8]) -> Result<()> {
-        let status = Command::new("blockdev")
-            .arg("--setrw")
-            .arg(partition)
-            .status()?;
-        ensure!(status.success(), "set boot device rw failed");
         let mut blk = std::fs::OpenOptions::new()
             .write(true)
             .truncate(false)
             .create(false)
             .open(partition)
             .with_context(|| format!("open {partition}"))?;
+        unsafe {
+            const BLKROSET: i32 = libc::_IO(0x12, 93);
+            let mut val: libc::c_int = 0;
+            if libc::ioctl(blk.as_raw_fd(), BLKROSET, &raw mut val) != 0 {
+                bail!("Failed to set rw for {partition}: {}", *libc::__errno());
+            }
+        }
         blk.write_all(data).context("flash boot failed")?;
         blk.sync_all().context("sync boot failed")?;
         Ok(())
