@@ -77,9 +77,6 @@ enum Commands {
     /// Install KernelSU userspace component to system
     Install {
         #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-
-        #[arg(long, default_value = None)]
         libadbroot: Option<PathBuf>,
     },
 
@@ -88,10 +85,6 @@ enum Commands {
 
     /// Uninstall KernelSU modules and itself(LKM Only)
     Uninstall {
-        /// magiskboot path, if not specified, will search from $PATH
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-
         #[arg(long, default_value_t = String::from("me.weishu.kernelsu"))]
         package_name: String,
     },
@@ -602,15 +595,9 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        Commands::Install {
-            magiskboot,
-            libadbroot,
-        } => utils::install(magiskboot, libadbroot),
+        Commands::Install { libadbroot } => utils::install(libadbroot),
         Commands::Unload => crate::unload::unload(),
-        Commands::Uninstall {
-            magiskboot,
-            package_name,
-        } => utils::uninstall(magiskboot, &package_name),
+        Commands::Uninstall { package_name } => utils::uninstall(&package_name),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),

@@ -15,7 +15,6 @@ mod android {
 
     pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
     pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
-    pub const MAGISKBOOT_PATH: &str = concatcp!(BINARY_DIR, "magiskboot");
     pub const LIBADBROOT_PATH: &str = concatcp!(LIBRARY_DIR, "libadbroot.so");
 
     pub const DAEMON_LINK_PATH: &str = concatcp!(BINARY_DIR, "ksud");
@@ -45,6 +44,7 @@ mod android {
     pub const BACKUP_FILENAME: &str = "stock_image.sha1";
 }
 
+#[allow(unused)]
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
 
