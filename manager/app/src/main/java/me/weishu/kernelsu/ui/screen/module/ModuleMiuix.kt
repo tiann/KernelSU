@@ -154,6 +154,7 @@ fun ModulePagerMiuix(
     effect: ModuleEffect?,
     actions: ModuleActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val modules = uiState.moduleList
     val searchStatus = uiState.searchStatus
@@ -439,7 +440,7 @@ fun ModulePagerMiuix(
                 ModuleList(
                     modifier = Modifier
                         .fillMaxSize()
-                        .overScrollVertical(),
+                        .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier),
                     modules = uiState.searchResults,
                     updateInfoMap = uiState.updateInfo,
                     actions = actions,
@@ -530,7 +531,7 @@ fun ModulePagerMiuix(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .scrollEndHaptic()
-                                    .overScrollVertical()
+                                    .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier)
                                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                                     .nestedScroll(nestedScrollConnection),
                                 modules = modules,

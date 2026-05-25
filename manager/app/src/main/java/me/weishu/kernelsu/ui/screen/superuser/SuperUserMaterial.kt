@@ -77,6 +77,7 @@ fun SuperUserPagerMaterial(
     uiState: SuperUserUiState,
     actions: SuperUserActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())

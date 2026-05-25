@@ -145,6 +145,7 @@ fun ModulePagerMaterial(
     effect: ModuleEffect?,
     actions: ModuleActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val snackBarHost = LocalSnackbarHost.current
     val haptic = LocalHapticFeedback.current

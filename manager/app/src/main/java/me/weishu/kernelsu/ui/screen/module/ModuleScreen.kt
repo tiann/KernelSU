@@ -152,6 +152,7 @@ fun ModulePager(
             effect = rawUiState.effect,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
 
         UiMode.Material -> ModulePagerMaterial(
@@ -160,6 +161,7 @@ fun ModulePager(
             effect = rawUiState.effect,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
     }
 }

@@ -105,6 +105,7 @@ fun SuperUserPagerMiuix(
     uiState: SuperUserUiState,
     actions: SuperUserActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val searchStatus = uiState.searchStatus
     val enableBlur = LocalEnableBlur.current
@@ -301,7 +302,7 @@ fun SuperUserPagerMiuix(
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .overScrollVertical(),
+                                .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier),
                         ) {
                             item {
                                 Spacer(Modifier.height(6.dp))
@@ -347,7 +348,7 @@ fun SuperUserPagerMiuix(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .overScrollVertical(),
+                        .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier),
                 ) {
                     item {
                         Spacer(Modifier.height(6.dp))
@@ -449,7 +450,7 @@ fun SuperUserPagerMiuix(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .scrollEndHaptic()
-                                .overScrollVertical()
+                                .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier)
                                 .nestedScroll(scrollBehavior.nestedScrollConnection),
                             contentPadding = PaddingValues(
                                 top = innerPadding.calculateTopPadding() + 6.dp,
