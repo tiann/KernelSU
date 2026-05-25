@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,7 +65,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -119,14 +119,13 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.FileDownloads
 import top.yukonga.miuix.kmp.icon.extended.HorizontalSplit
 import top.yukonga.miuix.kmp.icon.extended.Link
-import top.yukonga.miuix.kmp.icon.extended.MoreCircle
+import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -136,7 +135,6 @@ fun ModuleRepoScreenMiuix(
 ) {
     val searchStatus = state.searchStatus
     val density = LocalDensity.current
-    val platformLocale = LocalLocale.current.platformLocale
     val metaBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     val metaTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
 
@@ -162,33 +160,42 @@ fun ModuleRepoScreenMiuix(
                         color = barColor,
                         title = stringResource(R.string.module_repos),
                         actions = {
-                            val showTopPopup = remember { mutableStateOf(false) }
+                            val showSortPopup = remember { mutableStateOf(false) }
                             OverlayListPopup(
-                                show = showTopPopup.value, popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                                show = showSortPopup.value,
+                                popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
                                 alignment = PopupPositionProvider.Align.TopEnd,
-                                onDismissRequest = { showTopPopup.value = false },
+                                onDismissRequest = { showSortPopup.value = false },
                                 content = {
                                     ListPopupColumn {
-                                        DropdownImpl(
-                                            text = stringResource(R.string.module_repos_sort_name),
-                                            optionSize = 1,
-                                            isSelected = state.sortByName,
-                                            onSelectedIndexChange = {
-                                                actions.onToggleSortByName()
-                                                showTopPopup.value = false
-                                            },
-                                            index = 0
+                                        val sortOptions = listOf(
+                                            RepoSort.UPDATED to R.string.module_repos_sort_updated,
+                                            RepoSort.CREATED to R.string.module_repos_sort_created,
+                                            RepoSort.NAME to R.string.module_repos_sort_name,
+                                            RepoSort.STARS to R.string.module_repos_sort_stars,
                                         )
+                                        sortOptions.forEachIndexed { index, (order, resId) ->
+                                            DropdownImpl(
+                                                text = stringResource(resId),
+                                                optionSize = sortOptions.size,
+                                                isSelected = state.sortOrder == order,
+                                                onSelectedIndexChange = {
+                                                    actions.onSetSortOrder(order)
+                                                    showSortPopup.value = false
+                                                },
+                                                index = index,
+                                            )
+                                        }
                                     }
                                 })
                             IconButton(
-                                onClick = { showTopPopup.value = true },
-                                holdDownState = showTopPopup.value
+                                onClick = { showSortPopup.value = true },
+                                holdDownState = showSortPopup.value
                             ) {
                                 Icon(
-                                    imageVector = MiuixIcons.MoreCircle,
+                                    imageVector = MiuixIcons.Sort,
                                     tint = colorScheme.onSurface,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.menu_sort),
                                 )
                             }
                         },
@@ -242,10 +249,6 @@ fun ModuleRepoScreenMiuix(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
-                val displaySearch = remember(state.searchResults, state.sortByName) {
-                    val collator = Collator.getInstance(platformLocale)
-                    if (!state.sortByName) state.searchResults else state.searchResults.sortedWith(compareBy(collator) { it.moduleName })
-                }
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -254,7 +257,7 @@ fun ModuleRepoScreenMiuix(
                     item {
                         Spacer(Modifier.height(6.dp))
                     }
-                    items(displaySearch, key = { it.moduleId }, contentType = { "module" }) { module ->
+                    items(state.searchResults, key = { it.moduleId }, contentType = { "module" }) { module ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -382,6 +385,10 @@ fun ModuleRepoScreenMiuix(
             }
             if (!isLoading && contentReady) {
                 val pullToRefreshState = rememberPullToRefreshState()
+                val lazyListState = rememberLazyListState()
+                LaunchedEffect(state.sortOrder) {
+                    lazyListState.scrollToItem(0)
+                }
                 val refreshTexts = listOf(
                     stringResource(R.string.refresh_pulling),
                     stringResource(R.string.refresh_release),
@@ -399,12 +406,9 @@ fun ModuleRepoScreenMiuix(
                         end = innerPadding.calculateEndPadding(layoutDirection)
                     ),
                 ) {
-                    val displayModules = remember(state.modules, state.sortByName) {
-                        val collator = Collator.getInstance(platformLocale)
-                        if (!state.sortByName) state.modules else state.modules.sortedWith(compareBy(collator) { it.moduleName })
-                    }
                     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
                         LazyColumn(
+                            state = lazyListState,
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .scrollEndHaptic()
@@ -417,7 +421,7 @@ fun ModuleRepoScreenMiuix(
                             ),
                             overscrollEffect = null,
                         ) {
-                            items(items = displayModules, key = { it.moduleId }, contentType = { "module" }) { module ->
+                            items(items = state.modules, key = { it.moduleId }, contentType = { "module" }) { module ->
                                 val moduleAuthor = stringResource(id = R.string.module_author)
 
                                 Card(

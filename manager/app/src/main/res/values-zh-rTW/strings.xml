@@ -133,7 +133,10 @@
     <string name="refresh_complete">刷新成功</string>
     <string name="module_repos">模組倉庫</string>
     <string name="module_repos_source_code">源碼</string>
-    <string name="module_repos_sort_name">按名稱排序</string>
+    <string name="module_repos_sort_updated">更新時間</string>
+    <string name="module_repos_sort_created">建立時間</string>
+    <string name="module_repos_sort_name">名稱</string>
+    <string name="module_repos_sort_stars">星標數</string>
     <string name="undo">撤銷</string>
     <string name="settings_theme">主題</string>
     <string name="settings_theme_mode_system">跟隨系統</string>
@@ -156,4 +159,10 @@
     <string name="module_shortcut_permission_tip_default">若建立捷徑失敗，請在系統設定中為此應用啟用桌面捷徑權限。</string>
     <string name="safe_mode_module_disabled">處於安全模式下，禁止安裝模組</string>
     <string name="settings_module_check_update">檢查模組更新</string>
+    <string name="menu_sort">排序</string>
+    <string name="sort_by_name">應用名</string>
+    <string name="sort_by_package_name">套件名</string>
+    <string name="sort_by_install_time">安裝時間</string>
+    <string name="sort_by_update_time">更新時間</string>
+    <string name="sort_reverse">倒序</string>
 </resources>

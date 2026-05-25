@@ -49,7 +49,10 @@
     <string name="module_sort_action_first">Action first</string>
     <string name="module_sort_enabled_first">Enabled first</string>
     <string name="module_repos">Repos</string>
-    <string name="module_repos_sort_name">Name (A → Z)</string>
+    <string name="module_repos_sort_updated">Updated time</string>
+    <string name="module_repos_sort_created">Created time</string>
+    <string name="module_repos_sort_name">Name</string>
+    <string name="module_repos_sort_stars">Stars</string>
     <string name="module_repos_source_code">Source code</string>
     <string name="confirm">Confirm</string>
     <string name="uninstall">Uninstall</string>
@@ -275,4 +278,10 @@
     <string name="download_install">Install</string>
     <string name="settings_adb_root" translatable="false">ADB Root</string>
     <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+    <string name="menu_sort">Sort</string>
+    <string name="sort_by_name">Application name</string>
+    <string name="sort_by_package_name">Package name</string>
+    <string name="sort_by_install_time">Install time</string>
+    <string name="sort_by_update_time">Update time</string>
+    <string name="sort_reverse">Reverse</string>
 </resources>

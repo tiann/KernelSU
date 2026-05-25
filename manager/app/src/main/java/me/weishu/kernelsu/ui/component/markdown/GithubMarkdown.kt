@@ -305,10 +305,6 @@ fun GithubMarkdown(
                             return false
                         }
                     })
-                    loadDataWithBaseURL(
-                        "https://appassets.androidplatform.net", html,
-                        "text/html", StandardCharsets.UTF_8.name(), null
-                    )
                 } catch (e: Throwable) {
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
@@ -319,11 +315,14 @@ fun GithubMarkdown(
         update = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView ?: return@AndroidView
             webView.settings.textZoom = newTextZoom
-            onLoadingChange(true)
-            webView.loadDataWithBaseURL(
-                "https://appassets.androidplatform.net", html,
-                "text/html", StandardCharsets.UTF_8.name(), null
-            )
+            if (webView.tag != html) {
+                webView.tag = html
+                onLoadingChange(true)
+                webView.loadDataWithBaseURL(
+                    "https://appassets.androidplatform.net", html,
+                    "text/html", StandardCharsets.UTF_8.name(), null
+                )
+            }
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView

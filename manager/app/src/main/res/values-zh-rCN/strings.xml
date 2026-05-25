@@ -30,7 +30,10 @@
     <string name="module_sort_action_first">可执行优先</string>
     <string name="module_sort_enabled_first">已启用优先</string>
     <string name="module_repos">模块仓库</string>
-    <string name="module_repos_sort_name">按名称排序</string>
+    <string name="module_repos_sort_updated">更新时间</string>
+    <string name="module_repos_sort_created">创建时间</string>
+    <string name="module_repos_sort_name">名称</string>
+    <string name="module_repos_sort_stars">星标数</string>
     <string name="module_repos_source_code">源码</string>
     <string name="uninstall">卸载</string>
     <string name="module_install">安装</string>
@@ -253,4 +256,10 @@
     <string name="settings_selinux_hide_summary">阻止应用检测 SELinux 修改</string>
     <string name="settings_selinux_hide_reboot_required">重启生效</string>
     <string name="settings_selinux_hide_failed">错误： %d</string>
+    <string name="menu_sort">排序</string>
+    <string name="sort_by_name">应用名</string>
+    <string name="sort_by_package_name">包名</string>
+    <string name="sort_by_install_time">安装时间</string>
+    <string name="sort_by_update_time">更新时间</string>
+    <string name="sort_reverse">倒序</string>
 </resources>

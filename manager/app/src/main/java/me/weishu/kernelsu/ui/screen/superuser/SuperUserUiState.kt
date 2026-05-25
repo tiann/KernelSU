@@ -29,6 +29,7 @@ data class SuperUserUiState(
     val searchResults: List<GroupedApps> = emptyList(),
     val showSystemApps: Boolean = false,
     val showOnlyPrimaryUserApps: Boolean = false,
+    val sortOption: Int = 0,
     val error: Throwable? = null
 )
 
@@ -41,6 +42,7 @@ data class SuperUserActions(
     val onClearSearch: () -> Unit,
     val onToggleShowSystemApps: () -> Unit,
     val onToggleShowOnlyPrimaryUserApps: () -> Unit,
+    val onUpdateSortOption: (Int) -> Unit,
     val onOpenProfile: (GroupedApps) -> Unit,
 )
 
