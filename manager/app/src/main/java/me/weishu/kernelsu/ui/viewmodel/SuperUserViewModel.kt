@@ -33,6 +33,13 @@ import java.util.Locale
 
 internal const val RECENTLY_INSTALLED_WINDOW_MILLIS = 60 * 60 * 1000L
 
+internal const val SORT_BY_NAME = 0
+internal const val SORT_BY_PACKAGE_NAME = 1
+internal const val SORT_BY_INSTALL_TIME = 2
+internal const val SORT_BY_UPDATE_TIME = 3
+
+private const val PREFS_SORT_OPTION = "superuser_sort_option"
+
 internal fun buildRecentlyInstalledGroups(
     groups: List<GroupedApps>,
     nowMillis: Long = System.currentTimeMillis(),
@@ -104,11 +111,23 @@ class SuperUserViewModel(
     fun initializePreferences() {
         val showSystemApps = prefs.getBoolean("show_system_apps", false)
         val showOnlyPrimaryUserApps = prefs.getBoolean("show_only_primary_user_apps", false)
+        val sortOption = prefs.getInt(PREFS_SORT_OPTION, 0)
         _uiState.update {
             it.copy(
                 showSystemApps = showSystemApps,
                 showOnlyPrimaryUserApps = showOnlyPrimaryUserApps,
+                sortOption = sortOption,
             )
+        }
+    }
+
+    fun updateSortOption(option: Int): Job {
+        prefs.edit { putInt(PREFS_SORT_OPTION, option) }
+        _uiState.update { it.copy(sortOption = option) }
+        return viewModelScope.launch {
+            val current = _uiState.value.groupedApps
+            if (current.isEmpty()) return@launch
+            updateVisibleApps(current)
         }
     }
 
@@ -212,12 +231,13 @@ class SuperUserViewModel(
     }
 
     private fun updateVisibleApps(grouped: List<GroupedApps>) {
+        val sorted = sortGroups(grouped, _uiState.value.sortOption)
         val searchText = _uiState.value.searchStatus.searchText
-        val searchResults = filterSearchResults(grouped, searchText)
-        val recentlyInstalledResults = buildRecentlyInstalledGroups(grouped)
+        val searchResults = filterSearchResults(sorted, searchText)
+        val recentlyInstalledResults = buildRecentlyInstalledGroups(sorted)
         _uiState.update {
             it.copy(
-                groupedApps = grouped.map { group -> group.copy(matchedPackageNames = emptySet()) },
+                groupedApps = sorted.map { group -> group.copy(matchedPackageNames = emptySet()) },
                 recentlyInstalledResults = recentlyInstalledResults,
                 searchResults = searchResults,
                 searchStatus = it.searchStatus.copy(
@@ -264,7 +284,7 @@ class SuperUserViewModel(
                 else -> 2
             }
         }.thenBy { it.label.lowercase() }
-        val groups = apps.groupBy { it.uid }.map { (uid, list) ->
+        return apps.groupBy { it.uid }.map { (uid, list) ->
             val sorted = list.sortedWith(comparator)
             val primary = pickPrimary(sorted)
             val shouldUmount = Natives.uidShouldUmount(uid)
@@ -280,22 +300,33 @@ class SuperUserViewModel(
                 ownerName = ownerName
             )
         }
-        return groups.sortedWith(Comparator { a, b ->
-            fun rank(g: GroupedApps): Int = when {
-                g.anyAllowSu -> 0
-                g.anyCustom -> 1
-                g.apps.size > 1 -> 2
-                g.shouldUmount -> 4
-                else -> 3
-            }
+    }
 
-            val ra = rank(a)
-            val rb = rank(b)
-            if (ra != rb) return@Comparator ra - rb
-            return@Comparator when (ra) {
-                2 -> a.uid.compareTo(b.uid)
-                else -> a.primary.label.lowercase().compareTo(b.primary.label.lowercase())
-            }
+    private fun groupRank(group: GroupedApps): Int = when {
+        group.anyAllowSu -> 0
+        group.anyCustom -> 1
+        group.apps.size > 1 -> 2
+        group.shouldUmount -> 4
+        else -> 3
+    }
+
+    private fun sortGroups(groups: List<GroupedApps>, sortOption: Int): List<GroupedApps> {
+        val sortType = sortOption / 2
+        val reverse = sortOption % 2 != 0
+
+        val collator = Collator.getInstance(Locale.getDefault())
+        val base: Comparator<GroupedApps> = when (sortType) {
+            SORT_BY_PACKAGE_NAME -> compareBy { it.primary.packageName }
+            SORT_BY_INSTALL_TIME -> compareBy { it.primary.packageInfo.firstInstallTime }
+            SORT_BY_UPDATE_TIME -> compareBy { it.primary.packageInfo.lastUpdateTime }
+            else -> Comparator { a, b -> collator.compare(a.primary.label, b.primary.label) }
+        }
+        val secondary = if (reverse) base.reversed() else base
+
+        return groups.sortedWith(Comparator { a, b ->
+            val ra = groupRank(a)
+            val rb = groupRank(b)
+            if (ra != rb) ra - rb else secondary.compare(a, b)
         })
     }
 

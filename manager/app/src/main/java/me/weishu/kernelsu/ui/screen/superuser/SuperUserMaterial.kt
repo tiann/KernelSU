@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
@@ -28,11 +29,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -85,6 +88,9 @@ fun SuperUserPagerMaterial(
     LaunchedEffect(uiState.searchStatus.searchText) {
         localSearchText = uiState.searchStatus.searchText
     }
+    LaunchedEffect(uiState.sortOption) {
+        listState.scrollToItem(0)
+    }
 
     val haptic = LocalHapticFeedback.current
 
@@ -111,6 +117,60 @@ fun SuperUserPagerMaterial(
                     }
                 },
                 actions = {
+                    var showSortMenu by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { showSortMenu = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = stringResource(R.string.menu_sort)
+                        )
+
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            val sortResIds = listOf(
+                                R.string.sort_by_name,
+                                R.string.sort_by_package_name,
+                                R.string.sort_by_install_time,
+                                R.string.sort_by_update_time,
+                            )
+                            val currentSortType = uiState.sortOption / 2
+                            val isReverse = uiState.sortOption % 2 != 0
+
+                            sortResIds.forEachIndexed { index, resId ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(resId)) },
+                                    trailingIcon = {
+                                        RadioButton(
+                                            selected = currentSortType == index,
+                                            onClick = null,
+                                        )
+                                    },
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        val newOption = index * 2 + (if (isReverse) 1 else 0)
+                                        actions.onUpdateSortOption(newOption)
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
+
+                            HorizontalDivider()
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_reverse)) },
+                                trailingIcon = { Checkbox(isReverse, null) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    val newOption = currentSortType * 2 + (if (!isReverse) 1 else 0)
+                                    actions.onUpdateSortOption(newOption)
+                                    showSortMenu = false
+                                }
+                            )
+                        }
+                    }
+
                     var showDropdown by remember { mutableStateOf(false) }
 
                     IconButton(onClick = { showDropdown = true }) {
