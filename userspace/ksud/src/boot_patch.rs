@@ -668,11 +668,6 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         #[cfg(target_os = "android")]
         if flash {
-            if patch_file {
-                bail!(
-                    "--flash cannot be combined with --boot; flashing only works in auto-detect mode"
-                );
-            }
             println!("- Flashing new boot image");
             let bootdevice = boot_image_file.display().to_string();
             flash_partition(&bootdevice, &new_boot_bytes)?;
@@ -841,11 +836,6 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
 
     #[cfg(target_os = "android")]
     if flash {
-        if image_supplied {
-            bail!(
-                "--flash cannot be combined with --boot; flashing only works in auto-detect mode"
-            );
-        }
         if let Some(ref source) = stock_source {
             println!("- Flashing new boot image from {}", source.display());
         } else {
