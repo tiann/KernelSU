@@ -6,7 +6,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use android_bootimg::cpio::{Cpio, CpioEntry};
-use android_bootimg::parser::{BootImage, RamdiskImage};
+use android_bootimg::parser::{BootImage, BootImageVersion, RamdiskImage};
 use android_bootimg::patcher::BootImagePatchOption;
 use anyhow::Context;
 use anyhow::Result;
@@ -360,6 +360,15 @@ fn extract_ramdisk(ramdisk_image: &RamdiskImage) -> Result<(Cpio, Option<usize>)
     }
 }
 
+fn enforce_bootimage_version(boot: &BootImage<'_>) -> Result<()> {
+    if let BootImageVersion::Android(ver) = boot.get_header().get_version()
+        && ver < 3
+    {
+        bail!("bootimage version {ver} is not supported!")
+    }
+    Ok(())
+}
+
 #[allow(clippy::struct_excessive_bools)]
 #[derive(clap::Args, Debug)]
 pub struct BootPatchArgs {
@@ -536,6 +545,8 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         println!("- Unpacking boot image");
         let boot_image_data = map_file(&boot_image_file)?;
         let boot_image = BootImage::parse(&boot_image_data)?;
+        enforce_bootimage_version(&boot_image)?;
+
         let mut patcher = BootImagePatchOption::new(&boot_image);
 
         if let Some(kernel_path) = kernel {
@@ -768,6 +779,7 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     println!("- Unpacking boot image");
     let bootimage_data = map_file(&boot_image_file)?;
     let boot_image = BootImage::parse(&bootimage_data)?;
+    enforce_bootimage_version(&boot_image)?;
 
     let (mut cpio, vendor_ramdisk_idx) =
         if let Some(ramdisk_image) = boot_image.get_blocks().get_ramdisk() {
