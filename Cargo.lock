@@ -44,7 +44,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 [[package]]
 name = "android-bootimg"
 version = "0.1.0"
-source = "git+https://github.com/5ec1cff/android_bootimg?rev=ae9c67a69cdcb1fdbdce523a09bcdd3b085a210b#ae9c67a69cdcb1fdbdce523a09bcdd3b085a210b"
+source = "git+https://github.com/5ec1cff/android_bootimg?rev=153423f6310fd4ae187e32da48e97b9fc613b783#153423f6310fd4ae187e32da48e97b9fc613b783"
 dependencies = [
  "anyhow",
  "bytemuck",

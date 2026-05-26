@@ -686,7 +686,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         }
 
         println!("- Repacking boot image");
-        let mut new_boot_buf = Cursor::new(Vec::<u8>::new());
+        let mut new_boot_buf = Cursor::new(Vec::<u8>::with_capacity(boot_image.get_size()));
         patcher.patch(&mut new_boot_buf)?;
         let new_boot_bytes = new_boot_buf.into_inner();
 
@@ -917,7 +917,7 @@ fn rebuild_without_ksu(
         patcher.replace_ramdisk(Box::new(Cursor::new(new_cpio)), false);
     }
 
-    let mut buf = Cursor::new(Vec::<u8>::new());
+    let mut buf = Cursor::new(Vec::<u8>::with_capacity(boot_image.get_size()));
     patcher.patch(&mut buf)?;
     Ok(buf.into_inner())
 }
