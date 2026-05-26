@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -48,6 +50,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -55,6 +58,7 @@ import me.weishu.kernelsu.ui.component.KeyEventBlocker
 fun ExecuteModuleActionScreenMaterial(
     state: ExecuteModuleActionUiState,
     actions: ExecuteModuleActionScreenActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val scrollState = rememberScrollState()
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
@@ -84,6 +88,7 @@ fun ExecuteModuleActionScreenMaterial(
     BackHandler(enabled = !state.isComplete) { }
 
     Scaffold(
+        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.action)) },

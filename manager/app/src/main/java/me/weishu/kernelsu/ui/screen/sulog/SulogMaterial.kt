@@ -42,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -105,9 +106,12 @@ fun SulogScreenMaterial(
         )
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(stringResource(R.string.settings_sulog)) },
                 searchText = localSearchText,
                 onSearchTextChange = {

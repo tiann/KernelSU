@@ -1,5 +1,7 @@
 package me.weishu.kernelsu.ui.screen.flash
 
+import android.widget.Toast
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +31,18 @@ fun FlashScreen(flashIt: FlashIt) {
     var flashingStatus by rememberSaveable { mutableStateOf(FlashingStatus.FLASHING) }
     val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
     var flashingEnabled by rememberSaveable { mutableStateOf(!needJailbreakWarning) }
+    val uiMode = LocalUiMode.current
+    val snackbarHost = remember { SnackbarHostState() }
+
+    fun showMessage(message: String) {
+        scope.launch {
+            if (uiMode == UiMode.Material) {
+                snackbarHost.showSnackbar(message)
+            } else {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     FlashEffect(
         flashIt = flashIt,
@@ -48,7 +62,7 @@ fun FlashScreen(flashIt: FlashIt) {
     )
     val actions = FlashScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
-        onSaveLog = saveLog(logContent, context, scope),
+        onSaveLog = saveLog(logContent, scope) { showMessage(it) },
         onReboot = {
             scope.launch {
                 withContext(Dispatchers.IO) {
@@ -62,6 +76,6 @@ fun FlashScreen(flashIt: FlashIt) {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> FlashScreenMiuix(state, actions)
-        UiMode.Material -> FlashScreenMaterial(state, actions)
+        UiMode.Material -> FlashScreenMaterial(state, actions, snackbarHost)
     }
 }

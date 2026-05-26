@@ -36,6 +36,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -62,6 +63,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
 /**
@@ -74,6 +76,7 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
 fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
     actions: TemplateActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val haptic = LocalHapticFeedback.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -125,6 +128,7 @@ fun AppProfileTemplateScreenMaterial(
                 scrollBehavior = scrollBehavior
             )
         },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost) },
         floatingActionButton = {
             SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,

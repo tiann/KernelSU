@@ -66,6 +66,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -121,10 +122,12 @@ fun ModuleRepoScreenMaterial(
     val searchListState = rememberLazyListState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(text = stringResource(R.string.module_repos)) },
                 searchText = state.searchStatus.searchText,
                 onSearchTextChange = actions.onSearchTextChange,

@@ -37,6 +37,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -93,10 +94,12 @@ fun SuperUserPagerMaterial(
     }
 
     val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(stringResource(R.string.superuser)) },
                 searchText = localSearchText,
                 onSearchTextChange = {
