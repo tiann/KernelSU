@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -66,11 +67,11 @@ import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.profile.AppProfileConfig
 import me.weishu.kernelsu.ui.component.profile.RootProfileConfig
 import me.weishu.kernelsu.ui.component.profile.TemplateConfig
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 
@@ -83,9 +84,9 @@ import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 fun AppProfileScreenMaterial(
     state: AppProfileUiState,
     actions: AppProfileActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val snackBarHost = LocalSnackbarHost.current
 
     LaunchedEffect(Unit) {
         scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
@@ -104,7 +105,7 @@ fun AppProfileScreenMaterial(
                 onRestartApp = actions.onRestartApp,
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.safeDrawingPadding()) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         AppProfileInner(

@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -88,7 +87,6 @@ import me.weishu.kernelsu.ui.theme.LocalColorMode
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
@@ -137,7 +135,6 @@ class MainActivity : ComponentActivity() {
             }
 
             val navigator = rememberNavigator(Route.Main)
-            val snackBarHostState = remember { SnackbarHostState() }
             val systemDensity = LocalDensity.current
             val density = remember(systemDensity, uiState.pageScale) {
                 Density(systemDensity.density * uiState.pageScale, systemDensity.fontScale)
@@ -151,7 +148,6 @@ class MainActivity : ComponentActivity() {
                 LocalEnableFloatingBottomBar provides uiState.enableFloatingBottomBar,
                 LocalEnableFloatingBottomBarBlur provides uiState.enableFloatingBottomBarBlur,
                 LocalUiMode provides uiMode,
-                LocalSnackbarHost provides snackBarHostState
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
                     HandleDeepLink(intentState = intentState.collectAsStateWithLifecycle())
