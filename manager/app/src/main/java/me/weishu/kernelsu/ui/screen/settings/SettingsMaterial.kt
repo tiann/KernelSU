@@ -84,7 +84,7 @@ fun SettingPagerMaterial(
         topBar = {
             TopBar(scrollBehavior = scrollBehavior)
         },
-        snackbarHost = { SnackBarHost(snackBarHost, modifier = Modifier.padding(bottom = bottomInnerPadding)) },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.padding(bottom = bottomInnerPadding)) },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { paddingValues ->
         Column(

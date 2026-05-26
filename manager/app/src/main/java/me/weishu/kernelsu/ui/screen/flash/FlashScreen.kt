@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.flash
 
 import android.widget.Toast
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,7 +17,6 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.util.reboot
 
@@ -32,7 +32,7 @@ fun FlashScreen(flashIt: FlashIt) {
     val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
     var flashingEnabled by rememberSaveable { mutableStateOf(!needJailbreakWarning) }
     val uiMode = LocalUiMode.current
-    val snackbarHost = LocalSnackbarHost.current
+    val snackbarHost = remember { SnackbarHostState() }
 
     fun showMessage(message: String) {
         scope.launch {
@@ -76,6 +76,6 @@ fun FlashScreen(flashIt: FlashIt) {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> FlashScreenMiuix(state, actions)
-        UiMode.Material -> FlashScreenMaterial(state, actions)
+        UiMode.Material -> FlashScreenMaterial(state, actions, snackbarHost)
     }
 }

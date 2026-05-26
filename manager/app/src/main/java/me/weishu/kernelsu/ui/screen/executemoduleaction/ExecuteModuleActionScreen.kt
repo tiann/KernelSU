@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,7 +16,6 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 
 @Composable
@@ -28,7 +28,7 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     val logContent = remember { StringBuilder() }
     var isComplete by rememberSaveable { mutableStateOf(false) }
     val uiMode = LocalUiMode.current
-    val snackbarHost = LocalSnackbarHost.current
+    val snackbarHost = remember { SnackbarHostState() }
     val exitExecute = {
         if (fromShortcut && activity != null) {
             activity.finishAndRemoveTask()
@@ -78,6 +78,6 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
 
     when (uiMode) {
         UiMode.Miuix -> ExecuteModuleActionScreenMiuix(state, actions)
-        UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions)
+        UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions, snackbarHost)
     }
 }

@@ -60,7 +60,7 @@ private tailrec fun Context.findComponentActivity(): ComponentActivity? {
 @Composable
 fun SendLogBottomSheet(
     onDismiss: () -> Unit,
-    snackbarHostState: SnackbarHostState = LocalSnackbarHost.current,
+    snackbarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
     val activity = context.findComponentActivity()

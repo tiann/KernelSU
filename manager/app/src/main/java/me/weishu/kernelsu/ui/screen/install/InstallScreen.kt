@@ -5,6 +5,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ import me.weishu.kernelsu.getKernelVersion
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.choosekmidialog.ChooseKmiDialog
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -41,7 +41,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 fun InstallScreen() {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
-    val snackbarHost = LocalSnackbarHost.current
+    val snackbarHost = remember { SnackbarHostState() }
     val uiMode = LocalUiMode.current
     val scope = rememberCoroutineScope()
     val resources = LocalResources.current
@@ -205,6 +205,6 @@ fun InstallScreen() {
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> InstallScreenMiuix(state, actions)
-        UiMode.Material -> InstallScreenMaterial(state, actions)
+        UiMode.Material -> InstallScreenMaterial(state, actions, snackbarHost)
     }
 }

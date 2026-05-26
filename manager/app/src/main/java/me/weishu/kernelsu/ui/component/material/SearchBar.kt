@@ -65,7 +65,7 @@ fun SearchAppBar(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     onClearClick: () -> Unit,
-    snackbarHostState: SnackbarHostState = LocalSnackbarHost.current,
+    snackbarHostState: SnackbarHostState,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -225,7 +225,7 @@ fun SearchAppBar(
                     defaultContent(bottomPadding, collapseAndClear)
                 }
                 SnackBarHost(
-                    hostState = snackBarHostState,
+                    hostState = snackbarHostState,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .navigationBarsPadding()

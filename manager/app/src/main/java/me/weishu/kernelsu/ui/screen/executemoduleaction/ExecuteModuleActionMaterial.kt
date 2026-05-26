@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -49,7 +50,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -58,9 +58,9 @@ import me.weishu.kernelsu.ui.component.material.SnackBarHost
 fun ExecuteModuleActionScreenMaterial(
     state: ExecuteModuleActionUiState,
     actions: ExecuteModuleActionScreenActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val scrollState = rememberScrollState()
-    val snackBarHost = LocalSnackbarHost.current
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
     val fabExpanded by remember {
         var previousScroll = 0
@@ -88,7 +88,7 @@ fun ExecuteModuleActionScreenMaterial(
     BackHandler(enabled = !state.isComplete) { }
 
     Scaffold(
-        snackbarHost = { SnackBarHost(snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.action)) },

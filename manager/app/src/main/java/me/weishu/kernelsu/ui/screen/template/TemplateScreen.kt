@@ -2,9 +2,11 @@ package me.weishu.kernelsu.ui.screen.template
 
 import android.content.ClipData
 import android.widget.Toast
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
@@ -17,7 +19,6 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
@@ -33,7 +34,7 @@ fun AppProfileTemplateScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val requestKey = "template_edit"
-    val snackBarHost = LocalSnackbarHost.current
+    val snackBarHost = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (screenState.templateList.isEmpty()) {
@@ -141,6 +142,7 @@ fun AppProfileTemplateScreen() {
         UiMode.Material -> AppProfileTemplateScreenMaterial(
             state = uiState,
             actions = actions,
+            snackBarHost = snackBarHost,
         )
     }
 }

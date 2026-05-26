@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.appprofile
 
 import android.widget.Toast
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -19,7 +20,6 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
-import me.weishu.kernelsu.ui.component.material.LocalSnackbarHost
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.forceStopApp
@@ -35,7 +35,7 @@ fun AppProfileScreen(uid: Int) {
     val uiMode = LocalUiMode.current
     val navigator = LocalNavigator.current
     val context = LocalContext.current
-    val snackbarHost = LocalSnackbarHost.current
+    val snackbarHost = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val viewModel: SuperUserViewModel = viewModel()
     val appGroupState = remember(uid) {
@@ -141,6 +141,7 @@ fun AppProfileScreen(uid: Int) {
         UiMode.Material -> AppProfileScreenMaterial(
             state = state,
             actions = actions,
+            snackBarHost = snackbarHost,
         )
     }
 }
