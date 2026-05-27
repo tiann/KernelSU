@@ -223,7 +223,7 @@ static void load_module_rc_once(void)
         return;
     loaded = true;
 
-    old_cred = override_creds(ksu_cred);
+    old_cred = ksu_cred ? override_creds(ksu_cred) : NULL;
 
     f = open_module_rc(&path);
     if (IS_ERR(f)) {
@@ -269,7 +269,8 @@ out_close_file:
     filp_close(f, NULL);
 
 out_revert_creds:
-    revert_creds(old_cred);
+    if (old_cred)
+        revert_creds(old_cred);
 }
 
 static void free_module_rc(void)
