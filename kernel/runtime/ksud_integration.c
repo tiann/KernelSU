@@ -221,6 +221,10 @@ static void load_module_rc_once(void)
     if (loaded)
         return;
     loaded = true;
+    if (ksu_no_custom_rc) {
+        pr_info("custom rc is disabled\n");
+        return;
+    }
 
     old_cred = ksu_cred ? override_creds(ksu_cred) : NULL;
 
