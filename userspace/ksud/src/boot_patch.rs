@@ -467,6 +467,10 @@ pub struct BootPatchArgs {
     /// Do not (re-)install kernelsu, only modify configs (allow_shell, etc.)
     #[arg(long, default_value = "false")]
     no_install: bool,
+
+    /// Do not load custom rc
+    #[arg(long, default_value = "false")]
+    no_custom_rc: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -490,6 +494,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             flash,
             #[cfg(target_os = "android")]
             partition,
+            no_custom_rc,
         } = args;
 
         println!(include_str!("banner"));
@@ -635,16 +640,39 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             }
         }
 
-        if allow_shell {
-            println!("- Adding allow shell config");
-            cpio.add(
-                "ksu_allow_shell",
-                CpioEntry::regular(0o644, Box::new(Vec::<u8>::new())),
-            )?;
-        } else if cpio.exists("ksu_allow_shell") {
-            println!("- Removing allow shell config");
-            cpio.rm("ksu_allow_shell", false);
+        let mut ksu_config: Vec<String> = cpio
+            .entry_by_name("ksu_config")
+            .and_then(CpioEntry::data)
+            .and_then(|v| str::from_utf8(v).ok())
+            .map(|v| v.split(' ').map(std::borrow::ToOwned::to_owned).collect())
+            .unwrap_or_default();
+
+        let mut apply_config = |name: &str, value: &str, add: bool| {
+            let has_value = ksu_config.iter().any(|v| v == value);
+
+            if add {
+                println!("- Adding {name} config");
+                if !has_value {
+                    ksu_config.push(value.to_owned());
+                }
+            } else if has_value {
+                println!("- Removing {name} config");
+                ksu_config.retain(|v| v != value);
+            }
+        };
+
+        apply_config("no custom rc", "norc=1", no_custom_rc);
+        apply_config("allow shell", "allow_shell=1", allow_shell);
+
+        if ksu_config.is_empty() {
+            cpio.rm("ksu_config", false);
+        } else {
+            let data = ksu_config.join(" ").into_bytes();
+            cpio.add("ksu_config", CpioEntry::regular(0o644, Box::new(data)))?;
         }
+
+        // remove legacy config file
+        cpio.rm("allow_shell", false);
 
         if enable_adbd || adb_debug_prop.is_some() {
             println!("- Adding adb_debug props");
