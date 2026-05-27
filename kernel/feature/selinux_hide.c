@@ -506,6 +506,11 @@ void __exit ksu_selinux_hide_exit()
     }
     mutex_unlock(&selinux_hide_mutex);
     ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
+    mutex_lock(&selinux_state.status_lock);
+    if (fake_status)
+        __free_page(fake_status);
+    fake_status = NULL;
+    mutex_unlock(&selinux_state.status_lock);
 }
 
 void ksu_selinux_hide_drop_backup_if_unused()
