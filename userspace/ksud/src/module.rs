@@ -406,7 +406,7 @@ fn collect_rc_files<P: AsRef<Path>>(
     Ok(())
 }
 
-/// Rebuild /metadata/watchdog/ksu/modules.rc by concatenating *.rc from every enabled
+/// Rebuild PREINITDIR/modules.rc by concatenating *.rc from every enabled
 /// module. The kernel-side read hook splices this file into init.rc on the
 /// next boot.
 pub fn regenerate_preinit_rc() -> Result<()> {
