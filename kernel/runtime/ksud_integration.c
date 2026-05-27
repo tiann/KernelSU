@@ -1,3 +1,4 @@
+#include "feature/selinux_hide.h"
 #include <linux/rcupdate.h>
 #include <linux/slab.h>
 #include <asm/current.h>
@@ -157,6 +158,7 @@ void ksu_handle_execveat_ksud(const char *path, struct user_arg_ptr *argv)
         char buf[16];
         if (!init_second_stage_executed && check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
             pr_info("/system/bin/init second_stage executed\n");
+            ksu_selinux_hide_handle_second_stage();
             apply_kernelsu_rules();
             cache_sid();
             setup_ksu_cred();
