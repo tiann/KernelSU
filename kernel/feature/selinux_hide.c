@@ -1,5 +1,6 @@
 #include "selinux_hide.h"
 #include "infra/symbol_resolver.h"
+#include "linux/jump_label.h"
 #include "selinux/sepolicy.h"
 #include <linux/cred.h>
 #include <linux/cpu.h>
@@ -27,6 +28,10 @@
 #include "ksu.h"
 #include "policy/feature.h"
 #include "hook/lsm_hook.h"
+
+static DEFINE_MUTEX(selinux_hide_mutex);
+static bool ksu_selinux_hide_enabled __read_mostly = false;
+static bool ksu_selinux_hide_running __read_mostly = false;
 
 enum sel_inos {
     SEL_ROOT_INO = 2,
@@ -237,6 +242,72 @@ call_orig:
     return ((setprocattr_fn)selinux_setprocattr_hook.original)(name, value, size);
 }
 
+static DEFINE_STATIC_KEY_FALSE(fake_status_initialize_key);
+static struct page *fake_status = NULL;
+
+static void initialize_fake_status()
+{
+    mutex_lock(&selinux_state.status_lock);
+    if (fake_status)
+        goto out;
+    if (!selinux_state.status_page) {
+        pr_warn("initialize_fake_status: status_page not exist\n");
+        goto out;
+    }
+
+    struct selinux_kernel_status *status = page_address(selinux_state.status_page);
+    if (!status->enforcing && !ksu_late_loaded) {
+        pr_warn("initialize_fake_status: skip not enforcing\n");
+        goto out;
+    }
+
+    struct page *new_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+    if (!new_page) {
+        pr_err("initialize_fake_status: failed to allocate page\n");
+        goto out;
+    }
+
+    struct selinux_kernel_status *new_status = page_address(new_page);
+    memcpy(new_status, status, sizeof(*status));
+    if (ksu_late_loaded && !new_status->enforcing) {
+        // In late_load mode, we may be loaded when selinux was set to permissive
+        // So we need to adjust the sequence value
+        // We assume that setenforce 0 is just called once
+        new_status->enforcing = 1;
+        new_status->sequence = 4;
+    }
+
+    fake_status = new_page;
+    pr_info("initialize_fake_status initialized: sequence=%d, policyload=%d, enforcing=%d\n", new_status->sequence,
+            new_status->policyload, new_status->enforcing);
+
+out:
+    mutex_unlock(&selinux_state.status_lock);
+}
+
+typedef int (*sel_open_handle_status_fn)(struct inode *inode, struct file *filp);
+static sel_open_handle_status_fn orig_sel_open_handle_status, *sel_open_handle_status_slot;
+static int my_sel_open_handle_status(struct inode *inode, struct file *filp)
+{
+    if (likely(current_uid().val >= 10000 && ksu_selinux_hide_enabled)) {
+        void *data;
+        mutex_lock(&selinux_state.status_lock);
+        data = fake_status;
+        mutex_unlock(&selinux_state.status_lock);
+        if (data) {
+            filp->private_data = data;
+            return 0;
+        }
+    }
+
+    int ret = orig_sel_open_handle_status(inode, filp);
+    if (static_branch_unlikely(&fake_status_initialize_key) && !ret && !fake_status) {
+        initialize_fake_status();
+    }
+    return ret;
+}
+
+static void hook_selinux_status_open();
 static void ksu_selinux_hide_unhook();
 static int ksu_selinux_hide_enable()
 {
@@ -251,6 +322,7 @@ static int ksu_selinux_hide_enable()
         pr_err("selinux_hide: no write_op found!\n");
         return -ENOSYS;
     }
+    hook_selinux_status_open();
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
     security_dump_masked_av_fn = find_kernel_symbol_exact("security_dump_masked_av");
@@ -317,6 +389,14 @@ static void ksu_selinux_hide_unhook()
             pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
         }
     }
+    if (sel_open_handle_status_slot && orig_sel_open_handle_status) {
+        ret = ksu_patch_text(sel_open_handle_status_slot, &orig_sel_open_handle_status,
+                             sizeof(orig_sel_open_handle_status), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        orig_sel_open_handle_status = NULL;
+        if (ret) {
+            pr_err("selinux_hide: exit: patch_text sel_open_handle_status err: %d\n", ret);
+        }
+    }
     ksu_lsm_unhook(&selinux_setprocattr_hook);
 }
 
@@ -325,10 +405,6 @@ static void ksu_selinux_hide_disable()
     pr_info("selinux_hide: exit selinux hide\n");
     ksu_selinux_hide_unhook();
 }
-
-static DEFINE_MUTEX(selinux_hide_mutex);
-static bool ksu_selinux_hide_enabled __read_mostly = false;
-static bool ksu_selinux_hide_running __read_mostly = false;
 
 static int selinux_hide_feature_get(u64 *value)
 {
@@ -367,11 +443,58 @@ static const struct ksu_feature_handler selinux_hide_handler = {
     .set_handler = selinux_hide_feature_set,
 };
 
+void ksu_selinux_hide_handle_second_stage()
+{
+    initialize_fake_status();
+    // https://github.com/torvalds/linux/blame/e8c2f9fdadee7cbc75134dc463c1e0d856d6e5c7/security/selinux/selinuxfs.c#L2014
+    if (fake_status) {
+        static_key_disable(&fake_status_initialize_key.key);
+    } else {
+        pr_warn("selinux_hide: fake status need late initialization\n");
+    }
+}
+
+void ksu_selinux_hide_handle_post_fs_data()
+{
+    static_key_disable(&fake_status_initialize_key.key);
+    if (!fake_status) {
+        pr_err("selinux_hide: fake status is not initialized after post-fs-data!\n");
+    }
+}
+
+static void hook_selinux_status_open()
+{
+    if (orig_sel_open_handle_status)
+        return;
+    if (!sel_open_handle_status_slot) {
+        struct file_operations *ops = find_kernel_symbol_exact("sel_handle_status_ops");
+        if (!ops) {
+            pr_err("selinux_hide: sel_handle_status_ops not found, fake status will not work\n");
+            return;
+        }
+        sel_open_handle_status_slot = &ops->open;
+    }
+    sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
+    orig_sel_open_handle_status = *sel_open_handle_status_slot;
+    int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    if (ret) {
+        pr_err("selinux_hide: init: patch_text sel_open_handle_status err: %d\n", ret);
+        sel_open_handle_status_slot = NULL;
+        orig_sel_open_handle_status = NULL;
+    }
+}
+
 void __init ksu_selinux_hide_init()
 {
     if (ksu_register_feature_handler(&selinux_hide_handler)) {
         pr_err("Failed to register selinux_hide feature handler\n");
     }
+    if (ksu_late_loaded) {
+        initialize_fake_status();
+    } else {
+        static_key_enable(&fake_status_initialize_key.key);
+    }
+    hook_selinux_status_open();
 }
 
 void __exit ksu_selinux_hide_exit()
@@ -383,6 +506,11 @@ void __exit ksu_selinux_hide_exit()
     }
     mutex_unlock(&selinux_hide_mutex);
     ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
+    mutex_lock(&selinux_state.status_lock);
+    if (fake_status)
+        __free_page(fake_status);
+    fake_status = NULL;
+    mutex_unlock(&selinux_state.status_lock);
 }
 
 void ksu_selinux_hide_drop_backup_if_unused()
