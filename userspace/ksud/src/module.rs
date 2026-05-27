@@ -13,15 +13,18 @@ use java_properties::PropertiesIter;
 use log::{debug, error, info, warn};
 use regex_lite::Regex;
 
-use std::fs::{copy, rename};
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     env::var as env_var,
     fs::{File, Permissions, canonicalize, remove_dir_all, set_permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
+};
+use std::{
+    fs::{copy, rename},
+    io::Write,
 };
 use zip_extensions::inflate::zip_extract::zip_extract_file_to_memory;
 
@@ -359,6 +362,127 @@ pub fn prune_modules() -> Result<()> {
     Ok(())
 }
 
+const METADATA_FILE_CON: &str = "u:object_r:metadata_file:s0";
+
+// Prefer /metadata/watchdog/ when present, else /metadata.
+fn preinit_ksu_dir() -> &'static str {
+    if Path::new("/metadata/watchdog").is_dir() {
+        defs::PREINIT_DIR_WATCHDOG
+    } else {
+        defs::PREINIT_DIR_DEFAULT
+    }
+}
+
+fn collect_rc_files<P: AsRef<Path>>(
+    dir: P,
+    mod_id: Option<&str>,
+    out: &mut dyn Write,
+) -> Result<()> {
+    let dir = dir.as_ref();
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return Ok(());
+    };
+    let mut entries: Vec<_> = entries.flatten().collect();
+    entries.sort_by_key(std::fs::DirEntry::file_name);
+    for entry in entries {
+        let path = entry.path();
+        let Ok(meta) = entry.metadata() else { continue };
+        if meta.is_file() && path.extension().and_then(|s| s.to_str()) == Some("rc") {
+            if let Some(mod_id) = mod_id {
+                writeln!(out, "# === from {mod_id}:{} ===", path.display())?;
+            } else {
+                // Although the rc file itself is not executable, we still use its executable bit as a switch.
+                if !is_executable(&path) {
+                    continue;
+                }
+                writeln!(out, "# === from {} ===", path.display())?;
+            }
+            let content = std::fs::read(&path)
+                .with_context(|| format!("Failed to read rc {}", path.display()))?;
+            out.write_all(&content)?;
+            writeln!(out)?;
+        }
+    }
+    Ok(())
+}
+
+/// Rebuild PREINITDIR/modules.rc by concatenating *.rc from every enabled
+/// module. The kernel-side read hook splices this file into init.rc on the
+/// next boot.
+pub fn regenerate_preinit_rc() -> Result<()> {
+    let preinit_str = preinit_ksu_dir();
+    let preinit_dir = Path::new(preinit_str);
+    std::fs::create_dir_all(preinit_dir)
+        .with_context(|| format!("Failed to create {}", preinit_dir.display()))?;
+
+    let tmp_path_buf = preinit_dir.join(defs::MODULES_RC_TMP_FILE);
+    let out_path_buf = preinit_dir.join(defs::MODULES_RC_FILE);
+    let tmp_path = tmp_path_buf.as_path();
+    let out_path = out_path_buf.as_path();
+
+    {
+        let mut tmp = File::create(tmp_path)
+            .with_context(|| format!("Failed to create {}", tmp_path.display()))?;
+
+        // collect modules in alphabetical order, with their effective module path in the next boot
+        let mut modules: BTreeMap<String, Option<PathBuf>> = BTreeMap::new();
+        // collect common initrc first
+        collect_rc_files(Path::new(defs::ADB_DIR).join("initrc.d"), None, &mut tmp)?;
+        // modules_update/ first so freshly-installed modules win on id collision.
+        for src_dir in [defs::MODULE_UPDATE_DIR, defs::MODULE_DIR] {
+            let Ok(entries) = std::fs::read_dir(src_dir) else {
+                continue;
+            };
+            for entry in entries.flatten() {
+                let module_path = entry.path();
+                if !module_path.is_dir() {
+                    continue;
+                }
+                let Some(id) = module_path.file_name().and_then(|s| s.to_str()) else {
+                    continue;
+                };
+                let id = id.to_string();
+                if module_path.join(defs::DISABLE_FILE_NAME).exists()
+                    || module_path.join(defs::REMOVE_FILE_NAME).exists()
+                {
+                    modules.insert(id, None);
+                    continue;
+                }
+                modules.entry(id).or_insert(Some(module_path));
+            }
+        }
+        for (id, path) in modules {
+            if let Some(path) = path {
+                collect_rc_files(path.join(defs::MODULE_INIT_RC_DIR), Some(&id), &mut tmp)?;
+            }
+        }
+        tmp.sync_all()?;
+    }
+
+    std::fs::rename(tmp_path, out_path).with_context(|| {
+        format!(
+            "Failed to rename {} -> {}",
+            tmp_path.display(),
+            out_path.display()
+        )
+    })?;
+
+    // SELinux label so the kernel's filp_open in init context can read it.
+    if let Err(e) = crate::restorecon::lsetfilecon(out_path, METADATA_FILE_CON) {
+        debug!("set context on {} failed: {e}", out_path.display());
+    }
+
+    // Clear stale file at the other candidate path.
+    let stale_dir = if preinit_str == defs::PREINIT_DIR_WATCHDOG {
+        defs::PREINIT_DIR_DEFAULT
+    } else {
+        defs::PREINIT_DIR_WATCHDOG
+    };
+    std::fs::remove_file(Path::new(stale_dir).join(defs::MODULES_RC_FILE)).ok();
+
+    Ok(())
+}
+
 pub fn handle_updated_modules() -> Result<()> {
     let modules_root = Path::new(MODULE_DIR);
     foreach_module(ModuleType::Updated, |updated_module| {
@@ -544,6 +668,8 @@ pub fn install_module(zip: &str) -> Result<()> {
     let result = install_module_to_system(zip);
     if let Err(ref e) = result {
         println!("- Error: {e}");
+    } else if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
     }
     result
 }
@@ -562,6 +688,10 @@ pub fn undo_uninstall_module(id: &str) -> Result<()> {
         info!("Removed the remove mark for module {id}");
     }
 
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
+
     Ok(())
 }
 
@@ -576,6 +706,10 @@ pub fn uninstall_module(id: &str) -> Result<()> {
     File::create(remove_file).with_context(|| "Failed to create remove file")?;
 
     info!("Module {id} marked for removal");
+
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
 
     Ok(())
 }
@@ -601,6 +735,10 @@ pub fn enable_module(id: &str) -> Result<()> {
         info!("Module {id} enabled");
     }
 
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
+
     Ok(())
 }
 
@@ -613,16 +751,28 @@ pub fn disable_module(id: &str) -> Result<()> {
 
     info!("Module {id} disabled");
 
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
+
     Ok(())
 }
 
 pub fn disable_all_modules() -> Result<()> {
-    mark_all_modules(defs::DISABLE_FILE_NAME)
+    mark_all_modules(defs::DISABLE_FILE_NAME)?;
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
+    Ok(())
 }
 
 pub fn uninstall_all_modules() -> Result<()> {
     info!("Uninstalling all modules");
-    mark_all_modules(defs::REMOVE_FILE_NAME)
+    mark_all_modules(defs::REMOVE_FILE_NAME)?;
+    if let Err(e) = regenerate_preinit_rc() {
+        warn!("regenerate preinit rc failed: {e}");
+    }
+    Ok(())
 }
 
 fn mark_all_modules(flag_file: &str) -> Result<()> {

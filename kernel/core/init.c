@@ -80,6 +80,9 @@ bool allow_shell = false;
 #endif
 module_param(allow_shell, bool, 0);
 
+bool ksu_no_custom_rc = false;
+module_param_named(norc, ksu_no_custom_rc, bool, 0);
+
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__)
