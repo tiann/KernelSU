@@ -188,7 +188,6 @@ const size_t ksu_rc_len = sizeof(KERNEL_SU_RC) - 1;
 // Prefer /metadata/watchdog/ when present, else /metadata.
 #define MODULE_RC_PATH_WATCHDOG "/metadata/watchdog/ksu/modules.rc"
 #define MODULE_RC_PATH_DEFAULT "/metadata/ksu/modules.rc"
-#define MODULE_RC_MAX (1u << 20) /* 1 MiB cap */
 static char *module_rc_buf;
 static size_t module_rc_len;
 static ssize_t module_rc_pos;
@@ -240,11 +239,6 @@ static void load_module_rc_once(void)
     if (fsize == 0) {
         pr_warn("module rc: skip empty module rc\n");
         goto out_close_file;
-    }
-
-    if (fsize > MODULE_RC_MAX) {
-        pr_warn("module rc: %s too large (%zu), truncating to %u\n", path, fsize, MODULE_RC_MAX);
-        fsize = MODULE_RC_MAX;
     }
 
     module_rc_buf = kvmalloc(fsize, GFP_KERNEL);
