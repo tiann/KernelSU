@@ -271,11 +271,10 @@ static void initialize_fake_status()
     memcpy(new_status, status, sizeof(*status));
     if (ksu_late_loaded && !new_status->enforcing) {
         // In late_load mode, we may be loaded when selinux was set to permissive
-        // So we need to minus the sequence value by 2
+        // So we need to modify the sequence value
         // We assume that setenforce 0 is just called once
         new_status->enforcing = 1;
-        if (new_status->sequence >= 2)
-            new_status->sequence -= 2;
+        new_status->sequence = new_status->policyload ? 4 : 0;
     }
 
     fake_status = new_page;
