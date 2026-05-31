@@ -1,4 +1,4 @@
-# Apa itu KernelSU?
+wettyuuiopo# Apa itu KernelSU?
 
 KernelSU adalah solusi root untuk perangkat GKI Android, ia bekerja dalam mode kernel dan memberikan izin root ke aplikasi userspace secara langsung di ruang kernel.
 
