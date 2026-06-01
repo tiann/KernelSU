@@ -161,7 +161,7 @@ private fun GroupsPanel(
         )
     }
 
-    val currentSelection = remember { mutableStateOf(selected.toSet()) }
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
 
     OverlayDialog(
         show = showDialog.value,
@@ -268,7 +268,7 @@ private fun CapsPanel(
         Capabilities.entries.toTypedArray().sortedBy { it.display }
     }
 
-    val currentSelection = remember { mutableStateOf(selected.toSet()) }
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
 
     OverlayDialog(
         show = showDialog.value,
@@ -350,8 +350,8 @@ private fun SELinuxPanel(
 ) {
     val showDialog = remember { mutableStateOf(false) }
 
-    var domain by remember { mutableStateOf(profile.context) }
-    var rules by remember { mutableStateOf(profile.rules) }
+    var domain by remember(profile.context) { mutableStateOf(profile.context) }
+    var rules by remember(profile.rules) { mutableStateOf(profile.rules) }
 
     val isDomainValid = remember(domain) {
         val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")

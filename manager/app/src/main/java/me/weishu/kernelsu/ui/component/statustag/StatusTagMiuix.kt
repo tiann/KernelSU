@@ -15,11 +15,12 @@ import top.yukonga.miuix.kmp.basic.Text
 @Composable
 fun StatusTagMiuix(
     label: String,
+    modifier: Modifier = Modifier,
     backgroundColor: Color,
     contentColor: Color
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .background(
                 color = backgroundColor,
                 shape = RoundedCornerShape(6.dp)

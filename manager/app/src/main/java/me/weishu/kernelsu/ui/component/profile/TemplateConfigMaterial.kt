@@ -10,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,7 +35,7 @@ fun TemplateConfigMaterial(
     onProfileChange: (Natives.Profile) -> Unit
 ) {
     val showDialog = remember { mutableStateOf(false) }
-    val template = rememberSaveable { mutableStateOf(profile.rootTemplate ?: "") }
+    val template = profile.rootTemplate ?: ""
     val profileTemplates = listAppProfileTemplates()
     val noTemplates = profileTemplates.isEmpty()
 
@@ -46,8 +45,8 @@ fun TemplateConfigMaterial(
         }
     }
 
-    val selectedTemplate = remember(template.value, templateOptions) {
-        templateOptions.find { it.id == template.value } ?: templateOptions.firstOrNull()
+    val selectedTemplate = remember(template, templateOptions) {
+        templateOptions.find { it.id == template } ?: templateOptions.firstOrNull()
     }
 
     if (showDialog.value && !noTemplates) {
@@ -72,7 +71,6 @@ fun TemplateConfigMaterial(
                             namespace = templateInfo.namespace,
                         )
                     )
-                    template.value = tid
                 }
                 showDialog.value = false
             },
@@ -80,7 +78,7 @@ fun TemplateConfigMaterial(
         )
     }
 
-    val selectedTemplateName = template.value.ifEmpty { "None" }
+    val selectedTemplateName = template.ifEmpty { "None" }
 
     SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
@@ -103,13 +101,13 @@ fun TemplateConfigMaterial(
                     }
                 )
             }
-            if (template.value.isNotEmpty()) add {
+            if (template.isNotEmpty()) add {
                 SegmentedListItem(
                     headlineContent = { Text(stringResource(R.string.app_profile_template_view)) },
                     trailingContent = {
                         Icon(Icons.AutoMirrored.Filled.ReadMore, contentDescription = null)
                     },
-                    onClick = { onViewTemplate(template.value) }
+                    onClick = { onViewTemplate(template) }
                 )
             }
         }
