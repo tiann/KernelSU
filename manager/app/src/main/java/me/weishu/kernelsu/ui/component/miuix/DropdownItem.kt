@@ -21,6 +21,7 @@ fun DropdownItem(
     optionSize: Int,
     index: Int,
     dropdownColors: DropdownColors = DropdownDefaults.dropdownColors(),
+    modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit
 ) {
     val currentOnSelectedIndexChange = rememberUpdatedState(onSelectedIndexChange)
@@ -28,7 +29,7 @@ fun DropdownItem(
     val additionalBottomPadding = if (index == optionSize - 1) 20f.dp else 12f.dp
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clickable { currentOnSelectedIndexChange.value(index) }
             .background(dropdownColors.containerColor)
             .padding(horizontal = 20.dp)

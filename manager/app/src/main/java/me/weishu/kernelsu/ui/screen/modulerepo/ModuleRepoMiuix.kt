@@ -45,13 +45,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -75,7 +73,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
@@ -84,6 +81,7 @@ import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
+import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
@@ -1040,12 +1038,10 @@ fun ModuleRepoDetailScreenMiuix(
         stringResource(R.string.tab_readme), stringResource(R.string.tab_releases), stringResource(R.string.tab_info)
     )
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-    val tabRowHeight by remember { mutableStateOf(40.dp) }
-    var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
-    LaunchedEffect(scrollBehavior.state.collapsedFraction) {
-        snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
+    val tabRowHeight = 40.dp
+    val dynamicTopPadding = remember(scrollBehavior) {
+        { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
-    val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -1076,7 +1072,8 @@ fun ModuleRepoDetailScreenMiuix(
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 12.dp)
-                            .padding(top = dynamicTopPadding, bottom = 6.dp)
+                            .padding(bottom = 6.dp)
+                            .deferredTopPadding(dynamicTopPadding)
                     ) {
                         TabRow(
                             tabs = tabs,
