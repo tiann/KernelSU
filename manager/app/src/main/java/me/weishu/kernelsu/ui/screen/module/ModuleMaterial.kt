@@ -380,7 +380,14 @@ fun ModulePagerMaterial(
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
-        snackbarHost = { SnackBarHost(hostState = snackBarHost) }
+        snackbarHost = {
+            SnackBarHost(hostState = snackBarHost, modifier = Modifier.let {
+                if (!uiState.installButtonVisible) it.padding(
+                    bottom =
+                        bottomInnerPadding
+                ) else it
+            })
+        }
     ) { innerPadding ->
         PullToRefreshBox(
             modifier = Modifier
