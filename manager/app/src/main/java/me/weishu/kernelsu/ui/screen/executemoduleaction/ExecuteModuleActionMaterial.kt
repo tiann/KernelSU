@@ -25,8 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +51,6 @@ import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExecuteModuleActionScreenMaterial(
     state: ExecuteModuleActionUiState,
@@ -88,7 +85,11 @@ fun ExecuteModuleActionScreenMaterial(
     BackHandler(enabled = !state.isComplete) { }
 
     Scaffold(
-        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() }) },
+        snackbarHost = {
+            SnackBarHost(
+                hostState = snackBarHost,
+                modifier = Modifier.let { if (state.isComplete) it else it.safeDrawingPadding() })
+        },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.action)) },

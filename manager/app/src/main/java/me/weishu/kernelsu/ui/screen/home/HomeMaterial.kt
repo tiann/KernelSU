@@ -25,8 +25,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +53,6 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePagerMaterial(
     state: HomeUiState,
@@ -87,7 +84,8 @@ fun HomePagerMaterial(
             }
             if (state.showVersionMismatchWarning) {
                 WarningCard(
-                    stringResource(id = R.string.home_version_mismatch,
+                    stringResource(
+                        id = R.string.home_version_mismatch,
                         state.currentManagerVersionCode,
                         state.ksuVersion ?: 0
                     )
@@ -98,7 +96,8 @@ fun HomePagerMaterial(
             }
             if (state.showRequireKernelWarning) {
                 WarningCard(
-                    stringResource(id = R.string.require_kernel_version,
+                    stringResource(
+                        id = R.string.require_kernel_version,
                         state.ksuVersion ?: 0,
                         me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
                     )
@@ -151,7 +150,6 @@ private fun UpdateCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
