@@ -1,5 +1,8 @@
 package me.weishu.kernelsu.ui.screen.settings
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.ElectricalServices
 import androidx.compose.material.icons.filled.Fence
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.FolderDelete
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
@@ -59,6 +63,8 @@ import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
 import me.weishu.kernelsu.ui.component.material.SendLogBottomSheet
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.uninstalldialog.UninstallDialog
+import me.weishu.kernelsu.ui.util.isSupportBiometric
+import me.weishu.kernelsu.ui.util.startBiometric
 
 /**
  * @author weishu
@@ -177,7 +183,8 @@ fun SettingPagerMaterial(
                     stringResource(id = R.string.settings_mode_disable_until_reboot),
                     stringResource(id = R.string.settings_mode_disable_always),
                 )
-
+                val activityContext: Activity = LocalActivity.current!!
+                val supportBiometric=isSupportBiometric(activityContext)
                 SegmentedColumn(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     content = listOf(
@@ -289,6 +296,26 @@ fun SettingPagerMaterial(
                                 enabled = uiState.isLateLoadMode,
                                 checked = uiState.autoJailbreak,
                                 onCheckedChange = actions.onSetAutoJailbreak
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.Fingerprint,
+                                title = stringResource(id = R.string.settings_launch_verify),
+                                summary = stringResource(id = if(supportBiometric)R.string.settings_launch_verify_summary else R.string.settings_launch_verify_not_supported),
+                                enabled = supportBiometric,
+                                checked = uiState.launchVerify,
+                                onCheckedChange = { value ->
+                                    run {
+                                        startBiometric(activityContext){
+                                            if(it){
+                                                actions.onSetLaunchVerify(value)
+                                            }else{
+                                                Toast.makeText(activityContext, R.string.biometric_verify_failed, Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    }
+                                }
                             )
                         }
                     )

@@ -285,4 +285,12 @@
     <string name="sort_by_install_time">Install time</string>
     <string name="sort_by_update_time">Update time</string>
     <string name="sort_reverse">Reverse</string>
+    <string name="settings_launch_verify">Verify on launch</string>
+    <string name="settings_launch_verify_summary">Use biometrics to verify your identity when launching the manager</string>
+    <string name="settings_launch_verify_not_supported">Biometric authentication is not supported or no biometric data is enrolled</string>
+    <string name="biometric_verify_failed">Verification failed</string>
+    <string name="exit">Exit</string>
+    <string name="biometric_verify">Verify</string>
+    <string name="biometric_verify_dialog_title">Need verify</string>
+    <string name="biometric_verify_dialog_description">We need to verify that you are the device owner</string>
 </resources>

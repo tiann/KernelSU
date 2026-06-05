@@ -16,6 +16,7 @@ interface SettingsRepository {
     var pageScale: Float
     var enableWebDebugging: Boolean
     var autoJailbreak: Boolean
+    var launchVerify: Boolean
 
     suspend fun getSuCompatStatus(): String
     suspend fun getSuCompatPersistValue(): Long?

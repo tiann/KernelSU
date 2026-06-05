@@ -41,6 +41,7 @@ fun SettingPager(
         onSetDefaultUmountModules = viewModel::setDefaultUmountModules,
         onSetEnableWebDebugging = viewModel::setEnableWebDebugging,
         onSetAutoJailbreak = viewModel::setAutoJailbreak,
+        onSetLaunchVerify = viewModel::setLaunchVerify,
         onOpenAbout = { navigator.push(Route.About) },
     )
 

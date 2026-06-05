@@ -74,6 +74,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getFloat("page_scale", 1.0f)
         set(value) = prefs.edit { putFloat("page_scale", value) }
 
+    override var launchVerify: Boolean
+        get() = prefs.getBoolean("launch_verify", false)
+        set(value) = prefs.edit { putBoolean("launch_verify", value) }
+
     override var enableWebDebugging: Boolean
         get() = prefs.getBoolean("enable_web_debugging", false)
         set(value) = prefs.edit { putBoolean("enable_web_debugging", value) }

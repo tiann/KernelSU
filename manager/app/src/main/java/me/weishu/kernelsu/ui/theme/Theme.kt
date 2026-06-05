@@ -49,6 +49,7 @@ data class AppSettings(
     val keyColor: Int,
     val paletteStyle: PaletteStyle,
     val colorSpec: ColorSpec.SpecVersion,
+    val launchVerify: Boolean
 )
 
 object ThemeController {
@@ -83,8 +84,8 @@ object ThemeController {
         } catch (_: Exception) {
             ColorSpec.SpecVersion.Default
         }
-
-        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)
+        val launchVerify = prefs.getBoolean("launch_verify", false)
+        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec,launchVerify)
     }
 }
 

@@ -46,6 +46,7 @@ class SettingsViewModel(
             val colorStyle = repo.colorStyle
             val colorSpec = repo.colorSpec
             val isLkmMode = repo.isLkmMode()
+            val launchVerify=repo.launchVerify
 
             // Async loading for natives/features
             val suCompatStatus = repo.getSuCompatStatus()
@@ -98,6 +99,7 @@ class SettingsViewModel(
                     isLkmMode = isLkmMode,
                     autoJailbreak = autoJailbreak,
                     isLateLoadMode = isLateLoadMode,
+                    launchVerify=launchVerify
                 )
             }
         }
@@ -280,6 +282,10 @@ class SettingsViewModel(
     fun setAutoJailbreak(enabled: Boolean) {
         repo.autoJailbreak = enabled
         _uiState.update { it.copy(autoJailbreak = enabled) }
+    }
+    fun setLaunchVerify(enabled: Boolean) {
+        repo.launchVerify = enabled
+        _uiState.update { it.copy(launchVerify = enabled) }
     }
 
     fun setSulogEnabled(enabled: Boolean) {

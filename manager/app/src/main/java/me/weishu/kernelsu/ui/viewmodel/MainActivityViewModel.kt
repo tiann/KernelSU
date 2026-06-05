@@ -29,6 +29,8 @@ class MainActivityViewModel(
     private val _uiState = MutableStateFlow(readUiState())
     val uiState: StateFlow<MainActivityUiState> = _uiState.asStateFlow()
     val selectedMainPage: StateFlow<Int> = mainPageState.selectedPage
+    //防止ui重建后重复弹出验证
+    var isLaunchVerified = false
 
     init {
         prefs.registerOnSharedPreferenceChangeListener(listener)

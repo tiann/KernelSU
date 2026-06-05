@@ -87,11 +87,15 @@ import me.weishu.kernelsu.ui.theme.LocalColorMode
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
+import me.weishu.kernelsu.ui.util.BiometricBlockingDialogMaterial
+import me.weishu.kernelsu.ui.util.BiometricBlockingDialogMiuix
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.util.install
+import me.weishu.kernelsu.ui.util.isSupportBiometric
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import me.weishu.kernelsu.ui.util.rememberContentReady
 import me.weishu.kernelsu.ui.util.rootAvailable
+import me.weishu.kernelsu.ui.util.startBiometric
 import me.weishu.kernelsu.ui.viewmodel.MainActivityViewModel
 import me.weishu.kernelsu.ui.viewmodel.MainPagerConfig
 import me.weishu.kernelsu.ui.webui.WebUIActivity
@@ -204,6 +208,39 @@ class MainActivity : ComponentActivity() {
                     when (uiMode) {
                         UiMode.Material -> androidx.compose.material3.Scaffold { navDisplay() }
                         UiMode.Miuix -> Scaffold { navDisplay() }
+                    }
+                    val context= LocalActivity.current!!
+                    if (!viewModel.isLaunchVerified and appSettings.launchVerify and isSupportBiometric(context)) {
+                        var showDialog by remember { mutableStateOf(true) }
+                        if (uiMode == UiMode.Material){
+                            BiometricBlockingDialogMaterial(
+                                startVerify = {
+                                    startBiometric(context){
+                                        if (it) {
+                                            showDialog = false
+                                            viewModel.isLaunchVerified = true
+                                        }else{
+                                            Toast.makeText(context, R.string.biometric_verify_failed, Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                },
+                                show = showDialog
+                            )
+                        }else{
+                            BiometricBlockingDialogMiuix(
+                                startVerify = {
+                                    startBiometric(context){
+                                        if (it) {
+                                            showDialog = false
+                                            viewModel.isLaunchVerified = true
+                                        }else{
+                                            Toast.makeText(context, R.string.biometric_verify_failed, Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                },
+                                show = showDialog
+                            )
+                        }
                     }
                 }
             }

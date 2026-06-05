@@ -263,4 +263,12 @@
     <string name="sort_by_install_time">安装时间</string>
     <string name="sort_by_update_time">更新时间</string>
     <string name="sort_reverse">倒序</string>
+    <string name="settings_launch_verify">启动时验证身份</string>
+    <string name="settings_launch_verify_summary">在启动管理器时使用生物识别验证身份</string>
+    <string name="settings_launch_verify_not_supported">设备不支持或未录入生物识别特征</string>
+    <string name="biometric_verify_failed">验证失败</string>
+    <string name="exit">退出</string>
+    <string name="biometric_verify">验证</string>
+    <string name="biometric_verify_dialog_title">需要验证身份</string>
+    <string name="biometric_verify_dialog_description">我们需要确保您是机主</string>
 </resources>
