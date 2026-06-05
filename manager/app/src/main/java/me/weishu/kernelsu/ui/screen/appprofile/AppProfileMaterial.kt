@@ -30,8 +30,6 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -79,7 +77,6 @@ import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
  * @author weishu
  * @date 2023/5/16.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppProfileScreenMaterial(
     state: AppProfileUiState,
@@ -327,7 +324,6 @@ private fun AppProfileInner(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
@@ -399,7 +395,6 @@ private fun TopBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ProfileBox(
     mode: Mode,

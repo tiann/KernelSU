@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +44,6 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.KeyEventBlocker
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FlashScreenMaterial(
     state: FlashUiState,
@@ -61,7 +59,11 @@ fun FlashScreenMaterial(
     }
 
     Scaffold(
-        snackbarHost = { SnackBarHost(hostState = snackBarHost, modifier = Modifier.let { if (state.showRebootAction) it else it.safeDrawingPadding() }) },
+        snackbarHost = {
+            SnackBarHost(
+                hostState = snackBarHost,
+                modifier = Modifier.let { if (state.showRebootAction) it else it.safeDrawingPadding() })
+        },
         topBar = {
             TopAppBar(
                 title = {

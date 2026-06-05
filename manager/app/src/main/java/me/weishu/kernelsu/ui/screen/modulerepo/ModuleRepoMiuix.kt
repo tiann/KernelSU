@@ -81,9 +81,9 @@ import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
-import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
+import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar

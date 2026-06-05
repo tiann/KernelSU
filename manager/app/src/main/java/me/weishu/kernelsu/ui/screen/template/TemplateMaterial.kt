@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -71,7 +70,6 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
  * @date 2023/10/20.
  */
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
@@ -265,7 +263,6 @@ private fun TemplateItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
