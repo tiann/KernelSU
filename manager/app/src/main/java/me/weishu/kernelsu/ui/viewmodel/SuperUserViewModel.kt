@@ -27,7 +27,7 @@ import me.weishu.kernelsu.ui.screen.superuser.SuperUserUiState
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
-import me.weishu.kernelsu.ui.util.withCurrentUserUid
+import me.weishu.kernelsu.ui.util.withMainUserUid
 import java.text.Collator
 import java.util.Locale
 
@@ -85,7 +85,7 @@ class SuperUserViewModel(
             val appList = synchronized(appsLock) { cachedApps }
             val appDetail = appList.find { it.packageName == packageName }
             val appInfo = appDetail?.packageInfo?.applicationInfo ?: return null
-            return appInfo.withCurrentUserUid().loadIcon(context.packageManager)
+            return appInfo.withMainUserUid(context).loadIcon(context.packageManager)
         }
     }
 

@@ -4,23 +4,27 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.os.Process
+import android.os.UserManager
 import android.util.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.ui.util.AppIconCache.getMainUserId
 import me.zhanghai.android.appiconloader.AppIconLoader
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /**
- * Remap the uid to the current user to avoid SecurityException
- * when loading icons for cross-user apps.
+ * Remap the uid to the non-profile user possible to avoid SecurityException
+ * when loading icons for cross-profileGroup apps.
  * See: https://github.com/zhanghai/AppIconLoader/issues/3
  */
-fun ApplicationInfo.withCurrentUserUid(): ApplicationInfo {
-    val myUserId = Process.myUid() / 100000
-    val appId = uid % 100000
-    val targetUid = myUserId * 100000 + appId
-    if (uid == targetUid) return this
+fun ApplicationInfo.withMainUserUid(context: Context): ApplicationInfo {
+    val mainUserId = getMainUserId(context)
+    val appId = this.uid % 100000
+    val targetUid = mainUserId * 100000 + appId
+
+    if (this.uid == targetUid) return this
     return ApplicationInfo(this).apply { uid = targetUid }
 }
 
@@ -32,6 +36,54 @@ object AppIconCache {
     private val lruCache = object : LruCache<String, Bitmap>(cacheSize) {
         override fun sizeOf(key: String, value: Bitmap): Int {
             return value.allocationByteCount / 1024
+        }
+    }
+
+    @Volatile
+    private var otherProfileGroupUserIds = setOf<Int>()
+
+    private fun userId(uid: Int): Int = uid / 100000
+
+    private fun isOtherProfileGroupUser(uid: Int): Boolean {
+        return otherProfileGroupUserIds.contains(userId(uid))
+    }
+
+    private fun markOtherProfileGroupUser(uid: Int) {
+        val id = userId(uid)
+        if (!otherProfileGroupUserIds.contains(id)) {
+            synchronized(this) {
+                otherProfileGroupUserIds = otherProfileGroupUserIds + id
+            }
+        }
+    }
+
+    private var cachedMainUserId: Int? = null
+
+    internal fun getMainUserId(context: Context): Int {
+        cachedMainUserId?.let { return it }
+
+        synchronized(this) {
+            cachedMainUserId?.let { return it }
+
+            val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+            val profiles = um.userProfiles
+            var foundMainUserId = 0
+            try {
+                HiddenApiBypass.addHiddenApiExemptions("Landroid/os/UserManager;->hasBadge(I)Z")
+                val hasBadgeMethod = UserManager::class.java.getMethod("hasBadge", Int::class.javaPrimitiveType)
+                for (profile in profiles) {
+                    val id = profile.hashCode()
+                    val hasBadge = hasBadgeMethod.invoke(um, id) as Boolean
+                    if (!hasBadge) {
+                        foundMainUserId = id
+                        break
+                    }
+                }
+            } catch (_: Exception) {
+                foundMainUserId = userId(Process.myUid())
+            }
+            cachedMainUserId = foundMainUserId
+            return foundMainUserId
         }
     }
 
@@ -60,7 +112,17 @@ object AppIconCache {
 
             withContext(Dispatchers.IO) {
                 val loader = AppIconLoader(size, false, context)
-                val bitmap = loader.loadIcon(applicationInfo.withCurrentUserUid())
+
+                val bitmap = if (isOtherProfileGroupUser(applicationInfo.uid)) {
+                    loader.loadIcon(applicationInfo.withMainUserUid(context))
+                } else {
+                    try {
+                        loader.loadIcon(applicationInfo)
+                    } catch (_: Exception) {
+                        markOtherProfileGroupUser(applicationInfo.uid)
+                        loader.loadIcon(applicationInfo.withMainUserUid(context))
+                    }
+                }
 
                 val gpuBitmap = try {
                     bitmap.copy(Bitmap.Config.HARDWARE, false)?.also {
