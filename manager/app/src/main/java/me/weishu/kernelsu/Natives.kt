@@ -22,7 +22,8 @@ object Natives {
     // 32336: new set_sepolicy ioctl
     // 32377: add set_init_pgrp ioctl
     // 32513: add uapi version
-    const val MINIMAL_SUPPORTED_KERNEL = 32513
+    // 32514: allowlist v4 root profile flags
+    const val MINIMAL_SUPPORTED_KERNEL = 32514
 
     const val KERNEL_SU_DOMAIN = "u:r:ksu:s0"
 
@@ -156,7 +157,17 @@ object Natives {
         val nonRootUseDefault: Boolean = true,
         val umountModules: Boolean = true,
         var rules: String = "", // this field is save in ksud!!
+
+        val flags: List<RootProfileFlag> = mutableListOf()
     ) : Parcelable {
+        @Keep
+        enum class RootProfileFlag(val display: String, val desc: String) {
+            NO_NEW_PRIVS(
+                "NO_NEW_PRIVS",
+                "Disable further permission escaping by KernelSU from this profile context"
+            )
+        }
+
         enum class Namespace {
             INHERITED,
             GLOBAL,

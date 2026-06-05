@@ -85,6 +85,18 @@ fun RootProfileConfigMaterial(
             onNamespaceChange = { onProfileChange(profile.copy(namespace = it, rootUseDefault = false)) }
         )
 
+        RootProfileFlagPanel(
+            enabled = enabled,
+            selected = profile.flags,
+            onSelectionChange = {
+                onProfileChange(
+                    profile.copy(
+                        flags = it,
+                    )
+                )
+            }
+        )
+
         SELinuxPanel(
             enabled = enabled,
             context = profile.context,
@@ -237,6 +249,60 @@ private fun MountNameSpacePanel(
             SegmentedListItem(
                 headlineContent = { Text(stringResource(R.string.profile_namespace)) },
                 supportingContent = { Text(selectedOption.label) },
+                onClick = if (enabled) {
+                    { showDialog.value = true }
+                } else null
+            )
+        }
+    )
+}
+
+@Composable
+private fun RootProfileFlagPanel(
+    enabled: Boolean,
+    selected: List<Natives.Profile.RootProfileFlag>,
+    onSelectionChange: (flags: List<Natives.Profile.RootProfileFlag>) -> Unit
+) {
+    val showDialog = remember { mutableStateOf(false) }
+
+    val selectedFlags = remember(selected) {
+        selected.mapNotNull { flag ->
+            Natives.Profile.RootProfileFlag.entries.find { it.ordinal == flag.ordinal }
+        }
+    }
+
+    val flags = remember {
+        Natives.Profile.RootProfileFlag.entries.sortedBy { it.display }
+    }
+
+    if (showDialog.value) {
+        MultiSelectDialog(
+            title = stringResource(R.string.profile_flags),
+            subtitle = "${selectedFlags.size} / ${Natives.Profile.RootProfileFlag.entries.size}",
+            items = flags,
+            selectedItems = selectedFlags.toSet(),
+            itemTitle = { it.display },
+            itemSubtitle = { null },
+            maxSelection = Int.MAX_VALUE,
+            onSelectionChange = {
+                onSelectionChange(it.toList())
+            },
+            onDismiss = { showDialog.value = false }
+        )
+    }
+
+    val tag = if (selectedFlags.isEmpty()) {
+        "None"
+    } else {
+        selectedFlags.joinToString(", ") { it.display }
+    }
+
+    SegmentedColumn(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        content = listOf {
+            SegmentedListItem(
+                headlineContent = { Text(stringResource(R.string.profile_flags)) },
+                supportingContent = { Text(tag) },
                 onClick = if (enabled) {
                     { showDialog.value = true }
                 } else null
