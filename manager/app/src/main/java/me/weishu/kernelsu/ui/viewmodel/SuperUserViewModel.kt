@@ -230,8 +230,9 @@ class SuperUserViewModel(
         }
     }
 
-    private fun updateVisibleApps(grouped: List<GroupedApps>) {
-        val sorted = sortGroups(grouped, _uiState.value.sortOption)
+    private fun updateVisibleApps(grouped: List<GroupedApps>, resort: Boolean = true) {
+        // resort=false keeps the given order (on return, refresh group data without re-sorting even if tags changed)
+        val sorted = if (resort) sortGroups(grouped, _uiState.value.sortOption) else grouped
         val searchText = _uiState.value.searchStatus.searchText
         val searchResults = filterSearchResults(sorted, searchText)
         val recentlyInstalledResults = buildRecentlyInstalledGroups(sorted)
@@ -395,7 +396,7 @@ class SuperUserViewModel(
                     }
                 }
 
-                updateVisibleApps(grouped)
+                updateVisibleApps(grouped, resort = resort)
                 _uiState.update { it.copy(isRefreshing = false) }
                 isNeedRefresh = false
             }
@@ -411,4 +412,5 @@ class SuperUserViewModel(
             }
         }
     }
+
 }

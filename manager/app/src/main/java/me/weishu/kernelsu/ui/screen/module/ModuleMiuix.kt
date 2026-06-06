@@ -49,6 +49,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -97,11 +98,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
 import me.weishu.kernelsu.data.model.ModuleUpdateInfo
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
+import me.weishu.kernelsu.ui.component.ObserveAsEvents
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
@@ -113,6 +118,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.getFileName
+import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -127,6 +133,10 @@ import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.SnackbarDuration
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
+import top.yukonga.miuix.kmp.basic.SnackbarResult
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -151,7 +161,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 fun ModulePagerMiuix(
     uiState: ModuleUiState,
     confirmDialogState: ModuleConfirmDialogState?,
-    effect: ModuleEffect?,
+    moduleEvent: Flow<ModuleEffect>,
     actions: ModuleActions,
     bottomInnerPadding: Dp,
 ) {
@@ -159,6 +169,7 @@ fun ModulePagerMiuix(
     val searchStatus = uiState.searchStatus
 
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
     val density = LocalDensity.current
     val enableBlur = LocalEnableBlur.current
 
@@ -209,19 +220,28 @@ fun ModulePagerMiuix(
         }
     }
 
-    LaunchedEffect(effect) {
-        when (effect) {
+    val scope = rememberCoroutineScope()
+    val snackbarJob = remember { mutableStateOf<Job?>(null) }
+    ObserveAsEvents(moduleEvent) { event ->
+        when (event) {
             is ModuleEffect.Toast -> {
-                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                actions.onConsumeEffect()
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
 
             is ModuleEffect.SnackBar -> {
-                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                actions.onConsumeEffect()
+                // Cancel the previous reboot snackbar so a new one replaces it instead of queueing
+                snackbarJob.value?.cancel()
+                snackbarJob.value = scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = context.getString(R.string.reboot),
+                        duration = SnackbarDuration.Long,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        reboot()
+                    }
+                }
             }
-
-            null -> Unit
         }
     }
 
@@ -232,6 +252,7 @@ fun ModulePagerMiuix(
     }
 
     val listState = rememberLazyListState()
+    val refreshTick = remember { mutableStateOf(0) }
     val nestedScrollConnection = remember(uiState.installButtonVisible) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -453,6 +474,9 @@ fun ModulePagerMiuix(
                 )
             }
         },
+        snackbarHost = {
+            SnackbarHost(state = snackbarHostState)
+        },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         if (uiState.magiskInstalled) {
@@ -502,7 +526,10 @@ fun ModulePagerMiuix(
                 PullToRefresh(
                     isRefreshing = uiState.isRefreshing,
                     pullToRefreshState = pullToRefreshState,
-                    onRefresh = actions.onRefresh,
+                    onRefresh = {
+                        actions.onRefresh()
+                        refreshTick.value++
+                    },
                     refreshTexts = refreshTexts,
                     contentPadding = contentPadding,
                 ) {
@@ -525,6 +552,15 @@ fun ModulePagerMiuix(
                             )
                         }
                     } else {
+                        val latestModules = rememberUpdatedState(modules)
+                        val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
+                        ScrollToTopOnChange(
+                            listState,
+                            uiState.sortEnabledFirst,
+                            uiState.sortActionFirst,
+                            refreshTick.value,
+                            isBusy = { latestRefreshing.value },
+                        ) { latestModules.value }
                         Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
                             ModuleList(
                                 modifier = Modifier
@@ -540,6 +576,7 @@ fun ModulePagerMiuix(
                                     onModuleAddShortcut(module, type)
                                 },
                                 contentPadding = contentPadding,
+                                listState = listState,
                             )
                         }
                     }
@@ -677,10 +714,12 @@ private fun ModuleList(
     actions: ModuleActions,
     onModuleAddShortcut: (Module, ShortcutType) -> Unit,
     contentPadding: PaddingValues,
+    listState: LazyListState = rememberLazyListState(),
 ) {
     val loadingDialog = rememberLoadingDialog()
     val scope = rememberCoroutineScope()
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxHeight(),
         contentPadding = contentPadding,
         overscrollEffect = null,
