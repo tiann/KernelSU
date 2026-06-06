@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -36,6 +35,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -62,6 +62,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
 /**
@@ -69,11 +70,11 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
  * @date 2023/10/20.
  */
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
     actions: TemplateActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val haptic = LocalHapticFeedback.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -125,6 +126,7 @@ fun AppProfileTemplateScreenMaterial(
                 scrollBehavior = scrollBehavior
             )
         },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost) },
         floatingActionButton = {
             SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,
@@ -261,7 +263,6 @@ private fun TemplateItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,

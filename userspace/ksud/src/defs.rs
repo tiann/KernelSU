@@ -15,7 +15,6 @@ mod android {
 
     pub const KSURC_PATH: &str = concatcp!(WORKING_DIR, ".ksurc");
     pub const DAEMON_PATH: &str = concatcp!(ADB_DIR, "ksud");
-    pub const MAGISKBOOT_PATH: &str = concatcp!(BINARY_DIR, "magiskboot");
     pub const LIBADBROOT_PATH: &str = concatcp!(LIBRARY_DIR, "libadbroot.so");
 
     pub const DAEMON_LINK_PATH: &str = concatcp!(BINARY_DIR, "ksud");
@@ -24,11 +23,18 @@ mod android {
     pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
     pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
 
+    // Prefer /metadata/watchdog/ when present, else /metadata
+    pub const PREINIT_DIR_WATCHDOG: &str = "/metadata/watchdog/ksu/";
+    pub const PREINIT_DIR_DEFAULT: &str = "/metadata/ksu/";
+    pub const MODULES_RC_FILE: &str = "modules.rc";
+    pub const MODULES_RC_TMP_FILE: &str = ".modules.rc.tmp";
+
     pub const MODULE_WEB_DIR: &str = "webroot";
     pub const MODULE_ACTION_SH: &str = "action.sh";
     pub const DISABLE_FILE_NAME: &str = "disable";
     pub const UPDATE_FILE_NAME: &str = "update";
     pub const REMOVE_FILE_NAME: &str = "remove";
+    pub const MODULE_INIT_RC_DIR: &str = "initrc";
 
     // Module config system
     pub const MODULE_CONFIG_DIR: &str = concatcp!(WORKING_DIR, "module_configs/");
@@ -45,6 +51,7 @@ mod android {
     pub const BACKUP_FILENAME: &str = "stock_image.sha1";
 }
 
+#[allow(unused)]
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
 

@@ -1,6 +1,5 @@
 package me.weishu.kernelsu.ui.screen.executemoduleaction
 
-import android.content.Context
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -95,8 +94,8 @@ fun ExecuteModuleActionEffect(
 
 fun saveLog(
     logContent: StringBuilder,
-    context: Context,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    showMessage: (String) -> Unit
 ): () -> Unit {
     return {
         scope.launch {
@@ -107,7 +106,7 @@ fun saveLog(
                 "KernelSU_module_action_log_${date}.log"
             )
             file.writeText(logContent.toString())
-            Toast.makeText(context, "Log saved to ${file.absolutePath}", Toast.LENGTH_SHORT).show()
+            showMessage("Log saved to ${file.absolutePath}")
         }
     }
 }

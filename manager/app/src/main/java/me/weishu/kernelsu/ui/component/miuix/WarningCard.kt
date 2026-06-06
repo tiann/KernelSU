@@ -22,11 +22,13 @@ import top.yukonga.miuix.kmp.utils.PressFeedbackType
 @Composable
 fun WarningCard(
     message: String,
+    modifier: Modifier = Modifier,
     color: Color? = null,
     onClick: (() -> Unit)? = null,
     action: (@Composable () -> Unit)? = null,
 ) {
     Card(
+        modifier = modifier,
         onClick = { onClick?.invoke() },
         colors = CardDefaults.defaultColors(
             color = color ?: when {

@@ -20,20 +20,22 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -46,7 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,10 +59,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
@@ -68,17 +70,16 @@ import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SuperUserPagerMaterial(
     uiState: SuperUserUiState,
     actions: SuperUserActions,
     bottomInnerPadding: Dp,
 ) {
-    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
+    val refreshTick = remember { mutableStateOf(0) }
     val pullToRefreshState = rememberPullToRefreshState()
 
     var localSearchText by remember { mutableStateOf(uiState.searchStatus.searchText) }
@@ -87,16 +88,17 @@ fun SuperUserPagerMaterial(
     }
 
     val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(stringResource(R.string.superuser)) },
                 searchText = localSearchText,
                 onSearchTextChange = {
                     localSearchText = it
                     actions.onSearchTextChange(it)
-                    scope.launch { listState.scrollToItem(0) }
                 },
                 onClearClick = {
                     localSearchText = ""
@@ -111,6 +113,60 @@ fun SuperUserPagerMaterial(
                     }
                 },
                 actions = {
+                    var showSortMenu by remember { mutableStateOf(false) }
+
+                    IconButton(onClick = { showSortMenu = true }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = stringResource(R.string.menu_sort)
+                        )
+
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false }
+                        ) {
+                            val sortResIds = listOf(
+                                R.string.sort_by_name,
+                                R.string.sort_by_package_name,
+                                R.string.sort_by_install_time,
+                                R.string.sort_by_update_time,
+                            )
+                            val currentSortType = uiState.sortOption / 2
+                            val isReverse = uiState.sortOption % 2 != 0
+
+                            sortResIds.forEachIndexed { index, resId ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(resId)) },
+                                    trailingIcon = {
+                                        RadioButton(
+                                            selected = currentSortType == index,
+                                            onClick = null,
+                                        )
+                                    },
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        val newOption = index * 2 + (if (isReverse) 1 else 0)
+                                        actions.onUpdateSortOption(newOption)
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
+
+                            HorizontalDivider()
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.sort_reverse)) },
+                                trailingIcon = { Checkbox(isReverse, null) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    val newOption = currentSortType * 2 + (if (!isReverse) 1 else 0)
+                                    actions.onUpdateSortOption(newOption)
+                                    showSortMenu = false
+                                }
+                            )
+                        }
+                    }
+
                     var showDropdown by remember { mutableStateOf(false) }
 
                     IconButton(onClick = { showDropdown = true }) {
@@ -222,6 +278,7 @@ fun SuperUserPagerMaterial(
             onRefresh = {
                 haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 actions.onRefresh()
+                refreshTick.value++
             },
             state = pullToRefreshState,
             indicator = {
@@ -233,6 +290,17 @@ fun SuperUserPagerMaterial(
             },
         ) {
             val expandedSearchUids = remember { mutableStateOf(setOf<Int>()) }
+
+            val latestGroupedApps = rememberUpdatedState(uiState.groupedApps)
+            val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
+            ScrollToTopOnChange(
+                listState,
+                uiState.sortOption,
+                uiState.showSystemApps,
+                uiState.showOnlyPrimaryUserApps,
+                refreshTick.value,
+                isBusy = { latestRefreshing.value },
+            ) { latestGroupedApps.value }
 
             LazyColumn(
                 state = listState,
@@ -323,7 +391,6 @@ private fun SearchGroupItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SimpleAppItem(
     app: AppInfo,

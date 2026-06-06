@@ -42,21 +42,18 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.InstallMobile
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -65,11 +62,16 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +80,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,7 +90,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -99,9 +101,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoModule
-import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
@@ -109,10 +112,8 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.rememberContentReady
-import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleRepoScreenMaterial(
     state: ModuleRepoUiState,
@@ -121,12 +122,16 @@ fun ModuleRepoScreenMaterial(
     val haptic = LocalHapticFeedback.current
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
+    val refreshTick = remember { mutableStateOf(0) }
+    val pullToRefreshState = rememberPullToRefreshState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(text = stringResource(R.string.module_repos)) },
                 searchText = state.searchStatus.searchText,
                 onSearchTextChange = actions.onSearchTextChange,
@@ -139,43 +144,52 @@ fun ModuleRepoScreenMaterial(
                     )
                 },
                 actions = {
-                    var showDropdown by remember { mutableStateOf(false) }
+                    var showSortMenu by remember { mutableStateOf(false) }
 
                     IconButton(
-                        onClick = { showDropdown = true }
+                        onClick = { showSortMenu = true }
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(id = R.string.settings)
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = stringResource(R.string.menu_sort)
                         )
 
-                        DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                            showDropdown = false
+                        DropdownMenu(expanded = showSortMenu, onDismissRequest = {
+                            showSortMenu = false
                         }) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_repos_sort_name)) },
-                                trailingIcon = { Checkbox(state.sortByName, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleSortByName()
-                                }
+                            val sortOptions = listOf(
+                                RepoSort.UPDATED to R.string.module_repos_sort_updated,
+                                RepoSort.CREATED to R.string.module_repos_sort_created,
+                                RepoSort.NAME to R.string.module_repos_sort_name,
+                                RepoSort.STARS to R.string.module_repos_sort_stars,
                             )
+                            sortOptions.forEach { (order, resId) ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(resId)) },
+                                    trailingIcon = {
+                                        RadioButton(
+                                            selected = state.sortOrder == order,
+                                            onClick = null,
+                                        )
+                                    },
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onSetSortOrder(order)
+                                        showSortMenu = false
+                                    }
+                                )
+                            }
                         }
                     }
                 },
                 searchContent = { _, closeSearch ->
-                    LaunchedEffect(state.searchStatus.searchText) {
-                        searchListState.scrollToItem(0)
-                    }
-                    val sortByName = state.sortByName
-                    val collator = Collator.getInstance(LocalLocale.current.platformLocale)
-                    val searchModules = if (!sortByName) {
-                        state.searchResults
-                    } else {
-                        state.searchResults.sortedWith(compareBy(collator) { it.moduleName })
-                    }
+                    val latestSearchResults = rememberUpdatedState(state.searchResults)
+                    ScrollToTopOnChange(
+                        searchListState,
+                        state.searchStatus.searchText,
+                    ) { latestSearchResults.value }
                     RepoModuleList(
-                        modules = searchModules,
+                        modules = state.searchResults,
                         listState = searchListState,
                         modifier = Modifier.fillMaxSize(),
                         onModuleClick = {
@@ -215,20 +229,42 @@ fun ModuleRepoScreenMaterial(
             }
         }
         if (!isLoading && contentReady) {
-            val platformLocale = LocalLocale.current.platformLocale
-            val displayModules = remember(state.modules, state.sortByName) {
-                val collator = Collator.getInstance(platformLocale)
-                if (!state.sortByName) state.modules else state.modules.sortedWith(compareBy(collator) { it.moduleName })
-            }
-            RepoModuleList(
-                modules = displayModules,
-                listState = listState,
+            val latestModules = rememberUpdatedState(state.modules)
+            val latestRefreshing = rememberUpdatedState(state.isRefreshing)
+            ScrollToTopOnChange(
+                listState,
+                state.sortOrder,
+                refreshTick.value,
+                isBusy = { latestRefreshing.value },
+            ) { latestModules.value }
+            PullToRefreshBox(
                 modifier = Modifier
                     .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(innerPadding),
-                onModuleClick = actions.onOpenRepoDetail
-            )
+                isRefreshing = state.isRefreshing,
+                onRefresh = {
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    actions.onRefresh()
+                    refreshTick.value++
+                },
+                state = pullToRefreshState,
+                indicator = {
+                    PullToRefreshDefaults.LoadingIndicator(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        isRefreshing = state.isRefreshing,
+                        state = pullToRefreshState,
+                    )
+                },
+            ) {
+                RepoModuleList(
+                    modules = state.modules,
+                    listState = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    onModuleClick = actions.onOpenRepoDetail
+                )
+            }
         }
     }
 }
@@ -345,7 +381,6 @@ private fun RepoModuleList(
 }
 
 @SuppressLint("StringFormatInvalid", "DefaultLocale")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModuleRepoDetailScreenMaterial(
     state: ModuleRepoDetailUiState,
@@ -463,7 +498,6 @@ fun ModuleRepoDetailScreenMaterial(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ReadmePage(
     readmeHtml: String?,
@@ -528,7 +562,6 @@ private fun ReadmePage(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @SuppressLint("DefaultLocale")
 @Composable
 fun ReleasesPage(

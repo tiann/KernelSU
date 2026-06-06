@@ -3,7 +3,7 @@ package me.weishu.kernelsu.ui.util
 import android.annotation.SuppressLint
 
 @SuppressLint("PrivateApi")
-private fun getSystemProperty(key: String): String {
+internal fun getSystemProperty(key: String): String {
     return try {
         val props = Class.forName("android.os.SystemProperties")
         props.getMethod("get", String::class.java).invoke(null, key) as? String ?: ""

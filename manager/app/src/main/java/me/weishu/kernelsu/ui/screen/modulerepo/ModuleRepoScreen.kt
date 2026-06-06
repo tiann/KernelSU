@@ -43,7 +43,7 @@ fun ModuleRepoScreen() {
         onSearchTextChange = viewModel::updateSearchText,
         onClearSearch = { viewModel.updateSearchText("") },
         onSearchStatusChange = viewModel::updateSearchStatus,
-        onToggleSortByName = viewModel::toggleSortByName,
+        onSetSortOrder = viewModel::setSortOrder,
         onOpenRepoDetail = { module ->
             val args = RepoModuleArg(
                 moduleId = module.moduleId,
