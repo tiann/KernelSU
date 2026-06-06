@@ -64,6 +64,7 @@ class ModuleRepoViewModel(
                 val collator = Collator.getInstance(Locale.getDefault())
                 list.sortedWith(compareBy(collator) { it.moduleName })
             }
+
             RepoSort.STARS -> list.sortedByDescending { it.stargazerCount }
         }
     }

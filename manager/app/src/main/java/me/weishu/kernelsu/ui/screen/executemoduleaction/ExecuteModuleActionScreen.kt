@@ -47,7 +47,7 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
         }
     }
 
-    // 始终自动关闭来自快捷方式的启动
+    // Always auto disable from shortcuts
     LaunchedEffect(isComplete) {
         if (isComplete) {
             if (fromShortcut) {

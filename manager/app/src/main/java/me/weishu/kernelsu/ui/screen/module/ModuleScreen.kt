@@ -45,7 +45,7 @@ fun ModulePager(
 
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
+    ) { viewModel.fetchModuleList(resort = false) }
 
     // Request notification permission for download progress notifications
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -65,7 +65,10 @@ fun ModulePager(
         }
 
         LifecycleResumeEffect(Unit) {
-            viewModel.fetchModuleList(checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh)
+            viewModel.fetchModuleList(
+                checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh,
+                resort = rawUiState.moduleList.isEmpty(),
+            )
             onPauseOrDispose {}
         }
     }
@@ -91,9 +94,6 @@ fun ModulePager(
         },
         onDismissConfirmRequest = {
             viewModel.dismissConfirmRequest()
-        },
-        onConsumeEffect = {
-            viewModel.consumeEffect()
         },
         onConfirmUpdate = { request ->
             scope.launch {
@@ -154,7 +154,7 @@ fun ModulePager(
         UiMode.Miuix -> ModulePagerMiuix(
             uiState = rawUiState,
             confirmDialogState = rawUiState.confirmDialogState,
-            effect = rawUiState.effect,
+            moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
@@ -162,7 +162,7 @@ fun ModulePager(
         UiMode.Material -> ModulePagerMaterial(
             uiState = rawUiState,
             confirmDialogState = rawUiState.confirmDialogState,
-            effect = rawUiState.effect,
+            moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
