@@ -15,7 +15,7 @@
     <string name="home_click_to_install">Tekan untuk memasang</string>
     <string name="module">Modul</string>
     <string name="about">Tentang</string>
-    <string name="home_working_version">Versi: %d</string>
+    <string name="home_working_version">Versi: %s</string>
     <string name="reboot">Reboot</string>
     <string name="home_unsupported_reason">KernelSU ketika ini hanya menyokong kernel GKI</string>
     <string name="home_selinux_status">Status SELinux</string>

@@ -21,7 +21,8 @@ object Natives {
     // 32310: new get_allow_list ioctl
     // 32336: new set_sepolicy ioctl
     // 32377: add set_init_pgrp ioctl
-    const val MINIMAL_SUPPORTED_KERNEL = 32377
+    // 32513: add uapi version
+    const val MINIMAL_SUPPORTED_KERNEL = 32513
 
     const val KERNEL_SU_DOMAIN = "u:r:ksu:s0"
 
@@ -114,8 +115,18 @@ object Natives {
         }
     }
 
+    val kernelUAPIVersion: Int
+        external get
+
+    val managerUAPIVersion: Int
+        external get
+
+    fun checkUAPIMismatch(): Boolean {
+        return kernelUAPIVersion != managerUAPIVersion
+    }
+
     fun requireNewKernel(): Boolean {
-        return version != -1 && version < MINIMAL_SUPPORTED_KERNEL
+        return (version != -1 && version < MINIMAL_SUPPORTED_KERNEL) || checkUAPIMismatch()
     }
 
     @Keep

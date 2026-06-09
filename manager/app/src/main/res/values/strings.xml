@@ -5,7 +5,7 @@
     <string name="home_not_installed">Not installed</string>
     <string name="home_click_to_install">Tap to install</string>
     <string name="home_working">Working</string>
-    <string name="home_working_version">Version: %d</string>
+    <string name="home_working_version">Version: %s</string>
     <string name="home_unsupported">Unsupported</string>
     <string name="home_unsupported_reason">KernelSU only supports GKI kernels now, but you can patch the image for GKI devices.</string>
     <string name="home_version_mismatch">Manager version (%1$d) and KernelSU driver version (%2$d) mismatch.</string>
@@ -104,6 +104,8 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
+    <string name="uapi_mismatch">Manager uapi version (%1$d) and KernelSU driver uapi version (%2$d) mismatch.</string>
+    <string name="require_manager_version">The current KernelSU manager version %1$d is too low for KernelSU to work properly. Please upgrade manager to version %2$d or higher!</string>
     <string name="require_kernel_version">The current KernelSU version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules by default</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>

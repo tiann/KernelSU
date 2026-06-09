@@ -45,7 +45,7 @@
     <string name="module">מודולים</string>
     <string name="module_author">יוצר</string>
     <string name="about">אודות</string>
-    <string name="home_working_version">גרסה: %d</string>
+    <string name="home_working_version">גרסה: %s</string>
     <string name="reboot">הפעלה מחדש</string>
     <string name="home_unsupported_reason">KernelSU תומך רק בליבת GKI כעת</string>
     <string name="home_selinux_status">סטטוס SELinux</string>
