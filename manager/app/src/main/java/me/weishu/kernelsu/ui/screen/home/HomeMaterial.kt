@@ -252,7 +252,7 @@ private fun StatusCard(
                             }
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = stringResource(R.string.home_working_version, "${state.ksuVersion}/${state.kernelUAPIVersion}"),
+                                text = stringResource(R.string.home_working_version, "${state.ksuVersion}-${state.kernelUAPIVersion}"),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
