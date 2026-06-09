@@ -6,8 +6,6 @@
 
 #include "uapi/app_profile.h"
 
-// use __u16 to avoid we maybe have version more than 255
-// yep, it's possible it will never be exceeded, just to prevent the possibility
 static const __u32 KERNEL_SU_UAPI_VERSION = 1;
 
 /* Magic numbers for reboot hook to install fd */
