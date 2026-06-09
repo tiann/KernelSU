@@ -50,8 +50,6 @@ static void __init init_default_profiles()
     default_root_profile.namespaces = KSU_NS_INHERITED;
     strcpy(default_root_profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
 
-    default_root_profile.flags = FLAG_KSU_NO_NEW_PRIVS;
-
     // This means that we will umount modules by default!
     default_non_root_profile.umount_modules = true;
 }
