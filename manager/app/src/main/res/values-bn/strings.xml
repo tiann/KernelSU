@@ -4,7 +4,7 @@
     <string name="home_not_installed">ইনস্টল করা হয়নি</string>
     <string name="home_click_to_install">ইনস্টল করার জন্য ক্লিক করুন</string>
     <string name="home_working"> ওয়ার্কিং</string>
-    <string name="home_working_version">ওয়ার্কিং সংস্করণ: %d</string>
+    <string name="home_working_version">ওয়ার্কিং সংস্করণ: %s</string>
     <string name="home_unsupported">অসমর্থিত</string>
     <string name="home_unsupported_reason">KernelSU শুধুমাত্র GKI কার্নেল সমর্থন করে</string>
     <string name="home_kernel">কার্নেল সংস্করণ</string>

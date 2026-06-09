@@ -4,7 +4,7 @@
     <string name="home_not_installed">未安裝</string>
     <string name="home_click_to_install">按一下開始安裝</string>
     <string name="home_working">運作中</string>
-    <string name="home_working_version">KernelSU 版本：%d</string>
+    <string name="home_working_version">KernelSU 版本：%s</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現僅支援 GKI 核心，但仍可修補 GKI 裝置映像。</string>
     <string name="home_device_model">裝置型號</string>

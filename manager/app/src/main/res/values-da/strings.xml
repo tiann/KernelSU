@@ -50,7 +50,7 @@
     <string name="failed_to_update_sepolicy">Opdatering af SELinux-regler mislykkedes for %s</string>
     <string name="module_start_downloading">Start download: %s</string>
     <string name="home_click_to_install">Klik for at installere</string>
-    <string name="home_working_version">Version: %d</string>
+    <string name="home_working_version">Version: %s</string>
     <string name="home">Hjem</string>
     <string name="home_not_installed">Ikke installeret</string>
     <string name="home_fingerprint">Fingeraftryk</string>

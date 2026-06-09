@@ -4,7 +4,7 @@
     <string name="home_not_installed">Не установлен</string>
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
-    <string name="home_working_version">Версия: %d</string>
+    <string name="home_working_version">Версия: %s</string>
     <!--Don't translate this string!-->
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">Теперь KernelSU поддерживает только ядра GKI, однако вы всё ещё можете пропатчить образ для GKI-устройств.</string>
