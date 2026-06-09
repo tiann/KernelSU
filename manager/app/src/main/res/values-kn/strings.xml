@@ -37,7 +37,7 @@
     <string name="module">ಮಾಡ್ಯೂಲ್</string>
     <string name="module_author">ಲೇಖಕ</string>
     <string name="about">ಬಗ್ಗೆ</string>
-    <string name="home_working_version">ವರ್ಷನ್: %d</string>
+    <string name="home_working_version">ವರ್ಷನ್: %s</string>
     <string name="reboot">ರೀಬೂಟ್</string>
     <string name="home_unsupported_reason">KernelSU ಈಗ GKI ಕರ್ನಲ್‌ಗಳನ್ನು ಮಾತ್ರ ಬೆಂಬಲಿಸುತ್ತದೆ</string>
     <string name="home_selinux_status">SELinux ಸ್ಥಿತಿ</string>

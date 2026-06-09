@@ -4,7 +4,7 @@
     <string name="home_not_installed">설치되지 않음</string>
     <string name="home_click_to_install">이 곳을 눌러 설치하기</string>
     <string name="home_working">작동 중</string>
-    <string name="home_working_version">버전: %d</string>
+    <string name="home_working_version">버전: %s</string>
     <string name="home_unsupported">지원되지 않음</string>
     <string name="home_unsupported_reason">KernelSU는 현재 GKI 커널만 지원합니다.</string>
     <string name="home_kernel">커널 버전</string>

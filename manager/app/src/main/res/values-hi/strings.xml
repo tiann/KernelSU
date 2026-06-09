@@ -45,7 +45,7 @@
     <string name="module">मॉड्यूल</string>
     <string name="module_author">निर्माता</string>
     <string name="about">हमारे बारे में</string>
-    <string name="home_working_version">वर्जन: %d</string>
+    <string name="home_working_version">वर्जन: %s</string>
     <string name="reboot">रीबूट करें</string>
     <string name="home_unsupported_reason">KernelSU अभी केवल GKI कर्नल्स को सपोर्ट करता है</string>
     <string name="home_selinux_status">SELinux स्थिति</string>

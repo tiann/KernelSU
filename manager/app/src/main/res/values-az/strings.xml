@@ -5,7 +5,7 @@
     <string name="home_not_installed">Yüklənmədi</string>
     <string name="home_click_to_install">Yükləmək üçün toxunun</string>
     <string name="home_working">İşləyir</string>
-    <string name="home_working_version">Versiya: %d</string>
+    <string name="home_working_version">Versiya: %s</string>
     <string name="home_unsupported_reason">Hal-hazırda KernelSU yalnız GKI nüvələrini dəstəkləyir</string>
     <string name="home_unsupported">Dəstəklənmir</string>
     <string name="module_install">Yüklə</string>
