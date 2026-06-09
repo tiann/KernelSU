@@ -6,6 +6,7 @@
 
 #include "uapi/app_profile.h"
 
+// 2: allowlist v4 root profile flags
 static const __u32 KERNEL_SU_UAPI_VERSION = 2;
 
 /* Magic numbers for reboot hook to install fd */
