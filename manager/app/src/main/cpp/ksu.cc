@@ -84,12 +84,12 @@ struct ksu_get_info_cmd get_info() {
     return g_version;
 }
 
-uint16_t get_kernel_uapi_version() {
+uint32_t get_kernel_uapi_version() {
     auto info = get_info();
     return info.uapi_version;
 }
 
-uint16_t get_manager_uapi_version() {
+uint32_t get_manager_uapi_version() {
     return KERNEL_SU_UAPI_VERSION;
 }
 

@@ -8,7 +8,7 @@
 
 // use __u16 to avoid we maybe have version more than 255
 // yep, it's possible it will never be exceeded, just to prevent the possibility
-static const __u16 KERNEL_SU_UAPI_VERSION = 1;
+static const __u32 KERNEL_SU_UAPI_VERSION = 1;
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;
@@ -22,15 +22,21 @@ static const __u32 EVENT_POST_FS_DATA = 1;
 static const __u32 EVENT_BOOT_COMPLETED = 2;
 static const __u32 EVENT_MODULE_MOUNTED = 3;
 
-static const __u16 KSU_GET_INFO_FLAG_LKM = (1U << 0);
-static const __u16 KSU_GET_INFO_FLAG_MANAGER = (1U << 1);
-static const __u16 KSU_GET_INFO_FLAG_LATE_LOAD = (1U << 2);
-static const __u16 KSU_GET_INFO_FLAG_PR_BUILD = (1U << 3);
+static const __u32 KSU_GET_INFO_FLAG_LKM = (1U << 0);
+static const __u32 KSU_GET_INFO_FLAG_MANAGER = (1U << 1);
+static const __u32 KSU_GET_INFO_FLAG_LATE_LOAD = (1U << 2);
+static const __u32 KSU_GET_INFO_FLAG_PR_BUILD = (1U << 3);
 
 struct ksu_get_info_cmd {
     __u32 version; /* Output: KERNEL_SU_VERSION */
-    __u16 flags; /* Output: KSU_GET_INFO_FLAG_* bits */
-    __u16 uapi_version; /* Output: KERNEL_SU_UAPI_VERSION */
+    __u32 flags; /* Output: KSU_GET_INFO_FLAG_* bits */
+    __u32 features; /* Output: max feature ID supported */
+    __u32 uapi_version; /* Output: KERNEL_SU_UAPI_VERSION */
+};
+
+struct ksu_get_info_legacy_cmd {
+    __u32 version; /* Output: KERNEL_SU_VERSION */
+    __u32 flags; /* Output: KSU_GET_INFO_FLAG_* bits */
     __u32 features; /* Output: max feature ID supported */
 };
 
@@ -145,7 +151,9 @@ static const __u8 KSU_UMOUNT_DEL = 2; /* delete entry, strcmp */
 
 /* IOCTL command definitions */
 static const __u32 KSU_IOCTL_GRANT_ROOT = _IOC(_IOC_NONE, 'K', 1, 0);
-static const __u32 KSU_IOCTL_GET_INFO = _IOC(_IOC_READ, 'K', 2, 0);
+static const __u32 KSU_IOCTL_GET_INFO = _IOR('K', 2, struct ksu_get_info_cmd);
+/* deprecated */
+static const __u32 KSU_IOCTL_GET_INFO_LEGACY = _IOC(_IOC_READ, 'K', 2, 0);
 static const __u32 KSU_IOCTL_REPORT_EVENT = _IOC(_IOC_WRITE, 'K', 3, 0);
 static const __u32 KSU_IOCTL_SET_SEPOLICY = _IOC(_IOC_READ | _IOC_WRITE, 'K', 4, 0);
 static const __u32 KSU_IOCTL_CHECK_SAFEMODE = _IOC(_IOC_READ, 'K', 5, 0);
