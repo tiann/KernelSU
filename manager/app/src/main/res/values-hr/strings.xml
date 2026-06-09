@@ -7,7 +7,7 @@
     <string name="failed_to_update_sepolicy">Nije uspjelo ažuriranje SELinux pravila za %s</string>
     <string name="home">Početna</string>
     <string name="home_not_installed">Nije instalirano</string>
-    <string name="home_working_version">Verzija: %d</string>
+    <string name="home_working_version">Verzija: %s</string>
     <string name="home_click_to_install">Kliknite da instalirate</string>
     <string name="home_working">Radi</string>
     <string name="home_unsupported">Nepodržano</string>

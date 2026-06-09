@@ -4,7 +4,7 @@
     <string name="home_not_installed">ยังไม่ได้ติดตั้ง</string>
     <string name="home_click_to_install">กดเพื่อติดตั้ง</string>
     <string name="home_working">กำลังทำงาน</string>
-    <string name="home_working_version">เวอร์ชัน: %d</string>
+    <string name="home_working_version">เวอร์ชัน: %s</string>
     <string name="home_manager_version">เวอร์ชันตัวจัดการ</string>
     <string name="home_unsupported">ไม่รองรับ</string>
     <string name="selinux_status_enforcing">Enforcing</string>
