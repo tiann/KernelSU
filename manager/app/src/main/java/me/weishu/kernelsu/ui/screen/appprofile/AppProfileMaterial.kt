@@ -254,7 +254,6 @@ private fun AppProfileInner(
                                 )
                             )
                         }
-
                         rootMode = it
                     }
                     AnimatedVisibility(
