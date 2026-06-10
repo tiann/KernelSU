@@ -66,6 +66,15 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
     result
 }
 
+/// Get Metamodule Id
+pub fn get_metamodule_id() -> Option<String> {
+    get_metamodule_path().and_then(|path| {
+        path.file_name()
+            .and_then(|os_str| os_str.to_str())
+            .map(ToString::to_string)
+    })
+}
+
 /// Check if metamodule exists
 pub fn has_metamodule() -> bool {
     get_metamodule_path().is_some()
@@ -227,7 +236,9 @@ pub fn exec_metauninstall_script(module_id: &str) -> Result<()> {
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", metauninstall_path.to_str().unwrap()])
         .current_dir(metauninstall_path.parent().unwrap())
-        .envs(crate::module::get_common_script_envs())
+        .envs(crate::module::get_common_script_envs(
+            get_metamodule_id().as_deref(),
+        ))
         .env("MODULE_ID", module_id)
         .status()?;
 
@@ -250,7 +261,9 @@ pub fn exec_mount_script(module_dir: &str) -> Result<()> {
 
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", mount_script.to_str().unwrap()])
-        .envs(crate::module::get_common_script_envs())
+        .envs(crate::module::get_common_script_envs(
+            get_metamodule_id().as_deref(),
+        ))
         .env("MODULE_DIR", module_dir)
         .status()?;
 

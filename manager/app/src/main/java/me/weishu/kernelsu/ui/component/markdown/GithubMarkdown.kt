@@ -17,7 +17,6 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,7 +26,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import me.weishu.kernelsu.ksuApp
@@ -75,7 +73,6 @@ fun GithubMarkdown(
     val dir = if (LocalLayoutDirection.current == LayoutDirection.Rtl) "rtl" else "ltr"
 
     val colors = getMarkdownColors(containerColor)
-    val bgDefault = colors.bgDefault
     val bgCode = colors.bgCode
     val bgRowAlt = colors.bgRowAlt
     val fgDefault = colors.fgDefault
@@ -101,7 +98,7 @@ fun GithubMarkdown(
     val body = """
         <style>
          :root {
-             --background: $bgDefault;
+             --background: ${Color.TRANSPARENT};
              --pre-background: $bgCode;
              --code-background: $bgCode;
              --tr-alt-background: $bgRowAlt;
@@ -308,10 +305,6 @@ fun GithubMarkdown(
                             return false
                         }
                     })
-                    loadDataWithBaseURL(
-                        "https://appassets.androidplatform.net", html,
-                        "text/html", StandardCharsets.UTF_8.name(), null
-                    )
                 } catch (e: Throwable) {
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
@@ -322,11 +315,14 @@ fun GithubMarkdown(
         update = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView ?: return@AndroidView
             webView.settings.textZoom = newTextZoom
-            onLoadingChange(true)
-            webView.loadDataWithBaseURL(
-                "https://appassets.androidplatform.net", html,
-                "text/html", StandardCharsets.UTF_8.name(), null
-            )
+            if (webView.tag != html) {
+                webView.tag = html
+                onLoadingChange(true)
+                webView.loadDataWithBaseURL(
+                    "https://appassets.androidplatform.net", html,
+                    "text/html", StandardCharsets.UTF_8.name(), null
+                )
+            }
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView
@@ -358,7 +354,6 @@ class MarkdownScrollInterface {
 }
 
 private data class MarkdownColors(
-    val bgDefault: String,
     val bgCode: String,
     val bgRowAlt: String,
     val fgDefault: String,
@@ -371,10 +366,7 @@ private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color
 
     return when (uiMode) {
         UiMode.Material -> {
-            val bgArgb = containerColor?.toArgb() ?: MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
-
             MarkdownColors(
-                bgDefault = cssColorFromArgb(bgArgb),
                 bgCode = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerHigh.toArgb()),
                 bgRowAlt = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerLow.toArgb()),
                 fgDefault = cssColorFromArgb(MaterialTheme.colorScheme.onSurface.toArgb()),
@@ -396,7 +388,6 @@ private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color
             val rowAltDelta = if (bgLuminance > 0.6) -0.02f else 0.02f
 
             MarkdownColors(
-                bgDefault = cssColorFromArgb(bgArgb),
                 bgCode = cssColorFromArgb(makeVariant(codeDelta, 1.1)),
                 bgRowAlt = cssColorFromArgb(makeVariant(rowAltDelta, 1.05)),
                 fgDefault = cssColorFromArgb(MiuixTheme.colorScheme.onSurface.toArgb()),

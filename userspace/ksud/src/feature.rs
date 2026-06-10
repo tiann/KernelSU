@@ -20,6 +20,7 @@ pub enum FeatureId {
     KernelUmount = 1,
     Sulog = 2,
     AdbRoot = 3,
+    SelinuxHide = 4,
 }
 
 impl FeatureId {
@@ -29,6 +30,7 @@ impl FeatureId {
             1 => Some(Self::KernelUmount),
             2 => Some(Self::Sulog),
             3 => Some(Self::AdbRoot),
+            4 => Some(Self::SelinuxHide),
             _ => None,
         }
     }
@@ -39,6 +41,7 @@ impl FeatureId {
             Self::KernelUmount => "kernel_umount",
             Self::Sulog => "sulog",
             Self::AdbRoot => "adb_root",
+            Self::SelinuxHide => "selinux_hide",
         }
     }
 
@@ -54,6 +57,9 @@ impl FeatureId {
                 "SU Log - streams kernel sulog events to userspace and persists them to disk"
             }
             Self::AdbRoot => "ADB Root - Enable adbd root",
+            Self::SelinuxHide => {
+                "SELinux Hide - sanitize /sys/fs/selinux access results for app UIDs"
+            }
         }
     }
 }
@@ -64,6 +70,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "kernel_umount" | "1" => Ok(FeatureId::KernelUmount),
         "sulog" | "2" => Ok(FeatureId::Sulog),
         "adb_root" | "3" => Ok(FeatureId::AdbRoot),
+        "selinux_hide" | "4" => Ok(FeatureId::SelinuxHide),
         _ => bail!("Unknown feature: {name}"),
     }
 }
@@ -309,6 +316,7 @@ pub fn list_features() {
         FeatureId::KernelUmount,
         FeatureId::Sulog,
         FeatureId::AdbRoot,
+        FeatureId::SelinuxHide,
     ];
 
     for feature_id in &all_features {
@@ -371,6 +379,7 @@ pub fn save_config() -> Result<()> {
         FeatureId::KernelUmount,
         FeatureId::Sulog,
         FeatureId::AdbRoot,
+        FeatureId::SelinuxHide,
     ];
 
     for feature_id in &all_features {

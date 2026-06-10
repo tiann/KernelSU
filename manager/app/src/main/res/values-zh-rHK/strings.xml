@@ -4,9 +4,10 @@
     <string name="home_not_installed">未安裝</string>
     <string name="home_click_to_install">按一下開始安裝</string>
     <string name="home_working">運作中</string>
-    <string name="home_working_version">KernelSU 版本：%d</string>
+    <string name="home_working_version">KernelSU 版本：%s</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現僅支援 GKI 核心，但仍可修補 GKI 裝置映像。</string>
+    <string name="home_device_model">裝置型號</string>
     <string name="home_kernel">核心版本</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_fingerprint">指紋</string>
@@ -190,7 +191,10 @@
     <string name="module_sort_action_first">可執行優先</string>
     <string name="module_sort_enabled_first">已啟用優先</string>
     <string name="module_repos">模組庫</string>
-    <string name="module_repos_sort_name">按名稱排序</string>
+    <string name="module_repos_sort_updated">更新時間</string>
+    <string name="module_repos_sort_created">建立時間</string>
+    <string name="module_repos_sort_name">名稱</string>
+    <string name="module_repos_sort_stars">星標數</string>
     <string name="module_repos_source_code">原始碼</string>
     <string name="confirm">確認</string>
     <string name="metamodule_uninstall_confirm">是否解除安裝 %s 模組？這將影響所有模組，且 meta 模組提供的功能（如掛載）將失效</string>
@@ -219,8 +223,6 @@
     <string name="settings_floating_bottom_bar_summary">使用 Apple 風格懸浮底部欄</string>
     <string name="settings_enable_glass">液態玻璃</string>
     <string name="settings_enable_glass_summary">為懸浮底部欄啟用液態玻璃效果</string>
-    <string name="settings_smooth_corner">平滑圓角</string>
-    <string name="settings_smooth_corner_summary">啟用全局平滑圓角效果</string>
     <string name="show_only_primary_user_apps">僅顯示主要使用者 App</string>
     <string name="settings_auto_jailbreak_summary">開機時若偵測到寬容模式 SELinux，將自動使用 Magica 提升權限（需授予本程式背景啟動權限）</string>
     <string name="settings_auto_jailbreak">自動越獄</string>
@@ -242,4 +244,11 @@
     <string name="home_pr_build_warning">此為 PR 除錯版本，切勿於正式環境使用！</string>
     <string name="home_pr_kernel_warning">此核心具 PR 簽名支援，並非正式版本核心！</string>
     <string name="jailbreak_flash_warning">現正處於**越獄模式**。在 **Bootloader 鎖定**的裝置上刷入分割區會破壞 AVB 驗證，或導致**無法開機**。\n\n操作前請確保 Bootloader 已解鎖！</string>
+    <string name="menu_sort">排序</string>
+    <string name="sort_by_name">應用名</string>
+    <string name="sort_by_package_name">套件名</string>
+    <string name="sort_by_install_time">安裝時間</string>
+    <string name="sort_by_update_time">更新時間</string>
+    <string name="sort_reverse">倒序</string>
+    <string name="profile_flags_desc_no_new_privs">防止在此 Root Profile 的上下文中透過 KernelSU 進一步提升權限</string>
 </resources>

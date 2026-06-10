@@ -58,7 +58,7 @@
     <string name="home_unsupported_reason">KernelSU dabar palaiko tik GKI branduolius</string>
     <string name="home_click_to_install">Spustelėkite norėdami įdiegti</string>
     <string name="home_working">Veikia</string>
-    <string name="home_working_version">Versija: %d</string>
+    <string name="home_working_version">Versija: %s</string>
     <string name="home_unsupported">Nepalaikoma</string>
     <string name="home_manager_version">Tvarkyklės versija</string>
     <string name="home_kernel">Branduolys</string>
@@ -80,4 +80,5 @@
     <string name="settings_sucompat_summary">Nukreipti /system/bin/su į ksud programoms, kurioms suteiktas Superuser leidimas programos profilyje; veiksminga tik naujiems procesams.</string>
     <string name="settings_kernel_umount">Branduolio atjungimas</string>
     <string name="settings_kernel_umount_summary">Branduolio lygio atjungimo elgsena, valdoma KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Neleidžia toliau didinti privilegijų per KernelSU šio root profilio kontekste.</string>
 </resources>

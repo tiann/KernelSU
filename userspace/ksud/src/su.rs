@@ -6,10 +6,10 @@ use anyhow::{Context, Ok, Result, bail};
 use getopts::Options;
 use libc::c_int;
 use log::error;
-use std::env;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
+use std::{cmp::Ordering, env};
 use std::{
     ffi::{CStr, CString},
     process::Command,
@@ -85,18 +85,42 @@ pub fn root_shell() -> Result<()> {
     use anyhow::anyhow;
     let env_args: Vec<String> = env::args().collect();
     let program = env_args[0].clone();
-    let args = env_args.iter().position(|arg| arg == "-c").map_or_else(
-        || env_args.clone(),
-        |i| {
-            let rest = env_args[i + 1..].to_vec();
-            let mut new_args = env_args[..i].to_vec();
+    let mut executable: Option<String> = None;
+    let mut exec_args: Option<Vec<String>> = None;
+    let first_option_c = env_args
+        .iter()
+        .position(|arg| arg == "-c")
+        .unwrap_or(usize::MAX);
+    let first_non_option = env_args
+        .windows(3)
+        .position(|arg| {
+            !arg[1].starts_with('-')
+                && !arg[2].starts_with('-')
+                && !(arg[0].starts_with("-g")
+                    || arg[0].starts_with("-G")
+                    || arg[0].starts_with("-s")
+                    || arg[0] == "--group"
+                    || arg[0] == "--supp-group="
+                    || arg[0] == "--shell=")
+        })
+        .map_or(usize::MAX, |idx| idx + 1);
+    let args = match first_non_option.cmp(&first_option_c) {
+        Ordering::Equal => env_args,
+        Ordering::Less => {
+            executable = Some(env_args[first_non_option + 1].clone());
+            exec_args = Some(env_args[first_non_option + 2..].to_vec());
+            env_args[..=first_non_option].to_vec()
+        }
+        Ordering::Greater => {
+            let rest = env_args[first_option_c + 1..].to_vec();
+            let mut new_args = env_args[..first_option_c].to_vec();
             new_args.push("-c".to_string());
             if !rest.is_empty() {
                 new_args.push(rest.join(" "));
             }
             new_args
-        },
-    );
+        }
+    };
 
     let mut opts = Options::new();
     opts.optopt(
@@ -198,10 +222,12 @@ pub fn root_shell() -> Result<()> {
     }
 
     // we've make sure that -c is the last option and it already contains the whole command, no need to construct it again
-    let args = matches
-        .opt_str("c")
-        .map(|cmd| vec!["-c".to_string(), cmd])
-        .unwrap_or_default();
+    let args = exec_args.unwrap_or_else(|| {
+        matches
+            .opt_str("c")
+            .map(|cmd| vec!["-c".to_string(), cmd])
+            .unwrap_or_default()
+    });
 
     let mut free_idx = 0;
     if !matches.free.is_empty() && matches.free[free_idx] == "-" {
@@ -224,10 +250,11 @@ pub fn root_shell() -> Result<()> {
 
     // if there is no gid provided, use uid.
     let gid = gid.unwrap_or(uid);
+    let executable = executable.as_ref().unwrap_or(&shell);
     // https://github.com/topjohnwu/Magisk/blob/master/native/src/su/su_daemon.cpp#L408
-    let arg0 = if is_login { "-" } else { &shell };
+    let arg0 = if is_login { "-" } else { executable };
 
-    let mut command = &mut Command::new(&shell);
+    let mut command = Command::new(executable);
 
     if !preserve_env {
         // This is actually incorrect, i don't know why.
@@ -242,7 +269,7 @@ pub fn root_shell() -> Result<()> {
             let home = home.to_string_lossy();
             let pw_name = pw_name.to_string_lossy();
 
-            command = command
+            command
                 .env("HOME", home.as_ref())
                 .env("USER", pw_name.as_ref())
                 .env("LOGNAME", pw_name.as_ref())
@@ -255,13 +282,13 @@ pub fn root_shell() -> Result<()> {
 
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
     if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
-        command = command.env("ENV", defs::KSURC_PATH);
+        command.env("ENV", defs::KSURC_PATH);
     }
 
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
     // command = command.process_group(0);
-    command = unsafe {
+    unsafe {
         command.pre_exec(move || {
             umask(0o22);
             utils::switch_cgroups();
@@ -283,7 +310,7 @@ pub fn root_shell() -> Result<()> {
         })
     };
 
-    command = command.args(args).arg0(arg0);
+    command.args(args).arg0(arg0);
     Err(command.exec().into())
 }
 

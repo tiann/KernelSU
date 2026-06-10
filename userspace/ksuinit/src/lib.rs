@@ -150,11 +150,21 @@ fn has_kernelsu_v2() -> bool {
     use syscalls::{Sysno, syscall};
     const KSU_INSTALL_MAGIC1: u32 = 0xDEADBEEF;
     const KSU_INSTALL_MAGIC2: u32 = 0xCAFEBABE;
-    const KSU_IOCTL_GET_INFO: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
+    const KSU_IOCTL_GET_INFO: u32 = 0x80104b02; // _IOR('K', 2, struct ksu_get_info_cmd)
+    const KSU_IOCTL_GET_INFO_LEGACY: u32 = 0x80004b02; // _IOC(_IOC_READ, 'K', 2, 0)
 
     #[repr(C)]
     #[derive(Default)]
     struct GetInfoCmd {
+        version: u32,
+        flags: u32,
+        features: u32,
+        uapi_version: u32,
+    }
+
+    #[repr(C)]
+    #[derive(Default)]
+    struct GetInfoLegacyCmd {
         version: u32,
         flags: u32,
         features: u32,
@@ -180,7 +190,18 @@ fn has_kernelsu_v2() -> bool {
 
             match ret {
                 Ok(_) => cmd.version,
-                Err(_) => 0,
+                Err(_) => {
+                    let mut cmd = GetInfoLegacyCmd::default();
+                    match syscall!(
+                        Sysno::ioctl,
+                        fd,
+                        KSU_IOCTL_GET_INFO_LEGACY,
+                        &mut cmd as *mut _
+                    ) {
+                        Ok(_) => cmd.version,
+                        Err(_) => 0,
+                    }
+                }
             }
         };
 

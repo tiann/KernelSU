@@ -4,7 +4,7 @@
     <string name="home_not_installed">No instalado</string>
     <string name="home_click_to_install">Haz clic para instalar</string>
     <string name="home_working">Funcionando</string>
-    <string name="home_working_version">Versión: %d</string>
+    <string name="home_working_version">Versión: %s</string>
     <string name="home_unsupported">Sin soporte</string>
     <string name="home_unsupported_reason">KernelSU solo admite kernels GKI por ahora</string>
     <string name="home_kernel">Versión del kernel</string>
@@ -124,4 +124,5 @@
     <string name="settings_sucompat_summary">Permite que las aplicaciones con permiso de Superusuario en el perfil de la aplicación obtengan un shell de superusuario ejecutando /system/bin/su; efectivo solo para nuevos procesos.</string>
     <string name="settings_kernel_umount">Desmontaje del kernel</string>
     <string name="settings_kernel_umount_summary">Comportamiento de desmontaje a nivel de kernel controlado por KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Impide una mayor escalada de privilegios mediante KernelSU dentro del contexto de este perfil root.</string>
 </resources>

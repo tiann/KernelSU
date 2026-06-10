@@ -49,7 +49,6 @@ data class AppSettings(
     val keyColor: Int,
     val paletteStyle: PaletteStyle,
     val colorSpec: ColorSpec.SpecVersion,
-    val enableSmoothCorner: Boolean,
 )
 
 object ThemeController {
@@ -85,9 +84,7 @@ object ThemeController {
             ColorSpec.SpecVersion.Default
         }
 
-        val enableSmoothCorner = prefs.getBoolean("enable_smooth_corner", true)
-
-        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec, enableSmoothCorner)
+        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)
     }
 }
 

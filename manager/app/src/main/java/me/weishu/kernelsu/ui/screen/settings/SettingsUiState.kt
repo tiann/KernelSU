@@ -21,7 +21,6 @@ data class SettingsUiState(
     val enableFloatingBottomBarBlur: Boolean = false,
     val pageScale: Float = 1.0f,
     val enableWebDebugging: Boolean = false,
-    val enableSmoothCorner: Boolean = true,
 
     // Su Compat
     val suCompatStatus: String = "",
@@ -31,6 +30,10 @@ data class SettingsUiState(
     // Kernel Umount
     val kernelUmountStatus: String = "",
     val isKernelUmountEnabled: Boolean = false,
+
+    // SELinux Hide
+    val selinuxHideStatus: String = "",
+    val isSelinuxHideEnabled: Boolean = false,
 
     // SU Log
     val sulogStatus: String = "",
@@ -59,6 +62,7 @@ data class SettingsScreenActions(
     val onOpenProfileTemplate: () -> Unit,
     val onSetSuCompatMode: (Int) -> Unit,
     val onSetKernelUmountEnabled: (Boolean) -> Unit,
+    val onSetSelinuxHideEnabled: (Boolean) -> Unit,
     val onSetSulogEnabled: (Boolean) -> Unit,
     val onSetAdbRootEnabled: (Boolean) -> Unit,
     val onSetDefaultUmountModules: (Boolean) -> Unit,

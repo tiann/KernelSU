@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -35,19 +37,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -61,7 +64,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -72,17 +74,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
+import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
+import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
@@ -116,15 +119,13 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.FileDownloads
 import top.yukonga.miuix.kmp.icon.extended.HorizontalSplit
 import top.yukonga.miuix.kmp.icon.extended.Link
-import top.yukonga.miuix.kmp.icon.extended.MoreCircle
+import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.theme.miuixShape
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
-import java.text.Collator
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -134,7 +135,6 @@ fun ModuleRepoScreenMiuix(
 ) {
     val searchStatus = state.searchStatus
     val density = LocalDensity.current
-    val platformLocale = LocalLocale.current.platformLocale
     val metaBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
     val metaTint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
 
@@ -160,33 +160,42 @@ fun ModuleRepoScreenMiuix(
                         color = barColor,
                         title = stringResource(R.string.module_repos),
                         actions = {
-                            val showTopPopup = remember { mutableStateOf(false) }
+                            val showSortPopup = remember { mutableStateOf(false) }
                             OverlayListPopup(
-                                show = showTopPopup.value, popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                                show = showSortPopup.value,
+                                popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
                                 alignment = PopupPositionProvider.Align.TopEnd,
-                                onDismissRequest = { showTopPopup.value = false },
+                                onDismissRequest = { showSortPopup.value = false },
                                 content = {
                                     ListPopupColumn {
-                                        DropdownImpl(
-                                            text = stringResource(R.string.module_repos_sort_name),
-                                            optionSize = 1,
-                                            isSelected = state.sortByName,
-                                            onSelectedIndexChange = {
-                                                actions.onToggleSortByName()
-                                                showTopPopup.value = false
-                                            },
-                                            index = 0
+                                        val sortOptions = listOf(
+                                            RepoSort.UPDATED to R.string.module_repos_sort_updated,
+                                            RepoSort.CREATED to R.string.module_repos_sort_created,
+                                            RepoSort.NAME to R.string.module_repos_sort_name,
+                                            RepoSort.STARS to R.string.module_repos_sort_stars,
                                         )
+                                        sortOptions.forEachIndexed { index, (order, resId) ->
+                                            DropdownImpl(
+                                                text = stringResource(resId),
+                                                optionSize = sortOptions.size,
+                                                isSelected = state.sortOrder == order,
+                                                onSelectedIndexChange = {
+                                                    actions.onSetSortOrder(order)
+                                                    showSortPopup.value = false
+                                                },
+                                                index = index,
+                                            )
+                                        }
                                     }
                                 })
                             IconButton(
-                                onClick = { showTopPopup.value = true },
-                                holdDownState = showTopPopup.value
+                                onClick = { showSortPopup.value = true },
+                                holdDownState = showSortPopup.value
                             ) {
                                 Icon(
-                                    imageVector = MiuixIcons.MoreCircle,
+                                    imageVector = MiuixIcons.Sort,
                                     tint = colorScheme.onSurface,
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.menu_sort),
                                 )
                             }
                         },
@@ -240,10 +249,6 @@ fun ModuleRepoScreenMiuix(
                 defaultResult = {},
                 searchBarTopPadding = dynamicTopPadding,
             ) {
-                val displaySearch = remember(state.searchResults, state.sortByName) {
-                    val collator = Collator.getInstance(platformLocale)
-                    if (!state.sortByName) state.searchResults else state.searchResults.sortedWith(compareBy(collator) { it.moduleName })
-                }
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -252,7 +257,7 @@ fun ModuleRepoScreenMiuix(
                     item {
                         Spacer(Modifier.height(6.dp))
                     }
-                    items(displaySearch, key = { it.moduleId }, contentType = { "module" }) { module ->
+                    items(state.searchResults, key = { it.moduleId }, contentType = { "module" }) { module ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -281,7 +286,7 @@ fun ModuleRepoScreenMiuix(
                                                 color = metaTint,
                                                 modifier = Modifier
                                                     .padding(start = 6.dp)
-                                                    .clip(miuixShape(6.dp))
+                                                    .clip(RoundedCornerShape(6.dp))
                                                     .background(metaBg)
                                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                                                 fontWeight = FontWeight(750),
@@ -346,63 +351,72 @@ fun ModuleRepoScreenMiuix(
         val offline = state.offline
 
         searchStatus.SearchBox {
-            if (!contentReady || isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (offline) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = stringResource(R.string.network_offline),
-                                color = colorScheme.onSurfaceVariantSummary,
-                                fontSize = 16.sp
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            TextButton(
-                                modifier = Modifier
-                                    .padding(horizontal = 24.dp)
-                                    .fillMaxWidth(),
-                                text = stringResource(R.string.network_retry),
-                                onClick = actions.onRefresh,
-                            )
+            val pullToRefreshState = rememberPullToRefreshState()
+            val lazyListState = rememberLazyListState()
+            val refreshTick = remember { mutableStateOf(0) }
+            val latestModules = rememberUpdatedState(state.modules)
+            val latestRefreshing = rememberUpdatedState(state.isRefreshing)
+            ScrollToTopOnChange(
+                lazyListState,
+                state.sortOrder,
+                refreshTick.value,
+                isBusy = { latestRefreshing.value },
+            ) { latestModules.value }
+            val refreshTexts = listOf(
+                stringResource(R.string.refresh_pulling),
+                stringResource(R.string.refresh_release),
+                stringResource(R.string.refresh_refresh),
+                stringResource(R.string.refresh_complete),
+            )
+            PullToRefresh(
+                isRefreshing = state.isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = {
+                    actions.onRefresh()
+                    refreshTick.value++
+                },
+                refreshTexts = refreshTexts,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
+            ) {
+                if (!contentReady || isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding(),
+                                start = innerPadding.calculateStartPadding(layoutDirection),
+                                end = innerPadding.calculateEndPadding(layoutDirection),
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (offline) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = stringResource(R.string.network_offline),
+                                    color = colorScheme.onSurfaceVariantSummary,
+                                    fontSize = 16.sp
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                TextButton(
+                                    modifier = Modifier
+                                        .padding(horizontal = 24.dp)
+                                        .fillMaxWidth(),
+                                    text = stringResource(R.string.network_retry),
+                                    onClick = actions.onRefresh,
+                                )
+                            }
+                        } else {
+                            InfiniteProgressIndicator()
                         }
-                    } else {
-                        InfiniteProgressIndicator()
                     }
-                }
-            }
-            if (!isLoading && contentReady) {
-                val pullToRefreshState = rememberPullToRefreshState()
-                val refreshTexts = listOf(
-                    stringResource(R.string.refresh_pulling),
-                    stringResource(R.string.refresh_release),
-                    stringResource(R.string.refresh_refresh),
-                    stringResource(R.string.refresh_complete),
-                )
-                PullToRefresh(
-                    isRefreshing = state.isRefreshing,
-                    pullToRefreshState = pullToRefreshState,
-                    onRefresh = actions.onRefresh,
-                    refreshTexts = refreshTexts,
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                ) {
-                    val displayModules = remember(state.modules, state.sortByName) {
-                        val collator = Collator.getInstance(platformLocale)
-                        if (!state.sortByName) state.modules else state.modules.sortedWith(compareBy(collator) { it.moduleName })
-                    }
+                } else {
                     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
                         LazyColumn(
+                            state = lazyListState,
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .scrollEndHaptic()
@@ -415,7 +429,7 @@ fun ModuleRepoScreenMiuix(
                             ),
                             overscrollEffect = null,
                         ) {
-                            items(items = displayModules, key = { it.moduleId }, contentType = { "module" }) { module ->
+                            items(items = state.modules, key = { it.moduleId }, contentType = { "module" }) { module ->
                                 val moduleAuthor = stringResource(id = R.string.module_author)
 
                                 Card(
@@ -442,7 +456,7 @@ fun ModuleRepoScreenMiuix(
                                                         color = metaTint,
                                                         modifier = Modifier
                                                             .padding(start = 6.dp)
-                                                            .clip(miuixShape(6.dp))
+                                                            .clip(RoundedCornerShape(6.dp))
                                                             .background(metaBg)
                                                             .padding(horizontal = 6.dp, vertical = 2.dp),
                                                         fontWeight = FontWeight(750),
@@ -534,6 +548,7 @@ private fun ReadmePage(
     innerPadding: PaddingValues, scrollBehavior: ScrollBehavior, backdrop: LayerBackdrop?
 ) {
     val layoutDirection = LocalLayoutDirection.current
+    val isReady = rememberContentReady()
     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
         LazyColumn(
             modifier = Modifier
@@ -550,34 +565,46 @@ private fun ReadmePage(
             overscrollEffect = null,
         ) {
             item {
-                val contentReady = rememberContentReady()
-                var isLoading by remember { mutableStateOf(true) }
-                if (isLoading) {
+                if (readmeLoaded && readmeHtml != null) {
+                    var loaded by remember(readmeHtml) { mutableStateOf(false) }
+                    val alpha by animateFloatAsState(
+                        targetValue = if (loaded) 1f else 0f,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "MiuixReadmeAlpha",
+                    )
+                    val placeholderAlpha by animateFloatAsState(
+                        targetValue = if (loaded) 0f else 1f,
+                        animationSpec = tween(durationMillis = 150),
+                        label = "MiuixReadmePlaceholderAlpha",
+                    )
+                    Box {
+                        if (isReady) {
+                            Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
+                                Column {
+                                    GithubMarkdown(
+                                        content = readmeHtml,
+                                        onLoadingChange = { loaded = !it },
+                                    )
+                                }
+                            }
+                        }
+                        if (placeholderAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxSize()
+                                    .graphicsLayer { this.alpha = placeholderAlpha },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                InfiniteProgressIndicator()
+                            }
+                        }
+                    }
+                } else {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = innerPadding.calculateTopPadding(),
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection),
-                                bottom = innerPadding.calculateBottomPadding(),
-                            ), contentAlignment = Alignment.Center
+                        modifier = Modifier.fillParentMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
                         InfiniteProgressIndicator()
-                    }
-                }
-                AnimatedVisibility(
-                    visible = contentReady && readmeLoaded && readmeHtml != null,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column {
-                        Spacer(Modifier.height(6.dp))
-                        Card(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                        ) {
-                            GithubMarkdown(content = readmeHtml!!, onLoadingChange = { isLoading = it })
-                        }
                     }
                 }
             }
@@ -676,7 +703,43 @@ fun ReleasesPage(
                                                 thickness = 0.5.dp,
                                                 color = colorScheme.outline.copy(alpha = 0.5f)
                                             )
-                                            GithubMarkdown(content = rel.descriptionHTML)
+                                            val descReady = rememberContentReady()
+                                            var descLoaded by remember(rel.descriptionHTML) { mutableStateOf(false) }
+                                            val descAlpha by animateFloatAsState(
+                                                targetValue = if (descLoaded) 1f else 0f,
+                                                animationSpec = tween(durationMillis = 300),
+                                                label = "MiuixReleaseDescAlpha",
+                                            )
+                                            val descPlaceholderAlpha by animateFloatAsState(
+                                                targetValue = if (descLoaded) 0f else 1f,
+                                                animationSpec = tween(durationMillis = 150),
+                                                label = "MiuixDescPlaceholderAlpha",
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .animateContentSize(animationSpec = tween(durationMillis = 300)),
+                                            ) {
+                                                if (descReady) {
+                                                    Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
+                                                        GithubMarkdown(
+                                                            content = rel.descriptionHTML,
+                                                            onLoadingChange = { descLoaded = !it },
+                                                        )
+                                                    }
+                                                }
+                                                if (descPlaceholderAlpha > 0f) {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(72.dp)
+                                                            .graphicsLayer { this.alpha = descPlaceholderAlpha },
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
+                                                        InfiniteProgressIndicator()
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                     HorizontalDivider(
@@ -985,12 +1048,10 @@ fun ModuleRepoDetailScreenMiuix(
         stringResource(R.string.tab_readme), stringResource(R.string.tab_releases), stringResource(R.string.tab_info)
     )
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-    val tabRowHeight by remember { mutableStateOf(40.dp) }
-    var collapsedFraction by remember { mutableFloatStateOf(scrollBehavior.state.collapsedFraction) }
-    LaunchedEffect(scrollBehavior.state.collapsedFraction) {
-        snapshotFlow { scrollBehavior.state.collapsedFraction }.collectLatest { collapsedFraction = it }
+    val tabRowHeight = 40.dp
+    val dynamicTopPadding = remember(scrollBehavior) {
+        { 12.dp * (1f - scrollBehavior.state.collapsedFraction) }
     }
-    val dynamicTopPadding by remember { derivedStateOf { 12.dp * (1f - collapsedFraction) } }
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -1021,7 +1082,8 @@ fun ModuleRepoDetailScreenMiuix(
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 12.dp)
-                            .padding(top = dynamicTopPadding, bottom = 6.dp)
+                            .padding(bottom = 6.dp)
+                            .deferredTopPadding(dynamicTopPadding)
                     ) {
                         TabRow(
                             tabs = tabs,

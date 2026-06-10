@@ -189,7 +189,7 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install(magiskboot: Option<PathBuf>, libadbroot: Option<PathBuf>) -> Result<()> {
+pub fn install(libadbroot: Option<PathBuf>) -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
     let _ = std::fs::remove_file(defs::DAEMON_PATH);
     std::fs::copy(
@@ -202,12 +202,6 @@ pub fn install(magiskboot: Option<PathBuf>, libadbroot: Option<PathBuf>) -> Resu
 
     link_ksud_to_bin()?;
 
-    if let Some(magiskboot) = magiskboot {
-        ensure_dir_exists(defs::BINARY_DIR)?;
-        let _ = std::fs::remove_file(defs::MAGISKBOOT_PATH);
-        let _ = std::fs::copy(magiskboot, defs::MAGISKBOOT_PATH);
-    }
-
     if let Some(libadbroot) = libadbroot {
         ensure_dir_exists(defs::LIBRARY_DIR)?;
         let _ = std::fs::remove_file(defs::LIBADBROOT_PATH);
@@ -217,7 +211,7 @@ pub fn install(magiskboot: Option<PathBuf>, libadbroot: Option<PathBuf>) -> Resu
     Ok(())
 }
 
-pub fn uninstall(magiskboot_path: Option<PathBuf>, package_name: &str) -> Result<()> {
+pub fn uninstall(package_name: &str) -> Result<()> {
     if Path::new(defs::MODULE_DIR).exists() {
         println!("- Uninstall modules..");
         module::uninstall_all_modules()?;
@@ -227,11 +221,12 @@ pub fn uninstall(magiskboot_path: Option<PathBuf>, package_name: &str) -> Result
     std::fs::remove_dir_all(defs::WORKING_DIR).ok();
     std::fs::remove_file(defs::DAEMON_PATH).ok();
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();
+    std::fs::remove_dir_all(defs::PREINIT_DIR_WATCHDOG).ok();
+    std::fs::remove_dir_all(defs::PREINIT_DIR_DEFAULT).ok();
     println!("- Restore boot image..");
     boot_patch::restore(BootRestoreArgs {
         boot: None,
         flash: true,
-        magiskboot: magiskboot_path,
         out: None,
         out_name: None,
     })?;

@@ -131,13 +131,33 @@ fun HomePagerMiuix(
                         if (state.showGkiWarning) {
                             WarningCard(stringResource(id = R.string.home_gki_warning))
                         }
-                        if (state.showRequireKernelWarning) {
+                        if (state.showUAPIMisMatchWarning) {
                             WarningCard(
                                 stringResource(
-                                    id = R.string.require_kernel_version,
-                                    state.ksuVersion ?: 0, me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
-                                ),
+                                    id = R.string.uapi_mismatch,
+                                    state.managerUAPIVersion,
+                                    state.kernelUAPIVersion ?: 0,
+                                )
                             )
+                        }
+                        if (state.showRequireKernelWarning) {
+                            if (state.currentManagerVersionCode < (state.ksuVersion ?: 0)) {
+                                WarningCard(
+                                    stringResource(
+                                        id = R.string.require_manager_version,
+                                        state.currentManagerVersionCode,
+                                        state.ksuVersion ?: 0,
+                                    )
+                                )
+                            } else {
+                                WarningCard(
+                                    stringResource(
+                                        id = R.string.require_kernel_version,
+                                        state.ksuVersion ?: 0,
+                                        me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
+                                    )
+                                )
+                            }
                         }
                         if (state.showRootWarning) {
                             WarningCard(stringResource(id = R.string.grant_root_failed))
@@ -293,7 +313,7 @@ private fun StatusCard(
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = stringResource(R.string.home_working_version, state.ksuVersion),
+                                    text = stringResource(R.string.home_working_version, "${state.ksuVersion}/${state.kernelUAPIVersion}"),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                 )
@@ -381,7 +401,7 @@ private fun StatusCard(
                                 Icon(
                                     Icons.Rounded.ErrorOutline,
                                     stringResource(R.string.home_not_installed),
-                                    modifier = Modifier.padding(end = 16.dp),
+                                    modifier = Modifier.padding(end = 6.dp),
                                     tint = colorScheme.onBackground,
                                 )
                             },
@@ -495,8 +515,9 @@ private fun InfoCard(systemInfo: SystemInfo) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            InfoText(title = stringResource(R.string.home_kernel), content = systemInfo.kernelVersion)
             InfoText(title = stringResource(R.string.home_manager_version), content = systemInfo.managerVersion)
+            InfoText(title = stringResource(R.string.home_kernel), content = systemInfo.kernelVersion)
+            InfoText(title = stringResource(R.string.home_device_model), content = systemInfo.deviceModel)
             InfoText(title = stringResource(R.string.home_fingerprint), content = systemInfo.fingerprint)
             val selinuxDisplay = when (systemInfo.selinuxStatus) {
                 "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
@@ -558,9 +579,10 @@ private fun StatusCardJailbreakPreview() {
 }
 
 private val previewSystemInfo = SystemInfo(
-    kernelVersion = "6.1.0-android14-0-g1234567",
-    managerVersion = "1.0.0 (10000)",
-    fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
+    kernelVersion = "6.12.23-android16-5-g123456789000-abogki123456789-4k",
+    managerVersion = "3.0.0 (30000)",
+    deviceModel = "Xiaomi 17 Pro Max",
+    fingerprint = "Xiaomi/popsicle/popsicle:16/BQ2A.250705.001-BP2A.250605.031.A3/OS3.0.313.0.WPBCNXM:user/release-keys",
     selinuxStatus = "Enforcing",
     seccompStatus = 2
 )
@@ -654,4 +676,7 @@ private fun previewHomeScreenState(
     superuserCount = superuserCount,
     moduleCount = moduleCount,
     systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus),
+    kernelUAPIVersion = 1,
+    managerUAPIVersion = 1,
+    uapiMismatch = false,
 )

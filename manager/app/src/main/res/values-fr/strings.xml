@@ -2,7 +2,7 @@
 <resources>
     <string name="home_not_installed">Non installé</string>
     <string name="home_working">Fonctionnel</string>
-    <string name="home_working_version">Version : %d</string>
+    <string name="home_working_version">Version : %s</string>
     <string name="home_unsupported_reason">KernelSU prend désormais en charge seulement les noyaux GKI, mais vous pouvez patcher l\'image pour les appareils GKI.</string>
     <string name="home_kernel">Version du noyau</string>
     <string name="home_fingerprint">Empreinte</string>
@@ -240,4 +240,5 @@
     <string name="download">Télécharger</string>
     <string name="download_cancel">Annuler</string>
     <string name="download_install">Installer</string>
+    <string name="profile_flags_desc_no_new_privs">Empêche toute élévation de privilèges supplémentaire via KernelSU dans le contexte de ce profil root.</string>
 </resources>

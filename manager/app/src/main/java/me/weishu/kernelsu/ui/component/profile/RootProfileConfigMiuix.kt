@@ -30,11 +30,14 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.toRawFlags
+import me.weishu.kernelsu.toRootProfileFlags
 import me.weishu.kernelsu.ui.component.miuix.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
+import top.yukonga.miuix.kmp.basic.TextFieldDefaults
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.preference.ArrowPreference
 import top.yukonga.miuix.kmp.preference.CheckboxLocation
@@ -127,6 +130,14 @@ fun RootProfileConfigMiuix(
             )
         }
 
+        RootProfileFlagPanel(enabled = enabled, selected = profile.flags.toRootProfileFlags()) {
+            onProfileChange(
+                profile.copy(
+                    flags = it.toRawFlags(),
+                )
+            )
+        }
+
         SELinuxPanel(enabled = enabled, profile = profile, onSELinuxChange = { domain, rules ->
             onProfileChange(
                 profile.copy(
@@ -161,7 +172,7 @@ private fun GroupsPanel(
         )
     }
 
-    val currentSelection = remember { mutableStateOf(selected.toSet()) }
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
 
     OverlayDialog(
         show = showDialog.value,
@@ -257,6 +268,92 @@ private fun MountNameSpacePanel(
 }
 
 @Composable
+private fun RootProfileFlagPanel(
+    enabled: Boolean,
+    selected: List<Natives.Profile.RootProfileFlag>,
+    closeSelection: (selection: List<Natives.Profile.RootProfileFlag>) -> Unit
+) {
+    val showDialog = remember { mutableStateOf(false) }
+
+    val caps = remember {
+        Natives.Profile.RootProfileFlag.entries.toTypedArray().sortedBy { it.display }
+    }
+
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
+
+    OverlayDialog(
+        show = showDialog.value,
+        title = stringResource(R.string.profile_flags),
+        onDismissRequest = { showDialog.value = false },
+        insideMargin = DpSize(0.dp, 24.dp),
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(caps) { cap ->
+                        CheckboxPreference(
+                            title = cap.display,
+                            summary = stringResource(cap.desc),
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.End,
+                            checked = currentSelection.value.contains(cap),
+                            holdDownState = currentSelection.value.contains(cap),
+                            onCheckedChange = { isChecked ->
+                                val newSelection = currentSelection.value.toMutableSet()
+                                if (isChecked) {
+                                    newSelection.add(cap)
+                                } else {
+                                    newSelection.remove(cap)
+                                }
+                                currentSelection.value = newSelection
+                            }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                            currentSelection.value = selected.toSet()
+                        },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        onClick = {
+                            closeSelection(currentSelection.value.toList())
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+                }
+            }
+        }
+    )
+
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
+    }
+    ArrowPreference(
+        enabled = enabled,
+        title = stringResource(R.string.profile_flags),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        }
+    )
+
+}
+
+@Composable
 private fun CapsPanel(
     enabled: Boolean,
     selected: Collection<Capabilities>,
@@ -268,7 +365,7 @@ private fun CapsPanel(
         Capabilities.entries.toTypedArray().sortedBy { it.display }
     }
 
-    val currentSelection = remember { mutableStateOf(selected.toSet()) }
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
 
     OverlayDialog(
         show = showDialog.value,
@@ -350,8 +447,8 @@ private fun SELinuxPanel(
 ) {
     val showDialog = remember { mutableStateOf(false) }
 
-    var domain by remember { mutableStateOf(profile.context) }
-    var rules by remember { mutableStateOf(profile.rules) }
+    var domain by remember(profile.context) { mutableStateOf(profile.context) }
+    var rules by remember(profile.rules) { mutableStateOf(profile.rules) }
 
     val isDomainValid = remember(domain) {
         val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
@@ -373,11 +470,13 @@ private fun SELinuxPanel(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         label = stringResource(id = R.string.profile_selinux_domain),
-                        borderColor = if (isDomainValid) {
-                            colorScheme.primary
-                        } else {
-                            Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
-                        },
+                        colors = TextFieldDefaults.textFieldColors(
+                            borderColor = if (isDomainValid) {
+                                colorScheme.primary
+                            } else {
+                                Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                            },
+                        ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Ascii,
                             imeAction = ImeAction.Next
@@ -391,11 +490,13 @@ private fun SELinuxPanel(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         label = stringResource(id = R.string.profile_selinux_rules),
-                        borderColor = if (isRulesValid) {
-                            colorScheme.primary
-                        } else {
-                            Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
-                        },
+                        colors = TextFieldDefaults.textFieldColors(
+                            borderColor = if (isRulesValid) {
+                                colorScheme.primary
+                            } else {
+                                Color.Red.copy(alpha = if (isSystemInDarkTheme()) 0.3f else 0.6f)
+                            },
+                        ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Ascii,
                         ),

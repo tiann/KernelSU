@@ -34,14 +34,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -54,7 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,8 +64,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
@@ -77,7 +76,6 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.SulogEntry
 import me.weishu.kernelsu.ui.util.SulogEventFilter
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SulogScreenMaterial(
     state: SulogScreenState,
@@ -87,7 +85,6 @@ fun SulogScreenMaterial(
     val pullToRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
     val fileSelector = buildSulogFileSelector(state.files, state.selectedFilePath)
     var selectedEntry by remember { mutableStateOf<SulogEntry?>(null) }
@@ -105,15 +102,17 @@ fun SulogScreenMaterial(
         )
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         topBar = {
             SearchAppBar(
+                snackbarHostState = snackbarHostState,
                 title = { Text(stringResource(R.string.settings_sulog)) },
                 searchText = localSearchText,
                 onSearchTextChange = {
                     localSearchText = it
                     actions.onSearchTextChange(it)
-                    scope.launch { searchListState.scrollToItem(0) }
                 },
                 onClearClick = {
                     localSearchText = ""
@@ -160,6 +159,11 @@ fun SulogScreenMaterial(
                 },
                 scrollBehavior = scrollBehavior,
                 searchContent = { bottomPadding, _ ->
+                    val latestVisibleEntries = rememberUpdatedState(state.visibleEntries)
+                    ScrollToTopOnChange(
+                        searchListState,
+                        state.searchText,
+                    ) { latestVisibleEntries.value }
                     LazyColumn(
                         state = searchListState,
                         modifier = Modifier
@@ -201,6 +205,12 @@ fun SulogScreenMaterial(
                 )
             },
         ) {
+            val latestEntries = rememberUpdatedState(state.visibleEntries)
+            ScrollToTopOnChange(
+                listState,
+                state.selectedFilters,
+                state.selectedFilePath,
+            ) { latestEntries.value }
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -252,7 +262,6 @@ fun SulogScreenMaterial(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private fun LazyListScope.sulogEntriesSection(
     entries: List<SulogEntry>,
     errorMessage: String?,
@@ -396,7 +405,7 @@ private fun WarningCard(
         ) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge,
+                style = typography.bodyLarge,
                 modifier = Modifier.weight(1f),
             )
             action?.invoke()

@@ -4,7 +4,7 @@
     <string name="home_not_installed">Не е инсталирано</string>
     <string name="home_click_to_install">Натиснете да инсталирате</string>
     <string name="home_working">Работи</string>
-    <string name="home_working_version">Версия: %d</string>
+    <string name="home_working_version">Версия: %s</string>
     <string name="home_unsupported">Неподдържано</string>
     <string name="home_unsupported_reason">KernelSU само поддържа GKI кернели за сега.</string>
     <string name="home_kernel">Версия на кернела</string>
@@ -171,4 +171,5 @@
     <string name="tab_readme">ПРОЧЕТИ МЕ</string>
     <string name="tab_releases">Версии</string>
     <string name="tab_info">Информация</string>
+    <string name="profile_flags_desc_no_new_privs">Предотвратява по-нататъшно повишаване на привилегиите чрез KernelSU в контекста на този root профил.</string>
 </resources>

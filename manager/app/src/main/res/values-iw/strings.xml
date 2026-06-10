@@ -45,7 +45,7 @@
     <string name="module">מודולים</string>
     <string name="module_author">יוצר</string>
     <string name="about">אודות</string>
-    <string name="home_working_version">גרסה: %d</string>
+    <string name="home_working_version">גרסה: %s</string>
     <string name="reboot">הפעלה מחדש</string>
     <string name="home_unsupported_reason">KernelSU תומך רק בליבת GKI כעת</string>
     <string name="home_selinux_status">סטטוס SELinux</string>
@@ -80,4 +80,5 @@
     <string name="settings_sucompat_summary">הפנה מחדש את /system/bin/su ל-ksud עבור אפליקציות שקיבלו הרשאת Superuser בפרופיל האפליקציה; יעיל לתהליכים חדשים בלבד.</string>
     <string name="settings_kernel_umount">ביטול טעינת קרנל</string>
     <string name="settings_kernel_umount_summary">התנהגות ביטול טעינה ברמת הקרנל הנשלטת על ידי KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">מונע הסלמת הרשאות נוספת דרך KernelSU מתוך ההקשר של פרופיל root זה.</string>
 </resources>

@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -18,6 +19,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
@@ -38,11 +40,12 @@ fun ModulePager(
     val context = LocalContext.current
     val resource = LocalResources.current
     val viewModel = viewModel<ModuleViewModel>()
+    val scope = rememberCoroutineScope()
     val rawUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val webUILauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
+    ) { viewModel.fetchModuleList(resort = false) }
 
     // Request notification permission for download progress notifications
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -62,7 +65,10 @@ fun ModulePager(
         }
 
         LifecycleResumeEffect(Unit) {
-            viewModel.fetchModuleList(checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh)
+            viewModel.fetchModuleList(
+                checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh,
+                resort = rawUiState.moduleList.isEmpty(),
+            )
             onPauseOrDispose {}
         }
     }
@@ -89,25 +95,24 @@ fun ModulePager(
         onDismissConfirmRequest = {
             viewModel.dismissConfirmRequest()
         },
-        onConsumeEffect = {
-            viewModel.consumeEffect()
-        },
         onConfirmUpdate = { request ->
-            download(
-                url = request.downloadUrl,
-                fileName = request.fileName,
-                onDownloaded = { uri ->
-                    navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-                    viewModel.markNeedRefresh()
-                },
-                onDownloading = {
-                    viewModel.emitEffect(
-                        ModuleEffect.Toast(
-                            resource.getString(R.string.module_downloading).format(request.module.name)
+            scope.launch {
+                download(
+                    url = request.downloadUrl,
+                    fileName = request.fileName,
+                    onDownloaded = { uri ->
+                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
+                        viewModel.markNeedRefresh()
+                    },
+                    onDownloading = {
+                        viewModel.emitEffect(
+                            ModuleEffect.Toast(
+                                resource.getString(R.string.module_downloading).format(request.module.name)
+                            )
                         )
-                    )
-                },
-            )
+                    },
+                )
+            }
             viewModel.dismissConfirmRequest()
         },
         onOpenRepo = { navigator.push(Route.ModuleRepo) },
@@ -149,7 +154,7 @@ fun ModulePager(
         UiMode.Miuix -> ModulePagerMiuix(
             uiState = rawUiState,
             confirmDialogState = rawUiState.confirmDialogState,
-            effect = rawUiState.effect,
+            moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
@@ -157,7 +162,7 @@ fun ModulePager(
         UiMode.Material -> ModulePagerMaterial(
             uiState = rawUiState,
             confirmDialogState = rawUiState.confirmDialogState,
-            effect = rawUiState.effect,
+            moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
         )
