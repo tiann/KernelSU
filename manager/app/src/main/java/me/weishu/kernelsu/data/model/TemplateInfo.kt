@@ -63,10 +63,12 @@ data class TemplateInfo(
                     rules = rulesJsonArray?.mapCatching<String, String>({ it }, {
                         Log.e(TAG, "ignore invalid rule: $it", it)
                     }).orEmpty(),
-                    flags = getEnumOrdinals(
-                        flagsJsonArray,
-                        Natives.Profile.RootProfileFlag::class.java
-                    ).map { it.ordinal }
+                    flags = flagsJsonArray?.let {
+                        getEnumOrdinals(
+                            it,
+                            Natives.Profile.RootProfileFlag::class.java
+                        ).map { flag -> flag.ordinal }
+                    } ?: listOf(Natives.Profile.RootProfileFlag.NO_NEW_PRIVS.ordinal)
                 )
                 templateInfo
             }.onFailure {

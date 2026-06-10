@@ -52,6 +52,8 @@ static void __init init_default_profiles()
 
     // This means that we will umount modules by default!
     default_non_root_profile.umount_modules = true;
+
+    default_root_profile.flags = 0;
 }
 
 struct perm_data {
