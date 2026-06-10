@@ -128,4 +128,5 @@
     <string name="settings_sucompat_summary">Pārvirzīt /system/bin/su uz ksud lietotnēm, kurām piešķirta Superuser atļauja lietotnes profilā; efektīva tikai jauniem procesiem.</string>
     <string name="settings_kernel_umount">Kodola atvienošana</string>
     <string name="settings_kernel_umount_summary">Kodola līmeņa atvienošanas uzvedība, ko kontrolē KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Novērš turpmāku privilēģiju paaugstināšanu, izmantojot KernelSU, šī root profila kontekstā.</string>
 </resources>

@@ -37,5 +37,8 @@
             "name": "Sistema",
             "description": "Il livello di permessi con il quale viene eseguito il sistema operativo Android senza alcuna capacità."
         } 
-    }
+    },
+    "flags":[
+        "NO_NEW_PRIVS"
+    ]
 }

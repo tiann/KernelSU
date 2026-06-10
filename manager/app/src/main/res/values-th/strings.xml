@@ -200,4 +200,5 @@
     <string name="select_file_tip_nogki">โปรดเลือกไฟล์อิมเมจ GKI ที่คุณต้องการแก้ไข</string>
     <string name="current_kmi">เวอร์ชัน KMI ของอุปกรณ์นี้: %s</string>
     <string name="current_device_kmi">อุปกรณ์นี้ใช้ KMI</string>
+    <string name="profile_flags_desc_no_new_privs">ป้องกันการยกระดับสิทธิ์เพิ่มเติมผ่าน KernelSU ภายในบริบทของโปรไฟล์รูทนี้</string>
 </resources>

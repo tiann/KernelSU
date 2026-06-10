@@ -133,4 +133,5 @@
     <string name="settings_sucompat_summary">Permite que aplicativos com permissão de Superusuário no Perfil do App obtenham um shell de superusuário executando /system/bin/su; efetivo apenas para novos processos.</string>
     <string name="settings_kernel_umount">Desmontar kernel</string>
     <string name="settings_kernel_umount_summary">Comportamento de desmontagem no nível do kernel controlado pelo KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Impede uma escalada adicional de privilégios via KernelSU no contexto deste perfil root.</string>
 </resources>

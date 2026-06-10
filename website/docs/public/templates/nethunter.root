@@ -50,5 +50,8 @@
             "name": "Kali NetHunter",
             "description": "Autorizzazioni richieste per il chroot dell'applicazione Kali NetHunter."
         } 
-    }
+    },
+    "flags":[
+        "NO_NEW_PRIVS"
+    ]
 }

@@ -171,4 +171,5 @@
     <string name="tab_readme">ПРОЧЕТИ МЕ</string>
     <string name="tab_releases">Версии</string>
     <string name="tab_info">Информация</string>
+    <string name="profile_flags_desc_no_new_privs">Предотвратява по-нататъшно повишаване на привилегиите чрез KernelSU в контекста на този root профил.</string>
 </resources>

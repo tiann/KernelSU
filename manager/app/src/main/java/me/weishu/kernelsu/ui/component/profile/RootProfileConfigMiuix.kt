@@ -30,6 +30,8 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.toRawFlags
+import me.weishu.kernelsu.toRootProfileFlags
 import me.weishu.kernelsu.ui.component.miuix.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -124,6 +126,14 @@ fun RootProfileConfigMiuix(
                 profile.copy(
                     namespace = it,
                     rootUseDefault = false
+                )
+            )
+        }
+
+        RootProfileFlagPanel(enabled = enabled, selected = profile.flags.toRootProfileFlags()) {
+            onProfileChange(
+                profile.copy(
+                    flags = it.toRawFlags(),
                 )
             )
         }
@@ -255,6 +265,92 @@ private fun MountNameSpacePanel(
             onMntNamespaceChange(index)
         }
     )
+}
+
+@Composable
+private fun RootProfileFlagPanel(
+    enabled: Boolean,
+    selected: List<Natives.Profile.RootProfileFlag>,
+    closeSelection: (selection: List<Natives.Profile.RootProfileFlag>) -> Unit
+) {
+    val showDialog = remember { mutableStateOf(false) }
+
+    val caps = remember {
+        Natives.Profile.RootProfileFlag.entries.toTypedArray().sortedBy { it.display }
+    }
+
+    val currentSelection = remember(selected) { mutableStateOf(selected.toSet()) }
+
+    OverlayDialog(
+        show = showDialog.value,
+        title = stringResource(R.string.profile_flags),
+        onDismissRequest = { showDialog.value = false },
+        insideMargin = DpSize(0.dp, 24.dp),
+        content = {
+            Column(modifier = Modifier.heightIn(max = 500.dp)) {
+                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                    items(caps) { cap ->
+                        CheckboxPreference(
+                            title = cap.display,
+                            summary = stringResource(cap.desc),
+                            insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
+                            checkboxLocation = CheckboxLocation.End,
+                            checked = currentSelection.value.contains(cap),
+                            holdDownState = currentSelection.value.contains(cap),
+                            onCheckedChange = { isChecked ->
+                                val newSelection = currentSelection.value.toMutableSet()
+                                if (isChecked) {
+                                    newSelection.add(cap)
+                                } else {
+                                    newSelection.remove(cap)
+                                }
+                                currentSelection.value = newSelection
+                            }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                            currentSelection.value = selected.toSet()
+                        },
+                        text = stringResource(android.R.string.cancel),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    TextButton(
+                        onClick = {
+                            closeSelection(currentSelection.value.toList())
+                            showDialog.value = false
+                        },
+                        text = stringResource(R.string.confirm),
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.textButtonColorsPrimary()
+                    )
+                }
+            }
+        }
+    )
+
+    val tag = if (selected.isEmpty()) {
+        "None"
+    } else {
+        selected.joinToString(separator = ",", transform = { it.display })
+    }
+    ArrowPreference(
+        enabled = enabled,
+        title = stringResource(R.string.profile_flags),
+        summary = tag,
+        onClick = {
+            showDialog.value = true
+        }
+    )
+
 }
 
 @Composable
