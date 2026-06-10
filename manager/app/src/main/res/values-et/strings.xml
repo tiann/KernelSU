@@ -124,4 +124,5 @@ Liitu meie %2$si kanaliga</string>
     <string name="settings_sucompat_summary">Võimaldab rakendustel, kellele on antud Superuser luba rakenduse profiilis, saada superuser shell, käivitades /system/bin/su; kehtib ainult uute protsesside puhul.</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Kerneli tasemel lahtihaakimise käitumine, mida kontrollib KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Takistab õiguste edasist tõstmist KernelSU kaudu selle root-profiili kontekstis.</string>
 </resources>

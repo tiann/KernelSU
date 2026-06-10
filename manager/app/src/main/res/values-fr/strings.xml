@@ -240,4 +240,5 @@
     <string name="download">Télécharger</string>
     <string name="download_cancel">Annuler</string>
     <string name="download_install">Installer</string>
+    <string name="profile_flags_desc_no_new_privs">Empêche toute élévation de privilèges supplémentaire via KernelSU dans le contexte de ce profil root.</string>
 </resources>

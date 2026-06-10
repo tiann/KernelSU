@@ -99,4 +99,5 @@
     <string name="settings_sucompat_summary">Preusmeri /system/bin/su na ksud za aplikacije z dovoljenjem Superuporabnika v profilu aplikacije; velja samo za nove procese.</string>
     <string name="settings_kernel_umount">Jedrno odklapljanje</string>
     <string name="settings_kernel_umount_summary">Vedenje odklapljanja na ravni jedra, ki ga nadzoruje KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Prepreči nadaljnje stopnjevanje privilegijev prek KernelSU znotraj konteksta tega root profila.</string>
 </resources>

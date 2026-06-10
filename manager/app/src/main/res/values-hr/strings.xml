@@ -172,4 +172,5 @@
     <string name="tab_readme">PROČITAJ ME</string>
     <string name="tab_releases">Izdanja</string>
     <string name="tab_info">Info</string>
+    <string name="profile_flags_desc_no_new_privs">Sprječava daljnju eskalaciju privilegija putem KernelSU-a unutar konteksta ovog root profila.</string>
 </resources>
