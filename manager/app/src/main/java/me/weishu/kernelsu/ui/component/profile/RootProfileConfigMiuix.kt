@@ -30,6 +30,8 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.toRawFlags
+import me.weishu.kernelsu.toRootProfileFlags
 import me.weishu.kernelsu.ui.component.miuix.SuperEditArrow
 import me.weishu.kernelsu.ui.util.isSepolicyValid
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -128,10 +130,10 @@ fun RootProfileConfigMiuix(
             )
         }
 
-        RootProfileFlagPanel(enabled = enabled, selected = profile.flags) {
+        RootProfileFlagPanel(enabled = enabled, selected = profile.flags.toRootProfileFlags()) {
             onProfileChange(
                 profile.copy(
-                    flags = it,
+                    flags = it.toRawFlags(),
                 )
             )
         }
@@ -290,7 +292,7 @@ private fun RootProfileFlagPanel(
                     items(caps) { cap ->
                         CheckboxPreference(
                             title = cap.display,
-                            summary = cap.desc,
+                            summary = stringResource(cap.desc),
                             insideMargin = PaddingValues(horizontal = 30.dp, vertical = 16.dp),
                             checkboxLocation = CheckboxLocation.End,
                             checked = currentSelection.value.contains(cap),

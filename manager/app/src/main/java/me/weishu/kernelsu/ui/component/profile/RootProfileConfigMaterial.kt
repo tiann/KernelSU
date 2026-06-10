@@ -25,6 +25,8 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.profile.Capabilities
 import me.weishu.kernelsu.profile.Groups
+import me.weishu.kernelsu.toRawFlags
+import me.weishu.kernelsu.toRootProfileFlags
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedTextField
@@ -87,11 +89,11 @@ fun RootProfileConfigMaterial(
 
         RootProfileFlagPanel(
             enabled = enabled,
-            selected = profile.flags,
+            selected = profile.flags.toRootProfileFlags(),
             onSelectionChange = {
                 onProfileChange(
                     profile.copy(
-                        flags = it,
+                        flags = it.toRawFlags(),
                     )
                 )
             }

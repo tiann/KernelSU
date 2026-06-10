@@ -168,7 +168,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
     auto namespacesField = env->GetFieldID(cls, "namespace", "I");
-    jfieldID flagsField = env->GetFieldID(cls, "flags", "Ljava/util/List;");
+    jfieldID flagsField = env->GetFieldID(cls, "flags", "J");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
@@ -220,33 +220,7 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
                 env->NewStringUTF(profile.rp_config.profile.selinux_domain));
         env->SetIntField(obj, namespacesField, profile.rp_config.profile.namespaces);
         env->SetBooleanField(obj, allowSuField, profile.allow_su);
-
-        jobject flagsList = env->GetObjectField(obj, flagsField);
-        if (flagsList != nullptr) {
-            jclass list_cls = env->GetObjectClass(flagsList);
-            jmethodID list_add_mid = env->GetMethodID(list_cls, "add",
-                                                                   "(Ljava/lang/Object;)Z");
-
-            jclass enum_cls = env->FindClass("me/weishu/kernelsu/Natives$Profile$RootProfileFlag");
-            jmethodID values_mid = env->GetStaticMethodID(enum_cls, "values",
-                                                                       "()[Lme/weishu/kernelsu/Natives$Profile$RootProfileFlag;");
-
-            auto enum_values = (jobjectArray)env->CallStaticObjectMethod(enum_cls,values_mid);
-
-            unsigned long long c_flags = profile.rp_config.profile.flags;
-
-            if (c_flags & FLAG_KSU_NO_NEW_PRIVS) {
-                jobject flag_val = env->GetObjectArrayElement(enum_values, 0);
-                if (flag_val != nullptr) {
-                    env->CallBooleanMethod(flagsList, list_add_mid, flag_val);
-                    env->DeleteLocalRef(flag_val);
-                }
-            }
-
-            env->DeleteLocalRef(enum_values);
-            env->DeleteLocalRef(enum_cls);
-            env->DeleteLocalRef(list_cls);
-        }
+        env->SetLongField(obj, flagsField, (jlong) profile.rp_config.profile.flags);
     } else {
         env->SetBooleanField(obj, nonRootUseDefaultField,
                 (jboolean) profile.nrp_config.use_default);
@@ -274,11 +248,10 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
     auto namespacesField = env->GetFieldID(cls, "namespace", "I");
-    jfieldID flagsField = env->GetFieldID(cls, "flags", "Ljava/util/List;");
+    jfieldID flagsField = env->GetFieldID(cls, "flags", "J");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
-    jobject flagsList = env->GetObjectField(profile, flagsField);
 
     auto key = env->GetObjectField(profile, keyField);
     if (!key) {
@@ -338,33 +311,7 @@ Java_me_weishu_kernelsu_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
 
         p.rp_config.profile.namespaces = env->GetIntField(profile, namespacesField);
 
-        unsigned long long c_flags = 0;
-        if (flagsList != nullptr) {
-            jclass list_cls = env->GetObjectClass(flagsList);
-            jmethodID list_size_mid = env->GetMethodID(list_cls, "size", "()I");
-            jmethodID list_get_mid = env->GetMethodID(list_cls, "get",
-                                                                   "(I)Ljava/lang/Object;");
-            jint size = env->CallIntMethod(flagsList, list_size_mid);
-            for (jint i = 0; i < size; ++i) {
-                jobject flag_obj = env->CallObjectMethod(flagsList, list_get_mid,
-                                                                      i);
-                if (flag_obj == nullptr) continue;
-                jclass enum_cls = env->GetObjectClass(flag_obj);
-                jmethodID ordinal_mid = env->GetMethodID(enum_cls, "ordinal", "()I");
-                jint ordinal = env->CallIntMethod(flag_obj, ordinal_mid);
-                switch (ordinal) {
-                    case 0:
-                        c_flags |= FLAG_KSU_NO_NEW_PRIVS;
-                        break;
-                    default:
-                        break;
-                }
-                env->DeleteLocalRef(enum_cls);
-                env->DeleteLocalRef(flag_obj);
-            }
-            env->DeleteLocalRef(list_cls);
-        }
-        p.rp_config.profile.flags = c_flags;
+        p.rp_config.profile.flags = env->GetLongField(profile, flagsField);
     } else {
         p.nrp_config.use_default = env->GetBooleanField(profile, nonRootUseDefaultField);
         p.nrp_config.profile.umount_modules = umountModules;

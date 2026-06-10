@@ -2,6 +2,7 @@ package me.weishu.kernelsu.ui.screen.templateeditor
 
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.data.model.TemplateInfo
+import me.weishu.kernelsu.toRawFlags
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 
@@ -21,7 +22,7 @@ fun toNativeProfile(templateInfo: TemplateInfo): Natives.Profile {
         context = templateInfo.context,
         namespace = templateInfo.namespace,
         rules = templateInfo.rules.joinToString("\n").ifBlank { "" },
-        flags = mappedFlags,
+        flags = mappedFlags.toRawFlags(),
     )
 }
 

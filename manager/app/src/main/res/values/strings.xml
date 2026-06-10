@@ -288,4 +288,5 @@
     <string name="sort_by_install_time">Install time</string>
     <string name="sort_by_update_time">Update time</string>
     <string name="sort_reverse">Reverse</string>
+    <string name="profile_flags_desc_no_new_privs">Disable further permission escaping by KernelSU from this profile context</string>
 </resources>
