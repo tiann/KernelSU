@@ -21,4 +21,7 @@ CLAUDE.md
 .ddk-version
 .vscode/settings.json
 check_symbol
+gen_keep_globals
+trim_local_symnames
 ksu_uapi.h
+.codex

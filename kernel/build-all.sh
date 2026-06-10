@@ -10,10 +10,9 @@ mv .ddk-version .ddk-version.bak || true
 for kmi in $KMIS; do
     echo "========== Building $kmi =========="
     export DDK_TARGET=$kmi
-    if ddk build -e CONFIG_KSU=m; then
+    if ddk build -e CONFIG_KSU=m -- release; then
         if [ -f kernelsu.ko ]; then
             cp kernelsu.ko "kernelsu-${kmi}.ko"
-            llvm-objcopy --strip-unneeded --discard-locals "kernelsu-${kmi}.ko"
             echo "✓ Built kernelsu-${kmi}.ko"
         fi
     else
