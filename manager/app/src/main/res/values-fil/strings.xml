@@ -133,4 +133,5 @@
     <string name="module_repos_source_code">Source code</string>
     <string name="metamodule_uninstall_confirm">Sigurado ka ba gusto mong i-uninstall ang module na %s? Aapektuhan ng aksyon na ito ang lahat ng mga module, at hindi na gagana ang mga feature na ibinigay ng metamodule (tulad ng pag-mount).</string>
     <string name="safe_mode_module_disabled">Naka-disable sa safe mode ang pag-install ng mga module</string>
+    <string name="profile_flags_desc_no_new_privs">Pinipigilan ang karagdagang pagtaas ng pribilehiyo sa pamamagitan ng KernelSU mula sa loob ng konteksto ng root profile na ito.</string>
 </resources>

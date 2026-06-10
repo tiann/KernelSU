@@ -20,4 +20,5 @@
     <string name="settings_sucompat_summary">యాప్ ప్రొఫైల్‌లో సూపర్‌యూజర్ అనుమతి ఉన్న యాప్‌ల కోసం /system/bin/su ని ksud కి మళ్ళించండి; కొత్త ప్రాసెస్‌లకు మాత్రమే పని చేస్తుంది.</string>
     <string name="settings_kernel_umount">కెర్నల్ అన్‌మౌంట్</string>
     <string name="settings_kernel_umount_summary">KernelSU ద్వారా నియంత్రించబడే కెర్నల్-స్థాయి అన్‌మౌంట్ ప్రవర్తన</string>
+    <string name="profile_flags_desc_no_new_privs">ఈ రూట్ ప్రొఫైల్ సందర్భంలో KernelSU ద్వారా మరింత హక్కుల పెంపును నిరోధిస్తుంది.</string>
 </resources>

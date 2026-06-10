@@ -64,4 +64,5 @@
     <string name="settings_sucompat_summary">تغییر مسیر /system/bin/su به ksud برای برنامه‌هایی که مجوز Superuser در پروفایل برنامه دارند؛ فقط برای فرآیندهای جدید موثر است.</string>
     <string name="settings_kernel_umount">جداسازی هسته</string>
     <string name="settings_kernel_umount_summary">رفتار جداسازی در سطح هسته که توسط KernelSU کنترل می‌شود</string>
+    <string name="profile_flags_desc_no_new_privs">از افزایش بیشتر سطح دسترسی از طریق KernelSU در چارچوب این پروفایل روت جلوگیری می‌کند.</string>
 </resources>

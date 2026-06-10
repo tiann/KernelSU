@@ -138,4 +138,5 @@
     <string name="refresh_release">Slip for at opdatere</string>
     <string name="refresh_refresh">Opdaterer…</string>
     <string name="refresh_complete">Opdateret</string>
+    <string name="profile_flags_desc_no_new_privs">Forhindrer yderligere priviligeringseskalering via KernelSU inden for konteksten af denne root-profil.</string>
 </resources>

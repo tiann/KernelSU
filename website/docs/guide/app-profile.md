@@ -96,10 +96,13 @@ For example, if you grant root permission to an ADB shell user (which is a commo
 1. The first execution of `su` will be subject to the App Profile and will switch to UID `2000` (ADB shell) instead of `0` (root).
 2. The second execution of `su`, since the UID is `2000` and root access has been granted to UID `2000` (ADB shell) in the configuration, the app will gain full root privileges.
 
-::: warning NOTE
-This behavior is fully expected and isn't a bug. Therefore, we recommend the following:
+:::tip tip
+You can enable the `NO_NEW_PRIVS` flag in your custom `App Profile`.
+This prevents the process from escaping and escalating privileges again via the `su` command.
 
-If you genuinely need to grant root permissions to ADB (e.g., as a developer), it isn't advisable to change the UID to `2000` when configuring the Root Profile. Using `1000` (system) would be a better choice.
+However, this flag **only** prevents KernelSU from escalating privileges for the process; it can still escape using other Linux mechanisms.
+
+Therefore, please be very careful with your permission settings.
 :::
 
 ## Non-root profile

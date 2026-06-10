@@ -37,4 +37,5 @@
     <string name="settings_sucompat_summary">Ubaḥ hala /system/bin/su ke ksud untuk aplikasi yang diberikan kebenaran Superuser dalam Profil Aplikasi; berkesan untuk proses baharu sahaja.</string>
     <string name="settings_kernel_umount">Umount kernel</string>
     <string name="settings_kernel_umount_summary">Tingkah laku umount peringkat kernel dikawal oleh KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Menghalang peningkatan keistimewaan lanjut melalui KernelSU dalam konteks profil root ini.</string>
 </resources>
