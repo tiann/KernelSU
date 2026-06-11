@@ -104,9 +104,9 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-    <string name="require_manager_version">Manager is required to update</string>
-    <string name="require_kernel_version">Kernel is required update, click to install</string>
-    <string name="require_kernel_version_gki">Kernel is required update</string>
+    <string name="require_manager_version">Manager update required</string>
+    <string name="require_kernel_version">Kernel update required, tap to install</string>
+    <string name="require_kernel_version_gki">Kernel update required</string>
     <string name="settings_umount_modules_default">Umount modules by default</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU to restore any modified files by the modules for this app.</string>

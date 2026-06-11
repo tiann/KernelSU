@@ -5,4 +5,7 @@
     <string name="settings_kernel_umount">Kernel ဖြုတ်မည်</string>
     <string name="settings_kernel_umount_summary">KernelSU မှ ထိန်းချုပ်ထားသော Kernel အဆင့် ဖြုတ်မည့် အပြုအမူ</string>
     <string name="profile_flags_desc_no_new_privs">ဤ root profile ၏ context အတွင်း KernelSU မှတစ်ဆင့် privilege များကို ထပ်မံမြှင့်တင်ခြင်းကို တားဆီးသည်။</string>
+    <string name="require_manager_version">မန်နေဂျာကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်</string>
+    <string name="require_kernel_version">ကာနယ်ကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်၊ ထည့်သွင်းရန် ဤနေရာကို နှိပ်ပါ</string>
+    <string name="require_kernel_version_gki">ကာနယ်ကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်</string>
 </resources>
