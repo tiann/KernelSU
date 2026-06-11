@@ -1,4 +1,6 @@
 #![allow(clippy::unreadable_literal)]
+use anyhow::bail;
+
 use crate::ksu_uapi;
 use std::fs;
 use std::os::fd::RawFd;
@@ -254,5 +256,16 @@ pub fn set_init_pgrp() -> std::io::Result<()> {
         ksu_uapi::KSU_IOCTL_SET_INIT_PGRP,
         std::ptr::null_mut::<u8>(),
     )?;
+    Ok(())
+}
+
+pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {
+    let result = ksuctl(
+        ksu_uapi::KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT,
+        std::ptr::null_mut::<u8>(),
+    )?;
+    if result != 0 {
+        bail!("unexpected result: {result}");
+    }
     Ok(())
 }
