@@ -1,0 +1,12 @@
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Remove: bugprone-sizeof-expression
+
+CompileFlags:
+  Remove: -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang
+
+---
+
+CompileFlags:
+  CompilationDatabase: out/android16-6.12
