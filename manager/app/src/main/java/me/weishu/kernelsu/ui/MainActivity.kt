@@ -121,7 +121,8 @@ class MainActivity : ComponentActivity() {
             !contentReady || SystemClock.uptimeMillis() - splashStartedAt < splashAnimationDurationMs
         }
 
-        if (Natives.isManager && !Natives.requireNewKernel()) install()
+        val isManager = Natives.isManager
+        if (isManager && Natives.kernelUAPIVersion == Natives.managerUAPIVersion) install()
 
         if (savedInstanceState == null) intent?.let { intentChannel.trySend(it) }
 
@@ -253,7 +254,7 @@ fun MainScreen(
         animatePageChanges = !useNavigationRail,
     )
     val isManager = Natives.isManager
-    val isFullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val isFullFeatured = Natives.isFullFeatured()
     var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
 
     val enableNavigationBadge = LocalEnableNavigationBadge.current
