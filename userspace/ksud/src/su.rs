@@ -1,5 +1,5 @@
 use crate::{
-    defs,
+    defs, ksucalls,
     utils::{self, umask},
 };
 use anyhow::{Context, Ok, Result, bail};
@@ -157,6 +157,11 @@ pub fn root_shell() -> Result<()> {
         "GROUP",
     );
     opts.optflag("W", "no-wrapper", "don't use ksu fd wrapper");
+    opts.optflag(
+        "",
+        "ksu-no-new-privs",
+        "Prevent this process (and its children) from privilege re-escalation via KernelSU",
+    );
 
     // Replace -cn with -z, -mm with -M for supporting getopt_long
     let args = args
@@ -203,6 +208,7 @@ pub fn root_shell() -> Result<()> {
     let preserve_env = matches.opt_present("p");
     let mount_master = matches.opt_present("M");
     let use_fd_wrapper = !matches.opt_present("W");
+    let ksu_no_new_privs = matches.opt_present("ksu-no-new-privs");
 
     let groups = matches
         .opt_strs("G")
@@ -283,6 +289,10 @@ pub fn root_shell() -> Result<()> {
     // when KSURC_PATH exists and ENV is not set, set ENV to KSURC_PATH
     if PathBuf::from(defs::KSURC_PATH).exists() && env::var("ENV").is_err() {
         command.env("ENV", defs::KSURC_PATH);
+    }
+
+    if ksu_no_new_privs {
+        ksucalls::set_ksu_no_new_privs().context("set KSU_NO_NEW_PRIVS")?;
     }
 
     // escape from the current cgroup and become session leader
