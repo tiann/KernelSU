@@ -83,45 +83,23 @@ fun HomePagerMaterial(
             } else if (state.showKernelPrBuildWarning) {
                 WarningCard(stringResource(id = R.string.home_pr_kernel_warning))
             }
-            if (state.showVersionMismatchWarning) {
-                WarningCard(
-                    stringResource(
-                        id = R.string.home_version_mismatch,
-                        state.currentManagerVersionCode,
-                        state.ksuVersion ?: 0
-                    )
-                )
-            }
             if (state.showGkiWarning) {
                 WarningCard(stringResource(id = R.string.home_gki_warning))
             }
-            if (state.showUAPIMisMatchWarning) {
+            if (state.requiresNewKernel) {
                 WarningCard(
                     stringResource(
-                        id = R.string.uapi_mismatch,
-                        state.managerUAPIVersion,
-                        state.kernelUAPIVersion ?: 0,
-                    )
+                        id = if (state.lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki
+                    ),
+                    onClick = if (state.lkmMode == true) actions.onInstallClick else null
                 )
             }
-            if (state.showRequireKernelWarning) {
-                if (state.currentManagerVersionCode < (state.ksuVersion ?: 0)) {
-                    WarningCard(
-                        stringResource(
-                            id = R.string.require_manager_version,
-                            state.currentManagerVersionCode,
-                            state.ksuVersion ?: 0,
-                        )
+            if (state.requiresNewManager) {
+                WarningCard(
+                    stringResource(
+                        id = R.string.require_manager_version
                     )
-                } else {
-                    WarningCard(
-                        stringResource(
-                            id = R.string.require_kernel_version,
-                            state.ksuVersion ?: 0,
-                            Natives.MINIMAL_SUPPORTED_KERNEL
-                        )
-                    )
-                }
+                )
             }
             if (state.showRootWarning) {
                 WarningCard(stringResource(id = R.string.grant_root_failed))
@@ -595,6 +573,7 @@ private fun previewHomeScreenState(
     isManagerPrBuild = false,
     isKernelPrBuild = false,
     requiresNewKernel = false,
+    requiresNewManager = false,
     isRootAvailable = ksuVersion != null,
     isSafeMode = isSafeMode,
     isLateLoadMode = isLateLoadMode,
@@ -606,5 +585,4 @@ private fun previewHomeScreenState(
     systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus),
     kernelUAPIVersion = 1,
     managerUAPIVersion = 1,
-    uapiMismatch = false
 )
