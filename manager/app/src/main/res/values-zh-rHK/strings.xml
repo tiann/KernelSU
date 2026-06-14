@@ -57,7 +57,9 @@
     <string name="profile_umount_modules">卸載模組（Umount）</string>
     <string name="failed_to_update_app_profile">無法為 %s 更新 App Profile</string>
     <string name="profile_selinux_rules">Rules</string>
-    <string name="require_kernel_version">目前 KernelSU 版本 %1$d 過低，管理器無法正常運作。請升級至 %2$d 或更高版本！</string>
+    <string name="require_manager_version">需要更新管理器</string>
+    <string name="require_kernel_version">需要更新內核，點擊此處安裝</string>
+    <string name="require_kernel_version_gki">需要更新內核</string>
     <string name="settings_umount_modules_default_summary">控制 App Profile「卸載模組」的預設值，對未設定的 App 移除模組修改</string>
     <string name="profile_umount_modules_summary">啟用後 KernelSU 將為此 App 還原所有被模組修改過的檔案</string>
     <string name="profile_selinux_domain">Domain</string>

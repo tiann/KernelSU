@@ -75,7 +75,9 @@
     <string name="force_stop_app">Wymuś zatrzymanie</string>
     <string name="restart_app">Restartuj</string>
     <string name="failed_to_update_sepolicy">Nie udało się zaktualizować reguł SELinux dla %s</string>
-    <string name="require_kernel_version">Obecna wersja KernelSU %1$d jest zbyt stara, aby menedżer działał poprawnie. Prosimy o aktualizację do wersji %2$d lub nowszej!</string>
+    <string name="require_manager_version">Należy zaktualizować menedżer</string>
+    <string name="require_kernel_version">Należy zaktualizować kernel, stuknij tutaj, aby zainstalować</string>
+    <string name="require_kernel_version_gki">Należy zaktualizować kernel</string>
     <string name="module_changelog">Dziennik zmian</string>
     <string name="enable_web_debugging">Debugowanie WebView</string>
     <string name="enable_web_debugging_summary">Może być użyte do debugowania WebUI. Włącz tylko w razie potrzeby.</string>

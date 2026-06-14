@@ -74,7 +74,9 @@
     <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリのモジュールによって変更されたファイルを復元できるようになります。</string>
     <string name="settings_umount_modules_default">デフォルトでモジュールをアンマウントする</string>
     <string name="settings_umount_modules_default_summary">アプリプロファイルの「モジュールのアンマウント」の共通のデフォルト値です。 有効にすると、プロファイルセットを持たないアプリのシステムに対するすべてのモジュールの変更が削除されます。</string>
-    <string name="require_kernel_version">現在の KernelSU バージョン %1$d はマネージャーが適切に機能するには低すぎます。 バージョン %2$d 以降にアップグレードしてください！</string>
+    <string name="require_manager_version">マネージャーを更新する必要があります</string>
+    <string name="require_kernel_version">カーネルを更新する必要があります。ここをタップしてインストールしてください</string>
+    <string name="require_kernel_version_gki">カーネルを更新する必要があります</string>
     <string name="module_changelog">変更履歴</string>
     <string name="app_profile_template_import_success">インポート成功</string>
     <string name="app_profile_export_to_clipboard">クリップボードからエクスポート</string>

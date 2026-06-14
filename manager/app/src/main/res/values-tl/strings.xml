@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="profile_flags_desc_no_new_privs">Pinipigilan ang karagdagang pagtaas ng pribilehiyo sa pamamagitan ng KernelSU mula sa loob ng konteksto ng root profile na ito.</string>
+	<string name="require_manager_version">Kailangang i-update ang manager</string>
+	<string name="require_kernel_version">Kailangang i-update ang kernel, i-tap dito para i-install</string>
+	<string name="require_kernel_version_gki">Kailangang i-update ang kernel</string>
 </resources>
