@@ -159,16 +159,15 @@ data class TemplateInfo(
                 put("rules", JSONArray(template.rules))
             }
 
-            if (template.flags.isNotEmpty()) {
-                put(
-                    "flags", JSONArray(
-                        Natives.Profile.RootProfileFlag.entries.filter {
-                            template.flags.contains(it.ordinal)
-                        }.map {
-                            it.name
-                        }
-                    ))
-            }
+            put(
+                "flags", JSONArray(
+                    Natives.Profile.RootProfileFlag.entries.filter {
+                        template.flags.contains(it.ordinal)
+                    }.map {
+                        it.name
+                    }
+                )
+            )
         }
     }
 }

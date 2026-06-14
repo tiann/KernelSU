@@ -102,5 +102,6 @@ fun generateTemplates() {
     templateJson.put("groups", JSONArray().apply { put(Groups.INET.name) })
     templateJson.put("capabilities", JSONArray().apply { put(Capabilities.CAP_NET_RAW.name) })
     templateJson.put("context", "u:r:ksu:s0")
+    templateJson.put("flags", JSONArray().apply { put(Natives.Profile.RootProfileFlag.NO_NEW_PRIVS.name) })
     Log.i(TAG, "$templateJson")
 }
