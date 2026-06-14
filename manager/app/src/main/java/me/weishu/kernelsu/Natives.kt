@@ -184,5 +184,8 @@ object Natives {
 fun List<RootProfileFlag>.toRawFlags(): Long =
     fold(0L) { acc, flag -> acc.or(1L.shl(flag.ordinal)) }
 
+fun List<RootProfileFlag>.toOrdinalList(): List<Int> =
+    map { it.ordinal }
+
 fun Long.toRootProfileFlags(): List<RootProfileFlag> =
     RootProfileFlag.entries.filter { 1L.shl(it.ordinal).and(this) != 0L }.toList()
