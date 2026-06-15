@@ -216,7 +216,7 @@ done
 
 Skrip ini mewarisi semua variabel dan fungsi dari `install.sh` bawaan:
 
-- **Variabel**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `BOOTMODE`, dll.
+- **Variabel**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `KSU_UAPI_VER`, `KSU_RUNTIME_MODE`, `KSU_LATE_LOAD`, `BOOTMODE`, dll.
 - **Fungsi**:
   - `ui_print <msg>` - Cetak pesan ke konsol
   - `abort <msg>` - Cetak error dan hentikan instalasi

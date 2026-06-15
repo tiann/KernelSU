@@ -225,6 +225,9 @@ KernelSU 模組不支援在 Recovery 中安裝！！
 - `ARCH` (string): 裝置的 CPU 架構，有這幾種：`arm`, `arm64`, `x86`, or `x64`
 - `IS64BIT` (bool): 是否為 64 位元裝置
 - `API` (int): 目前裝置的 Android API 版本 (例如 Android 6.0 上為 `23`)
+- `KSU_UAPI_VER` (int): KernelSU 使用者空間 (ksud) 的 UAPI 版本號 (例如 `2`)。當核心驅動發生破壞性更改時此版本號會遞增，模組可據此判斷相容性。
+- `KSU_RUNTIME_MODE` (string): KernelSU 目前的執行模式。可能的值為 `built-in`（即 GKI 模式，編譯進核心）、`lkm`（開機時作為核心模組載入）或 `late-load`（開機後作為核心模組載入）。
+- `KSU_LATE_LOAD` (int?): 如果 KernelSU 是在開機後延遲載入的，此變數的值為 `1`，否則不設定此變數。
 
 ::: warning 警告
 `MAGISK_VER_CODE` 在 KernelSU 永遠為 `25200`，`MAGISK_VER` 則為 `v25.2`，請不要透過這兩個變數來判斷是否為 KernelSU！

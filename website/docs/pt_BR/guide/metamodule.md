@@ -216,7 +216,7 @@ done
 
 Este script herda todas as variáveis e funções do `install.sh` embutido:
 
-- **Variáveis**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `BOOTMODE`, etc.
+- **Variáveis**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `KSU_UAPI_VER`, `KSU_RUNTIME_MODE`, `KSU_LATE_LOAD`, `BOOTMODE`, etc.
 - **Funções**:
   - `ui_print <msg>` - Imprime mensagem no console
   - `abort <msg>` - Imprime erro e encerra a instalação

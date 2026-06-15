@@ -222,6 +222,9 @@ Skrip `customize.sh` berjalan di shell BusyBox `ash` KernelSU dengan "Mode Mandi
 - `ARCH` (string): arsitektur CPU perangkat. Nilainya adalah `arm`, `arm64`, `x86`, atau `x64`
 - `IS64BIT` (bool): `true` jika `$ARCH` adalah `arm64` atau `x64`
 - `API` (int): level API (versi Android) perangkat (mis. `23` untuk Android 6.0)
+- `KSU_UAPI_VER` (int): versi UAPI ruang pengguna KernelSU (ksud) (mis. `2`). Versi ini bertambah ketika ada perubahan yang merusak kompatibilitas pada driver kernel, dan dapat digunakan oleh modul untuk memeriksa kompatibilitas.
+- `KSU_RUNTIME_MODE` (string): mode runtime KernelSU saat ini. Nilai yang mungkin adalah `built-in` (mode GKI, dikompilasi ke dalam kernel), `lkm` (dimuat sebagai modul kernel saat boot), atau `late-load` (dimuat sebagai modul kernel setelah boot).
+- `KSU_LATE_LOAD` (int?): jika KernelSU dimuat secara terlambat setelah boot, variabel ini diatur ke `1`; jika tidak, variabel ini tidak diatur.
 
 ::: peringatan
 Di KernelSU, MAGISK_VER_CODE selalu 25200 dan MAGISK_VER selalu v25.2. Tolong jangan gunakan kedua variabel ini untuk menentukan apakah itu berjalan di KernelSU atau tidak.

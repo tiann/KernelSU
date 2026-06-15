@@ -216,7 +216,7 @@ done
 
 このスクリプトは、組み込みの `install.sh` からすべての変数と関数を継承します:
 
-- **変数**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`BOOTMODE` など
+- **変数**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`KSU_UAPI_VER`、`KSU_RUNTIME_MODE`、`KSU_LATE_LOAD`、`BOOTMODE` など
 - **関数**:
   - `ui_print <msg>` - コンソールにメッセージを出力
   - `abort <msg>` - エラーを出力してインストールを終了

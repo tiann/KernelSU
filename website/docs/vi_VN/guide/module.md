@@ -224,6 +224,9 @@ Tập lệnh `customize.sh` chạy trong shell `ash` BusyBox của KernelSU vớ
 - `ARCH` (chuỗi): kiến trúc CPU của thiết bị. Giá trị là `arm`, `arm64`, `x86` hoặc `x64`
 - `IS64BIT` (bool): `true` nếu `$ARCH` là `arm64` hoặc `x64`
 - `API` (int): cấp độ API (phiên bản Android) của thiết bị (ví dụ: `23` cho Android 6.0)
+- `KSU_UAPI_VER` (int): phiên bản UAPI của không gian người dùng KernelSU (ksud) (ví dụ: `2`). Phiên bản này được tăng lên khi có thay đổi phá vỡ tương thích trong driver kernel, và có thể được module sử dụng để kiểm tra tính tương thích.
+- `KSU_RUNTIME_MODE` (string): chế độ chạy hiện tại của KernelSU. Các giá trị có thể là `built-in` (chế độ GKI, được biên dịch vào kernel), `lkm` (được tải dưới dạng mô-đun kernel khi khởi động), hoặc `late-load` (được tải dưới dạng mô-đun kernel sau khi khởi động).
+- `KSU_LATE_LOAD` (int?): nếu KernelSU được tải muộn sau khi khởi động, biến này được đặt thành `1`; nếu không, biến này không được đặt.
 
 ::: warning
 Trong KernelSU, MAGISK_VER_CODE luôn là 25200 và MAGISK_VER luôn là v25.2. Vui lòng không sử dụng hai biến này để xác định xem nó có chạy trên KernelSU hay không.

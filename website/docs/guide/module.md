@@ -225,6 +225,9 @@ The `customize.sh` script runs in KernelSU's BusyBox `ash` shell with Standalone
 - `ARCH` (string): the CPU architecture of the device. Value is either `arm`, `arm64`, `x86`, or `x64`.
 - `IS64BIT` (bool): `true` if `$ARCH` is either `arm64` or `x64`.
 - `API` (int): the API level (Android version) of the device (e.g., `23` for Android 6.0).
+- `KSU_UAPI_VER` (int): the UAPI version of KernelSU userspace (ksud) (e.g., `2`). This version is incremented when there are breaking changes in the kernel driver, and can be used by modules to check compatibility.
+- `KSU_RUNTIME_MODE` (string): the current KernelSU runtime mode. Possible values are `built-in` (a.k.a. GKI mode, compiled into the kernel), `lkm` (loaded as a kernel module at boot), or `late-load` (loaded as a kernel module after boot).
+- `KSU_LATE_LOAD` (int?): if KernelSU is late-loaded after boot, this variable is set to `1`; otherwise it is not set.
 
 ::: warning
 In KernelSU, `MAGISK_VER_CODE` is always `25200`, and `MAGISK_VER` is always `v25.2`. Please don't use these two variables to determine whether KernelSU is running or not.

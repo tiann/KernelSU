@@ -216,7 +216,7 @@ done
 
 Script này kế thừa tất cả các biến và hàm từ `install.sh` tích hợp:
 
-- **Biến**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `BOOTMODE`, v.v.
+- **Biến**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `KSU_UAPI_VER`, `KSU_RUNTIME_MODE`, `KSU_LATE_LOAD`, `BOOTMODE`, v.v.
 - **Hàm**:
   - `ui_print <msg>` - In thông báo ra console
   - `abort <msg>` - In lỗi và kết thúc cài đặt
