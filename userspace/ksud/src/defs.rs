@@ -54,6 +54,12 @@ mod android {
 #[allow(unused)]
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));
+#[cfg(target_os = "android")]
+pub const FULL_VERSION: &str = const_format::formatcp!(
+    "{} (uapi: {})",
+    VERSION_NAME,
+    crate::ksu_uapi::KERNEL_SU_UAPI_VERSION
+);
 
 #[cfg(target_os = "android")]
 pub use android::*;
