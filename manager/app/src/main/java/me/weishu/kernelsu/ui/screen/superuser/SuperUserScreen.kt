@@ -66,12 +66,14 @@ fun SuperUserPager(
             uiState = uiState,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
 
         UiMode.Material -> SuperUserPagerMaterial(
             uiState = uiState,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
     }
 }

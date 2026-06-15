@@ -15,7 +15,8 @@ import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
 @Composable
 fun SettingPager(
     navigator: Navigator,
-    bottomInnerPadding: Dp
+    bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true
 ) {
     val viewModel = viewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -45,7 +46,7 @@ fun SettingPager(
     )
 
     when (LocalUiMode.current) {
-        UiMode.Miuix -> SettingPagerMiuix(uiState, actions, bottomInnerPadding)
-        UiMode.Material -> SettingPagerMaterial(uiState, actions, bottomInnerPadding)
+        UiMode.Miuix -> SettingPagerMiuix(uiState, actions, bottomInnerPadding, isCurrentPage)
+        UiMode.Material -> SettingPagerMaterial(uiState, actions, bottomInnerPadding, isCurrentPage)
     }
 }

@@ -147,6 +147,7 @@ fun ModulePagerMaterial(
     moduleEvent: Flow<ModuleEffect>,
     actions: ModuleActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val snackBarHost = remember { SnackbarHostState() }
     val haptic = LocalHapticFeedback.current

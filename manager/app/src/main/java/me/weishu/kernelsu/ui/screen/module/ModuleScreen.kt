@@ -157,6 +157,7 @@ fun ModulePager(
             moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
 
         UiMode.Material -> ModulePagerMaterial(
@@ -165,6 +166,7 @@ fun ModulePager(
             moduleEvent = viewModel.moduleEvent,
             actions = actions,
             bottomInnerPadding = bottomInnerPadding,
+            isCurrentPage = isCurrentPage,
         )
     }
 }

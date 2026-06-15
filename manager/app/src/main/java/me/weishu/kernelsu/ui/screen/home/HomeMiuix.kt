@@ -80,6 +80,7 @@ fun HomePagerMiuix(
     state: HomeUiState,
     actions: HomeActions,
     bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
     val enableBlur = LocalEnableBlur.current
@@ -102,7 +103,7 @@ fun HomePagerMiuix(
                 modifier = Modifier
                     .fillMaxHeight()
                     .scrollEndHaptic()
-                    .overScrollVertical()
+                    .then(if (isCurrentPage) Modifier.overScrollVertical() else Modifier)
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .padding(horizontal = 12.dp),
                 contentPadding = innerPadding,
