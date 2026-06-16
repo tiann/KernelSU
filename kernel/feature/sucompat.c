@@ -1,4 +1,5 @@
 #include "linux/file.h"
+#include "linux/namei.h"
 #include <linux/compiler_types.h>
 #include <linux/preempt.h>
 #include <linux/printk.h>
@@ -74,7 +75,17 @@ static char __user *empty_user_path(void)
 
 static const char su_path[] = SU_PATH;
 
-long ksu_handle_faccessat(int orig_nr, struct pt_regs *regs)
+static bool is_ksud_exists() {
+    struct path path;
+    
+    if (kern_path(KSUD_PATH, 0, &path) < 0) {
+        return false;
+    }
+    path_put(&path);
+    return true;
+}
+
+long ksu_handle_faccessat_sucompat(int orig_nr, struct pt_regs *regs)
 {
     const char __user **filename_user, *orig_filename;
     long ret;
@@ -91,21 +102,25 @@ long ksu_handle_faccessat(int orig_nr, struct pt_regs *regs)
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
     if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
-        pr_info("faccessat su->sh!\n");
-        orig_filename = *filename_user;
-        *filename_user = ksud_user_path();
         old_cred = override_creds(ksu_cred);
-        ret = ksu_syscall_table[orig_nr](regs);
-        revert_creds(old_cred);
-        *filename_user = orig_filename;
-        return ret;
+        if (is_ksud_exists()) {
+            pr_info("faccessat su->ksud!\n");
+            orig_filename = *filename_user;
+            *filename_user = ksud_user_path();
+            ret = ksu_syscall_table[orig_nr](regs);
+            revert_creds(old_cred);
+            *filename_user = orig_filename;
+            return ret;
+        } else {
+            revert_creds(old_cred);
+        }
     }
 
 do_orig_facessat:
     return ksu_syscall_table[orig_nr](regs);
 }
 
-long ksu_sucompat_handle_stat(int orig_nr, struct pt_regs *regs)
+long ksu_handle_stat_sucompat(int orig_nr, struct pt_regs *regs)
 {
     const char __user **filename_user, *orig_filename;
     long ret;
@@ -122,14 +137,18 @@ long ksu_sucompat_handle_stat(int orig_nr, struct pt_regs *regs)
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
     if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
-        pr_info("newfstatat su->ksud!\n");
-        orig_filename = *filename_user;
-        *filename_user = ksud_user_path();
         old_cred = override_creds(ksu_cred);
-        ret = ksu_syscall_table[orig_nr](regs);
-        revert_creds(old_cred);
-        *filename_user = orig_filename;
-        return ret;
+        if (is_ksud_exists()) {
+            pr_info("newfstatat su->ksud!\n");
+            orig_filename = *filename_user;
+            *filename_user = ksud_user_path();
+            ret = ksu_syscall_table[orig_nr](regs);
+            revert_creds(old_cred);
+            *filename_user = orig_filename;
+            return ret;
+        } else {
+            revert_creds(old_cred);
+        }
     }
 
 do_orig_stat:
