@@ -169,11 +169,6 @@ void setup_mount_ns(int32_t ns_mode)
         return;
     }
 
-    if (!ksu_cred) {
-        pr_err("no ksu cred! skip mnt_ns magic for pid: %d.\n", current->pid);
-        return;
-    }
-
     const struct cred *old_cred = override_creds(ksu_cred);
     if (ns_mode == KSU_NS_GLOBAL) {
         ksu_mnt_ns_global();
