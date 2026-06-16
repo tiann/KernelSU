@@ -190,12 +190,16 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
     pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
     // execve(file, argv, environ)
     // execveat(fd, file, argv, environ, flags)
-    memcpy(orig_regs, regs->regs, sizeof(orig_regs));
-    regs->regs[4] = AT_EMPTY_PATH;
-    regs->regs[3] = regs->regs[2];
-    regs->regs[2] = regs->regs[1];
-    regs->regs[1] = empty_user_path();
-    regs->regs[0] = tmp_fd;
+    orig_regs[0] = regs->__PT_PARM1_REG;
+    orig_regs[1] = regs->__PT_PARM2_REG;
+    orig_regs[2] = regs->__PT_PARM3_REG;
+    orig_regs[3] = regs->__PT_SYSCALL_PARM4_REG;
+    orig_regs[4] = regs->__PT_PARM5_REG;
+    regs->__PT_PARM5_REG = AT_EMPTY_PATH;
+    regs->__PT_SYSCALL_PARM4_REG = regs->__PT_PARM3_REG;
+    regs->__PT_PARM3_REG = regs->__PT_PARM2_REG;
+    regs->__PT_PARM2_REG = empty_user_path();
+    regs->__PT_PARM1_REG = tmp_fd;
 
     ret = escape_with_root_profile();
     if (ret) {
@@ -206,7 +210,11 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
     ret = ksu_syscall_table[__NR_execveat](regs);
     if (ret < 0) {
         ksu_close_fd(tmp_fd);
-        memcpy(regs->regs, orig_regs, sizeof(orig_regs));
+        regs->__PT_PARM1_REG = orig_regs[0];
+        regs->__PT_PARM2_REG = orig_regs[1];
+        regs->__PT_PARM3_REG = orig_regs[2];
+        regs->__PT_SYSCALL_PARM4_REG = orig_regs[3];
+        regs->__PT_PARM5_REG = orig_regs[4];
     }
 
 do_orig_execve:
