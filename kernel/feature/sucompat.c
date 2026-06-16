@@ -75,9 +75,10 @@ static char __user *empty_user_path(void)
 
 static const char su_path[] = SU_PATH;
 
-static bool is_ksud_exists() {
+static bool is_ksud_exists()
+{
     struct path path;
-    
+
     if (kern_path(KSUD_PATH, 0, &path) < 0) {
         return false;
     }
