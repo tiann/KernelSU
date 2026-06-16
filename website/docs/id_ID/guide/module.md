@@ -69,6 +69,9 @@ Modul KernelSU adalah folder yang ditempatkan di `/data/adb/modules` dengan stru
 |   ├── uninstall.sh        <--- This script will be executed when KernelSU removes your module
 │   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
 │   ├── sepolicy.rule       <--- Additional custom sepolicy rules
+│   ├── initrc/             <--- File .rc di direktori ini akan disuntikkan ke init.rc saat boot
+│   │   ├── myservice.rc
+│   │   └── ...
 │   │
 │   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
 │   │
@@ -182,6 +185,80 @@ File ini mengikuti format yang sama dengan `build.prop`. Setiap baris terdiri da
 ### sepolicy.rule
 
 Jika modul Anda memerlukan beberapa tambalan sepolicy tambahan, harap tambahkan aturan tersebut ke dalam file ini. Setiap baris dalam file ini akan diperlakukan sebagai pernyataan kebijakan.
+
+### Injeksi initrc {#initrc-injection}
+
+KernelSU menyediakan mekanisme untuk menyuntikkan arahan Android Init RC kustom ke dalam `init.rc` sistem. Hal ini memungkinkan modul untuk mendaftarkan layanan Android kustom, mengatur pemicu properti, atau melakukan tindakan bahasa Init lainnya tanpa memodifikasi partisi sistem.
+
+Selama boot, modul kernel KernelSU mencegat panggilan sistem `read()` dan `fstat()`. Saat proses init Android membaca `/system/etc/init/hw/init.rc`, KernelSU secara transparan menambahkan konten RC kustom ke bagian akhir file. Proses init menguraikan arahan yang disuntikkan ini sama seperti konten init.rc asli.
+
+Di sisi userspace, ksud menggabungkan semua file `.rc` dari modul yang diaktifkan menjadi satu file `modules.rc`, yang disimpan di partisi `/metadata`. File ini secara otomatis dibuat ulang setiap kali status modul berubah (diinstal, diaktifkan, dinonaktifkan, dihapus, dll.).
+
+#### File initrc modul
+
+Buat subdirektori `initrc/` di direktori modul Anda dan letakkan file `.rc` Anda di sana:
+
+```txt
+/data/adb/modules/<MODID>/
+├── initrc/
+│   ├── myservice.rc
+│   └── another.rc
+└── ...
+```
+
+::: tip
+- File harus memiliki ekstensi `.rc`.
+- Selama modul diaktifkan, semua file `.rc` di direktori `initrc/` akan disertakan (izin eksekusi tidak diperlukan).
+- File diproses dalam **urutan abjad nama file** di dalam direktori, dan modul diproses dalam **urutan abjad ID modul**.
+:::
+
+#### File initrc umum
+
+Selain file RC tingkat modul, Anda dapat menempatkan file `.rc` di direktori global:
+
+```txt
+/data/adb/initrc.d/
+├── myservice.rc
+└── another.rc
+```
+
+::: warning File initrc umum memerlukan izin eksekusi
+Tidak seperti direktori `initrc/` modul, file di `/data/adb/initrc.d/` **harus memiliki izin eksekusi** untuk disertakan. File `.rc` yang tidak dapat dieksekusi akan dilewati secara diam-diam.
+:::
+
+File `initrc.d/` umum diproses sebelum file RC modul apa pun.
+
+#### Contoh
+
+Berikut adalah contoh file `.rc` yang mendaftarkan layanan Android kustom:
+
+```rc
+service myservice /data/adb/modules/mymodule/bin/myservice
+    user root
+    group root
+    disabled
+    seclabel u:r:ksu:s0
+
+on property:sys.boot_completed=1
+    start myservice
+```
+
+Jika file ini ditempatkan di `/data/adb/modules/mymodule/initrc/myservice.rc`, itu akan mendaftarkan layanan bernama `myservice` saat boot dan memulainya ketika `sys.boot_completed=1` tercapai.
+
+#### Penyegaran Manual
+
+Anda dapat memicu pembuatan ulang `modules.rc` secara manual dengan perintah berikut (perubahan berlaku pada boot berikutnya):
+
+```sh
+ksud initrc refresh
+```
+
+::: tip
+- Injeksi initrc terjadi sangat awal dalam proses boot (saat init membaca init.rc), **sebelum** post-fs-data dan skrip modul apa pun dieksekusi.
+- Konten RC yang disuntikkan diperlakukan oleh init sebagai bagian dari init.rc asli, mendukung semua sintaks bahasa Android Init (definisi layanan, pemicu, pengaturan properti, dll.).
+- Injeksi initrc **tidak tersedia** dalam **mode late-load**, karena hook panggilan sistem tidak diinstal dalam mode tersebut.
+- Injeksi RC modul dapat dinonaktifkan dengan meneruskan parameter `--no-custom-rc` saat menambal gambar dengan ksud.
+:::
 
 ## Pemasangan module
 

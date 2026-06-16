@@ -71,6 +71,9 @@ Um módulo KernelSU é uma pasta colocada em `/data/adb/modules` com a estrutura
 |   ├── action.sh           <--- Este script será executado quando o usuário clicar no botão Ação no KernelSU
 │   ├── system.prop         <--- As propriedades neste arquivo serão carregadas como propriedades do sistema por resetprop
 │   ├── sepolicy.rule       <--- Regras adicionais do sepolicy personalizadas
+│   ├── initrc/             <--- Arquivos .rc neste diretório serão injetados no init.rc no boot
+│   │   ├── myservice.rc
+│   │   └── ...
 │   │
 │   │      *** Gerado automaticamente, NÃO CRIE OU MODIFIQUE MANUALMENTE ***
 │   │
@@ -181,6 +184,80 @@ Este arquivo segue o mesmo formato de `build.prop`. Cada linha é composta por `
 ### sepolicy.rule
 
 Se o seu módulo exigir alguns patches adicionais do sepolicy, adicione essas regras a este arquivo. Cada linha neste arquivo será tratada como uma declaração de política.
+
+### Injeção de initrc {#initrc-injection}
+
+O KernelSU fornece um mecanismo para injetar diretivas RC customizadas do Android Init no `init.rc` do sistema. Isso permite que os módulos registrem serviços Android customizados, definam gatilhos de propriedade ou executem outras ações de linguagem Init sem modificar a partição do sistema.
+
+Durante a inicialização, o módulo do kernel KernelSU intercepta as chamadas de sistema `read()` e `fstat()`. Quando o processo init do Android lê `/system/etc/init/hw/init.rc`, o KernelSU adiciona de forma transparente o conteúdo RC customizado ao final do arquivo. O processo init analisa essas diretivas injetadas exatamente como o conteúdo original do init.rc.
+
+No lado do espaço do usuário, o ksud concatena todos os arquivos `.rc` de módulos habilitados em um único arquivo `modules.rc`, armazenado na partição `/metadata`. Este arquivo é regenerado automaticamente sempre que o estado de um módulo muda (instalar, habilitar, desabilitar, desinstalar, etc.).
+
+#### Arquivos initrc do módulo
+
+Crie um subdiretório `initrc/` no diretório do seu módulo e coloque seus arquivos `.rc` lá:
+
+```txt
+/data/adb/modules/<MODID>/
+├── initrc/
+│   ├── myservice.rc
+│   └── another.rc
+└── ...
+```
+
+::: tip
+- Os arquivos devem ter uma extensão `.rc`.
+- Contanto que o módulo esteja habilitado, todos os arquivos `.rc` no diretório `initrc/` serão incluídos (permissão de execução não é necessária).
+- Os arquivos são processados em **ordem alfabética de nome de arquivo** dentro do diretório, e os módulos são processados em **ordem alfabética de ID do módulo**.
+:::
+
+#### Arquivos initrc gerais
+
+Além de arquivos RC no nível do módulo, você pode colocar arquivos `.rc` no diretório global:
+
+```txt
+/data/adb/initrc.d/
+├── myservice.rc
+└── another.rc
+```
+
+::: warning Arquivos initrc gerais requerem permissão de execução
+Diferente do diretório `initrc/` do módulo, arquivos em `/data/adb/initrc.d/` **devem ter permissões de execução** para serem incluídos. Arquivos `.rc` não executáveis serão ignorados silenciosamente.
+:::
+
+Arquivos `initrc.d/` gerais são processados antes de quaisquer arquivos RC de módulo.
+
+#### Exemplo
+
+Aqui está um exemplo de arquivo `.rc` que registra um serviço Android customizado:
+
+```rc
+service myservice /data/adb/modules/mymodule/bin/myservice
+    user root
+    group root
+    disabled
+    seclabel u:r:ksu:s0
+
+on property:sys.boot_completed=1
+    start myservice
+```
+
+Se este arquivo for colocado em `/data/adb/modules/mymodule/initrc/myservice.rc`, ele registrará um serviço chamado `myservice` na inicialização e o iniciará quando `sys.boot_completed=1` for alcançado.
+
+#### Atualização Manual
+
+Você pode acionar manualmente a regeneração do `modules.rc` com o seguinte comando (as alterações entram em vigor na próxima inicialização):
+
+```sh
+ksud initrc refresh
+```
+
+::: tip
+- A injeção de initrc acontece extremamente cedo no processo de inicialização (quando o init lê o init.rc), **antes** do post-fs-data e de quaisquer scripts de módulo serem executados.
+- O conteúdo RC injetado é tratado pelo init como parte do init.rc original, suportando toda a sintaxe da linguagem Android Init (definições de serviço, gatilhos, configurações de propriedades, etc.).
+- A injeção de initrc **não está disponível** no **modo late-load**, pois os ganchos de chamada do sistema não são instalados nesse modo.
+- A injeção de RC do módulo pode ser desabilitada passando o parâmetro `--no-custom-rc` ao aplicar patch na imagem com o ksud.
+:::
 
 ## Instalador do módulo
 
@@ -301,6 +378,7 @@ load kernel:
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
+  *initrc injection: Kernel hook appends KernelSU core RC and module modules.rc to init.rc
 ...
 early-init -> init -> late_init
 early-fs
