@@ -196,7 +196,7 @@ pub fn install(libadbroot: Option<PathBuf>) -> Result<()> {
         std::env::current_exe().with_context(|| "Failed to get self exe path")?,
         defs::DAEMON_PATH,
     )?;
-    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::ADB_CON)?;
+    restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::KSU_CON)?;
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
