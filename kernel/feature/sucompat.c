@@ -1,3 +1,4 @@
+#include "linux/file.h"
 #include <linux/compiler_types.h>
 #include <linux/preempt.h>
 #include <linux/printk.h>
@@ -21,6 +22,8 @@
 #include "policy/app_profile.h"
 #include "hook/syscall_hook.h"
 #include "sulog/event.h"
+#include "ksu.h"
+#include "util.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -57,13 +60,6 @@ static void __user *userspace_stack_buffer(const void *d, size_t len)
     return copy_to_user(p, d, len) ? NULL : p;
 }
 
-static char __user *sh_user_path(void)
-{
-    static const char sh_path[] = "/system/bin/sh";
-
-    return userspace_stack_buffer(sh_path, sizeof(sh_path));
-}
-
 static char __user *ksud_user_path(void)
 {
     static const char ksud_path[] = KSUD_PATH;
@@ -71,60 +67,86 @@ static char __user *ksud_user_path(void)
     return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode, int *__unused_flags)
+static char __user *empty_user_path(void)
 {
-    const char su[] = SU_PATH;
+    return userspace_stack_buffer("", sizeof(""));
+}
+
+static const char su_path[] = SU_PATH;
+
+long ksu_handle_faccessat(int orig_nr, struct pt_regs *regs)
+{
+    const char __user **filename_user, *orig_filename;
+    long ret;
+    const struct cred *old_cred;
 
     if (!ksu_is_allow_uid_for_current(current_uid().val)) {
-        return 0;
+        goto do_orig_facessat;
     }
 
-    char path[sizeof(su) + 1];
+    filename_user = (const char __user **)&PT_REGS_PARM2(regs);
+
+    char path[sizeof(su_path) + 1];
     memset(path, 0, sizeof(path));
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (unlikely(!memcmp(path, su, sizeof(su)))) {
+    if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
         pr_info("faccessat su->sh!\n");
-        *filename_user = sh_user_path();
+        orig_filename = *filename_user;
+        *filename_user = ksud_user_path();
+        old_cred = override_creds(ksu_cred);
+        ret = ksu_syscall_table[orig_nr](regs);
+        revert_creds(old_cred);
+        *filename_user = orig_filename;
+        return ret;
     }
 
-    return 0;
+do_orig_facessat:
+    return ksu_syscall_table[orig_nr](regs);
 }
 
-int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
+long ksu_sucompat_handle_stat(int orig_nr, struct pt_regs *regs)
 {
-    // const char sh[] = SH_PATH;
-    const char su[] = SU_PATH;
+    const char __user **filename_user, *orig_filename;
+    long ret;
+    const struct cred *old_cred;
 
     if (!ksu_is_allow_uid_for_current(current_uid().val)) {
-        return 0;
+        goto do_orig_stat;
     }
 
-    if (unlikely(!filename_user)) {
-        return 0;
-    }
+    filename_user = (const char __user **)&PT_REGS_PARM2(regs);
 
-    char path[sizeof(su) + 1];
+    char path[sizeof(su_path) + 1];
     memset(path, 0, sizeof(path));
     strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (unlikely(!memcmp(path, su, sizeof(su)))) {
-        pr_info("newfstatat su->sh!\n");
-        *filename_user = sh_user_path();
+    if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
+        pr_info("newfstatat su->ksud!\n");
+        orig_filename = *filename_user;
+        *filename_user = ksud_user_path();
+        old_cred = override_creds(ksu_cred);
+        ret = ksu_syscall_table[orig_nr](regs);
+        revert_creds(old_cred);
+        *filename_user = orig_filename;
+        return ret;
     }
 
-    return 0;
+do_orig_stat:
+    return ksu_syscall_table[orig_nr](regs);
 }
 
-long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, const struct pt_regs *regs)
+long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, struct pt_regs *regs)
 {
-    const char su[] = SU_PATH;
     const char __user *fn;
     const char __user *const __user *argv_user = (const char __user *const __user *)PT_REGS_PARM2(regs);
     struct ksu_sulog_pending_event *pending_sucompat = NULL;
-    char path[sizeof(su) + 1];
-    long ret;
+    char path[sizeof(su_path) + 1];
+    long ret, orig_regs[5];
     unsigned long addr;
+    int tmp_fd;
+    struct file *ksud_file;
+    const struct cred *old_cred;
 
     if (unlikely(!filename_user))
         goto do_orig_execve;
@@ -143,28 +165,48 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
         goto do_orig_execve;
     }
 
-    if (likely(memcmp(path, su, sizeof(su))))
+    if (likely(memcmp(path, su_path, sizeof(su_path))))
         goto do_orig_execve;
 
     pr_info("sys_execve su found\n");
+
+    tmp_fd = get_unused_fd_flags(O_CLOEXEC);
+    if (tmp_fd < 0) {
+        pr_err("alloc tmp fd err: %d\n", tmp_fd);
+        goto do_orig_execve;
+    }
+
+    old_cred = override_creds(ksu_cred);
+    ksud_file = filp_open(KSUD_PATH, O_PATH, 0);
+    revert_creds(old_cred);
+    if (IS_ERR(ksud_file)) {
+        pr_err("open ksud err: %ld\n", PTR_ERR(ksud_file));
+        put_unused_fd(tmp_fd);
+        goto do_orig_execve;
+    }
+
+    fd_install(tmp_fd, ksud_file);
+
     pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
-    *filename_user = ksud_user_path();
+    // execve(file, argv, environ)
+    // execveat(fd, file, argv, environ, flags)
+    memcpy(orig_regs, regs->regs, sizeof(orig_regs));
+    regs->regs[4] = AT_EMPTY_PATH;
+    regs->regs[3] = regs->regs[2];
+    regs->regs[2] = regs->regs[1];
+    regs->regs[1] = empty_user_path();
+    regs->regs[0] = tmp_fd;
 
     ret = escape_with_root_profile();
     if (ret) {
         pr_err("escape_with_root_profile failed: %ld\n", ret);
-        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
-        goto do_orig_execve;
     }
+    ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
 
-    ret = ksu_syscall_table[orig_nr](regs);
+    ret = ksu_syscall_table[__NR_execveat](regs);
     if (ret < 0) {
-        pr_err("failed to execve ksud as su: %ld, fallback to sh\n", ret);
-        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
-        *filename_user = sh_user_path();
-    } else {
-        ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
-        return ret;
+        ksu_close_fd(tmp_fd);
+        memcpy(regs->regs, orig_regs, sizeof(orig_regs));
     }
 
 do_orig_execve:
