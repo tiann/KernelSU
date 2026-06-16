@@ -235,6 +235,7 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
         regs->__PT_SYSCALL_PARM4_REG = orig_regs[3];
         regs->__PT_PARM5_REG = orig_regs[4];
     }
+    return ret;
 
 do_orig_execve:
     return ksu_syscall_table[orig_nr](regs);
