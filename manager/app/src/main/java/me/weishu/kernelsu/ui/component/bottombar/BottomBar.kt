@@ -1,8 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
-import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.TargetBasedAnimation
-import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
@@ -13,7 +11,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -69,65 +66,50 @@ class MainPagerState(
 
 private suspend fun PagerState.springAnimateToPage(target: Int) {
     if (target !in 0 until pageCount) return
+    var shouldSnapToTarget = false
     scroll(MutatePriority.UserInput) {
         val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
         val distance = target - currentPage - currentPageOffsetFraction
         val scrollPixels = distance * pageSize
         if (abs(scrollPixels) <= 0.5f) return@scroll
 
-        val animation = TargetBasedAnimation<Float, AnimationVector1D>(
+        var consumedScroll = 0f
+        var skipScroll = false
+        Animatable(0f).animateTo(
+            targetValue = scrollPixels,
             animationSpec = spring(
                 stiffness = 322.2f,
                 dampingRatio = 32.31f / (2f * kotlin.math.sqrt(322.2f)),
                 visibilityThreshold = 0.5f,
             ),
-            typeConverter = Float.VectorConverter,
-            initialValue = 0f,
-            targetValue = scrollPixels,
-            initialVelocityVector = AnimationVector1D(0f),
-        )
+        ) {
+            if (skipScroll) return@animateTo
 
-        var current = 0f
-        var lastFrameNanos = 0L
-        var playTimeNanos = 0L
-        var finished = false
-
-        withFrameNanos { lastFrameNanos = it }
-        while (!finished) {
-            withFrameNanos { frameNanos ->
-                playTimeNanos += frameNanos - lastFrameNanos
-                lastFrameNanos = frameNanos
-
-                val currentValue = animation.getValueFromNanos(playTimeNanos)
-                val currentVelocity = animation.getVelocityVectorFromNanos(playTimeNanos).value
-                val delta = currentValue - current
-
-                if (abs(delta) > 0.5f) {
-                    val consumed = scrollBy(delta)
-                    current += consumed
-                    if (abs(delta - consumed) > 0.1f) {
-                        finished = true
-                    }
-                } else {
-                    current = currentValue
+            val delta = value - consumedScroll
+            if (abs(delta) > 0.5f) {
+                val consumed = scrollBy(delta)
+                consumedScroll += consumed
+                if (abs(delta - consumed) > 0.1f) {
+                    shouldSnapToTarget = true
+                    skipScroll = true
                 }
+            } else {
+                consumedScroll = value
+            }
 
-                if (abs(currentVelocity) < 0.1f && abs(scrollPixels - current) < 1.0f) {
-                    finished = true
-                } else if (animation.isFinishedFromNanos(playTimeNanos)) {
-                    finished = true
-                }
+            if (abs(velocity) < 0.1f && abs(scrollPixels - consumedScroll) < 1.0f) {
+                skipScroll = true
             }
         }
 
-        val remaining = scrollPixels - current
+        val remaining = scrollPixels - consumedScroll
         if (abs(remaining) > 0.5f) {
-            current += scrollBy(remaining)
+            scrollBy(remaining)
         }
+    }
 
-        if (currentPage != target) {
-            scrollToPage(target)
-        }
+    if (shouldSnapToTarget || currentPage != target) {
+        scrollToPage(target)
     }
 }
 
