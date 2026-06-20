@@ -294,7 +294,7 @@ void track_throne(bool prune_only)
             break;
         }
         data->uid = res;
-        strncpy(data->package, package, KSU_MAX_PACKAGE_NAME);
+        strscpy(data->package, package, sizeof(data->package));
         list_add_tail(&data->list, &uid_list);
         // reset line start
         line_start = pos;
