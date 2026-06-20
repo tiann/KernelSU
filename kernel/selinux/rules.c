@@ -256,6 +256,8 @@ static int sepol_expected_argc(u32 cmd)
         return 4;
     case KSU_SEPOLICY_CMD_GENFSCON:
         return 3;
+    case KSU_SEPOLICY_CMD_CLONE_TYPE:
+        return 2;
     default:
         return -EINVAL;
     }
@@ -424,6 +426,20 @@ static int apply_one_sepolicy_cmd(struct policydb *db, const struct sepol_data *
         }
         return 0;
 
+    case KSU_SEPOLICY_CMD_CLONE_TYPE:
+        ret = sepol_require_not_all(args[0], "src");
+        if (ret < 0)
+            return ret;
+        ret = sepol_require_not_all(args[1], "dst");
+        if (ret < 0)
+            return ret;
+
+        if (!ksu_clone_type(db, args[0], args[1])) {
+            pr_err("sepol: clone_type failed.\n");
+            return -EINVAL;
+        }
+        return 0;
+
     default:
         pr_err("sepol: unknown cmd: %d\n", header->cmd);
         return -EINVAL;
@@ -471,6 +487,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
         pr_err("ksu_dup_sepolicy err: %d\n", ret);
         goto out_unlock;
     }
+    pr_info("sepol: duplicated policy ready, payload_len=%llu\n", data_len);
     db = &pol->policydb;
 
     cursor.cur = payload;
@@ -506,20 +523,26 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
             }
         }
 
+        pr_debug("sepol: begin cmd #%u cmd=%u subcmd=%u\n", cmd_index, header.cmd, header.subcmd);
         ret = apply_one_sepolicy_cmd(db, &header, args);
         if (ret < 0) {
             pr_err("sepol: cmd #%u failed, cmd=%u subcmd=%u.\n", cmd_index, header.cmd, header.subcmd);
+            if (header.cmd == KSU_SEPOLICY_CMD_CLONE_TYPE)
+                goto out_drop_new_policy;
         } else {
             success_cmd_count++;
+            pr_debug("sepol: end cmd #%u cmd=%u subcmd=%u\n", cmd_index, header.cmd, header.subcmd);
         }
         cmd_index++;
     }
 
     rcu_assign_pointer(selinux_state.policy, pol);
+    pr_info("sepol: publishing new policy\n");
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
+    pr_info("sepol: policy publish complete, success_cmd_count=%d\n", success_cmd_count);
     ret = success_cmd_count;
     goto out_unlock;
 
