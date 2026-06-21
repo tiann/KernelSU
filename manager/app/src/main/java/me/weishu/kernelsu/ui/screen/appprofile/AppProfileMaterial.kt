@@ -28,12 +28,14 @@ import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -354,34 +356,36 @@ private fun TopBar(
                         imageVector = Icons.Filled.MoreVert,
                         contentDescription = stringResource(id = R.string.settings)
                     )
-                    DropdownMenu(
+                    DropdownMenuPopup(
                         expanded = showDropdown,
                         onDismissRequest = { showDropdown = false }
                     ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.launch_app)) },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                showDropdown = false
-                                onLaunchApp(packageName, userId)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.force_stop_app)) },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                showDropdown = false
-                                onForceStopApp(packageName, userId)
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.restart_app)) },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                showDropdown = false
-                                onRestartApp(packageName, userId)
-                            },
-                        )
+                        DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.launch_app)) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    showDropdown = false
+                                    onLaunchApp(packageName, userId)
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.force_stop_app)) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    showDropdown = false
+                                    onForceStopApp(packageName, userId)
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.restart_app)) },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    showDropdown = false
+                                    onRestartApp(packageName, userId)
+                                },
+                            )
+                        }
                     }
                 }
             }

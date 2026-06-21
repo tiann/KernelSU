@@ -51,6 +51,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Code
@@ -61,19 +62,21 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -85,7 +88,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -290,26 +293,44 @@ fun ModulePagerMaterial(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-                        DropdownMenu(
+                        DropdownMenuPopup(
                             expanded = showDropdown,
                             onDismissRequest = { showDropdown = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_sort_action_first)) },
-                                trailingIcon = { Checkbox(uiState.sortActionFirst, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleSortActionFirst()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_sort_enabled_first)) },
-                                trailingIcon = { Checkbox(uiState.sortEnabledFirst, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleSortEnabledFirst()
-                                }
-                            )
+                            DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.module_sort_action_first)) },
+                                    checked = uiState.sortActionFirst,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleSortActionFirst()
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = 0, count = 2),
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.module_sort_enabled_first)) },
+                                    checked = uiState.sortEnabledFirst,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleSortEnabledFirst()
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = 1, count = 2),
+                                )
+                            }
                         }
                     }
                 },
@@ -534,7 +555,7 @@ private fun ModuleShortcutSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),

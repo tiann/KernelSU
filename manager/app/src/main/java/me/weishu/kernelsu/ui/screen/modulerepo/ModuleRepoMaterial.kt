@@ -45,6 +45,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.InstallMobile
 import androidx.compose.material.icons.outlined.Link
@@ -52,8 +53,9 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,8 +63,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
@@ -154,7 +156,7 @@ fun ModuleRepoScreenMaterial(
                             contentDescription = stringResource(R.string.menu_sort)
                         )
 
-                        DropdownMenu(expanded = showSortMenu, onDismissRequest = {
+                        DropdownMenuPopup(expanded = showSortMenu, onDismissRequest = {
                             showSortMenu = false
                         }) {
                             val sortOptions = listOf(
@@ -163,21 +165,31 @@ fun ModuleRepoScreenMaterial(
                                 RepoSort.NAME to R.string.module_repos_sort_name,
                                 RepoSort.STARS to R.string.module_repos_sort_stars,
                             )
-                            sortOptions.forEach { (order, resId) ->
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(resId)) },
-                                    trailingIcon = {
-                                        RadioButton(
-                                            selected = state.sortOrder == order,
-                                            onClick = null,
-                                        )
-                                    },
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        actions.onSetSortOrder(order)
-                                        showSortMenu = false
-                                    }
-                                )
+                            DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                                sortOptions.forEachIndexed { index, (order, resId) ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(resId)) },
+                                        selected = state.sortOrder == order,
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                            actions.onSetSortOrder(order)
+                                            showSortMenu = false
+                                        },
+                                        shapes = MenuDefaults.itemShape(
+                                            index = index,
+                                            count = sortOptions.size
+                                        ),
+                                        leadingIcon = {
+                                            if (state.sortOrder == order) {
+                                                Icon(
+                                                    Icons.Filled.Check,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                                )
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
