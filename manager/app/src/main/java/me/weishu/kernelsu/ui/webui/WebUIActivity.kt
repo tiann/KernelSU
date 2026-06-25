@@ -10,10 +10,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -22,15 +20,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.theme.ThemeController
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
+import me.weishu.kernelsu.ui.webui.model.WebUIEffect
+import me.weishu.kernelsu.ui.webui.model.WebUIIntent
+import me.weishu.kernelsu.ui.webui.model.WebUILoadState
+import me.weishu.kernelsu.ui.webui.ui.WebUILoading
+import me.weishu.kernelsu.ui.webui.ui.WebUIScreen
+import me.weishu.kernelsu.ui.webui.ui.rememberFileLauncher
+import me.weishu.kernelsu.ui.webui.util.setTaskDescription
+import me.weishu.kernelsu.ui.webui.viewmodel.WebUIViewModel
+import me.weishu.kernelsu.ui.webui.webview.prepareWebView
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity() {
@@ -76,65 +84,75 @@ class WebUIActivity : ComponentActivity() {
 @Composable
 private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
     val moduleId = remember { activity.intent.data?.getQueryParameter("id") }
-    val webUIState = remember { WebUIState() }
+    val viewModel = viewModel<WebUIViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val fileLauncher = rememberFileLauncher(viewModel::dispatch)
 
     LaunchedEffect(moduleId) {
         if (moduleId == null) {
             onFinish()
             return@LaunchedEffect
         }
-        prepareWebView(activity, moduleId, webUIState)
+        prepareWebView(
+            activity = activity,
+            moduleId = moduleId,
+            runtime = viewModel.runtime,
+            getState = { viewModel.state.value },
+            dispatch = viewModel::dispatch,
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is WebUIEffect.ShowToast -> Toast.makeText(activity, effect.message, Toast.LENGTH_SHORT).show()
+                WebUIEffect.Finish -> onFinish()
+                is WebUIEffect.LaunchFileChooser -> {
+                    try {
+                        fileLauncher.launch(effect.intent)
+                    } catch (_: Exception) {
+                        viewModel.dispatch(WebUIIntent.FileChooserResult(null))
+                    }
+                }
+
+                is WebUIEffect.EvaluateJavascript -> viewModel.runtime.webView?.evaluateJavascript(effect.script, null)
+            }
+        }
     }
 
     DisposableEffect(Unit) {
-        onDispose { webUIState.dispose(activity) }
+        onDispose {
+            activity.setTaskDescription(activity.getString(R.string.app_name))
+            viewModel.runtime.dispose()
+        }
     }
 
-    when (val event = webUIState.uiEvent) {
-        is WebUIEvent.Error -> {
-            LaunchedEffect(event) {
-                Toast.makeText(activity, event.message, Toast.LENGTH_SHORT).show()
-                onFinish()
+    val isLoading = state.loadState == WebUILoadState.Loading
+
+    val webuiContent = @Composable {
+        Crossfade(targetState = isLoading, animationSpec = tween(300)) { loading ->
+            if (loading) {
+                WebUILoading()
+            } else {
+                WebUIScreen(
+                    state = state,
+                    runtime = viewModel.runtime,
+                    dispatch = viewModel::dispatch,
+                )
             }
         }
-
-        is WebUIEvent.Close -> {
-            LaunchedEffect(event) { onFinish() }
-        }
-
-        else -> {}
     }
-    val isLoading = webUIState.uiEvent is WebUIEvent.Loading
 
-    Crossfade(targetState = isLoading, animationSpec = tween(300)) { loading ->
-        if (loading) {
-            LoadingContent()
-        } else {
-            WebUIScreen(webUIState = webUIState)
-        }
-    }
-}
-
-@Composable
-private fun LoadingContent() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                InfiniteProgressIndicator()
+            top.yukonga.miuix.kmp.basic.Surface(modifier = Modifier.fillMaxSize()) {
+                webuiContent()
             }
         }
 
         UiMode.Material -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.material3.LoadingIndicator()
+            Surface(modifier = Modifier.fillMaxSize()) {
+                webuiContent()
             }
         }
     }
