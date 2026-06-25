@@ -4,7 +4,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -302,6 +304,7 @@ fun SegmentedDropdownItem(
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                        Spacer(Modifier.height(2.dp))
                         items.forEachIndexed { index, text ->
                             DropdownMenuItem(
                                 text = { Text(text) },
@@ -314,16 +317,17 @@ fun SegmentedDropdownItem(
                                     expanded = false
                                 },
                                 shapes = MenuDefaults.itemShape(index = index, count = items.size),
-                                leadingIcon = {
-                                    if (index == safeIndex) {
+                                leadingIcon = if (index == safeIndex) {
+                                    {
                                         Icon(
                                             Icons.Filled.Check,
                                             contentDescription = null,
                                             modifier = Modifier.size(MenuDefaults.LeadingIconSize),
                                         )
                                     }
-                                },
+                                } else null,
                             )
+                            Spacer(Modifier.height(2.dp))
                         }
                     }
                 }
