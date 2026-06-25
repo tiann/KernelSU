@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.webui
+package me.weishu.kernelsu.ui.webui.webview.asset
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
