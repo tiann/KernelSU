@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
         val isManager = Natives.isManager
         if (isManager && !Natives.requireNewKernel()) install()
 
-        intent?.let { intentChannel.trySend(it) }
+        if (savedInstanceState == null) intent?.let { intentChannel.trySend(it) }
 
         setContent {
             val viewModel = viewModel<MainActivityViewModel>()
