@@ -267,4 +267,6 @@
     <string name="sort_by_update_time">更新时间</string>
     <string name="sort_reverse">倒序</string>
     <string name="profile_flags_desc_no_new_privs">禁止从此 Root Profile 的上下文中通过 KernelSU 进一步提升权限</string>
+    <string name="module_shortcut_copy_scheme">复制 URL Scheme</string>
+    <string name="module_shortcut_scheme_copied">已复制 URL Scheme</string>
 </resources>

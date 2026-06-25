@@ -15,8 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.Dp
-import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import me.weishu.kernelsu.ui.webui.WebUIActivity
 
@@ -39,6 +41,7 @@ fun ModulePager(
     val navigator = LocalNavigator.current
     val context = LocalContext.current
     val resource = LocalResources.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val viewModel = viewModel<ModuleViewModel>()
     val scope = rememberCoroutineScope()
     val rawUiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -101,8 +104,10 @@ fun ModulePager(
                     url = request.downloadUrl,
                     fileName = request.fileName,
                     onDownloaded = { uri ->
-                        navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
-                        viewModel.markNeedRefresh()
+                        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                            navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
+                            viewModel.markNeedRefresh()
+                        }
                     },
                     onDownloading = {
                         viewModel.emitEffect(
@@ -125,8 +130,9 @@ fun ModulePager(
         onOpenWebUi = { module ->
             webUILauncher.launch(
                 Intent(context, WebUIActivity::class.java)
-                    .setData("kernelsu://webui/${module.id}".toUri())
-                    .putExtra("id", module.id)
+                    .setData(
+                        Shortcut.buildShortcutUri(module.id, ShortcutType.WebUI)
+                    )
             )
         },
         onToggleModule = { module ->
