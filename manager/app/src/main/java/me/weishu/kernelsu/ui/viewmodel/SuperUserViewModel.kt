@@ -1,9 +1,7 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.util.Log
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +15,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.data.repository.SettingsRepository
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.data.repository.SuperUserRepository
 import me.weishu.kernelsu.data.repository.SuperUserRepositoryImpl
 import me.weishu.kernelsu.ksuApp
@@ -35,8 +35,6 @@ internal const val SORT_BY_NAME = 0
 internal const val SORT_BY_PACKAGE_NAME = 1
 internal const val SORT_BY_INSTALL_TIME = 2
 internal const val SORT_BY_UPDATE_TIME = 3
-
-private const val PREFS_SORT_OPTION = "superuser_sort_option"
 
 internal fun buildRecentlyInstalledGroups(
     groups: List<GroupedApps>,
@@ -58,7 +56,8 @@ internal fun buildRecentlyInstalledGroups(
 }
 
 class SuperUserViewModel(
-    private val repo: SuperUserRepository = SuperUserRepositoryImpl()
+    private val repo: SuperUserRepository = SuperUserRepositoryImpl(),
+    private val settingsRepo: SettingsRepository = SettingsRepositoryImpl()
 ) : ViewModel() {
 
     companion object {
@@ -82,7 +81,6 @@ class SuperUserViewModel(
 
     private val _uiState = MutableStateFlow(SuperUserUiState())
     val uiState: StateFlow<SuperUserUiState> = _uiState.asStateFlow()
-    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     private val refreshMutex = Mutex()
     private val searchQuery = MutableStateFlow("")
@@ -98,20 +96,17 @@ class SuperUserViewModel(
     }
 
     fun initializePreferences() {
-        val showSystemApps = prefs.getBoolean("show_system_apps", false)
-        val showOnlyPrimaryUserApps = prefs.getBoolean("show_only_primary_user_apps", false)
-        val sortOption = prefs.getInt(PREFS_SORT_OPTION, 0)
         _uiState.update {
             it.copy(
-                showSystemApps = showSystemApps,
-                showOnlyPrimaryUserApps = showOnlyPrimaryUserApps,
-                sortOption = sortOption,
+                showSystemApps = settingsRepo.superuserShowSystemApps,
+                showOnlyPrimaryUserApps = settingsRepo.superuserShowOnlyPrimaryUserApps,
+                sortOption = settingsRepo.superuserSortOption,
             )
         }
     }
 
     fun updateSortOption(option: Int): Job {
-        prefs.edit { putInt(PREFS_SORT_OPTION, option) }
+        settingsRepo.superuserSortOption = option
         _uiState.update { it.copy(sortOption = option) }
         return viewModelScope.launch {
             val current = _uiState.value.groupedApps
@@ -122,7 +117,7 @@ class SuperUserViewModel(
 
     fun toggleShowSystemApps(): Job {
         val newValue = !_uiState.value.showSystemApps
-        prefs.edit { putBoolean("show_system_apps", newValue) }
+        settingsRepo.superuserShowSystemApps = newValue
         _uiState.update { it.copy(showSystemApps = newValue) }
         return viewModelScope.launch {
             // Re-filter when setting changes
@@ -135,7 +130,7 @@ class SuperUserViewModel(
 
     fun toggleShowOnlyPrimaryUserApps(): Job {
         val newValue = !_uiState.value.showOnlyPrimaryUserApps
-        prefs.edit { putBoolean("show_only_primary_user_apps", newValue) }
+        settingsRepo.superuserShowOnlyPrimaryUserApps = newValue
         _uiState.update { it.copy(showOnlyPrimaryUserApps = newValue) }
         return viewModelScope.launch {
             // Re-filter when setting changes
