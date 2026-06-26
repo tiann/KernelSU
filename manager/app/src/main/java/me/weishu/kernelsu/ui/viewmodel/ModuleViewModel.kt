@@ -40,6 +40,7 @@ import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import okhttp3.Request
 import java.text.Collator
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 import me.weishu.kernelsu.ui.util.toggleModule as toggleModuleUtil
 import me.weishu.kernelsu.ui.util.undoUninstallModule as undoUninstallModuleUtil
 import me.weishu.kernelsu.ui.util.uninstallModule as uninstallModuleUtil
@@ -308,7 +309,7 @@ class ModuleViewModel(
         val fetchedEntries = coroutineScope {
             modulesToFetch.map { (id, module, signature) ->
                 async {
-                    val info = withTimeoutOrNull(5_000L) {
+                    val info = withTimeoutOrNull(5_000L.milliseconds) {
                         withContext(Dispatchers.IO) { checkUpdate(module) }
                     } ?: ModuleUpdateInfo.Empty
                     id to ModuleUpdateCache(signature, info)

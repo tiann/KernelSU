@@ -2,6 +2,7 @@
 
 package me.weishu.kernelsu.ui.component.miuix.effect
 
+import android.os.Build
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.floor
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BgEffectBackground(
@@ -32,7 +34,7 @@ fun BgEffectBackground(
     alpha: () -> Float = { 1f },
     content: @Composable BoxScope.() -> Unit,
 ) {
-    if (!isRuntimeShaderSupported()) {
+    if (!isRuntimeShaderSupported() || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         Box(modifier = modifier, content = content)
         return
     }
@@ -57,7 +59,7 @@ fun BgEffectBackground(
 
             var targetStage = floor(colorStage.value) + 1f
             while (isActive) {
-                delay((preset.colorInterpPeriod * 500).toLong())
+                delay((preset.colorInterpPeriod * 500).toLong().milliseconds)
                 colorStage.animateTo(
                     targetValue = targetStage,
                     animationSpec = spring(dampingRatio = 0.9f, stiffness = 35f),

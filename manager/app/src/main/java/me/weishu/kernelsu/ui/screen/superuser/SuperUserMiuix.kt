@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -402,7 +403,7 @@ fun SuperUserPagerMiuix(
         val layoutDirection = LocalLayoutDirection.current
         searchStatus.SearchBox {
             val lazyListState = rememberLazyListState()
-            val refreshTick = remember { mutableStateOf(0) }
+            val refreshTick = remember { mutableIntStateOf(0) }
             val latestGroupedApps = rememberUpdatedState(uiState.groupedApps)
             val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
             ScrollToTopOnChange(
@@ -410,7 +411,7 @@ fun SuperUserPagerMiuix(
                 uiState.sortOption,
                 uiState.showSystemApps,
                 uiState.showOnlyPrimaryUserApps,
-                refreshTick.value,
+                refreshTick.intValue,
                 isBusy = { latestRefreshing.value },
             ) { latestGroupedApps.value }
             val pullToRefreshState = rememberPullToRefreshState()
@@ -442,7 +443,7 @@ fun SuperUserPagerMiuix(
                     pullToRefreshState = pullToRefreshState,
                     onRefresh = {
                         actions.onRefresh()
-                        refreshTick.value++
+                        refreshTick.intValue++
                     },
                     refreshTexts = refreshTexts,
                     contentPadding = PaddingValues(

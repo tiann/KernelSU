@@ -8,16 +8,16 @@ plugins {
     id("kotlin-parcelize")
 }
 
-val androidCompileSdkVersion: Int by rootProject.extra
-val androidCompileSdkVersionMinor: Int by rootProject.extra
-val androidCompileNdkVersion: String by rootProject.extra
-val androidBuildToolsVersion: String by rootProject.extra
-val androidMinSdkVersion: Int by rootProject.extra
-val androidTargetSdkVersion: Int by rootProject.extra
-val androidSourceCompatibility: JavaVersion by rootProject.extra
-val androidTargetCompatibility: JavaVersion by rootProject.extra
-val managerVersionCode: Int by rootProject.extra
-val managerVersionName: String by rootProject.extra
+val androidCompileSdkVersion = rootProject.extra["androidCompileSdkVersion"] as Int
+val androidCompileSdkVersionMinor = rootProject.extra["androidCompileSdkVersionMinor"] as Int
+val androidCompileNdkVersion = rootProject.extra["androidCompileNdkVersion"] as String
+val androidBuildToolsVersion = rootProject.extra["androidBuildToolsVersion"] as String
+val androidMinSdkVersion = rootProject.extra["androidMinSdkVersion"] as Int
+val androidTargetSdkVersion = rootProject.extra["androidTargetSdkVersion"] as Int
+val androidSourceCompatibility = rootProject.extra["androidSourceCompatibility"] as JavaVersion
+val androidTargetCompatibility = rootProject.extra["androidTargetCompatibility"] as JavaVersion
+val managerVersionCode = rootProject.extra["managerVersionCode"] as Int
+val managerVersionName = rootProject.extra["managerVersionName"] as String
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
