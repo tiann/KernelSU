@@ -12,6 +12,7 @@ data class WebUIState(
     val isInsetsEnabled: Boolean = false,
     val webCanGoBack: Boolean = false,
     val overlay: WebUIOverlay? = null,
+    val externalLinkUrl: String? = null,
 )
 
 @Immutable

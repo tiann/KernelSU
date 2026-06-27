@@ -106,6 +106,19 @@ class WebUIViewModel : ViewModel() {
                 runtime.pendingFileCallback?.onReceiveValue(intent.uris)
                 runtime.pendingFileCallback = null
             }
+
+            is WebUIIntent.ExternalLinkIntercepted -> _state.update {
+                it.copy(externalLinkUrl = intent.url)
+            }
+
+            WebUIIntent.ExternalLinkGoBack -> _state.update {
+                it.copy(externalLinkUrl = null)
+            }
+
+            is WebUIIntent.ExternalLinkOpenBrowser -> {
+                _state.update { it.copy(externalLinkUrl = null) }
+                emitEffect(WebUIEffect.OpenExternalBrowser(intent.url))
+            }
         }
     }
 

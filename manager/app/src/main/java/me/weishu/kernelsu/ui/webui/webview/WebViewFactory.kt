@@ -2,17 +2,17 @@ package me.weishu.kernelsu.ui.webui.webview
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.graphics.Color
 import android.webkit.WebView
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 
 @SuppressLint("SetJavaScriptEnabled")
 internal fun createWebView(activity: Activity): WebView {
     val webView = WebView(activity)
     webView.setBackgroundColor(Color.TRANSPARENT)
 
-    val prefs = activity.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
+    val repo = SettingsRepositoryImpl()
+    WebView.setWebContentsDebuggingEnabled(repo.enableWebDebugging)
 
     webView.settings.apply {
         javaScriptEnabled = true

@@ -290,4 +290,9 @@
     <string name="nav_rail_collapse">收起导航栏</string>
     <string name="settings_navigation_badge">模块角标</string>
     <string name="settings_navigation_badge_summary">在导航栏显示已启用模块数量，有可更新模块时以红色显示可更新数量</string>
+    <string name="webui_external_link_warning_title">外部链接</string>
+    <string name="webui_external_link_warning_message">即将离开模块 WebUI 并打开外部链接：</string>
+    <string name="webui_go_back">返回</string>
+    <string name="webui_open_in_external">在外部打开</string>
+    <string name="webui_external_link_no_app">未找到能打开此链接的应用</string>
 </resources>
