@@ -7,4 +7,5 @@ sealed interface WebUIEffect {
     data object Finish : WebUIEffect
     data class LaunchFileChooser(val intent: Intent) : WebUIEffect
     data class EvaluateJavascript(val script: String) : WebUIEffect
+    data class OpenExternalBrowser(val url: String) : WebUIEffect
 }
