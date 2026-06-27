@@ -269,4 +269,8 @@
     <string name="profile_flags_desc_no_new_privs">禁止从此 Root Profile 的上下文中通过 KernelSU 进一步提升权限</string>
     <string name="module_shortcut_copy_scheme">复制 URL Scheme</string>
     <string name="module_shortcut_scheme_copied">已复制 URL Scheme</string>
+    <string name="webui_external_link_warning_title">外部链接</string>
+    <string name="webui_external_link_warning_message">即将离开模块 WebUI 并打开外部链接：</string>
+    <string name="webui_go_back">返回</string>
+    <string name="webui_open_in_browser">在浏览器中打开</string>
 </resources>

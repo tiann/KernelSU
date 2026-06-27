@@ -31,35 +31,33 @@ internal fun createWebViewClient(
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
             val url = request.url
             if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
-                val packageName = url.path?.substring(1)
+                val packageName = url.path?.runCatching { substring(1) }?.getOrNull()
                 if (!packageName.isNullOrEmpty()) {
-                    val appInfo = SuperUserViewModel.apps
-                        .find { it.packageName == packageName }
-                        ?.packageInfo?.applicationInfo
+                    val appInfo = SuperUserViewModel.apps.find { it.packageName == packageName }?.packageInfo?.applicationInfo
                     if (appInfo != null) {
                         val icon = AppIconCache.loadIconSync(activity, appInfo.withMainUserUid(activity), 512)
                         val stream = java.io.ByteArrayOutputStream()
                         icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                         return WebResourceResponse(
-                            "image/png", null, 200, "OK",
-                            mapOf("Access-Control-Allow-Origin" to "*"),
-                            java.io.ByteArrayInputStream(stream.toByteArray())
+                            "image/png", null, 200, "OK", mapOf("Access-Control-Allow-Origin" to "*"), java.io.ByteArrayInputStream(stream.toByteArray())
                         )
                     } else {
                         val errorMsg = "No such package"
                         val errorStream = java.io.ByteArrayInputStream(errorMsg.toByteArray(Charsets.UTF_8))
                         return WebResourceResponse(
-                            "text/plain",
-                            "utf-8",
-                            404,
-                            "Not Found",
-                            mapOf("Access-Control-Allow-Origin" to "*"),
-                            errorStream
+                            "text/plain", "utf-8", 404, "Not Found", mapOf("Access-Control-Allow-Origin" to "*"), errorStream
                         )
                     }
                 }
             }
             return webViewAssetLoader.shouldInterceptRequest(url)
+        }
+
+        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+            val url = request.url
+            if (isInternalUrl(url)) return false
+            dispatch(WebUIIntent.ExternalLinkIntercepted(url.toString()))
+            return true
         }
 
         override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
@@ -89,11 +87,7 @@ internal fun createWebChromeClient(
         }
 
         override fun onJsPrompt(
-            view: WebView?,
-            url: String?,
-            message: String?,
-            defaultValue: String?,
-            result: JsPromptResult?
+            view: WebView?, url: String?, message: String?, defaultValue: String?, result: JsPromptResult?
         ): Boolean {
             if (message == null || result == null || defaultValue == null) return false
             dispatch(WebUIIntent.JsPromptRequested(message, defaultValue, result))
@@ -115,4 +109,15 @@ internal fun createWebChromeClient(
             return true
         }
     }
+}
+
+/**
+ * Only keep navigation inside the WebView for the trusted WebUI host over HTTPS
+ * or for local loopback endpoints used by modules.
+ */
+internal fun isInternalUrl(url: Uri): Boolean {
+    val host = url.host ?: return false
+    val isTrustedWebUi = host.equals(WEBUI_DOMAIN, ignoreCase = true)
+    val isLoopback = host.equals("localhost", ignoreCase = true) || host == "127.0.0.1" || host == "[::1]"
+    return isTrustedWebUi || isLoopback
 }

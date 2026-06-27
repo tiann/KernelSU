@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.webui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.WindowManager
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.weishu.kernelsu.R
@@ -116,6 +118,13 @@ private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
                 }
 
                 is WebUIEffect.EvaluateJavascript -> viewModel.runtime.webView?.evaluateJavascript(effect.script, null)
+
+                is WebUIEffect.OpenExternalBrowser -> {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, effect.url.toUri())
+                        activity.startActivity(intent)
+                    } catch (_: Exception) { }
+                }
             }
         }
     }
