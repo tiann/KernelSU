@@ -21,6 +21,9 @@ sealed interface WebUIIntent {
     data class ConfirmAnswered(val confirmed: Boolean) : WebUIIntent
     data class PromptAnswered(val value: String?) : WebUIIntent
     data class FileChooserRequested(val intent: Intent) : WebUIIntent
+    data class ExternalLinkIntercepted(val url: String) : WebUIIntent
+    data object ExternalLinkGoBack : WebUIIntent
+    data class ExternalLinkOpenBrowser(val url: String) : WebUIIntent
     data class FileChooserResult(val uris: Array<android.net.Uri>?) : WebUIIntent {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

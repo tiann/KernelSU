@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -57,14 +61,27 @@ internal fun SyncWebUIInsets(
 }
 
 @Composable
-internal fun HandleWebViewLifecycle(runtime: WebUIRuntime) {
+internal fun HandleWebViewLifecycle(
+    runtime: WebUIRuntime,
+    webUIState: WebUIState,
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    var isResumed by remember(lifecycleOwner) {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    val shouldPauseWebView = !isResumed || webUIState.externalLinkUrl != null
 
     DisposableEffect(lifecycleOwner, runtime) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> runtime.webView?.onResume()
-                Lifecycle.Event.ON_PAUSE -> runtime.webView?.onPause()
+                Lifecycle.Event.ON_RESUME -> {
+                    isResumed = true
+                }
+
+                Lifecycle.Event.ON_PAUSE -> {
+                    isResumed = false
+                }
+
                 else -> {}
             }
         }
@@ -72,6 +89,16 @@ internal fun HandleWebViewLifecycle(runtime: WebUIRuntime) {
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(runtime.webView, shouldPauseWebView) {
+        runtime.webView?.let { webView ->
+            if (shouldPauseWebView) {
+                webView.onPause()
+            } else {
+                webView.onResume()
+            }
         }
     }
 }
