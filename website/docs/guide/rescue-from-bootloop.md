@@ -29,14 +29,14 @@ There are two ways to enter Safe Mode:
 1. The built-in Safe Mode of some systems: Some systems have a built-in Safe Mode that can be accessed by long-pressing the Volume down button. In other systems (such as MIUI/HyperOS), Safe Mode can be activated from the Recovery. When entering the system's Safe Mode, KernelSU will also enter this mode and automatically disable the modules.
 2. The built-in Safe Mode of KernelSU: In this case, the method is to **press the Volume down key continuously more than three times** after the first boot screen. Note that it is press-release, press-release, press-release, not hold.
 
-After entering Safe Mode, all modules on the Module page in the KernelSU manager will be disabled. However, you can still perform the \"uninstall\" operation to remove any modules that may be causing issues.
+After entering Safe Mode, all modules on the Module page in the KernelSU manager will be disabled. However, you can still perform the "uninstall" operation to remove any modules that may be causing issues.
 
 The built-in Safe Mode is implemented in the kernel, so there is no possibility of missing important events due to interception. However, for non-GKI kernels, manual code integration may be required. For this, refer to the official documentation for guidance.
 
 ::: warning
 KernelSU registers volume key listener during kernel module initialization (loaded when the kernel executes the init process in LKM mode), and unregisters it at the `on_post_fs_data` stage (before the boot animation). You need to grasp the timing and quickly press the volume down key three times after the first boot screen. If the device boots fast or the operation is not timely, the safe mode may not be triggered.
 
-If the module writes unreasonable code in initrc causing the device to fail to boot, these codes will still be executed even in safe mode.
+If the module writes unreasonable code in initrc causing the device to fail to boot, this code will still be executed even in safe mode.
 :::
 
 #### Manual Rescue {#manual-rescue}
