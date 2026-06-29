@@ -17,7 +17,7 @@ rust-embed = { version = "8", features = [
 ] }
 which = "8"
 sha1 = "0.11"
-base16ct = { version = "0.2", features = ["alloc"] }
+base16ct = { version = "1.0", features = ["alloc"] }
 sha256 = "1"
 tempfile = "3"
 chrono = "0.4"
@@ -56,7 +56,7 @@ derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
 adb_client = { git = "https://github.com/Kernel-SU/adb_client" }
-prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props" }
+prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props", rev = "6f5723105d8d4cacad31d83d343defbf032c7b33" }
 
 [build-dependencies]
 bindgen = "0.72"
