@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -26,19 +27,20 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -136,24 +138,30 @@ fun SulogScreenMaterial(
                             contentDescription = stringResource(R.string.sulog_filter_title),
                         )
                     }
-                    DropdownMenu(
+                    DropdownMenuPopup(
                         expanded = showFilterMenu,
                         onDismissRequest = { showFilterMenu = false },
                     ) {
-                        SulogEventFilter.entries.forEach { filter ->
-                            DropdownMenuItem(
-                                text = { Text(sulogFilterLabel(filter)) },
-                                trailingIcon = {
-                                    Checkbox(
-                                        checked = filter in state.selectedFilters,
-                                        onCheckedChange = null,
-                                    )
-                                },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleFilter(filter)
-                                },
-                            )
+                        val filters = SulogEventFilter.entries
+                        DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                            filters.forEachIndexed { index, filter ->
+                                DropdownMenuItem(
+                                    text = { Text(sulogFilterLabel(filter)) },
+                                    checked = filter in state.selectedFilters,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleFilter(filter)
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = index, count = filters.size),
+                                )
+                            }
                         }
                     }
                 },

@@ -4,7 +4,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -13,9 +15,12 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
@@ -23,6 +28,7 @@ import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
@@ -293,23 +299,36 @@ fun SegmentedDropdownItem(
                     modifier = Modifier.fillMaxWidth(0.3f),
                     color = if (enabled) colorScheme.primary else colorScheme.onSurfaceVariant
                 )
-                DropdownMenu(
+                DropdownMenuPopup(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
                 ) {
-                    items.forEachIndexed { index, text ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(text, color = if (index == safeIndex) colorScheme.primary else colorScheme.onSurface)
-                            },
-                            onClick = {
-                                if (index in items.indices) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    onItemSelected(index)
-                                }
-                                expanded = false
-                            }
-                        )
+                    DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                        Spacer(Modifier.height(2.dp))
+                        items.forEachIndexed { index, text ->
+                            DropdownMenuItem(
+                                text = { Text(text) },
+                                selected = index == safeIndex,
+                                onClick = {
+                                    if (index in items.indices) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        onItemSelected(index)
+                                    }
+                                    expanded = false
+                                },
+                                shapes = MenuDefaults.itemShape(index = index, count = items.size),
+                                leadingIcon = if (index == safeIndex) {
+                                    {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                        )
+                                    }
+                                } else null,
+                            )
+                            Spacer(Modifier.height(2.dp))
+                        }
                     }
                 }
             }

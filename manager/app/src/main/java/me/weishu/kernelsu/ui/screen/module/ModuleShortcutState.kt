@@ -114,6 +114,15 @@ class ModuleShortcutState internal constructor(
         hasExistingShortcut = true
     }
 
+    fun buildShortcutUrl(): String? {
+        val currentModuleId = moduleId
+        val type = selectedType
+        if (currentModuleId.isNullOrBlank() || type == null) {
+            return null
+        }
+        return Shortcut.buildShortcutUri(currentModuleId, type).toString()
+    }
+
     fun deleteShortcut(context: Context) {
         val currentModuleId = moduleId
         val type = selectedType
