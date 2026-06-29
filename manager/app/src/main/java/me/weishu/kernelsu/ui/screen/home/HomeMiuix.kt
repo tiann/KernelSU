@@ -313,7 +313,7 @@ private fun StatusCard(
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = stringResource(R.string.home_working_version, "${state.ksuVersion}/${state.kernelUAPIVersion}"),
+                                    text = stringResource(R.string.home_working_version, "${state.ksuVersion}-${state.kernelUAPIVersion}"),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
                                 )

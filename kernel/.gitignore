@@ -22,3 +22,5 @@ CLAUDE.md
 .vscode/settings.json
 check_symbol
 ksu_uapi.h
+.clangd
+out

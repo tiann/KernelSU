@@ -122,6 +122,11 @@ int escape_with_root_profile(void)
         goto out_abort_creds;
     }
 
+    if (test_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT)) {
+        pr_warn("TIF_KSU_DISABLE_ESCAPE_WITH_ROOT found, don't escape!\n");
+        goto out_abort_creds;
+    }
+
     profile = ksu_get_root_profile(cred->uid.val);
 
     cred->uid.val = profile->uid;
@@ -166,11 +171,7 @@ int escape_with_root_profile(void)
     }
 #endif
 
-    // setup capabilities
-    // we need CAP_DAC_READ_SEARCH becuase `/data/adb/ksud` is not accessible for non root process
-    // we add it here but don't add it to cap_inhertiable, it would be dropped automaticly after exec!
-    u64 cap_for_ksud = profile->capabilities.effective | CAP_DAC_READ_SEARCH;
-    memcpy(&cred->cap_effective, &cap_for_ksud, sizeof(cred->cap_effective));
+    memcpy(&cred->cap_effective, &profile->capabilities.effective, sizeof(cred->cap_effective));
     memcpy(&cred->cap_permitted, &profile->capabilities.effective, sizeof(cred->cap_permitted));
     memcpy(&cred->cap_bset, &profile->capabilities.effective, sizeof(cred->cap_bset));
 
@@ -180,6 +181,10 @@ int escape_with_root_profile(void)
     commit_creds(cred);
 
     disable_seccomp();
+
+    if (profile->flags & FLAG_KSU_NO_NEW_PRIVS) {
+        set_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT);
+    }
 
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);

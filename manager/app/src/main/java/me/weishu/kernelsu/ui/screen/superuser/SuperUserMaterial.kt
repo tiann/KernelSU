@@ -22,18 +22,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -121,7 +122,7 @@ fun SuperUserPagerMaterial(
                             contentDescription = stringResource(R.string.menu_sort)
                         )
 
-                        DropdownMenu(
+                        DropdownMenuPopup(
                             expanded = showSortMenu,
                             onDismissRequest = { showSortMenu = false }
                         ) {
@@ -134,36 +135,48 @@ fun SuperUserPagerMaterial(
                             val currentSortType = uiState.sortOption / 2
                             val isReverse = uiState.sortOption % 2 != 0
 
-                            sortResIds.forEachIndexed { index, resId ->
+                            DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                                sortResIds.forEachIndexed { index, resId ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(resId)) },
+                                        selected = currentSortType == index,
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                            val newOption = index * 2 + (if (isReverse) 1 else 0)
+                                            actions.onUpdateSortOption(newOption)
+                                            showSortMenu = false
+                                        },
+                                        shapes = MenuDefaults.itemShape(
+                                            index = index,
+                                            count = sortResIds.size + 1
+                                        ),
+                                    )
+                                }
+
+                                HorizontalDivider()
+
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(resId)) },
-                                    trailingIcon = {
-                                        RadioButton(
-                                            selected = currentSortType == index,
-                                            onClick = null,
+                                    text = { Text(stringResource(R.string.sort_reverse)) },
+                                    checked = isReverse,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
                                         )
                                     },
-                                    onClick = {
+                                    onCheckedChange = {
                                         haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        val newOption = index * 2 + (if (isReverse) 1 else 0)
+                                        val newOption = currentSortType * 2 + (if (!isReverse) 1 else 0)
                                         actions.onUpdateSortOption(newOption)
                                         showSortMenu = false
-                                    }
+                                    },
+                                    shapes = MenuDefaults.itemShape(
+                                        index = sortResIds.size,
+                                        count = sortResIds.size + 1
+                                    ),
                                 )
                             }
-
-                            HorizontalDivider()
-
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.sort_reverse)) },
-                                trailingIcon = { Checkbox(isReverse, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    val newOption = currentSortType * 2 + (if (!isReverse) 1 else 0)
-                                    actions.onUpdateSortOption(newOption)
-                                    showSortMenu = false
-                                }
-                            )
                         }
                     }
 
@@ -175,29 +188,48 @@ fun SuperUserPagerMaterial(
                             contentDescription = stringResource(id = R.string.settings)
                         )
 
-                        DropdownMenu(
+                        DropdownMenuPopup(
                             expanded = showDropdown,
                             onDismissRequest = { showDropdown = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.show_system_apps)) },
-                                trailingIcon = { Checkbox(uiState.showSystemApps, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleShowSystemApps()
-                                    showDropdown = false
-                                }
-                            )
-                            if (uiState.userIds.size > 1) {
+                            val filterCount = if (uiState.userIds.size > 1) 2 else 1
+                            DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
-                                    trailingIcon = { Checkbox(uiState.showOnlyPrimaryUserApps, null) },
-                                    onClick = {
+                                    text = { Text(stringResource(R.string.show_system_apps)) },
+                                    checked = uiState.showSystemApps,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
                                         haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        actions.onToggleShowOnlyPrimaryUserApps()
+                                        actions.onToggleShowSystemApps()
                                         showDropdown = false
-                                    }
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = 0, count = filterCount),
                                 )
+                                if (uiState.userIds.size > 1) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
+                                        checked = uiState.showOnlyPrimaryUserApps,
+                                        checkedLeadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Check,
+                                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                                contentDescription = null,
+                                            )
+                                        },
+                                        onCheckedChange = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                            actions.onToggleShowOnlyPrimaryUserApps()
+                                            showDropdown = false
+                                        },
+                                        shapes = MenuDefaults.itemShape(index = 1, count = filterCount),
+                                    )
+                                }
                             }
                         }
                     }

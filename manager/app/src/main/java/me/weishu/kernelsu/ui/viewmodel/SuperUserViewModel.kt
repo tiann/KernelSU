@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.viewmodel
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
@@ -27,7 +26,6 @@ import me.weishu.kernelsu.ui.screen.superuser.SuperUserUiState
 import me.weishu.kernelsu.ui.util.HanziToPinyin
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
-import me.weishu.kernelsu.ui.util.withCurrentUserUid
 import java.text.Collator
 import java.util.Locale
 
@@ -66,7 +64,6 @@ class SuperUserViewModel(
     companion object {
         private const val TAG = "SuperUserViewModel"
 
-        // Cache to support getAppIconDrawable static method
         private val appsLock = Any()
         private var cachedApps: List<AppInfo> = emptyList()
         private val groupedAppsLock = Any()
@@ -78,14 +75,6 @@ class SuperUserViewModel(
         @JvmStatic
         fun getGroupedApp(uid: Int): GroupedApps? {
             return synchronized(groupedAppsLock) { cachedGroupedApps.find { it.uid == uid } }
-        }
-
-        @JvmStatic
-        fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
-            val appList = synchronized(appsLock) { cachedApps }
-            val appDetail = appList.find { it.packageName == packageName }
-            val appInfo = appDetail?.packageInfo?.applicationInfo ?: return null
-            return appInfo.withCurrentUserUid().loadIcon(context.packageManager)
         }
     }
 

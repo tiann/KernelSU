@@ -241,4 +241,5 @@
     <string name="download_install">Pasang</string>
     <string name="home_jailbreak">Jailbreak</string>
     <string name="settings_enable_blur">Blur</string>
+    <string name="profile_flags_desc_no_new_privs">Mencegah eskalasi hak akses lebih lanjut melalui KernelSU dalam konteks profil root ini.</string>
 </resources>

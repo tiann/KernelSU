@@ -66,4 +66,5 @@
     <string name="settings_sucompat_summary">ಆಪ್ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಸೂಪರ್‌ಯೂಸರ್ ಅನುಮತಿ ಪಡೆದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ /system/bin/su ಅನ್ನು ksud ಗೆ ಮರು ನಿರ್ದೇಶಿಸಿ; ಹೊಸ ಪ್ರಕ್ರಿಯೆಗಳಿಗೆ ಮಾತ್ರ ಪರಿಣಾಮಕಾರಿ.</string>
     <string name="settings_kernel_umount">ಕರ್ನಲ್ ಅನ್‌ಮೌಂಟ್</string>
     <string name="settings_kernel_umount_summary">KernelSU ನಿಂದ ನಿಯಂತ್ರಿಸಲ್ಪಡುವ ಕರ್ನಲ್-ಮಟ್ಟದ ಅನ್‌ಮೌಂಟ್ ನಡವಳಿಕೆ</string>
+    <string name="profile_flags_desc_no_new_privs">ಈ ರೂಟ್ ಪ್ರೊಫೈಲ್‌ನ ಸಂದರ್ಭದೊಳಗೆ KernelSU ಮುಖಾಂತರ ಹೆಚ್ಚಿನ ಹಕ್ಕು ಏರಿಕೆಯನ್ನು ತಡೆಯುತ್ತದೆ.</string>
 </resources>

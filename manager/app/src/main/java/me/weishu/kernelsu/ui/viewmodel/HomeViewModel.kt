@@ -75,7 +75,7 @@ class HomeViewModel : ViewModel() {
             moduleCount = getModuleCount(),
             systemInfo = SystemInfo(
                 kernelVersion = Os.uname().release,
-                managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode}/${managerUAPIVersion})",
+                managerVersion = "${managerVersion.versionName} (${managerVersion.versionCode}-${managerUAPIVersion})",
                 deviceModel = resolveDeviceName(),
                 fingerprint = Build.FINGERPRINT,
                 selinuxStatus = getSELinuxStatusRaw(),

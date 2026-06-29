@@ -12,25 +12,26 @@ private val SAMSUNG_FLOATING_FEATURE_PATHS = listOf(
     "/system/etc/floating_feature.xml",
 )
 
-private val OEM_MARKET_NAME_PROPERTY_KEYS = listOf(
-    "ro.product.marketname",
-    "ro.vendor.oplus.market.name",
-    "ro.vivo.market.name",
-    "ro.config.marketing_name",
-)
-
 /**
- * Priority:
- * 1. Samsung sales name (via SemFloatingFeature API / floating_feature.xml).
- * 2. OEM market name system properties (Xiaomi/oplus/vivo/Honor/Huawei).
- * 3. Fallback to MANUFACTURER + BRAND + MODEL.
+ * Resolve the commercial device name.
+ * 1. Dispatch by [Build.MANUFACTURER] — each vendor branch uses its own property
+ *    or dedicated helper (e.g. Samsung).
+ * 2. If the vendor branch returns nothing, Fallback to MANUFACTURER + BRAND + MODEL.
  */
 fun resolveDeviceName(): String {
-    getSamsungProductName()?.let { return it }
+    val marketName = when (Build.MANUFACTURER.orEmpty().lowercase()) {
+        "samsung" -> getSamsungProductName()
+        "xiaomi" -> getSystemProperty("ro.product.marketname").takeIfValidDeviceName()
+        "oppo", "oneplus", "realme", "oplus" ->
+            getSystemProperty("ro.vendor.oplus.market.name").takeIfValidDeviceName()
 
-    OEM_MARKET_NAME_PROPERTY_KEYS
-        .firstNotNullOfOrNull { getSystemProperty(it).takeIfValidDeviceName() }
-        ?.let { return it }
+        "vivo" -> getSystemProperty("ro.vivo.market.name").takeIfValidDeviceName()
+        "honor", "huawei" -> getSystemProperty("ro.config.marketing_name").takeIfValidDeviceName()
+        "zte", "nubia" -> getSystemProperty("ro.vendor.product.ztename").takeIfValidDeviceName()
+
+        else -> null
+    }
+    if (marketName != null) return marketName
 
     return buildString {
         append(Build.MANUFACTURER)
@@ -40,7 +41,6 @@ fun resolveDeviceName(): String {
 }
 
 private fun getSamsungProductName(): String? {
-    if (!Build.MANUFACTURER.equals("samsung", ignoreCase = true)) return null
     val name = getSamsungProductNameFromFloatingFeature()
         ?: getSamsungProductNameFromFloatingFeatureFile()
     return name.withSamsungPrefix()

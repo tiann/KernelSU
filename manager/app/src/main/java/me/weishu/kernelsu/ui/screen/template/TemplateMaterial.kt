@@ -26,13 +26,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarHostState
@@ -291,26 +293,28 @@ private fun TopBar(
                     imageVector = Icons.Filled.ContentCopy,
                     contentDescription = stringResource(id = R.string.app_profile_import_export)
                 )
-                DropdownMenu(
+                DropdownMenuPopup(
                     expanded = showDropdown,
                     onDismissRequest = { showDropdown = false }
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.app_profile_import_from_clipboard)) },
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onImport()
-                            showDropdown = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.app_profile_export_to_clipboard)) },
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onExport()
-                            showDropdown = false
-                        }
-                    )
+                    DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.app_profile_import_from_clipboard)) },
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                onImport()
+                                showDropdown = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.app_profile_export_to_clipboard)) },
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                onExport()
+                                showDropdown = false
+                            }
+                        )
+                    }
                 }
             }
         },

@@ -1,0 +1,13 @@
+Diagnostics:
+  UnusedIncludes: Strict
+  ClangTidy:
+    Remove: bugprone-sizeof-expression
+
+# It's useful when you're developing on 5.x kernel and your clangd doesn't recognize this flag.
+CompileFlags:
+  Remove: -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang
+
+---
+
+CompileFlags:
+  CompilationDatabase: out/android16-6.12

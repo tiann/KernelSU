@@ -7,4 +7,5 @@
     <string name="settings_sucompat_summary">បញ្ជូន /system/bin/su ទៅកាន់ ksud សម្រាប់កម្មវិធីដែលបានទទួលសិទ្ធិ Superuser នៅក្នុងទម្រង់កម្មវិធី; មានប្រសិទ្ធភាពសម្រាប់ដំណើរការថ្មីប៉ុណ្ណោះ។</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">ឥរិយាបថ umount កម្រិតខឺណែលគ្រប់គ្រងដោយ KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">ទប់ស្កាត់ការបង្កើនសិទ្ធិបន្ថែមតាមរយៈ KernelSU នៅក្នុងបរិបទនៃប្រវត្តិរូប root នេះ។</string>
 </resources>
