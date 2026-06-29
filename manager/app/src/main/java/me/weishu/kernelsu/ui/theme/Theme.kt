@@ -51,6 +51,19 @@ data class AppSettings(
     val colorSpec: ColorSpec.SpecVersion,
 )
 
+val PaletteStyle.supportsSpec2025: Boolean
+    get() = this == PaletteStyle.TonalSpot ||
+            this == PaletteStyle.Neutral ||
+            this == PaletteStyle.Vibrant ||
+            this == PaletteStyle.Expressive
+
+fun ColorSpec.SpecVersion.effectiveFor(style: PaletteStyle): ColorSpec.SpecVersion =
+    if (this == ColorSpec.SpecVersion.SPEC_2025 && !style.supportsSpec2025) {
+        ColorSpec.SpecVersion.SPEC_2021
+    } else {
+        this
+    }
+
 object ThemeController {
     fun getAppSettings(context: Context): AppSettings {
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -77,11 +90,11 @@ object ThemeController {
         } catch (_: Exception) {
             PaletteStyle.TonalSpot
         }
-        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.Default.name)
+        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.SPEC_2025.name)
         val colorSpec = try {
             ColorSpec.SpecVersion.valueOf(colorSpecStr!!)
         } catch (_: Exception) {
-            ColorSpec.SpecVersion.Default
+            ColorSpec.SpecVersion.SPEC_2025
         }
 
         return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)

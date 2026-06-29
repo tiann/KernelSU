@@ -21,7 +21,17 @@ fun ExpressiveSwitch(
     modifier: Modifier = Modifier,
     thumbContent: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    colors: SwitchColors = SwitchDefaults.colors(),
+    colors: SwitchColors = SwitchDefaults.colors(
+        checkedIconColor = MaterialTheme.colorScheme.primary,
+        uncheckedIconColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        disabledCheckedThumbColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.38f),
+        disabledCheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        disabledCheckedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        disabledUncheckedThumbColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+        disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.12f),
+        disabledUncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        disabledUncheckedIconColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+    ),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     showThumbIcon: Boolean = true,
 ) {
@@ -29,23 +39,13 @@ fun ExpressiveSwitch(
         checked = checked,
         onCheckedChange = onCheckedChange,
         modifier = modifier,
-        thumbContent = thumbContent ?: if (showThumbIcon) {
+        thumbContent = thumbContent ?: if (showThumbIcon && (checked || enabled)) {
             {
-                if (checked) {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
+                Icon(
+                    imageVector = if (checked) Icons.Filled.Check else Icons.Filled.Close,
+                    contentDescription = null,
+                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                )
             }
         } else null,
         enabled = enabled,

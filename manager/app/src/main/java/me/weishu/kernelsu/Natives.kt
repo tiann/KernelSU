@@ -2,7 +2,6 @@ package me.weishu.kernelsu
 
 import android.os.Parcelable
 import androidx.annotation.Keep
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable

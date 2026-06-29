@@ -4,12 +4,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.BasicTextField
@@ -18,9 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
@@ -32,8 +27,8 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -56,15 +51,17 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import kotlinx.coroutines.launch
 
 val LocalListItemShapes = compositionLocalOf<ListItemShapes?> { null }
 
 @Composable
 private fun defaultSegmentedColors(): ListItemColors = ListItemDefaults.segmentedColors().copy(
-    containerColor = colorScheme.surfaceColorAtElevation(1.dp),
-    disabledContainerColor = colorScheme.surfaceColorAtElevation(1.dp),
+    containerColor = colorScheme.surfaceBright,
+    disabledContainerColor = colorScheme.surfaceBright,
     supportingContentColor = colorScheme.outline
 )
 
@@ -121,6 +118,23 @@ fun SegmentedItem(
         LocalListItemShapes provides defaultSingleSegmentedShape(index, count),
     ) {
         content()
+    }
+}
+
+@Composable
+fun SegmentedItemContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val shapes = LocalListItemShapes.current ?: ListItemDefaults.segmentedShapes(0, 1)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = colorScheme.surfaceBright,
+        shape = shapes.shape,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            content()
+        }
     }
 }
 
@@ -270,6 +284,7 @@ fun SegmentedDropdownItem(
 ) {
     val haptic = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
+    var anchorOffset by remember { mutableStateOf(IntOffset.Zero) }
 
     val hasItems = items.isNotEmpty()
     val safeIndex = if (hasItems) {
@@ -278,62 +293,59 @@ fun SegmentedDropdownItem(
         -1
     }
 
-    SegmentedListItem(
-        onClick = if (enabled) {
-            {
-                onClick?.invoke()
-                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                expanded = true
-            }
-        } else null,
-        enabled = enabled,
-        colors = colors,
-        leadingContent = icon?.let { { Icon(it, title) } },
-        headlineContent = { Text(text = title) },
-        supportingContent = summary?.let { { Text(it) } },
-        trailingContent = {
-            Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+    Box(modifier = Modifier.trackPressPosition { anchorOffset = it.round() }) {
+        SegmentedListItem(
+            onClick = if (enabled) {
+                {
+                    onClick?.invoke()
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    expanded = true
+                }
+            } else null,
+            enabled = enabled,
+            colors = colors,
+            leadingContent = icon?.let { { Icon(it, title) } },
+            headlineContent = { Text(text = title) },
+            supportingContent = summary?.let { { Text(it) } },
+            trailingContent = {
                 Text(
                     text = if (hasItems && safeIndex >= 0) items[safeIndex] else "",
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(0.3f),
                     color = if (enabled) colorScheme.primary else colorScheme.onSurfaceVariant
                 )
-                DropdownMenuPopup(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                        Spacer(Modifier.height(2.dp))
-                        items.forEachIndexed { index, text ->
-                            DropdownMenuItem(
-                                text = { Text(text) },
-                                selected = index == safeIndex,
-                                onClick = {
-                                    if (index in items.indices) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        onItemSelected(index)
-                                    }
-                                    expanded = false
-                                },
-                                shapes = MenuDefaults.itemShape(index = index, count = items.size),
-                                leadingIcon = if (index == safeIndex) {
-                                    {
-                                        Icon(
-                                            Icons.Filled.Check,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
-                                        )
-                                    }
-                                } else null,
-                            )
-                            Spacer(Modifier.height(2.dp))
+            }
+        )
+        OffsetAnchoredExpressiveMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            anchorOffset = anchorOffset,
+        ) {
+            items.forEachIndexed { index, text ->
+                DropdownMenuItem(
+                    text = { Text(text) },
+                    selected = index == safeIndex,
+                    onClick = {
+                        if (index in items.indices) {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onItemSelected(index)
                         }
-                    }
-                }
+                        expanded = false
+                    },
+                    shapes = MenuDefaults.itemShape(index = index, count = items.size),
+                    leadingIcon = if (index == safeIndex) {
+                        {
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                            )
+                        }
+                    } else null,
+                )
             }
         }
-    )
+    }
 }
 
 @Composable

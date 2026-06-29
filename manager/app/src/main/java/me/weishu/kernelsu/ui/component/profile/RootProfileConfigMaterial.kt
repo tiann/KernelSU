@@ -42,8 +42,8 @@ fun RootProfileConfigMaterial(
     onProfileChange: (Natives.Profile) -> Unit
 ) {
     Column(
-        modifier = modifier.padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier.padding(bottom = 13.dp),
+        verticalArrangement = Arrangement.spacedBy(13.dp)
     ) {
         UidGidPanel(
             enabled = enabled,

@@ -25,32 +25,21 @@ fun MaterialKernelSUTheme(
     val amoledMode = appSettings.colorMode.isAmoled
     val dynamicColor = appSettings.keyColor == 0
     val colorStyle = appSettings.paletteStyle
-    val colorSpec = appSettings.colorSpec
+    val colorSpec = appSettings.colorSpec.effectiveFor(colorStyle)
 
-    val colorScheme = if (dynamicColor) {
-        val baseScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        rememberDynamicColorScheme(
-            seedColor = Color.Unspecified,
-            isDark = darkTheme,
-            isAmoled = amoledMode,
-            style = colorStyle,
-            specVersion = colorSpec,
-            primary = baseScheme.primary,
-            secondary = baseScheme.secondary,
-            tertiary = baseScheme.tertiary,
-            neutral = baseScheme.surface,
-            neutralVariant = baseScheme.surfaceVariant,
-            error = baseScheme.error
-        )
-    } else {
-        rememberDynamicColorScheme(
-            seedColor = Color(appSettings.keyColor),
-            isDark = darkTheme,
-            isAmoled = amoledMode,
-            style = colorStyle,
-            specVersion = colorSpec,
-        )
-    }
+    val baseColorScheme = rememberDynamicColorScheme(
+        seedColor = if (dynamicColor) {
+            if (darkTheme) dynamicDarkColorScheme(context).primary
+            else dynamicLightColorScheme(context).primary
+        } else
+            Color(appSettings.keyColor),
+        isDark = darkTheme,
+        isAmoled = amoledMode,
+        style = colorStyle,
+        specVersion = colorSpec,
+    )
+
+    val colorScheme = baseColorScheme.amoledBackground(amoledMode)
 
     LaunchedEffect(darkTheme) {
         val window = (context as? Activity)?.window ?: return@LaunchedEffect
@@ -60,11 +49,14 @@ fun MaterialKernelSUTheme(
         }
     }
 
+    val animatedColorScheme = colorScheme.animateAsState()
+
     MaterialExpressiveTheme(
-        colorScheme = colorScheme,
+        colorScheme = animatedColorScheme,
         motionScheme = MotionScheme.expressive(),
+        typography = Typography,
         content = {
-            MonetColorsProvider.UpdateCss()
+            MonetColorsProvider.UpdateCss(colorScheme)
             content()
         }
     )

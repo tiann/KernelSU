@@ -41,9 +41,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Download
@@ -64,10 +62,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -76,7 +71,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -107,10 +101,15 @@ import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.markdown.GithubMarkdown
+import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
+import me.weishu.kernelsu.ui.component.material.ExpressiveTabRow
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
+import me.weishu.kernelsu.ui.component.material.SegmentedItemContainer
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.TonalCard
+import me.weishu.kernelsu.ui.component.material.TopBarBackButton
+import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.rememberContentReady
@@ -130,7 +129,7 @@ fun ModuleRepoScreenMaterial(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
     val snackbarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
+    ExpressiveScaffold(
         topBar = {
             SearchAppBar(
                 snackbarHostState = snackbarHostState,
@@ -140,10 +139,7 @@ fun ModuleRepoScreenMaterial(
                 onClearClick = actions.onClearSearch,
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(
-                        onClick = actions.onBack,
-                        content = { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null) }
-                    )
+                    TopBarBackButton(onClick = actions.onBack)
                 },
                 actions = {
                     var showSortMenu by remember { mutableStateOf(false) }
@@ -292,10 +288,9 @@ private fun RepoModuleList(
     LazyColumn(
         modifier = modifier,
         state = listState,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(13.dp),
         contentPadding = PaddingValues(
             start = 16.dp,
-            top = 8.dp,
             end = 16.dp,
             bottom = 16.dp + bottomPadding
         ),
@@ -311,7 +306,7 @@ private fun RepoModuleList(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(22.dp, 18.dp, 22.dp, 12.dp)
+                        .padding(16.dp, 14.dp, 16.dp, 10.dp)
                 ) {
                     if (module.moduleName.isNotEmpty()) {
                         Text(
@@ -407,21 +402,12 @@ fun ModuleRepoDetailScreenMaterial(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
-    LaunchedEffect(Unit) {
-        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
-    }
-
-    Scaffold(
+    ExpressiveScaffold(
         topBar = {
             LargeFlexibleTopAppBar(
                 title = { Text(text = module.moduleName) },
                 navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                        )
-                    }
+                    TopBarBackButton(onClick = actions.onBack)
                 },
                 actions = {
                     if (state.webUrl.isNotEmpty()) {
@@ -433,10 +419,7 @@ fun ModuleRepoDetailScreenMaterial(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
-                ),
+                colors = expressiveTopAppBarColors(),
                 scrollBehavior = scrollBehavior
             )
         },
@@ -492,20 +475,12 @@ fun ModuleRepoDetailScreenMaterial(
                     )
                 }
             }
-            PrimaryTabRow(
+            ExpressiveTabRow(
                 selectedTabIndex = pagerState.currentPage,
-                containerColor = MaterialTheme.colorScheme.surface,
+                tabs = tabs,
+                onTabClick = { scope.launch { pagerState.animateScrollToPage(it) } },
                 modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = { Text(tab) },
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            )
         }
     }
 }
@@ -598,7 +573,7 @@ fun ReleasesPage(
             end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
             bottom = innerPadding.calculateBottomPadding(),
         ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(13.dp),
     ) {
         if (detailReleases.isNotEmpty()) {
             items(
@@ -607,218 +582,189 @@ fun ReleasesPage(
                 contentType = { "release" }
             ) { rel ->
                 val title = remember(rel.name, rel.tagName) { rel.name.ifBlank { rel.tagName } }
-                TonalCard {
-                    Column(
-                        modifier = Modifier.padding(vertical = 18.dp, horizontal = 22.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = title,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = rel.tagName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.padding(top = 2.dp)
-                                )
-                            }
-                            Text(
-                                text = rel.publishedAt,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                                modifier = Modifier.align(Alignment.Top)
+                SegmentedColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    content = buildList<@Composable () -> Unit> {
+                        add {
+                            SegmentedListItem(
+                                headlineContent = { Text(text = title) },
+                                supportingContent = rel.tagName
+                                    .takeIf { it.isNotBlank() && it != title }
+                                    ?.let { tag -> { Text(text = tag) } },
+                                trailingContent = rel.publishedAt
+                                    .takeIf { it.isNotBlank() }
+                                    ?.let { date ->
+                                        { Text(text = date, style = MaterialTheme.typography.bodyMedium) }
+                                    },
                             )
                         }
-
-                        AnimatedVisibility(
-                            visible = rel.descriptionHTML.isNotEmpty(),
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                            Column {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 4.dp),
-                                    thickness = Dp.Hairline,
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                                )
-                                val descReady = rememberContentReady()
-                                var descLoaded by remember(rel.descriptionHTML) { mutableStateOf(false) }
-                                val descAlpha by animateFloatAsState(
-                                    targetValue = if (descLoaded) 1f else 0f,
-                                    animationSpec = tween(durationMillis = 300),
-                                    label = "ReleaseDescAlpha",
-                                )
-                                val descPlaceholderAlpha by animateFloatAsState(
-                                    targetValue = if (descLoaded) 0f else 1f,
-                                    animationSpec = tween(durationMillis = 150),
-                                    label = "ReleaseDescPlaceholderAlpha",
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .animateContentSize(animationSpec = tween(durationMillis = 300)),
-                                ) {
-                                    if (descReady) {
-                                        Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
-                                            GithubMarkdown(
-                                                content = rel.descriptionHTML,
-                                                onLoadingChange = { descLoaded = !it },
-                                            )
+                        if (rel.descriptionHTML.isNotEmpty()) {
+                            add {
+                                SegmentedItemContainer {
+                                    val descReady = rememberContentReady()
+                                    var descLoaded by remember(rel.descriptionHTML) { mutableStateOf(false) }
+                                    val descAlpha by animateFloatAsState(
+                                        targetValue = if (descLoaded) 1f else 0f,
+                                        animationSpec = tween(durationMillis = 300),
+                                        label = "ReleaseDescAlpha",
+                                    )
+                                    val descPlaceholderAlpha by animateFloatAsState(
+                                        targetValue = if (descLoaded) 0f else 1f,
+                                        animationSpec = tween(durationMillis = 150),
+                                        label = "ReleaseDescPlaceholderAlpha",
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                                            .animateContentSize(animationSpec = tween(durationMillis = 300)),
+                                    ) {
+                                        if (descReady) {
+                                            Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
+                                                GithubMarkdown(
+                                                    content = rel.descriptionHTML,
+                                                    onLoadingChange = { descLoaded = !it },
+                                                )
+                                            }
                                         }
-                                    }
-                                    if (descPlaceholderAlpha > 0f) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(72.dp)
-                                                .graphicsLayer { this.alpha = descPlaceholderAlpha },
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            LoadingIndicator()
+                                        if (descPlaceholderAlpha > 0f) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(72.dp)
+                                                    .graphicsLayer { this.alpha = descPlaceholderAlpha },
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                LoadingIndicator()
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-
-                        AnimatedVisibility(
-                            visible = rel.assets.isNotEmpty(),
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                            Column {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    thickness = Dp.Hairline
+                        rel.assets.forEach { asset ->
+                            add {
+                                ReleaseAssetSegmentedItem(
+                                    asset = asset,
+                                    confirmTitle = confirmTitle,
+                                    confirmDialog = confirmDialog,
+                                    scope = scope,
+                                    context = context,
+                                    onInstallModule = onInstallModule,
+                                    setPendingDownload = setPendingDownload,
                                 )
-
-                                rel.assets.forEachIndexed { index, asset ->
-                                    val fileName = asset.name
-                                    val sizeText = remember(asset.size) {
-                                        val s = asset.size
-                                        when {
-                                            s >= 1024L * 1024L * 1024L -> String.format("%.1f GB", s / (1024f * 1024f * 1024f))
-                                            s >= 1024L * 1024L -> String.format("%.1f MB", s / (1024f * 1024f))
-                                            s >= 1024L -> String.format("%.0f KB", s / 1024f)
-                                            else -> "$s B"
-                                        }
-                                    }
-                                    val sizeAndDownloads =
-                                        remember(sizeText, asset.downloadCount) { "$sizeText · ${asset.downloadCount} downloads" }
-                                    var isDownloading by remember(fileName, asset.downloadUrl) { mutableStateOf(false) }
-                                    var progress by remember(fileName, asset.downloadUrl) { mutableIntStateOf(0) }
-                                    var downloadedUri by remember(fileName, asset.downloadUrl) { mutableStateOf<Uri?>(null) }
-                                    val isDownloaded = downloadedUri != null
-                                    val onClickDownload = remember(fileName, asset.downloadUrl) {
-                                        {
-                                            val startText = context.getString(R.string.module_start_downloading, fileName)
-                                            setPendingDownload {
-                                                isDownloading = true
-                                                scope.launch(Dispatchers.IO) {
-                                                    download(
-                                                        asset.downloadUrl,
-                                                        fileName,
-                                                        onDownloaded = { uri ->
-                                                            isDownloading = false
-                                                            downloadedUri = uri
-                                                        },
-                                                        onDownloading = { isDownloading = true },
-                                                        onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
-                                                    )
-                                                }
-                                            }
-                                            confirmDialog.showConfirm(title = confirmTitle, content = startText)
-                                        }
-                                    }
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = fileName,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Text(
-                                                text = sizeAndDownloads,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.outline,
-                                                modifier = Modifier.padding(top = 2.dp)
-                                            )
-                                        }
-                                        if (isDownloaded) {
-                                            FilledTonalButton(
-                                                onClick = {
-                                                    val uri = downloadedUri ?: return@FilledTonalButton
-                                                    val file = uri.path?.let { java.io.File(it) }
-                                                    if (file != null && file.exists()) {
-                                                        onInstallModule(uri)
-                                                    } else {
-                                                        downloadedUri = null
-                                                    }
-                                                },
-                                                contentPadding = ButtonDefaults.TextButtonContentPadding
-                                            ) {
-                                                Icon(
-                                                    modifier = Modifier.size(20.dp),
-                                                    imageVector = Icons.Outlined.InstallMobile,
-                                                    contentDescription = stringResource(R.string.install)
-                                                )
-                                                Text(
-                                                    modifier = Modifier.padding(start = 7.dp),
-                                                    text = stringResource(R.string.install),
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                )
-                                            }
-                                        } else {
-                                            FilledTonalButton(
-                                                onClick = onClickDownload,
-                                                enabled = !isDownloading,
-                                                contentPadding = ButtonDefaults.TextButtonContentPadding
-                                            ) {
-                                                if (isDownloading) {
-                                                    CircularWavyProgressIndicator(
-                                                        progress = { progress / 100f },
-                                                        modifier = Modifier.size(20.dp),
-                                                    )
-                                                } else {
-                                                    Icon(
-                                                        modifier = Modifier.size(20.dp),
-                                                        imageVector = Icons.Outlined.Download,
-                                                        contentDescription = stringResource(R.string.download)
-                                                    )
-                                                    Text(
-                                                        modifier = Modifier.padding(start = 7.dp),
-                                                        text = stringResource(R.string.download),
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (index != rel.assets.lastIndex) {
-                                        HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 8.dp),
-                                            thickness = Dp.Hairline
-                                        )
-                                    }
-                                }
                             }
                         }
                     }
-                }
+                )
             }
         }
     }
+}
+
+@Composable
+private fun ReleaseAssetSegmentedItem(
+    asset: ReleaseAssetArg,
+    confirmTitle: String,
+    confirmDialog: ConfirmDialogHandle,
+    scope: CoroutineScope,
+    context: Context,
+    onInstallModule: (Uri) -> Unit,
+    setPendingDownload: ((() -> Unit)) -> Unit,
+) {
+    val fileName = asset.name
+    val sizeText = remember(asset.size) {
+        val s = asset.size
+        when {
+            s >= 1024L * 1024L * 1024L -> String.format("%.1f GB", s / (1024f * 1024f * 1024f))
+            s >= 1024L * 1024L -> String.format("%.1f MB", s / (1024f * 1024f))
+            s >= 1024L -> String.format("%.0f KB", s / 1024f)
+            else -> "$s B"
+        }
+    }
+    val sizeAndDownloads =
+        remember(sizeText, asset.downloadCount) { "$sizeText · ${asset.downloadCount} downloads" }
+    var isDownloading by remember(fileName, asset.downloadUrl) { mutableStateOf(false) }
+    var progress by remember(fileName, asset.downloadUrl) { mutableIntStateOf(0) }
+    var downloadedUri by remember(fileName, asset.downloadUrl) { mutableStateOf<Uri?>(null) }
+    val isDownloaded = downloadedUri != null
+    val onClickDownload = remember(fileName, asset.downloadUrl) {
+        {
+            val startText = context.getString(R.string.module_start_downloading, fileName)
+            setPendingDownload {
+                isDownloading = true
+                scope.launch(Dispatchers.IO) {
+                    download(
+                        asset.downloadUrl,
+                        fileName,
+                        onDownloaded = { uri ->
+                            isDownloading = false
+                            downloadedUri = uri
+                        },
+                        onDownloading = { isDownloading = true },
+                        onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
+                    )
+                }
+            }
+            confirmDialog.showConfirm(title = confirmTitle, content = startText)
+        }
+    }
+
+    SegmentedListItem(
+        headlineContent = { Text(text = fileName) },
+        supportingContent = { Text(text = sizeAndDownloads) },
+        trailingContent = {
+            if (isDownloaded) {
+                FilledTonalButton(
+                    onClick = {
+                        val uri = downloadedUri ?: return@FilledTonalButton
+                        val file = uri.path?.let { java.io.File(it) }
+                        if (file != null && file.exists()) {
+                            onInstallModule(uri)
+                        } else {
+                            downloadedUri = null
+                        }
+                    },
+                    contentPadding = ButtonDefaults.TextButtonContentPadding
+                ) {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Outlined.InstallMobile,
+                        contentDescription = stringResource(R.string.install)
+                    )
+                    Text(
+                        modifier = Modifier.padding(start = 7.dp),
+                        text = stringResource(R.string.install),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+            } else {
+                FilledTonalButton(
+                    onClick = onClickDownload,
+                    enabled = !isDownloading,
+                    contentPadding = ButtonDefaults.TextButtonContentPadding
+                ) {
+                    if (isDownloading) {
+                        CircularWavyProgressIndicator(
+                            progress = { progress / 100f },
+                            modifier = Modifier.size(20.dp),
+                        )
+                    } else {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = Icons.Outlined.Download,
+                            contentDescription = stringResource(R.string.download)
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 7.dp),
+                            text = stringResource(R.string.download),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+                }
+            }
+        },
+    )
 }
 
 @Composable

@@ -2,6 +2,8 @@ package me.weishu.kernelsu.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -34,10 +36,19 @@ fun MiuixKernelSUTheme(
         ThemePaletteStyle.TonalSpot
     }
 
-    val miuixColorSpec = if (colorSpec == ColorSpec.SpecVersion.SPEC_2025) {
+    val miuixColorSpec = if (colorSpec.effectiveFor(colorStyle) == ColorSpec.SpecVersion.SPEC_2025) {
         ThemeColorSpec.Spec2025
     } else {
         ThemeColorSpec.Spec2021
+    }
+
+    val resolvedKeyColor: Color? = when {
+        appSettings.keyColor != 0 -> Color(appSettings.keyColor)
+        appSettings.colorMode.isMonet ->
+            if (darkTheme) dynamicDarkColorScheme(context).primary
+            else dynamicLightColorScheme(context).primary
+
+        else -> null
     }
 
     val controller = ThemeController(
@@ -49,7 +60,7 @@ fun MiuixKernelSUTheme(
             ColorMode.MONET_LIGHT -> ColorSchemeMode.MonetLight
             ColorMode.MONET_DARK, ColorMode.DARK_AMOLED -> ColorSchemeMode.MonetDark
         },
-        keyColor = if (appSettings.keyColor == 0) null else Color(appSettings.keyColor),
+        keyColor = resolvedKeyColor,
         isDark = darkTheme,
         paletteStyle = miuixPaletteStyle,
         colorSpec = miuixColorSpec,
