@@ -141,7 +141,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -214,7 +214,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -314,7 +314,7 @@ jobs:
       - name: Bot session cache
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         id: bot_session_cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
