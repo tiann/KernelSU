@@ -2,6 +2,9 @@ package me.weishu.kernelsu.ui.screen.module
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -552,10 +555,19 @@ private fun ModuleShortcutSheet(
     onConfirmShortcut: () -> Unit,
 ) {
     if (!show) return
+    val context = LocalContext.current
+    val resources = LocalResources.current
+
+    fun copyShortcutUrl() {
+        val url = shortcutState.buildShortcutUrl() ?: return
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("KernelSU deep link", url))
+        Toast.makeText(context, resources.getString(R.string.module_shortcut_scheme_copied), Toast.LENGTH_SHORT).show()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -634,6 +646,12 @@ private fun ModuleShortcutSheet(
                 ) {
                     Text(stringResource(id = R.string.module_shortcut_delete))
                 }
+            }
+            TextButton(
+                onClick = ::copyShortcutUrl,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(id = R.string.module_shortcut_copy_scheme))
             }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),

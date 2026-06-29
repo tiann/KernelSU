@@ -2,6 +2,9 @@ package me.weishu.kernelsu.ui.screen.module
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -86,6 +89,7 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
@@ -609,6 +613,16 @@ private fun ModuleShortcutDialog(
     onDeleteShortcut: () -> Unit,
     onConfirmShortcut: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val resources = LocalResources.current
+
+    fun copyShortcutUrl() {
+        val url = shortcutState.buildShortcutUrl() ?: return
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("KernelSU deep link", url))
+        Toast.makeText(context, resources.getString(R.string.module_shortcut_scheme_copied), Toast.LENGTH_SHORT).show()
+    }
+
     OverlayDialog(
         show = show,
         title = stringResource(R.string.module_shortcut_title),
@@ -682,6 +696,11 @@ private fun ModuleShortcutDialog(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+                TextButton(
+                    text = stringResource(id = R.string.module_shortcut_copy_scheme),
+                    onClick = ::copyShortcutUrl,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {

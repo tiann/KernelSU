@@ -289,4 +289,6 @@
     <string name="sort_by_update_time">Update time</string>
     <string name="sort_reverse">Reverse</string>
     <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
+    <string name="module_shortcut_copy_scheme">Copy URL scheme</string>
+    <string name="module_shortcut_scheme_copied">URL scheme copied</string>
 </resources>
