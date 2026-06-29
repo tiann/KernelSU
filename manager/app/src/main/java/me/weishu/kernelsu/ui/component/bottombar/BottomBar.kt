@@ -75,11 +75,13 @@ private suspend fun PagerState.springAnimateToPage(target: Int) {
 
         var consumedScroll = 0f
         var skipScroll = false
+        val springStiffness = 322.2f
+        val springDampingRatio = 32.31f / (2f * kotlin.math.sqrt(springStiffness))
         Animatable(0f).animateTo(
             targetValue = scrollPixels,
             animationSpec = spring(
-                stiffness = 322.2f,
-                dampingRatio = 32.31f / (2f * kotlin.math.sqrt(322.2f)),
+                stiffness = springStiffness,
+                dampingRatio = springDampingRatio,
                 visibilityThreshold = 0.5f,
             ),
         ) {
