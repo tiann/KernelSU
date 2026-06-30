@@ -57,10 +57,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,7 +72,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -84,9 +80,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
-import com.materialkolor.rememberDynamicColorScheme
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
+import me.weishu.kernelsu.ui.component.material.ExpressiveToggleButton
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedDropdownItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
@@ -94,9 +90,8 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.material.TopBarBackButton
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.theme.ColorMode
-import me.weishu.kernelsu.ui.theme.amoledBackground
-import me.weishu.kernelsu.ui.theme.effectiveFor
 import me.weishu.kernelsu.ui.theme.keyColorOptions
+import me.weishu.kernelsu.ui.theme.rememberKernelSUColorScheme
 
 @Composable
 fun ColorPaletteScreenMaterial(
@@ -200,11 +195,11 @@ fun ColorPaletteScreenMaterial(
                         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
                     ) {
                         rowOptions.forEachIndexed { index, (modes, label) ->
-                            ToggleButton(
+                            ExpressiveToggleButton(
                                 checked = currentColorMode in modes,
                                 onCheckedChange = {
                                     if (it) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                         actions.onSetColorMode(modes.first())
                                     }
                                 },
@@ -342,40 +337,18 @@ private fun ThemePreviewCard(
     paletteStyle: PaletteStyle = PaletteStyle.TonalSpot,
     colorSpec: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2025,
 ) {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.toFloat()
     val screenHeight = configuration.screenHeightDp.toFloat()
     val screenRatio = screenWidth / screenHeight
-    val dynamicColor = keyColor == 0
 
-    val baseColorScheme = if (dynamicColor) {
-        val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        rememberDynamicColorScheme(
-            seedColor = Color.Unspecified,
-            isDark = isDark,
-            isAmoled = isAmoled,
-            style = paletteStyle,
-            specVersion = colorSpec.effectiveFor(paletteStyle),
-            primary = baseScheme.primary,
-            secondary = baseScheme.secondary,
-            tertiary = baseScheme.tertiary,
-            neutral = baseScheme.surface,
-            neutralVariant = baseScheme.surfaceVariant,
-            error = baseScheme.error
-        )
-    } else {
-        rememberDynamicColorScheme(
-            seedColor = Color(keyColor),
-            isDark = isDark,
-            isAmoled = isAmoled,
-            style = paletteStyle,
-            specVersion = colorSpec.effectiveFor(paletteStyle),
-        )
-
-    }
-
-    val colorScheme = baseColorScheme.amoledBackground(isAmoled)
+    val colorScheme = rememberKernelSUColorScheme(
+        seedColor = if (keyColor == 0) Color.Unspecified else Color(keyColor),
+        isDark = isDark,
+        isAmoled = isAmoled,
+        paletteStyle = paletteStyle,
+        colorSpec = colorSpec,
+    )
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
         Surface(
@@ -490,34 +463,14 @@ private fun ColorButtonMaterial(
     colorSpec: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2025,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val baseColorScheme = if (color == Color.Unspecified) {
-        val baseScheme = if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        rememberDynamicColorScheme(
-            seedColor = Color.Unspecified,
-            isDark = isDark,
-            isAmoled = isAmoled,
-            style = paletteStyle,
-            specVersion = colorSpec.effectiveFor(paletteStyle),
-            primary = baseScheme.primary,
-            secondary = baseScheme.secondary,
-            tertiary = baseScheme.tertiary,
-            neutral = baseScheme.surface,
-            neutralVariant = baseScheme.surfaceVariant,
-            error = baseScheme.error
-        )
-    } else {
-        rememberDynamicColorScheme(
-            seedColor = color,
-            isDark = isDark,
-            isAmoled = isAmoled,
-            style = paletteStyle,
-            specVersion = colorSpec.effectiveFor(paletteStyle),
-        )
-    }
-
-    val colorScheme = baseColorScheme.amoledBackground(isAmoled)
+    val colorScheme = rememberKernelSUColorScheme(
+        seedColor = color,
+        isDark = isDark,
+        isAmoled = isAmoled,
+        paletteStyle = paletteStyle,
+        colorSpec = colorSpec,
+    )
 
     Surface(
         onClick = {

@@ -13,6 +13,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun ExpressiveSwitch(
@@ -21,17 +22,7 @@ fun ExpressiveSwitch(
     modifier: Modifier = Modifier,
     thumbContent: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    colors: SwitchColors = SwitchDefaults.colors(
-        checkedIconColor = MaterialTheme.colorScheme.primary,
-        uncheckedIconColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-        disabledCheckedThumbColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.38f),
-        disabledCheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-        disabledCheckedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-        disabledUncheckedThumbColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
-        disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.12f),
-        disabledUncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-        disabledUncheckedIconColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-    ),
+    colors: SwitchColors = expressiveSwitchColors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     showThumbIcon: Boolean = true,
 ) {
@@ -53,3 +44,26 @@ fun ExpressiveSwitch(
         interactionSource = interactionSource
     )
 }
+
+@Composable
+fun expressiveSwitchColors(
+    checkedIconColor: Color = MaterialTheme.colorScheme.primary,
+    uncheckedIconColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    disabledCheckedThumbColor: Color = MaterialTheme.colorScheme.surface.copy(alpha = 0.38f),
+    disabledCheckedTrackColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+    disabledCheckedIconColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+    disabledUncheckedThumbColor: Color = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+    disabledUncheckedTrackColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.12f),
+    disabledUncheckedBorderColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+    disabledUncheckedIconColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
+): SwitchColors = SwitchDefaults.colors(
+    checkedIconColor = checkedIconColor,
+    uncheckedIconColor = uncheckedIconColor,
+    disabledCheckedThumbColor = disabledCheckedThumbColor,
+    disabledCheckedTrackColor = disabledCheckedTrackColor,
+    disabledCheckedIconColor = disabledCheckedIconColor,
+    disabledUncheckedThumbColor = disabledUncheckedThumbColor,
+    disabledUncheckedTrackColor = disabledUncheckedTrackColor,
+    disabledUncheckedBorderColor = disabledUncheckedBorderColor,
+    disabledUncheckedIconColor = disabledUncheckedIconColor,
+)

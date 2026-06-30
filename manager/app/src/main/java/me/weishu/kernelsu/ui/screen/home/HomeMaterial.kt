@@ -79,10 +79,9 @@ fun HomePagerMaterial(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(13.dp)
         ) {
-            StatusCard(
-                state = state,
-                actions = actions,
-            )
+            if (state.checkUpdateEnabled) {
+                UpdateCard(state = state, actions = actions)
+            }
             if (state.showManagerPrBuildWarning) {
                 WarningCard(stringResource(id = R.string.home_pr_build_warning))
             } else if (state.showKernelPrBuildWarning) {
@@ -131,9 +130,10 @@ fun HomePagerMaterial(
             if (state.showRootWarning) {
                 WarningCard(stringResource(id = R.string.grant_root_failed))
             }
-            if (state.checkUpdateEnabled) {
-                UpdateCard(state = state, actions = actions)
-            }
+            StatusCard(
+                state = state,
+                actions = actions,
+            )
             InfoCard(systemInfo = state.systemInfo)
             DonateCard(onOpenUrl = actions.onOpenUrl)
             LearnMoreCard(onOpenUrl = actions.onOpenUrl)
@@ -363,7 +363,7 @@ private fun StatusCard(
 @Composable
 private fun WarningCard(
     message: String,
-    color: Color = MaterialTheme.colorScheme.error,
+    color: Color = MaterialTheme.colorScheme.errorContainer,
     onClick: (() -> Unit)? = null
 ) {
     val content = @Composable {
@@ -372,7 +372,11 @@ private fun WarningCard(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Text(text = message, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
     if (onClick != null) {

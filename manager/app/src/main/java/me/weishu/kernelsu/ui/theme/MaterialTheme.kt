@@ -4,14 +4,11 @@ import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
-import com.materialkolor.rememberDynamicColorScheme
 import me.weishu.kernelsu.ui.webui.MonetColorsProvider
 
 @Composable
@@ -24,22 +21,14 @@ fun MaterialKernelSUTheme(
     val darkTheme = appSettings.colorMode.isDark || (appSettings.colorMode.isSystem && systemDarkTheme)
     val amoledMode = appSettings.colorMode.isAmoled
     val dynamicColor = appSettings.keyColor == 0
-    val colorStyle = appSettings.paletteStyle
-    val colorSpec = appSettings.colorSpec.effectiveFor(colorStyle)
 
-    val baseColorScheme = rememberDynamicColorScheme(
-        seedColor = if (dynamicColor) {
-            if (darkTheme) dynamicDarkColorScheme(context).primary
-            else dynamicLightColorScheme(context).primary
-        } else
-            Color(appSettings.keyColor),
+    val colorScheme = rememberKernelSUColorScheme(
+        seedColor = if (dynamicColor) Color.Unspecified else Color(appSettings.keyColor),
         isDark = darkTheme,
         isAmoled = amoledMode,
-        style = colorStyle,
-        specVersion = colorSpec,
+        paletteStyle = appSettings.paletteStyle,
+        colorSpec = appSettings.colorSpec,
     )
-
-    val colorScheme = baseColorScheme.amoledBackground(amoledMode)
 
     LaunchedEffect(darkTheme) {
         val window = (context as? Activity)?.window ?: return@LaunchedEffect

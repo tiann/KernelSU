@@ -1,11 +1,7 @@
 package me.weishu.kernelsu.ui.screen.install
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -80,7 +76,8 @@ internal fun InstallScreenMaterial(
                 .padding(innerPadding)
                 .fillMaxHeight()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(13.dp)
         ) {
             SelectInstallMethod(
                 state = uiState,
@@ -89,7 +86,7 @@ internal fun InstallScreenMaterial(
             )
 
             SegmentedColumn(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
                 content = buildList {
                     if (uiState.displayPartitions.isNotEmpty()) add {
                         SegmentedDropdownItem(
@@ -139,60 +136,46 @@ internal fun InstallScreenMaterial(
             )
 
             SegmentedColumn(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),
-                visibleLen = if (uiState.advancedOptionsShown) 0 else 1,
-                content = buildList {
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                item {
                     val rotationState by animateFloatAsState(
                         targetValue = if (uiState.advancedOptionsShown) 180f else 0f,
                         label = "RotationAnimation"
                     )
-                    add {
-                        SegmentedListItem(
-                            headlineContent = { Text(stringResource(R.string.advanced_options)) },
-                            trailingContent = {
-                                Icon(
-                                    imageVector = Icons.Filled.ExpandMore,
-                                    contentDescription = stringResource(R.string.expand),
-                                    modifier = Modifier.graphicsLayer { rotationZ = rotationState }
-                                )
-                            },
-                            onClick = actions.onAdvancedOptionsClicked
-                        )
-                    }
-                    add {
-                        AnimatedVisibility(
-                            uiState.advancedOptionsShown,
-                            enter = expandVertically() + fadeIn(),
-                            exit = shrinkVertically() + fadeOut()
-                        ) {
-                            SegmentedCheckboxItem(
-                                title = stringResource(id = R.string.allow_shell),
-                                summary = stringResource(id = R.string.allow_shell_summary),
-                                checked = uiState.allowShell,
-                                onCheckedChange = actions.onSelectAllowShell,
+                    SegmentedListItem(
+                        headlineContent = { Text(stringResource(R.string.advanced_options)) },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ExpandMore,
+                                contentDescription = stringResource(R.string.expand),
+                                modifier = Modifier.graphicsLayer { rotationZ = rotationState }
                             )
-                        }
-                    }
-                    add {
-                        AnimatedVisibility(
-                            uiState.advancedOptionsShown,
-                            enter = expandVertically() + fadeIn(),
-                            exit = shrinkVertically() + fadeOut()
-                        ) {
-                            SegmentedCheckboxItem(
-                                title = stringResource(id = R.string.enable_adb),
-                                summary = stringResource(id = R.string.enable_adb_summary),
-                                checked = uiState.enableAdb,
-                                onCheckedChange = actions.onSelectEnableAdb,
-                            )
-                        }
-                    }
+                        },
+                        onClick = actions.onAdvancedOptionsClicked
+                    )
                 }
-            )
+                item(visible = uiState.advancedOptionsShown) {
+                    SegmentedCheckboxItem(
+                        title = stringResource(id = R.string.allow_shell),
+                        summary = stringResource(id = R.string.allow_shell_summary),
+                        checked = uiState.allowShell,
+                        onCheckedChange = actions.onSelectAllowShell,
+                    )
+                }
+                item(visible = uiState.advancedOptionsShown) {
+                    SegmentedCheckboxItem(
+                        title = stringResource(id = R.string.enable_adb),
+                        summary = stringResource(id = R.string.enable_adb_summary),
+                        checked = uiState.enableAdb,
+                        onCheckedChange = actions.onSelectEnableAdb,
+                    )
+                }
+            }
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                    .padding(horizontal = 16.dp),
                 enabled = uiState.installMethod != null,
                 onClick = actions.onNext
             ) { Text(stringResource(R.string.install_next)) }
@@ -225,7 +208,7 @@ private fun SelectInstallMethod(
 
     key(state.installMethodOptions.size) {
         SegmentedColumn(
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             content = state.installMethodOptions.map { option ->
                 {
                     SegmentedRadioItem(

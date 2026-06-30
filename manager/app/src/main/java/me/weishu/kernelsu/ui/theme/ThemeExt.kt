@@ -3,8 +3,14 @@ package me.weishu.kernelsu.ui.theme
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.materialkolor.rememberDynamicColorScheme
 
 fun ColorScheme.amoledBackground(amoled: Boolean): ColorScheme =
     if (!amoled) this
@@ -16,6 +22,29 @@ fun ColorScheme.amoledBackground(amoled: Boolean): ColorScheme =
         surfaceContainerLow = Color.Black,
         surfaceContainer = Color.Black,
     )
+
+@Composable
+fun rememberKernelSUColorScheme(
+    seedColor: Color,
+    isDark: Boolean,
+    isAmoled: Boolean,
+    paletteStyle: PaletteStyle,
+    colorSpec: ColorSpec.SpecVersion,
+): ColorScheme {
+    val context = LocalContext.current
+    val seed = if (seedColor == Color.Unspecified) {
+        (if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).primary
+    } else {
+        seedColor
+    }
+    return rememberDynamicColorScheme(
+        seedColor = seed,
+        isDark = isDark,
+        isAmoled = isAmoled,
+        style = paletteStyle,
+        specVersion = colorSpec.effectiveFor(paletteStyle),
+    ).amoledBackground(isAmoled)
+}
 
 @Composable
 fun ColorScheme.animateAsState(): ColorScheme {

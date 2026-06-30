@@ -37,7 +37,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
@@ -62,6 +61,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
+import me.weishu.kernelsu.ui.component.material.ExpressiveToggleButton
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.material.SegmentedSwitchItem
@@ -200,19 +200,19 @@ private fun AppProfileInner(
                                 if (userId != 0) {
                                     StatusTag(
                                         label = "USER $userId",
-                                        contentColor = MaterialTheme.colorScheme.onTertiary,
-                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
                                     )
                                     StatusTag(
                                         label = "UID $appId",
-                                        contentColor = MaterialTheme.colorScheme.onTertiary,
-                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
                                     )
                                 } else {
                                     StatusTag(
                                         label = "UID $appUid",
-                                        contentColor = MaterialTheme.colorScheme.onTertiary,
-                                        backgroundColor = MaterialTheme.colorScheme.tertiary
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
                                     )
                                 }
                             }
@@ -410,11 +410,11 @@ private fun ProfileBox(
         )
 
         options.forEachIndexed { index, (m, label) ->
-            ToggleButton(
+            ExpressiveToggleButton(
                 checked = mode == m,
                 onCheckedChange = { checked ->
                     if (checked && (m != Mode.Template || hasTemplate)) {
-                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         onModeChange(m)
                     }
                 },
