@@ -40,8 +40,8 @@ pub fn parse_bool_config(value: &str) -> bool {
 }
 
 /// Validate config key
-/// Uses the same validation rules as module_id: ^[a-zA-Z][a-zA-Z0-9._-]+$
-/// - Must start with a letter (a-zA-Z)
+/// Uses the same validation rules as module_id: ^[a-zA-Z0-9][a-zA-Z0-9._-]+$
+/// - Must start with a letter or number (a-zA-Z0-9)
 /// - Followed by one or more alphanumeric, dot, underscore, or hyphen characters
 /// - Minimum length: 2 characters
 pub fn validate_config_key(key: &str) -> Result<()> {
@@ -58,9 +58,9 @@ pub fn validate_config_key(key: &str) -> Result<()> {
     }
 
     // Use same pattern as module_id for consistency
-    let re = regex_lite::Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
+    let re = regex_lite::Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9._-]+$")?;
     if !re.is_match(key) {
-        bail!("Invalid config key: '{key}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/");
+        bail!("Invalid config key: '{key}'. Must match /^[a-zA-Z0-9][a-zA-Z0-9._-]+$/");
     }
 
     Ok(())

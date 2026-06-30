@@ -44,17 +44,17 @@ const INSTALL_MODULE_SCRIPT: &str = concatcp!(
 );
 
 /// Validate module_id format and security
-/// Module ID must match: ^[a-zA-Z][a-zA-Z0-9._-]+$
-/// - Must start with a letter (a-zA-Z)
+/// Module ID must match: ^[a-zA-Z0-9][a-zA-Z0-9._-]+$
+/// - Must start with a letter or number (a-zA-Z0-9)
 /// - Followed by one or more alphanumeric, dot, underscore, or hyphen characters
 /// - Minimum length: 2 characters
 pub fn validate_module_id(module_id: &str) -> Result<()> {
-    let re = Regex::new(r"^[a-zA-Z][a-zA-Z0-9._-]+$")?;
+    let re = Regex::new(r"^[a-zA-Z0-9][a-zA-Z0-9._-]+$")?;
     if re.is_match(module_id) {
         Ok(())
     } else {
         Err(anyhow!(
-            "Invalid module ID: '{module_id}'. Must match /^[a-zA-Z][a-zA-Z0-9._-]+$/"
+            "Invalid module ID: '{module_id}'. Must match /^[a-zA-Z0-9][a-zA-Z0-9._-]+$/"
         ))
     }
 }
