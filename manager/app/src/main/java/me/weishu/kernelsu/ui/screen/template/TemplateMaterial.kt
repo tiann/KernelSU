@@ -166,7 +166,7 @@ fun AppProfileTemplateScreenMaterial(
                 ) {
                     if (state.offline) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
+                            Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = { actions.onRefresh(false) },
@@ -224,7 +224,7 @@ private fun TemplateItem(
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                 )
-                Text(template.description, color = MaterialTheme.colorScheme.outline)
+                Text(template.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FlowRow(modifier = Modifier.padding(top = 4.dp)) {
                     StatusTag(
                         label = "UID: ${template.uid}",
@@ -288,23 +288,23 @@ private fun TopBar(
                     expanded = showDropdown,
                     onDismissRequest = { showDropdown = false }
                 ) {
+                    val menuItems = listOf(
+                        R.string.app_profile_import_from_clipboard to onImport,
+                        R.string.app_profile_export_to_clipboard to onExport,
+                    )
                     DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.app_profile_import_from_clipboard)) },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                onImport()
-                                showDropdown = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.app_profile_export_to_clipboard)) },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                onExport()
-                                showDropdown = false
-                            }
-                        )
+                        menuItems.forEachIndexed { index, (resId, action) ->
+                            DropdownMenuItem(
+                                selected = false,
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    action()
+                                    showDropdown = false
+                                },
+                                text = { Text(stringResource(id = resId)) },
+                                shapes = MenuDefaults.itemShape(index = index, count = menuItems.size),
+                            )
+                        }
                     }
                 }
             }

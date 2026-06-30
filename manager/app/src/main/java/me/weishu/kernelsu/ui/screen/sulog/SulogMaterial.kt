@@ -378,11 +378,11 @@ private fun SulogMessageCard(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, color = colorScheme.outline)
+            Text(title, color = colorScheme.onSurfaceVariant)
             if (summary != null) {
                 Text(
                     summary,
-                    color = colorScheme.outline,
+                    color = colorScheme.onSurfaceVariant,
                     fontSize = typography.bodySmall.fontSize,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,

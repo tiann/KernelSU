@@ -515,7 +515,7 @@ private fun GroupItem(
         supportingContent = {
             Text(
                 text = summaryText,
-                color = colorScheme.outline,
+                color = colorScheme.onSurfaceVariant,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )

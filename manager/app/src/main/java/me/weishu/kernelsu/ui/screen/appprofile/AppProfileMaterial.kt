@@ -181,15 +181,15 @@ private fun AppProfileInner(
                         supportingContent = {
                             Column {
                                 if (!isUidGroup) {
-                                    Text("$appVersionName ($appVersionCode)", color = MaterialTheme.colorScheme.outline)
-                                    Text(packageName, color = MaterialTheme.colorScheme.outline)
+                                    Text("$appVersionName ($appVersionCode)", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(packageName, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 } else {
                                     if (sharedUserId.isNotEmpty()) {
-                                        Text(text = sharedUserId, color = MaterialTheme.colorScheme.outline)
+                                        Text(text = sharedUserId, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                     Text(
                                         text = stringResource(R.string.group_contains_apps, affectedApps.size),
-                                        color = MaterialTheme.colorScheme.outline
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -230,7 +230,7 @@ private fun AppProfileInner(
                 {
                     SegmentedListItem(
                         headlineContent = { Text(stringResource(R.string.profile)) },
-                        supportingContent = { Text(mode.text, color = MaterialTheme.colorScheme.outline) },
+                        supportingContent = { Text(mode.text, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
                     )
                 }
@@ -354,31 +354,24 @@ private fun TopBar(
                         expanded = showDropdown,
                         onDismissRequest = { showDropdown = false }
                     ) {
+                        val menuItems = listOf(
+                            R.string.launch_app to onLaunchApp,
+                            R.string.force_stop_app to onForceStopApp,
+                            R.string.restart_app to onRestartApp,
+                        )
                         DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.launch_app)) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    showDropdown = false
-                                    onLaunchApp(packageName, userId)
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.force_stop_app)) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    showDropdown = false
-                                    onForceStopApp(packageName, userId)
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.restart_app)) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    showDropdown = false
-                                    onRestartApp(packageName, userId)
-                                },
-                            )
+                            menuItems.forEachIndexed { index, (resId, action) ->
+                                DropdownMenuItem(
+                                    selected = false,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        showDropdown = false
+                                        action(packageName, userId)
+                                    },
+                                    text = { Text(stringResource(id = resId)) },
+                                    shapes = MenuDefaults.itemShape(index = index, count = menuItems.size),
+                                )
+                            }
                         }
                     }
                 }

@@ -813,7 +813,7 @@ private fun ModuleItem(
                         }
                     ),
                 text = module.description,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                 maxLines = if (expanded) Int.MAX_VALUE else 4,

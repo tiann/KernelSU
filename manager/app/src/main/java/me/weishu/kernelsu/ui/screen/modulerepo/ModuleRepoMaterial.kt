@@ -218,7 +218,7 @@ fun ModuleRepoScreenMaterial(
             ) {
                 if (state.offline) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
+                        Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(12.dp))
                         Button(
                             onClick = actions.onRefresh,
@@ -327,7 +327,7 @@ private fun RepoModuleList(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = module.summary,
-                            color = MaterialTheme.colorScheme.outline,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 4,
@@ -355,13 +355,13 @@ private fun RepoModuleList(
                                 Icon(
                                     imageVector = Icons.Rounded.Star,
                                     contentDescription = "stars",
-                                    tint = MaterialTheme.colorScheme.outline,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
                                     text = module.stargazerCount.toString(),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.outline,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(start = 4.dp)
                                 )
                             }
@@ -371,7 +371,7 @@ private fun RepoModuleList(
                             Text(
                                 text = latestReleaseTime,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }

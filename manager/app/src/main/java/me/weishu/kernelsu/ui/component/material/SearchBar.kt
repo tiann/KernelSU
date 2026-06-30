@@ -201,6 +201,7 @@ fun SearchAppBar(
 
                 state = searchBarState,
                 inputField = inputField,
+                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
             )
         }
     }
