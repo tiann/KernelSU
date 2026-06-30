@@ -37,7 +37,9 @@ Atualmente, as arquiteturas `arm64-v8a` e `x86_64` são suportadas.
 
 ## Tradução
 
-Para contribuir com a tradução do KernelSU ou aprimorar traduções existentes, por favor, use o [Weblate](https://hosted.weblate.org/engage/kernelsu/). PR para a tradução do Manager não são mais aceitas, pois podem entrar em conflito com o Weblate.
+KernelSU não aceita mais contribuições de tradução via Weblate. Todas as traduções agora são feitas com LLMs.
+
+Se você quiser adicionar suporte para um novo idioma, sinta-se à vontade para abrir um PR. Observe que modificações nas traduções existentes em inglês e chinês não são aceitas.
 
 ## Discussão
 
