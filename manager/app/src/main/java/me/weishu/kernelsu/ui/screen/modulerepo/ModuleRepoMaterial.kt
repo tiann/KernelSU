@@ -172,14 +172,12 @@ fun ModuleRepoScreenMaterial(
                                             index = index,
                                             count = sortOptions.size
                                         ),
-                                        leadingIcon = {
-                                            if (state.sortOrder == order) {
-                                                Icon(
-                                                    Icons.Filled.Check,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(MenuDefaults.LeadingIconSize),
-                                                )
-                                            }
+                                        selectedLeadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            )
                                         },
                                     )
                                 }

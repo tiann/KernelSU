@@ -142,6 +142,13 @@ fun SuperUserPagerMaterial(
                                     DropdownMenuItem(
                                         text = { Text(stringResource(resId)) },
                                         selected = currentSortType == index,
+                                        selectedLeadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            )
+                                        },
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                                             val newOption = index * 2 + (if (isReverse) 1 else 0)

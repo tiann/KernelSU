@@ -479,15 +479,13 @@ fun SegmentedDropdownItem(
                         expanded = false
                     },
                     shapes = MenuDefaults.itemShape(index = index, count = items.size),
-                    leadingIcon = if (index == safeIndex) {
-                        {
-                            Icon(
-                                Icons.Filled.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(MenuDefaults.LeadingIconSize),
-                            )
-                        }
-                    } else null,
+                    selectedLeadingIcon = {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                        )
+                    },
                 )
             }
         }
