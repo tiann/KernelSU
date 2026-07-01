@@ -26,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,13 +47,11 @@ import me.weishu.kernelsu.ui.theme.AppSettings
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.webui.model.WebUIIntent
-import me.weishu.kernelsu.ui.webui.runtime.WebUIRuntime
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 internal fun ExternalLinkWarningOverlay(
     externalLinkUrl: String?,
-    runtime: WebUIRuntime,
     dispatch: (WebUIIntent) -> Unit,
 ) {
     val showExternalLink = externalLinkUrl != null
@@ -72,16 +69,6 @@ internal fun ExternalLinkWarningOverlay(
         if (!visibilityState.currentState && !visibilityState.targetState) {
             displayedExternalLinkUrl = null
         }
-    }
-
-    // Pause/resume WebView when external link warning is shown.
-    DisposableEffect(showExternalLink) {
-        if (showExternalLink) {
-            runtime.webView?.onPause()
-        } else {
-            runtime.webView?.onResume()
-        }
-        onDispose { }
     }
 
     AnimatedVisibility(

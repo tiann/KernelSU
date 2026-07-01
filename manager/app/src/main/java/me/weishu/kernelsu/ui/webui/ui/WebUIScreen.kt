@@ -17,13 +17,13 @@ fun WebUIScreen(
     dispatch: (WebUIIntent) -> Unit,
 ) {
     val innerPadding = rememberWebUIContentPadding(state)
-    val showExternalLink = state.externalLinkUrl != null
+    val showExternalLinkWarning = state.externalLinkUrl != null
 
-    BackHandler(enabled = showExternalLink) {
+    BackHandler(enabled = showExternalLinkWarning) {
         dispatch(WebUIIntent.ExternalLinkGoBack)
     }
 
-    BackHandler(enabled = state.webCanGoBack && !showExternalLink) {
+    BackHandler(enabled = state.webCanGoBack && !showExternalLinkWarning) {
         runtime.webView?.goBack()
     }
 
@@ -37,12 +37,11 @@ fun WebUIScreen(
 
     ExternalLinkWarningOverlay(
         externalLinkUrl = state.externalLinkUrl,
-        runtime = runtime,
         dispatch = dispatch,
     )
 
     HandleWebUIEvent(state, dispatch)
     SyncWebUIInsets(state, dispatch)
-    HandleWebViewLifecycle(runtime)
+    HandleWebViewLifecycle(runtime = runtime, webUIState = state)
     HandleConfigurationChanges(runtime)
 }
