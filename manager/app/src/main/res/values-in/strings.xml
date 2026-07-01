@@ -74,7 +74,9 @@
     <string name="force_stop_app">Paksa berhenti</string>
     <string name="restart_app">Mulai ulang apl</string>
     <string name="failed_to_update_sepolicy">Gagal memperbarui aturan SELinux untuk %s</string>
-    <string name="require_kernel_version">Versi KernelSU saat ini %1$d terlalu rendah agar manajer berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih baru!</string>
+    <string name="require_manager_version">Manajer perlu diperbarui</string>
+    <string name="require_kernel_version">Kernel perlu diperbarui, ketuk di sini untuk memasang</string>
+    <string name="require_kernel_version_gki">Kernel perlu diperbarui</string>
     <string name="module_changelog">Catatan perubahan</string>
     <string name="app_profile_template_import_success">Berhasil diimpor</string>
     <string name="app_profile_export_to_clipboard">Ekspor ke papan klip</string>

@@ -30,8 +30,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 
 @Composable
 fun BottomBarMaterial() {
-    val isManager = Natives.isManager
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val fullFeatured = Natives.isFullFeatured()
     val mainPagerState = LocalMainPagerState.current
 
     if (!fullFeatured) return

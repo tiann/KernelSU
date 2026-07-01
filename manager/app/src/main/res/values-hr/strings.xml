@@ -61,7 +61,9 @@
     <string name="profile_groups">Grupe</string>
     <string name="profile_capabilities">Sposobnosti</string>
     <string name="profile_selinux_context">SELinux kontekst</string>
-    <string name="require_kernel_version">Trenutna verzija KernelSU-a %1$d je preniska da bi upravitelj ispravno radio. Molimo vas da nadogradite na verziju %2$d ili noviju!</string>
+    <string name="require_manager_version">Potrebno je ažurirati upravitelj</string>
+    <string name="require_kernel_version">Potrebno je ažurirati kernel, dodirnite ovdje za instalaciju</string>
+    <string name="require_kernel_version_gki">Potrebno je ažurirati kernel</string>
     <string name="settings_umount_modules_default">Umontiraj module prema zadanim postavkama</string>
     <string name="settings_umount_modules_default_summary">Globalna zadana vrijednost za \"Umontiraj module\" u profilu aplikacije. Ako je omogućeno, uklonit će sve modifikacije modula sustava za aplikacije koje nemaju postavljen profil.</string>
     <string name="profile_selinux_domain">Domena</string>
