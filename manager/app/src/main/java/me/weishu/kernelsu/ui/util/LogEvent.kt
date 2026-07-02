@@ -64,7 +64,9 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("cp /proc/modules ${procModules.absolutePath}").exec()
     shell.newJob().add("cp /proc/bootconfig ${bootConfig.absolutePath}").exec()
     shell.newJob().add("cp /proc/config.gz ${kernelConfig.absolutePath}").exec()
-    shell.newJob().add("ORIG=\$(cat /proc/sys/kernel/kptr_restrict); echo 1 > /proc/sys/kernel/kptr_restrict; cat /proc/kallsyms > ${kallsyms.absolutePath}; echo \$ORIG > /proc/sys/kernel/kptr_restrict").exec()
+    shell.newJob()
+        .add($$"ORIG=$(cat /proc/sys/kernel/kptr_restrict); echo 1 > /proc/sys/kernel/kptr_restrict; cat /proc/kallsyms > $${kallsyms.absolutePath}; echo $ORIG > /proc/sys/kernel/kptr_restrict")
+        .exec()
 
     val selinux = ShellUtils.fastCmd(shell, "getenforce")
 

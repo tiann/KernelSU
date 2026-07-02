@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
@@ -44,8 +45,9 @@ class WebUIActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val prefs = context.getSharedPreferences("settings", MODE_PRIVATE)
-            var appSettings by remember { mutableStateOf(ThemeController.getAppSettings(context)) }
-            var uiModeValue by remember { mutableStateOf(prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE) }
+            val settingsRepo = remember { SettingsRepositoryImpl() }
+            var appSettings by remember { mutableStateOf(ThemeController.getAppSettings()) }
+            var uiModeValue by remember { mutableStateOf(settingsRepo.uiMode) }
             val uiMode = remember(uiModeValue) {
                 UiMode.fromValue(uiModeValue)
             }
@@ -53,9 +55,9 @@ class WebUIActivity : ComponentActivity() {
             DisposableEffect(prefs) {
                 val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                     if (key in listOf("color_mode", "key_color", "color_style", "color_spec")) {
-                        appSettings = ThemeController.getAppSettings(context)
+                        appSettings = ThemeController.getAppSettings()
                     } else if (key == "ui_mode") {
-                        uiModeValue = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
+                        uiModeValue = settingsRepo.uiMode
                     }
                 }
                 prefs.registerOnSharedPreferenceChangeListener(listener)

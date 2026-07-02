@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.content.Context
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
-import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.SulogEntry
 import me.weishu.kernelsu.ui.util.SulogEventFilter
 import me.weishu.kernelsu.ui.util.SulogFile
@@ -49,7 +46,6 @@ class SulogViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SulogUiState())
     val uiState: StateFlow<SulogUiState> = _uiState.asStateFlow()
-    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
     private val entriesFlow = MutableStateFlow<List<SulogEntry>>(emptyList())
     private val searchTextFlow = MutableStateFlow("")
     private val selectedFiltersFlow = MutableStateFlow(defaultSulogEventFilters())
@@ -57,7 +53,7 @@ class SulogViewModel(
     private var refreshJob: Job? = null
 
     init {
-        val savedFilters = prefs.getStringSet(PREF_SULOG_FILTERS, null)
+        val savedFilters = repo.suLogFilters
             ?.mapNotNull { raw -> SulogEventFilter.entries.firstOrNull { it.name == raw } }
             ?.toSet()
             ?.ifEmpty { defaultSulogEventFilters() }
@@ -163,19 +159,10 @@ class SulogViewModel(
                 if (!add(filter)) remove(filter)
             }
             selectedFiltersFlow.value = selectedFilters
-            prefs.edit {
-                putStringSet(
-                    PREF_SULOG_FILTERS,
-                    selectedFilters.map { it.name }.toSet()
-                )
-            }
+            repo.suLogFilters = selectedFilters.map { it.name }.toSet()
             currentState.copy(
                 selectedFilters = selectedFilters,
             )
         }
-    }
-
-    private companion object {
-        const val PREF_SULOG_FILTERS = "sulog_filters"
     }
 }

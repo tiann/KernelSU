@@ -12,6 +12,7 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.magica.BootCompletedReceiver
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.screen.modulerepo.RepoSort
 import me.weishu.kernelsu.ui.util.execKsud
 import me.weishu.kernelsu.ui.util.getFeaturePersistValue
 import me.weishu.kernelsu.ui.util.getFeatureStatus
@@ -83,6 +84,34 @@ class SettingsRepositoryImpl : SettingsRepository {
     override var enableWebDebugging: Boolean
         get() = prefs.getBoolean("enable_web_debugging", false)
         set(value) = prefs.edit { putBoolean("enable_web_debugging", value) }
+
+    override var moduleSortEnabledFirst: Boolean
+        get() = prefs.getBoolean("module_sort_enabled_first", false)
+        set(value) = prefs.edit { putBoolean("module_sort_enabled_first", value) }
+
+    override var moduleSortActionFirst: Boolean
+        get() = prefs.getBoolean("module_sort_action_first", false)
+        set(value) = prefs.edit { putBoolean("module_sort_action_first", value) }
+
+    override var moduleRepoSortOrder: Int
+        get() = prefs.getInt("module_repo_sort_order", RepoSort.UPDATED.ordinal)
+        set(value) = prefs.edit { putInt("module_repo_sort_order", value) }
+
+    override var superuserShowSystemApps: Boolean
+        get() = prefs.getBoolean("show_system_apps", false)
+        set(value) = prefs.edit { putBoolean("show_system_apps", value) }
+
+    override var superuserShowOnlyPrimaryUserApps: Boolean
+        get() = prefs.getBoolean("show_only_primary_user_apps", false)
+        set(value) = prefs.edit { putBoolean("show_only_primary_user_apps", value) }
+
+    override var superuserSortOption: Int
+        get() = prefs.getInt("superuser_sort_option", 0)
+        set(value) = prefs.edit { putInt("superuser_sort_option", value) }
+
+    override var suLogFilters: Set<String>?
+        get() = prefs.getStringSet("sulog_filters", null)?.toSet()
+        set(filters) = prefs.edit { putStringSet("sulog_filters", filters) }
 
     override var autoJailbreak: Boolean
         get() = prefs.getBoolean("auto_jailbreak", false)

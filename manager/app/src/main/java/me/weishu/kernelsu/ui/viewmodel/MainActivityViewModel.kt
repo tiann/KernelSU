@@ -36,7 +36,6 @@ class MainActivityViewModel(
 
     override fun onCleared() {
         prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        super.onCleared()
     }
 
     fun setSelectedMainPage(page: Int) {
@@ -45,7 +44,7 @@ class MainActivityViewModel(
 
     private fun readUiState(): MainActivityUiState {
         return MainActivityUiState(
-            appSettings = ThemeController.getAppSettings(ksuApp),
+            appSettings = ThemeController.getAppSettings(),
             pageScale = settingRepo.pageScale,
             enableBlur = settingRepo.enableBlur,
             enableFloatingBottomBar = settingRepo.enableFloatingBottomBar,
