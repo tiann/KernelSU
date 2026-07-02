@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.webui
+package me.weishu.kernelsu.ui.webui.bridge
 
 import android.app.Activity
 import android.content.pm.ApplicationInfo
@@ -18,14 +18,20 @@ import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.weishu.kernelsu.ui.webui.model.WebUIIntent
+import me.weishu.kernelsu.ui.webui.runtime.WebUIRuntime
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(private val state: WebUIState) {
-    private val webView get() = state.webView
-    private val modDir get() = state.modDir
+class WebViewInterface(
+    private val runtime: WebUIRuntime,
+    private val getModuleDir: () -> String,
+    private val dispatch: (WebUIIntent) -> Unit,
+) {
+    private val webView get() = runtime.webView
+    private val modDir get() = getModuleDir()
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -132,7 +138,7 @@ class WebViewInterface(private val state: WebUIState) {
 
         completableFuture.thenAccept { result ->
             val emitExitCode =
-                "javascript: (function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
+                $$"javascript: (function() { try { $${callbackFunc}.emit('exit', $${result.code}); } catch(e) { console.error(`emitExit error: ${e}`); } })();"
             webView?.post {
                 webView?.loadUrl(emitExitCode)
             }
@@ -179,7 +185,7 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun enableEdgeToEdge(enable: Boolean = true) {
-        state.isInsetsEnabled = enable
+        dispatch(WebUIIntent.InsetsEnabledChanged(enable))
     }
 
     @JavascriptInterface
@@ -256,7 +262,7 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun exit() {
-        state.requestExit()
+        dispatch(WebUIIntent.ExitRequested)
     }
 }
 
