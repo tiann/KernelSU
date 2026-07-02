@@ -1,8 +1,8 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,20 +42,10 @@ class MainPagerState(
         selectedPage = targetIndex
         isNavigating = true
 
-        val distance = abs(targetIndex - pagerState.currentPage).coerceAtLeast(2)
-        val duration = 100 * distance + 100
-        val layoutInfo = pagerState.layoutInfo
-        val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
-        val currentDistanceInPages = targetIndex - pagerState.currentPage - pagerState.currentPageOffsetFraction
-        val scrollPixels = currentDistanceInPages * pageSize
-
         navJob = coroutineScope.launch {
             val myJob = coroutineContext.job
             try {
-                pagerState.animateScrollBy(
-                    value = scrollPixels,
-                    animationSpec = tween(easing = EaseInOut, durationMillis = duration)
-                )
+                pagerState.springAnimateToPage(targetIndex)
             } finally {
                 if (navJob == myJob) {
                     isNavigating = false
@@ -71,6 +61,57 @@ class MainPagerState(
         if (!isNavigating && selectedPage != pagerState.currentPage) {
             selectedPage = pagerState.currentPage
         }
+    }
+}
+
+private suspend fun PagerState.springAnimateToPage(target: Int) {
+    if (target !in 0 until pageCount) return
+    var shouldSnapToTarget = false
+    scroll(MutatePriority.UserInput) {
+        val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
+        val distance = target - currentPage - currentPageOffsetFraction
+        val scrollPixels = distance * pageSize
+        if (abs(scrollPixels) <= 0.5f) return@scroll
+
+        var consumedScroll = 0f
+        var skipScroll = false
+        val springStiffness = 322.2f
+        val springDampingRatio = 32.31f / (2f * kotlin.math.sqrt(springStiffness))
+        Animatable(0f).animateTo(
+            targetValue = scrollPixels,
+            animationSpec = spring(
+                stiffness = springStiffness,
+                dampingRatio = springDampingRatio,
+                visibilityThreshold = 0.5f,
+            ),
+        ) {
+            if (skipScroll) return@animateTo
+
+            val delta = value - consumedScroll
+            if (abs(delta) > 0.5f) {
+                val consumed = scrollBy(delta)
+                consumedScroll += consumed
+                if (abs(delta - consumed) > 0.1f) {
+                    shouldSnapToTarget = true
+                    skipScroll = true
+                }
+            } else {
+                consumedScroll = value
+            }
+
+            if (abs(velocity) < 0.1f && abs(scrollPixels - consumedScroll) < 1.0f) {
+                skipScroll = true
+            }
+        }
+
+        val remaining = scrollPixels - consumedScroll
+        if (abs(remaining) > 0.5f) {
+            scrollBy(remaining)
+        }
+    }
+
+    if (shouldSnapToTarget || currentPage != target) {
+        scrollToPage(target)
     }
 }
 
