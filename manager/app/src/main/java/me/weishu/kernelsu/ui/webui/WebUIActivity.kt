@@ -56,7 +56,7 @@ class WebUIActivity : ComponentActivity() {
             val context = LocalContext.current
             val prefs = context.getSharedPreferences("settings", MODE_PRIVATE)
             val settingsRepo = remember { SettingsRepositoryImpl() }
-            var appSettings by remember { mutableStateOf(ThemeController.getAppSettings()) }
+            var appSettings by remember { mutableStateOf(ThemeController.getAppSettings(context)) }
             var uiModeValue by remember { mutableStateOf(settingsRepo.uiMode) }
             val uiMode = remember(uiModeValue) {
                 UiMode.fromValue(uiModeValue)
@@ -65,7 +65,7 @@ class WebUIActivity : ComponentActivity() {
             DisposableEffect(prefs) {
                 val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                     if (key in listOf("color_mode", "key_color", "color_style", "color_spec")) {
-                        appSettings = ThemeController.getAppSettings()
+                        appSettings = ThemeController.getAppSettings(context)
                     } else if (key == "ui_mode") {
                         uiModeValue = settingsRepo.uiMode
                     }
