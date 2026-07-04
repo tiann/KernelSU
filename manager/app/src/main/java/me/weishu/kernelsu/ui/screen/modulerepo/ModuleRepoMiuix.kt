@@ -353,13 +353,13 @@ fun ModuleRepoScreenMiuix(
         searchStatus.SearchBox {
             val pullToRefreshState = rememberPullToRefreshState()
             val lazyListState = rememberLazyListState()
-            val refreshTick = remember { mutableStateOf(0) }
+            val refreshTick = remember { mutableIntStateOf(0) }
             val latestModules = rememberUpdatedState(state.modules)
             val latestRefreshing = rememberUpdatedState(state.isRefreshing)
             ScrollToTopOnChange(
                 lazyListState,
                 state.sortOrder,
-                refreshTick.value,
+                refreshTick.intValue,
                 isBusy = { latestRefreshing.value },
             ) { latestModules.value }
             val refreshTexts = listOf(
@@ -373,7 +373,7 @@ fun ModuleRepoScreenMiuix(
                 pullToRefreshState = pullToRefreshState,
                 onRefresh = {
                     actions.onRefresh()
-                    refreshTick.value++
+                    refreshTick.intValue++
                 },
                 refreshTexts = refreshTexts,
                 contentPadding = PaddingValues(

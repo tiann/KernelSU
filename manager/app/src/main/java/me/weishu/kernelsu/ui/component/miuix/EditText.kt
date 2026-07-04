@@ -36,10 +36,10 @@ import kotlin.math.max
 
 @Composable
 fun EditText(
+    modifier: Modifier = Modifier,
     title: String,
     value: String,
     onValueChange: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
     summary: String? = null,
     textHint: String = "",
     enabled: Boolean = true,

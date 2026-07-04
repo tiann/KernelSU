@@ -1,13 +1,13 @@
 package me.weishu.kernelsu.ui.theme
 
-import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
+import me.weishu.kernelsu.data.repository.SettingsRepository
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 
@@ -65,13 +65,12 @@ fun ColorSpec.SpecVersion.effectiveFor(style: PaletteStyle): ColorSpec.SpecVersi
     }
 
 object ThemeController {
-    fun getAppSettings(context: Context): AppSettings {
-        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val uiMode = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
-        var colorModeValue = prefs.getInt("color_mode", ColorMode.SYSTEM.value)
+    fun getAppSettings(repo: SettingsRepository = SettingsRepositoryImpl()): AppSettings {
+        val uiMode = repo.uiMode
+        var colorModeValue = repo.themeMode
 
         if (uiMode == "miuix") {
-            val miuixMonet = prefs.getBoolean("miuix_monet", false)
+            val miuixMonet = repo.miuixMonet
             val colorMode = ColorMode.fromValue(colorModeValue)
             colorModeValue = if (!miuixMonet && colorMode.isMonet) {
                 colorMode.toNonMonetMode()
@@ -83,16 +82,16 @@ object ThemeController {
         }
 
         val colorMode = ColorMode.fromValue(colorModeValue)
-        val keyColor = prefs.getInt("key_color", 0)
-        val paletteStyleStr = prefs.getString("color_style", PaletteStyle.TonalSpot.name)
+        val keyColor = repo.keyColor
+        val paletteStyleStr = repo.colorStyle
         val paletteStyle = try {
-            PaletteStyle.valueOf(paletteStyleStr!!)
+            PaletteStyle.valueOf(paletteStyleStr)
         } catch (_: Exception) {
             PaletteStyle.TonalSpot
         }
-        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.SPEC_2025.name)
+        val colorSpecStr = repo.colorSpec
         val colorSpec = try {
-            ColorSpec.SpecVersion.valueOf(colorSpecStr!!)
+            ColorSpec.SpecVersion.valueOf(colorSpecStr)
         } catch (_: Exception) {
             ColorSpec.SpecVersion.SPEC_2025
         }
@@ -103,21 +102,19 @@ object ThemeController {
 
 @Composable
 fun KernelSUTheme(
-    appSettings: AppSettings? = null,
+    appSettings: AppSettings = ThemeController.getAppSettings(),
     uiMode: UiMode = LocalUiMode.current,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
-    val currentAppSettings = appSettings ?: ThemeController.getAppSettings(context)
 
     when (uiMode) {
         UiMode.Miuix -> MiuixKernelSUTheme(
-            appSettings = currentAppSettings,
+            appSettings = appSettings,
             content = content
         )
 
         UiMode.Material -> MaterialKernelSUTheme(
-            appSettings = currentAppSettings,
+            appSettings = appSettings,
             content = content
         )
     }

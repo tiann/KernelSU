@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.component.SearchStatus
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val SEARCH_DEBOUNCE_MILLIS = 150L
 
@@ -19,7 +20,7 @@ fun CoroutineScope.launchSearchQueryCollector(
 ): Job {
     return launch {
         searchQuery
-            .debounce(SEARCH_DEBOUNCE_MILLIS)
+            .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
             .distinctUntilChanged()
             .collectLatest(onQuery)
     }

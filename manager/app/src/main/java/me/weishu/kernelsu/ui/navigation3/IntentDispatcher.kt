@@ -8,7 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -39,7 +40,34 @@ private sealed interface PendingAction {
         val uri: Uri,
         val displayName: String,
         val requiresConfirmation: Boolean,
-    ) : PendingAction
+    ) : PendingAction {
+        companion object {
+            val InstallModuleSaver = listSaver<InstallModule?, Any>(
+                save = { module ->
+                    if (module == null) {
+                        emptyList()
+                    } else {
+                        listOf(
+                            module.uri,
+                            module.displayName,
+                            module.requiresConfirmation
+                        )
+                    }
+                },
+                restore = { list ->
+                    if (list.isEmpty()) {
+                        null
+                    } else {
+                        InstallModule(
+                            uri = list[0] as Uri,
+                            displayName = list[1] as String,
+                            requiresConfirmation = list[2] as Boolean
+                        )
+                    }
+                }
+            )
+        }
+    }
 
     /** Execute a module's action script — triggered by shortcut or deep link. */
     data class ExecuteAction(val moduleId: String) : PendingAction
@@ -124,7 +152,7 @@ fun IntentDispatcher(intentChannel: ReceiveChannel<Intent>) {
     val navigator = LocalNavigator.current
     val isSafeMode = Natives.isSafeMode
     val isManager = Natives.isManager
-    var pendingZipInstall by remember { mutableStateOf<PendingAction.InstallModule?>(null) }
+    var pendingZipInstall by rememberSaveable(stateSaver = PendingAction.InstallModule.InstallModuleSaver) { mutableStateOf(null) }
 
     val installDialog = rememberConfirmDialog(
         onConfirm = {

@@ -218,14 +218,15 @@ fun SearchAppBar(
                 } else {
                     defaultContent(bottomPadding, collapseAndClear)
                 }
-                SnackBarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier
+                Box(
+                    Modifier
                         .align(Alignment.BottomCenter)
                         .navigationBarsPadding()
                         .imePadding()
                         .padding(bottom = 16.dp)
-                )
+                ) {
+                    SnackBarHost(hostState = snackbarHostState)
+                }
             }
         }
     )

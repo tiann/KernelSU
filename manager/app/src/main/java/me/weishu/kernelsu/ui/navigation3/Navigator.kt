@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharedFlow
  * Simple navigation helper that owns a back stack and result channels.
  * Supports push/replace/pop/popUntil and result APIs: navigateForResult/setResult/observeResult/clearResult.
  */
+@Suppress("unused")
 class Navigator(
     initialKey: NavKey
 ) {

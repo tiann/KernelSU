@@ -27,6 +27,7 @@ import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.viewmodel.HomeViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun HomePager(
@@ -62,7 +63,7 @@ fun HomePager(
             // Manager will be force-stopped and restarted by late-load on success.
             // If that doesn't happen within timeout, jailbreak likely failed.
             scope.launch(Dispatchers.IO) {
-                delay(30_000)
+                delay(30_000.milliseconds)
                 withContext(Dispatchers.Main) {
                     loadingDialog.hide()
                     Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()

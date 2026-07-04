@@ -39,6 +39,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 enum class FlashingStatus {
     FLASHING,
@@ -210,7 +211,7 @@ fun JailbreakFlashWarningDialog(
 
     LaunchedEffect(Unit) {
         while (countdown > 0) {
-            delay(1000)
+            delay(1000.milliseconds)
             countdown--
         }
     }

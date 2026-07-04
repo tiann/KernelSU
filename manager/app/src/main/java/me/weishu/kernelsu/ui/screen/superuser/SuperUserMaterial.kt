@@ -72,6 +72,7 @@ import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.ownerNameForUid
+import me.weishu.kernelsu.ui.viewmodel.AppSortType
 
 @Composable
 fun SuperUserPagerMaterial(
@@ -128,20 +129,19 @@ fun SuperUserPagerMaterial(
                             expanded = showSortMenu,
                             onDismissRequest = { showSortMenu = false }
                         ) {
-                            val sortResIds = listOf(
-                                R.string.sort_by_name,
-                                R.string.sort_by_package_name,
-                                R.string.sort_by_install_time,
-                                R.string.sort_by_update_time,
+                            val sortEntries = listOf(
+                                AppSortType.NAME to R.string.sort_by_name,
+                                AppSortType.PACKAGE_NAME to R.string.sort_by_package_name,
+                                AppSortType.INSTALL_TIME to R.string.sort_by_install_time,
+                                AppSortType.UPDATE_TIME to R.string.sort_by_update_time,
                             )
-                            val currentSortType = uiState.sortOption / 2
-                            val isReverse = uiState.sortOption % 2 != 0
+                            val sortConfig = uiState.sortConfig
 
                             DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 0, count = 2)) {
-                                sortResIds.forEachIndexed { index, resId ->
+                                sortEntries.onEachIndexed { index, (type, resId) ->
                                     DropdownMenuItem(
                                         text = { Text(stringResource(resId)) },
-                                        selected = currentSortType == index,
+                                        selected = sortConfig.sortType == type,
                                         selectedLeadingIcon = {
                                             Icon(
                                                 Icons.Filled.Check,
@@ -151,13 +151,12 @@ fun SuperUserPagerMaterial(
                                         },
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                            val newOption = index * 2 + (if (isReverse) 1 else 0)
-                                            actions.onUpdateSortOption(newOption)
+                                            actions.onUpdateSortConfig(sortConfig.withType(type))
                                             showSortMenu = false
                                         },
                                         shapes = MenuDefaults.itemShape(
                                             index = index,
-                                            count = sortResIds.size
+                                            count = sortEntries.size
                                         ),
                                     )
                                 }
@@ -168,7 +167,7 @@ fun SuperUserPagerMaterial(
                             DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 1, count = 2)) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.sort_reverse)) },
-                                    checked = isReverse,
+                                    checked = sortConfig.reversed,
                                     checkedLeadingIcon = {
                                         Icon(
                                             Icons.Filled.Check,
@@ -178,8 +177,7 @@ fun SuperUserPagerMaterial(
                                     },
                                     onCheckedChange = {
                                         haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                        val newOption = currentSortType * 2 + (if (!isReverse) 1 else 0)
-                                        actions.onUpdateSortOption(newOption)
+                                        actions.onUpdateSortConfig(sortConfig.toggleReversed())
                                         showSortMenu = false
                                     },
                                     shapes = MenuDefaults.itemShape(
@@ -337,7 +335,7 @@ fun SuperUserPagerMaterial(
             val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
             ScrollToTopOnChange(
                 listState,
-                uiState.sortOption,
+                uiState.sortConfig,
                 uiState.showSystemApps,
                 uiState.showOnlyPrimaryUserApps,
                 refreshTick.intValue,

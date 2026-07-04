@@ -17,11 +17,11 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun DropdownItem(
+    modifier: Modifier = Modifier,
     text: String,
     optionSize: Int,
     index: Int,
     dropdownColors: DropdownColors = DropdownDefaults.dropdownColors(),
-    modifier: Modifier = Modifier,
     onSelectedIndexChange: (Int) -> Unit
 ) {
     val currentOnSelectedIndexChange = rememberUpdatedState(onSelectedIndexChange)
