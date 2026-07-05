@@ -1,4 +1,4 @@
-# Installation
+fastboot reboot# Installation
 
 ## Check if your device is supported
 
