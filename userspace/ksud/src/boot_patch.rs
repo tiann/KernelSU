@@ -522,6 +522,14 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                     return Ok(String::new());
                 }
                 #[cfg(target_os = "android")]
+                if ota {
+                    let slot_suffix = get_slot_suffix(true);
+                    println!("- Trying to auto detect KMI version from boot");
+                    return parse_kmi_from_boot(Path::new(&format!(
+                        "/dev/block/by-name/boot{slot_suffix}"
+                    )));
+                }
+                #[cfg(target_os = "android")]
                 match get_current_kmi() {
                     Ok(value) => {
                         return Ok(value);
