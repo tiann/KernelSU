@@ -11,4 +11,7 @@
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Ponašanje umount-a na nivou kernela kontrolisano od strane KernelSU-a</string>
     <string name="profile_flags_desc_no_new_privs">Sprečava dalje podizanje privilegija putem KernelSU-a u okviru ovog root profila.</string>
+    <string name="require_manager_version">Potrebno je ažurirati upravitelj</string>
+    <string name="require_kernel_version">Potrebno je ažurirati kernel, dodirnite ovdje za instalaciju</string>
+    <string name="require_kernel_version_gki">Potrebno je ažurirati kernel</string>
 </resources>

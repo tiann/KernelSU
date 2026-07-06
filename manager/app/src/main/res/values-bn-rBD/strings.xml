@@ -52,4 +52,7 @@
     <string name="settings_kernel_umount">কার্নেল আনমাউন্ট</string>
     <string name="settings_kernel_umount_summary">KernelSU দ্বারা নিয়ন্ত্রিত কার্নেল-লেভেল আনমাউন্ট আচরণ</string>
     <string name="profile_flags_desc_no_new_privs">এই রুট প্রোফাইলের প্রেক্ষাপটে KernelSU-এর মাধ্যমে আরও বিশেষাধিকার বৃদ্ধি প্রতিরোধ করে।</string>
+    <string name="require_manager_version">ম্যানেজার আপডেট করা প্রয়োজন</string>
+    <string name="require_kernel_version">কার্নেল আপডেট করা প্রয়োজন, ইনস্টল করতে এখানে চাপুন</string>
+    <string name="require_kernel_version_gki">কার্নেল আপডেট করা প্রয়োজন</string>
 </resources>

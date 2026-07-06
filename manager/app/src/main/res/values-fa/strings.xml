@@ -65,4 +65,7 @@
     <string name="settings_kernel_umount">جداسازی هسته</string>
     <string name="settings_kernel_umount_summary">رفتار جداسازی در سطح هسته که توسط KernelSU کنترل می‌شود</string>
     <string name="profile_flags_desc_no_new_privs">از افزایش بیشتر سطح دسترسی از طریق KernelSU در چارچوب این پروفایل روت جلوگیری می‌کند.</string>
+    <string name="require_manager_version">باید مدیر به‌روزرسانی شود</string>
+    <string name="require_kernel_version">باید هسته به‌روزرسانی شود، برای نصب اینجا بزنید</string>
+    <string name="require_kernel_version_gki">باید هسته به‌روزرسانی شود</string>
 </resources>
