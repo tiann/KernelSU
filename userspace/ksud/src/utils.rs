@@ -194,7 +194,9 @@ pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Resul
     ensure_dir_exists(defs::ADB_DIR)?;
     let _ = std::fs::remove_file(defs::DAEMON_PATH);
     std::fs::copy(
-        std::env::current_exe().with_context(|| "Failed to get self exe path")?,
+        // We should use /proc/self/exe, DO NOT resolve the real path
+        // So that if someone execute /data/adb/ksud install, ksud won't be removed unexpectedly
+        "/proc/self/exe",
         defs::DAEMON_PATH,
     )?;
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::KSU_CON)?;
@@ -210,7 +212,6 @@ pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Resul
     }
 
     if let Some(data_path) = data_path {
-        // move ksu_backup
         let backup_path = data_path.join(KSU_TEMP_BACKUP_DIR_NAME);
         if backup_path.is_dir() {
             for ent in backup_path.read_dir()? {
@@ -228,8 +229,8 @@ pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Resul
                     log::info!("move boot backup {name}");
                 }
             }
+            std::fs::remove_dir_all(&backup_path)?;
         }
-        std::fs::remove_dir_all(&backup_path)?;
     }
 
     Ok(())
