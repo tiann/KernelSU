@@ -21,4 +21,6 @@
     <string name="settings_kernel_umount">కెర్నల్ అన్‌మౌంట్</string>
     <string name="settings_kernel_umount_summary">KernelSU ద్వారా నియంత్రించబడే కెర్నల్-స్థాయి అన్‌మౌంట్ ప్రవర్తన</string>
     <string name="profile_flags_desc_no_new_privs">ఈ రూట్ ప్రొఫైల్ సందర్భంలో KernelSU ద్వారా మరింత హక్కుల పెంపును నిరోధిస్తుంది.</string>
+    <string name="install_force_backup">స్టాక్ ఇమేజ్‌గా బ్యాకప్ చేయి</string>
+    <string name="install_force_backup_summary">దయచేసి మీరు ఎంచుకున్న boot ఇమేజ్ స్టాక్ ఇమేజ్ అని నిర్ధారించుకోండి</string>
 </resources>

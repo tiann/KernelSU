@@ -201,4 +201,6 @@
     <string name="current_kmi">เวอร์ชัน KMI ของอุปกรณ์นี้: %s</string>
     <string name="current_device_kmi">อุปกรณ์นี้ใช้ KMI</string>
     <string name="profile_flags_desc_no_new_privs">ป้องกันการยกระดับสิทธิ์เพิ่มเติมผ่าน KernelSU ภายในบริบทของโปรไฟล์รูทนี้</string>
+    <string name="install_force_backup">สำรองเป็นอิมเมจเดิม</string>
+    <string name="install_force_backup_summary">โปรดตรวจสอบให้แน่ใจว่า boot image ที่คุณเลือกเป็นอิมเมจเดิม</string>
 </resources>

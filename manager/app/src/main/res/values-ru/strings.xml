@@ -205,4 +205,6 @@
     <string name="color_blue_grey">Серо-голубой</string>
     <string name="color_sakura">Сакура</string>
     <string name="profile_flags_desc_no_new_privs">Предотвращает дальнейшее повышение привилегий через KernelSU в контексте этого root-профиля.</string>
+    <string name="install_force_backup">Сохранить резервную копию как оригинальный образ</string>
+    <string name="install_force_backup_summary">Пожалуйста, убедитесь, что выбранный образ boot является оригинальным образом</string>
 </resources>

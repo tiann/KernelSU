@@ -154,4 +154,6 @@
     <string name="feature_status_managed_summary">Deze functie wordt beheerd door een module</string>
     <string name="settings_mode_enable_by_default">Inschakelen (Standaard)</string>
     <string name="profile_flags_desc_no_new_privs">Voorkomt verdere bevoegdheidsescalatie via KernelSU binnen de context van dit root-profiel.</string>
+    <string name="install_force_backup">Back-up maken als origineel image</string>
+    <string name="install_force_backup_summary">Zorg ervoor dat de geselecteerde boot-image het originele image is</string>
 </resources>

@@ -98,6 +98,14 @@ internal fun InstallScreenMaterial(
                             icon = Icons.Filled.Edit
                         )
                     }
+                    if (uiState.canForceBackup) add {
+                        SegmentedCheckboxItem(
+                            title = stringResource(R.string.install_force_backup),
+                            summary = stringResource(R.string.install_force_backup_summary),
+                            onCheckedChange = actions.onSelectForceBackup,
+                            checked = uiState.forceBackup,
+                        )
+                    }
                     add {
                         SegmentedListItem(
                             leadingContent = {

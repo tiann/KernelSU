@@ -269,4 +269,6 @@
     <string name="profile_flags_desc_no_new_privs">禁止从此 Root Profile 的上下文中通过 KernelSU 进一步提升权限</string>
     <string name="module_shortcut_copy_scheme">复制 URL Scheme</string>
     <string name="module_shortcut_scheme_copied">已复制 URL Scheme</string>
+    <string name="install_force_backup">备份为原厂镜像</string>
+    <string name="install_force_backup_summary">请确保你选择的 boot 镜像是原厂镜像</string>
 </resources>

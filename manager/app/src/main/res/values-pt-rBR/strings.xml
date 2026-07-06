@@ -134,4 +134,6 @@
     <string name="settings_kernel_umount">Desmontar kernel</string>
     <string name="settings_kernel_umount_summary">Comportamento de desmontagem no nível do kernel controlado pelo KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Impede uma escalada adicional de privilégios via KernelSU no contexto deste perfil root.</string>
+    <string name="install_force_backup">Fazer backup como imagem original</string>
+    <string name="install_force_backup_summary">Certifique-se de que a imagem de boot selecionada seja a imagem original</string>
 </resources>

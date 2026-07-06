@@ -54,6 +54,7 @@ fun InstallScreen() {
     var advancedOptionsShown by rememberSaveable { mutableStateOf(false) }
     var allowShell by rememberSaveable { mutableStateOf(false) }
     var enableAdb by rememberSaveable { mutableStateOf(false) }
+    var forceBackup by rememberSaveable { mutableStateOf(false) }
 
     val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
     val partitions by produceState(initialValue = emptyList()) { value = getAvailablePartitions() }
@@ -114,6 +115,7 @@ fun InstallScreen() {
                         partition = partitions.getOrNull(partitionSelectionIndex),
                         allowShell = allowShell,
                         enableAdb = enableAdb,
+                        backup = method is InstallMethod.SelectFile && forceBackup
                     )
                 )
             )
@@ -167,6 +169,8 @@ fun InstallScreen() {
         advancedOptionsShown = advancedOptionsShown,
         allowShell = allowShell,
         enableAdb = enableAdb,
+        forceBackup = forceBackup,
+        canForceBackup = installMethod is InstallMethod.SelectFile,
     )
     val actions = InstallScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
@@ -201,6 +205,9 @@ fun InstallScreen() {
         onSelectEnableAdb = {
             enableAdb = it
         },
+        onSelectForceBackup = {
+            forceBackup = it
+        }
     )
 
     when (LocalUiMode.current) {

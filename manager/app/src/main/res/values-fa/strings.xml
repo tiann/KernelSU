@@ -65,4 +65,6 @@
     <string name="settings_kernel_umount">جداسازی هسته</string>
     <string name="settings_kernel_umount_summary">رفتار جداسازی در سطح هسته که توسط KernelSU کنترل می‌شود</string>
     <string name="profile_flags_desc_no_new_privs">از افزایش بیشتر سطح دسترسی از طریق KernelSU در چارچوب این پروفایل روت جلوگیری می‌کند.</string>
+    <string name="install_force_backup">به عنوان ایمیج اصلی پشتیبان بگیر</string>
+    <string name="install_force_backup_summary">لطفاً مطمئن شوید ایمیج بوتی که انتخاب کرده‌اید همان ایمیج اصلی است</string>
 </resources>

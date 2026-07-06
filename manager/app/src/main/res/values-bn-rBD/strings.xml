@@ -52,4 +52,6 @@
     <string name="settings_kernel_umount">কার্নেল আনমাউন্ট</string>
     <string name="settings_kernel_umount_summary">KernelSU দ্বারা নিয়ন্ত্রিত কার্নেল-লেভেল আনমাউন্ট আচরণ</string>
     <string name="profile_flags_desc_no_new_privs">এই রুট প্রোফাইলের প্রেক্ষাপটে KernelSU-এর মাধ্যমে আরও বিশেষাধিকার বৃদ্ধি প্রতিরোধ করে।</string>
+    <string name="install_force_backup">স্টক ইমেজ হিসেবে ব্যাকআপ করুন</string>
+    <string name="install_force_backup_summary">অনুগ্রহ করে নিশ্চিত করুন যে আপনি যে boot ইমেজটি বেছে নিয়েছেন সেটি স্টক ইমেজ</string>
 </resources>

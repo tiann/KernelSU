@@ -200,4 +200,6 @@
     <string name="color_blue_grey">ブルーグレー</string>
     <string name="color_sakura">桜</string>
     <string name="profile_flags_desc_no_new_privs">この root プロファイルのコンテキスト内で、KernelSU を介したさらなる権限昇格を防止します。</string>
+    <string name="install_force_backup">純正イメージとしてバックアップ</string>
+    <string name="install_force_backup_summary">選択した boot イメージが純正イメージであることを確認してください</string>
 </resources>

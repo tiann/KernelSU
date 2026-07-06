@@ -59,17 +59,10 @@ Se você descobrir que a versão do seu kernel é `android12-5.10.101`, mas a ve
 
 Desde a versão [0.9.0](https://github.com/tiann/KernelSU/releases/tag/v0.9.0), o KernelSU suporta dois modos de execução em dispositivos GKI:
 
-1. `GKI`: Substitue o kernel original do dispositivo pelo **Generic Kernel Image** (GKI) fornecido pelo KernelSU.
-2. `LKM`: Carregue o **Loadable Kernel Module** (LKM) no kernel do dispositivo sem substituir o kernel original.
+1. `LKM`: Carregue o **Loadable Kernel Module** (LKM) no kernel do dispositivo sem substituir o kernel original.
+2. `GKI`: Substitue o kernel original do dispositivo pelo **Generic Kernel Image** (GKI) fornecido pelo KernelSU.
 
 Esses dois modos são adequados para diferentes cenários, e você pode escolher o mais adequado conforme suas necessidades.
-
-### Modo GKI {#gki-mode}
-
-No modo GKI, o kernel original do dispositivo será substituído pela imagem genérica do kernel fornecida pelo KernelSU. As vantagens do modo GKI são:
-
-1. Forte universalidade, adequada para a maioria dos dispositivos. Por exemplo, a Samsung ativou dispositivos KNOX, e o modo LKM não pode funcionar. Existem também alguns dispositivos modificados de nicho que só podem usar o modo GKI.
-2. Pode ser usado sem depender de firmware oficial, e não há necessidade de esperar por atualizações oficiais de firmware, desde que o KMI seja consistente, ele pode ser usado.
 
 ### Modo LKM {#lkm-mode}
 
@@ -80,9 +73,12 @@ No modo LKM, o kernel original do dispositivo não será substituído, mas o mó
 3. Adequado para alguns cenários especiais. Por exemplo, o LKM também pode ser carregado com privilégios root temporários. Como não é necessário substituir a partição boot, ele não acionará o AVB e não causará o bloqueio do dispositivo.
 4. O LKM pode ser desinstalado temporariamente. Se você deseja desativar temporariamente o acesso root, você pode desinstalar o LKM. Este processo não requer o flash de partições, nem mesmo a reinicialização do dispositivo. Se quiser ativar o root novamente, basta reiniciar o dispositivo.
 
-::: tip COEXISTÊNCIA DE DOIS MODOS
-Após abrir o gerenciador, você pode ver o modo atual do dispositivo na página inicial. Observe que a prioridade do modo GKI é maior que a do LKM. Por exemplo, se você usar o kernel GKI para substituir o kernel original e usar LKM para corrigir o kernel GKI, o LKM será ignorado e o dispositivo sempre será executado no modo GKI.
-:::
+### Modo GKI {#gki-mode}
+
+No modo GKI, o kernel original do dispositivo será substituído pela imagem genérica do kernel fornecida pelo KernelSU. As vantagens do modo GKI são:
+
+1. Forte universalidade, adequada para a maioria dos dispositivos. Por exemplo, a Samsung ativou dispositivos KNOX, e o modo LKM não pode funcionar. Existem também alguns dispositivos modificados de nicho que só podem usar o modo GKI.
+2. Pode ser usado sem depender de firmware oficial, e não há necessidade de esperar por atualizações oficiais de firmware, desde que o KMI seja consistente, ele pode ser usado.
 
 ### Qual escolher? {#which-one}
 
@@ -107,6 +103,13 @@ Abra o gerenciador, clique no ícone de instalação no canto superior direito e
 1. Selecione um arquivo. Se o seu dispositivo não tiver privilégios root, você pode escolher esta opção e, em seguida, selecionar o seu firmware oficial. O gerenciador corrigirá automaticamente o firmware. Após isso, basta fazer o flash deste arquivo corrigido para obter privilégios root permanentemente.
 2. Instalação direta. Se o seu dispositivo já estiver rooteado, você pode escolher esta opção. O gerenciador obterá automaticamente as informações do seu dispositivo, corrigirá o firmware oficial e realizará o flash automaticamente. Você também pode usar o comando `fastboot boot` junto com o kernel GKI do KernelSU para obter root temporário e instalar o gerenciador, e então usar esta opção. Esta também é a principal forma de atualizar o KernelSU.
 3. Instalar no slot inativo. Se o seu dispositivo suportar partição A/B, você pode escolher esta opção. O gerenciador corrigirá automaticamente o firmware oficial e o instalará em outra partição. Esse método é adequado para dispositivos após o OTA, você pode instalá-lo diretamente em outra partição após o OTA e, em seguida, reiniciar o dispositivo.
+
+:::tip Faça backup da imagem boot original
+Usar a opção "Instalação direta" do gerenciador pode fazer backup automaticamente da imagem boot original (ou init_boot), para restaurá-la temporariamente durante atualizações OTA incrementais. Observe que esse backup só é criado se o slot atual ainda não tiver sido corrigido pelo KernelSU.
+O valor SHA1 da imagem de backup é salvo na imagem boot corrigida, e o arquivo de backup é armazenado em `/data/adb/ksu/ksu_backup_$SHA1`.
+Ao usar a função "Desinstalar → Restaurar imagem de fábrica" do gerenciador, se existir um arquivo de backup correspondente ao SHA1 registrado na imagem atualmente corrigida, ele será restaurado diretamente.
+Desde a versão 3.2.6, se esta for a sua primeira instalação do KernelSU sem root, depois de corrigir a imagem boot por meio de "Selecione um arquivo", você poderá escolher "Fazer backup como imagem original". Nesse caso, a imagem de backup será armazenada no armazenamento interno do gerenciador; depois de fazer o flash e inicializar a imagem corrigida, ao abrir o gerenciador pela primeira vez esse backup será movido automaticamente para `/data/adb/ksu`.
+:::
 
 ### Use a linha de comando
 

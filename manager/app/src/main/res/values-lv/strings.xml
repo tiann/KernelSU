@@ -129,4 +129,6 @@
     <string name="settings_kernel_umount">Kodola atvienošana</string>
     <string name="settings_kernel_umount_summary">Kodola līmeņa atvienošanas uzvedība, ko kontrolē KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Novērš turpmāku privilēģiju paaugstināšanu, izmantojot KernelSU, šī root profila kontekstā.</string>
+    <string name="install_force_backup">Dublēt kā sākotnējo attēlu</string>
+    <string name="install_force_backup_summary">Lūdzu, pārliecinieties, ka izvēlētais boot attēls ir sākotnējais attēls</string>
 </resources>

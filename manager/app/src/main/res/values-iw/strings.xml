@@ -81,4 +81,6 @@
     <string name="settings_kernel_umount">ביטול טעינת קרנל</string>
     <string name="settings_kernel_umount_summary">התנהגות ביטול טעינה ברמת הקרנל הנשלטת על ידי KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">מונע הסלמת הרשאות נוספת דרך KernelSU מתוך ההקשר של פרופיל root זה.</string>
+    <string name="install_force_backup">גבה כתמונת מקור</string>
+    <string name="install_force_backup_summary">אנא ודא שתמונת האתחול שבחרת היא תמונת המקור</string>
 </resources>

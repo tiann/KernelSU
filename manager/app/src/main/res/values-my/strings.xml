@@ -5,4 +5,6 @@
     <string name="settings_kernel_umount">Kernel ဖြုတ်မည်</string>
     <string name="settings_kernel_umount_summary">KernelSU မှ ထိန်းချုပ်ထားသော Kernel အဆင့် ဖြုတ်မည့် အပြုအမူ</string>
     <string name="profile_flags_desc_no_new_privs">ဤ root profile ၏ context အတွင်း KernelSU မှတစ်ဆင့် privilege များကို ထပ်မံမြှင့်တင်ခြင်းကို တားဆီးသည်။</string>
+    <string name="install_force_backup">မူရင်း image အဖြစ် အရန်သိမ်းပါ</string>
+    <string name="install_force_backup_summary">ကျေးဇူးပြု၍ သင်ရွေးထားသော boot image သည် မူရင်း image ဖြစ်ကြောင်း သေချာပါစေ</string>
 </resources>
