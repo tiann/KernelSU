@@ -225,8 +225,8 @@ pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Resul
                         std::fs::copy(ent.path(), &target).with_context(|| {
                             format!("failed to move {} -> {target}", ent.path().display())
                         })?;
+                        log::info!("move boot backup {name}");
                     }
-                    log::info!("move boot backup {name}");
                 }
             }
             std::fs::remove_dir_all(&backup_path)?;
