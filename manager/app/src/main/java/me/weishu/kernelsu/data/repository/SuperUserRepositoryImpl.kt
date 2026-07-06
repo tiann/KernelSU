@@ -3,6 +3,7 @@ package me.weishu.kernelsu.data.repository
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -66,18 +67,17 @@ class SuperUserRepositoryImpl : SuperUserRepository {
                 }
 
                 val packages = slice.list
-                val newApps = packages.map {
-                    val appInfo = it.applicationInfo
-                    val uid = appInfo!!.uid
-                    val profile = Natives.getAppProfile(it.packageName, uid)
+                val newApps = packages.filter {
+                    val ai = it.applicationInfo ?: return@filter false
+                    (ai.flags and ApplicationInfo.FLAG_HAS_CODE) != 0
+                }.map {
+                    val appInfo = it.applicationInfo!!
+                    val profile = Natives.getAppProfile(it.packageName, appInfo.uid)
                     AppInfo(
                         label = appInfo.loadLabel(pm).toString(),
                         packageInfo = it,
                         profile = profile,
                     )
-                }.filter {
-                    val ai = it.packageInfo.applicationInfo!!
-                    !ai.isResourceOverlay
                 }
 
                 Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
