@@ -19,6 +19,12 @@ val androidTargetCompatibility = rootProject.extra["androidTargetCompatibility"]
 val managerVersionCode = rootProject.extra["managerVersionCode"] as Int
 val managerVersionName = rootProject.extra["managerVersionName"] as String
 
+val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
+val defaultManagerPackageName = if (isPrBuild) "me.weishu.kernelsu.pr" else "me.weishu.kernelsu"
+val defaultManagerName = if (isPrBuild) "KernelSU PR" else "KernelSU"
+val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
+val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
+
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
     storePasswordProperty = "KEYSTORE_PASSWORD"
@@ -35,7 +41,6 @@ val baseCppFlags = baseCFlags + "-fno-rtti"
 
 android {
     namespace = "me.weishu.kernelsu"
-    val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
 
     buildTypes {
         debug {
@@ -49,7 +54,6 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             vcsInfo.include = false
-            if (isPrBuild) applicationIdSuffix = ".dev"
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             externalNativeBuild {
                 cmake {
@@ -78,6 +82,7 @@ android {
     buildFeatures {
         aidl = true
         buildConfig = true
+        resValues = true
         compose = true
         prefab = true
     }
@@ -120,8 +125,10 @@ android {
         targetSdk = androidTargetSdkVersion
         versionCode = managerVersionCode
         versionName = managerVersionName
+        applicationId = managerPackageName
 
         buildConfigField("boolean", "IS_PR_BUILD", isPrBuild.toString())
+        resValue("string", "app_name", managerName)
 
         externalNativeBuild {
             cmake {
@@ -155,7 +162,7 @@ androidComponents {
 
 base {
     archivesName.set(
-        "KernelSU_${managerVersionName}_${managerVersionCode}"
+        "${managerName.replace(" ", "_")}_${managerVersionName}_${managerVersionCode}"
     )
 }
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">KernelSU</string>
     <string name="home">Strona główna</string>
     <string name="home_not_installed">Nie zainstalowano</string>
     <string name="home_click_to_install">Kliknij, aby zainstalować</string>

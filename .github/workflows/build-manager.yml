@@ -14,6 +14,8 @@ on:
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
   pull_request:
     branches: [ "main", "dev" ]
     paths:
@@ -27,6 +29,8 @@ on:
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
   workflow_call:
 
 jobs:
