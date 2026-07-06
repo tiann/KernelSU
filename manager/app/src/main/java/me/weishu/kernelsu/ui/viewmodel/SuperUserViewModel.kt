@@ -69,7 +69,7 @@ internal fun buildRecentlyInstalledGroups(
         if (latestInstallTime < cutoffMillis) {
             null
         } else {
-            group.copy(matchedPackageNames = emptySet()) to latestInstallTime
+            group to latestInstallTime
         }
     }.sortedWith(
         compareByDescending<Pair<GroupedApps, Long>> { it.second }
@@ -106,6 +106,7 @@ class SuperUserViewModel(
 
     private val refreshMutex = Mutex()
     private val searchQuery = MutableStateFlow("")
+    private var sortJob: Job? = null
     var isNeedRefresh = false
         private set
 
@@ -130,37 +131,34 @@ class SuperUserViewModel(
     fun updateSortConfig(config: AppSortConfig): Job {
         settingsRepo.superuserSortOption = config.toInt()
         _uiState.update { it.copy(sortConfig = config) }
+        sortJob?.cancel()
         return viewModelScope.launch {
             val current = _uiState.value.groupedApps
             if (current.isEmpty()) return@launch
             updateVisibleApps(current)
+        }.also { sortJob = it }
+    }
+
+    private fun refilterVisibleApps(): Job = viewModelScope.launch {
+        // Re-filter when a filter setting changes
+        val grouped = withContext(Dispatchers.IO) {
+            buildGroups(filterApps(apps))
         }
+        updateVisibleApps(grouped)
     }
 
     fun toggleShowSystemApps(): Job {
         val newValue = !_uiState.value.showSystemApps
         settingsRepo.superuserShowSystemApps = newValue
         _uiState.update { it.copy(showSystemApps = newValue) }
-        return viewModelScope.launch {
-            // Re-filter when setting changes
-            val grouped = withContext(Dispatchers.IO) {
-                buildGroups(filterApps(apps))
-            }
-            updateVisibleApps(grouped)
-        }
+        return refilterVisibleApps()
     }
 
     fun toggleShowOnlyPrimaryUserApps(): Job {
         val newValue = !_uiState.value.showOnlyPrimaryUserApps
         settingsRepo.superuserShowOnlyPrimaryUserApps = newValue
         _uiState.update { it.copy(showOnlyPrimaryUserApps = newValue) }
-        return viewModelScope.launch {
-            // Re-filter when setting changes
-            val grouped = withContext(Dispatchers.IO) {
-                buildGroups(filterApps(apps))
-            }
-            updateVisibleApps(grouped)
-        }
+        return refilterVisibleApps()
     }
 
     fun updateSearchStatus(status: SearchStatus) {
@@ -232,19 +230,20 @@ class SuperUserViewModel(
 
     private fun updateCachedGroupedApps(grouped: List<GroupedApps>) {
         synchronized(groupedAppsLock) {
-            cachedGroupedApps = grouped.map { it.copy(matchedPackageNames = emptySet()) }
+            cachedGroupedApps = grouped
         }
     }
 
-    private fun updateVisibleApps(grouped: List<GroupedApps>, resort: Boolean = true) {
-        // resort=false keeps the given order (on return, refresh group data without re-sorting even if tags changed)
-        val sorted = if (resort) sortGroups(grouped, _uiState.value.sortConfig) else grouped
+    private suspend fun updateVisibleApps(grouped: List<GroupedApps>, resort: Boolean = true) {
+        val sortConfig = _uiState.value.sortConfig
         val searchText = _uiState.value.searchStatus.searchText
-        val searchResults = filterSearchResults(sorted, searchText)
-        val recentlyInstalledResults = buildRecentlyInstalledGroups(sorted)
+        val (sorted, searchResults, recentlyInstalledResults) = withContext(Dispatchers.IO) {
+            val s = if (resort) sortGroups(grouped, sortConfig) else grouped
+            Triple(s, filterSearchResults(s, searchText), buildRecentlyInstalledGroups(s))
+        }
         _uiState.update {
             it.copy(
-                groupedApps = sorted.map { group -> group.copy(matchedPackageNames = emptySet()) },
+                groupedApps = sorted,
                 recentlyInstalledResults = recentlyInstalledResults,
                 searchResults = searchResults,
                 searchStatus = it.searchStatus.copy(
@@ -275,7 +274,10 @@ class SuperUserViewModel(
         return buildGroups(apps.filter { it.packageName != ksuApp.packageName })
     }
 
-    private fun buildGroups(apps: List<AppInfo>): List<GroupedApps> {
+    private fun buildGroups(
+        apps: List<AppInfo>,
+        umount: (Int) -> Boolean = { Natives.uidShouldUmount(it) },
+    ): List<GroupedApps> {
         val collator = Collator.getInstance(Locale.getDefault())
         val comparator = compareBy<AppInfo> {
             when {
@@ -287,7 +289,7 @@ class SuperUserViewModel(
         return apps.groupBy { it.uid }.map { (uid, list) ->
             val sorted = list.sortedWith(comparator)
             val primary = pickPrimary(sorted)
-            val shouldUmount = Natives.uidShouldUmount(uid)
+            val shouldUmount = umount(uid)
             val ownerName = if (sorted.size > 1) ownerNameForUid(uid, sorted) else null
 
             GroupedApps(
@@ -332,7 +334,9 @@ class SuperUserViewModel(
 
             repo.getAppList().onSuccess { (newApps, ids) ->
                 val (cachedGroups, grouped) = withContext(Dispatchers.IO) {
-                    buildCachedGroups(newApps) to buildGroups(filterApps(newApps))
+                    val cached = buildCachedGroups(newApps)
+                    val umountByUid = cached.associate { it.uid to it.shouldUmount }
+                    cached to buildGroups(filterApps(newApps)) { umountByUid[it] ?: Natives.uidShouldUmount(it) }
                 }
 
                 // Update cache for static method
@@ -364,32 +368,23 @@ class SuperUserViewModel(
                 // Update cache for static method
                 synchronized(appsLock) { cachedApps = updatedApps }
 
-                val cachedGroups = withContext(Dispatchers.IO) {
-                    buildCachedGroups(updatedApps)
+                val (cachedGroups, grouped) = withContext(Dispatchers.IO) {
+                    val cached = buildCachedGroups(updatedApps)
+                    val umountByUid = cached.associate { it.uid to it.shouldUmount }
+                    val visible = buildGroups(filterApps(updatedApps)) {
+                        umountByUid[it] ?: Natives.uidShouldUmount(it)
+                    }
+                    val result = if (resort) {
+                        visible
+                    } else {
+                        val byUid = visible.associateBy { it.uid }
+                        _uiState.value.groupedApps.map { group ->
+                            byUid[group.uid] ?: group.copy(shouldUmount = Natives.uidShouldUmount(group.uid))
+                        }
+                    }
+                    cached to result
                 }
                 updateCachedGroupedApps(cachedGroups)
-
-                val grouped = if (resort) {
-                    withContext(Dispatchers.IO) {
-                        buildGroups(filterApps(updatedApps))
-                    }
-                } else {
-                    val updatedGroups = buildGroups(filterApps(updatedApps)).associateBy { it.uid }
-                    _uiState.value.groupedApps.map { group ->
-                        val newApps = updatedGroups[group.uid]?.apps ?: group.apps
-                        val primary = pickPrimary(newApps)
-                        val shouldUmount = Natives.uidShouldUmount(group.uid)
-                        val ownerName = if (newApps.size > 1) ownerNameForUid(group.uid, newApps) else null
-                        group.copy(
-                            apps = newApps,
-                            primary = primary,
-                            anyAllowSu = newApps.any { it.allowSu },
-                            anyCustom = newApps.any { it.hasCustomProfile },
-                            shouldUmount = shouldUmount,
-                            ownerName = ownerName
-                        )
-                    }
-                }
 
                 updateVisibleApps(grouped, resort = resort)
                 _uiState.update { it.copy(isRefreshing = false) }
