@@ -198,17 +198,56 @@ bool ksu_has_syscall_hook(int nr)
     return READ_ONCE(syscall_hooks[nr]) != NULL;
 }
 
-void __init ksu_syscall_hook_init(void)
+// https://github.com/torvalds/linux/commit/1e3ad78334a69b36e107232e337f9d693dcc9df2
+// harden syscall table was introduced in 6.9, but it was backported to almost
+// all of GKI kernel except 5.10
+#ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
+static unsigned long x64_sys_call_fn;
+static char orig_insn[14];
+
+static long my_x64_sys_call(const struct pt_regs *regs, unsigned int nr)
+{
+    return ksu_syscall_table[nr](regs);
+}
+#endif
+
+void __init __nocfi ksu_syscall_hook_init(void)
 {
     int ni_slot;
 
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
     ksu_syscall_table = (sys_call_ptr_t *)ksu_resolve_symbol_for_functable_hook("sys_call_table");
-    pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
+    pr_info("sys_call_table=0x%lx\n", (unsigned long)ksu_syscall_table);
 
     if (!ksu_syscall_table)
         return;
+
+#ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
+    x64_sys_call_fn = find_kernel_symbol_exact("x64_sys_call");
+    pr_info("x64_sys_call=0x%lx\n", x64_sys_call_fn);
+    if (x64_sys_call_fn) {
+        pr_info("patching x64_sys_call\n");
+        unsigned long target_fn = (unsigned long)my_x64_sys_call;
+        // skip endbr64
+        unsigned long offset = x64_sys_call_fn + 4;
+        // clang-format off
+        char buf[] = {
+            // jmp *(%rip) = addr
+            0xff, 0x25, 0x00, 0x00, 0x00, 0x00,
+            // addr: .quad 0
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        };
+        // clang-format on
+        *((unsigned long *)(buf + 6)) = target_fn;
+        memcpy(orig_insn, offset, sizeof(orig_insn));
+        int ret = ksu_patch_text((void *)offset, buf, sizeof(buf), KSU_PATCH_TEXT_FLUSH_ICACHE);
+        if (ret) {
+            pr_err("patch x64_sys_call err: %d\n", ret);
+            return;
+        }
+    }
+#endif
 
     // Find one ni_syscall slot for the dispatcher
     if (ksu_find_ni_syscall_slots(&ni_slot, 1) < 1) {
@@ -224,6 +263,13 @@ void __init ksu_syscall_hook_init(void)
 void __exit ksu_syscall_hook_exit(void)
 {
     int i;
+
+#ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
+    int ret = ksu_patch_text((void *)(x64_sys_call_fn + 4), orig_insn, sizeof(orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
+    if (ret) {
+        pr_err("restore x64_sys_call err: %d\n", ret);
+    }
+#endif
 
     if (!ksu_syscall_table)
         goto clear_state;

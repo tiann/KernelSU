@@ -29,6 +29,10 @@ kernelsu-objs += manager/pkg_observer.o
 kernelsu-objs += manager/throne_tracker.o
 endif
 
+ifeq ($(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER),y)
+ccflags-y += -DCONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
+endif
+
 kernelsu-objs += policy/allowlist.o
 kernelsu-objs += policy/app_profile.o
 kernelsu-objs += policy/feature.o
