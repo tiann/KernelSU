@@ -59,17 +59,10 @@ Jika Anda menemukan bahwa versi kernel Anda adalah `android12-5.10.101`, tetapi 
 
 Sejak versi [0.9.0](https://github.com/tiann/KernelSU/releases/tag/v0.9.0), KernelSU mendukung dua mode berjalan pada perangkat GKI:
 
-1. `GKI`: Ganti kernel asli perangkat dengan **Generic Kernel Image** (GKI) yang disediakan oleh KernelSU.
-2. `LKM`: Muat **Loadable Kernel Module** (LKM) ke dalam kernel perangkat tanpa mengganti kernel asli.
+1. `LKM`: Muat **Loadable Kernel Module** (LKM) ke dalam kernel perangkat tanpa mengganti kernel asli.
+2. `GKI`: Ganti kernel asli perangkat dengan **Generic Kernel Image** (GKI) yang disediakan oleh KernelSU.
 
 Kedua mode ini cocok untuk skenario yang berbeda, dan Anda dapat memilih salah satu sesuai kebutuhan Anda.
-
-### Mode GKI {#gki-mode}
-
-Dalam mode GKI, kernel asli perangkat akan diganti dengan image kernel generik yang disediakan oleh KernelSU. Keuntungan mode GKI adalah:
-
-1. Universalitas yang kuat, cocok untuk sebagian besar perangkat. Misalnya, Samsung telah mengaktifkan perangkat KNOX, dan mode LKM tidak dapat berfungsi. Ada juga beberapa perangkat yang dimodifikasi khusus yang hanya dapat menggunakan mode GKI.
-2. Dapat digunakan tanpa bergantung pada firmware resmi, dan tidak perlu menunggu pembaruan firmware resmi, selama KMI konsisten, dapat digunakan.
 
 ### Mode LKM {#lkm-mode}
 
@@ -80,9 +73,12 @@ Dalam mode LKM, kernel asli perangkat tidak akan diganti, tetapi loadable kernel
 3. Cocok untuk beberapa skenario khusus. Misalnya, LKM juga dapat dimuat dengan izin root sementara. Karena tidak perlu mengganti partisi boot, tidak akan memicu AVB dan tidak akan menyebabkan perangkat menjadi brick.
 4. LKM dapat di-uninstall sementara. Jika Anda ingin menonaktifkan akses root sementara, Anda dapat meng-uninstall LKM. Proses ini tidak memerlukan flashing partisi, atau bahkan me-reboot perangkat. Jika Anda ingin mengaktifkan root lagi, cukup reboot perangkat.
 
-::: tip KOEKSISTENSI DUA MODE
-Setelah membuka manajer, Anda dapat melihat mode perangkat saat ini di beranda. Perhatikan bahwa prioritas mode GKI lebih tinggi daripada LKM. Misalnya, jika Anda menggunakan kernel GKI untuk mengganti kernel asli, dan menggunakan LKM untuk mem-patch kernel GKI, LKM akan diabaikan, dan perangkat akan selalu berjalan dalam mode GKI.
-:::
+### Mode GKI {#gki-mode}
+
+Dalam mode GKI, kernel asli perangkat akan diganti dengan image kernel generik yang disediakan oleh KernelSU. Keuntungan mode GKI adalah:
+
+1. Universalitas yang kuat, cocok untuk sebagian besar perangkat. Misalnya, Samsung telah mengaktifkan perangkat KNOX, dan mode LKM tidak dapat berfungsi. Ada juga beberapa perangkat yang dimodifikasi khusus yang hanya dapat menggunakan mode GKI.
+2. Dapat digunakan tanpa bergantung pada firmware resmi, dan tidak perlu menunggu pembaruan firmware resmi, selama KMI konsisten, dapat digunakan.
 
 ### Yang mana yang harus dipilih? {#which-one}
 
@@ -107,6 +103,13 @@ Buka manajer, klik ikon instalasi di sudut kanan atas, dan beberapa opsi akan mu
 1. Pilih file. Jika perangkat Anda tidak memiliki hak root, Anda dapat memilih opsi ini lalu pilih firmware resmi Anda. Manajer akan secara otomatis mem-patch-nya. Setelah itu, flash file yang di-patch ini untuk mendapatkan hak root secara permanen.
 2. Instalasi langsung. Jika perangkat Anda sudah di-root, Anda dapat memilih opsi ini. Manajer akan secara otomatis mendapatkan informasi perangkat Anda, lalu secara otomatis mem-patch firmware resmi, dan mem-flash-nya secara otomatis. Anda dapat mempertimbangkan menggunakan `fastboot boot` kernel GKI KernelSU untuk mendapatkan root sementara dan menginstal manajer, lalu gunakan opsi ini. Ini juga merupakan cara utama untuk mengupgrade KernelSU.
 3. Instal ke slot yang tidak aktif. Jika perangkat Anda mendukung partisi A/B, Anda dapat memilih opsi ini. Manajer akan secara otomatis mem-patch firmware resmi dan menginstalnya ke partisi lain. Metode ini cocok untuk perangkat setelah OTA, Anda dapat langsung menginstalnya ke partisi lain setelah OTA, lalu restart perangkat.
+
+:::tip Cadangkan boot image stok
+Menggunakan opsi "Langsung pasang (Disarankan)" di manajer dapat secara otomatis mencadangkan boot image stok (atau init_boot) agar dapat dipulihkan sementara saat pembaruan OTA inkremental. Perlu diperhatikan bahwa cadangan ini hanya dibuat jika slot saat ini belum pernah di-patch oleh KernelSU.
+Nilai SHA1 dari image cadangan disimpan di dalam image boot yang sudah di-patch, dan file cadangan disimpan di `/data/adb/ksu/ksu_backup_$SHA1`.
+Saat Anda menggunakan fitur "Hapus → Pulihkan image asli" di manajer, jika ada file cadangan yang cocok dengan SHA1 yang tercatat pada image yang sedang di-patch, cadangan tersebut akan langsung dipulihkan.
+Mulai versi 3.2.6, jika ini adalah pertama kalinya Anda memasang KernelSU tanpa root, setelah mem-patch boot image melalui "Pilih berkas" Anda dapat memilih "Cadangkan sebagai image stok". Dalam kasus ini, image cadangan akan disimpan di penyimpanan internal manajer; setelah image yang sudah di-patch di-flash dan perangkat berhasil boot, saat pertama kali membuka manajer cadangan tersebut akan otomatis dipindahkan ke `/data/adb/ksu`.
+:::
 
 ### Gunakan baris perintah
 

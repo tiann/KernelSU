@@ -126,4 +126,6 @@
     <string name="settings_kernel_umount">Demontare kernel</string>
     <string name="settings_kernel_umount_summary">Comportament de demontare la nivel de kernel controlat de KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Împiedică escaladarea suplimentară a privilegiilor prin KernelSU în contextul acestui profil root.</string>
+    <string name="install_force_backup">Salvează ca imagine originală</string>
+    <string name="install_force_backup_summary">Asigură-te că imaginea boot selectată este imaginea originală</string>
 </resources>

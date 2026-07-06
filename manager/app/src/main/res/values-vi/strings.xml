@@ -242,4 +242,6 @@
     <string name="download_cancel">Hủy bỏ</string>
     <string name="download_install">Cài đặt</string>
     <string name="profile_flags_desc_no_new_privs">Ngăn việc leo thang đặc quyền thêm thông qua KernelSU trong ngữ cảnh của hồ sơ root này.</string>
+    <string name="install_force_backup">Sao lưu thành ảnh gốc</string>
+    <string name="install_force_backup_summary">Vui lòng đảm bảo ảnh boot bạn chọn là ảnh gốc</string>
 </resources>

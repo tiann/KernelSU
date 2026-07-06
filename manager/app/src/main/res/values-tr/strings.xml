@@ -244,4 +244,6 @@
     <string name="download_cancel">İptal</string>
     <string name="download_install">Yükle</string>
     <string name="profile_flags_desc_no_new_privs">Bu root profili bağlamında KernelSU aracılığıyla daha fazla ayrıcalık yükseltmesini engeller.</string>
+    <string name="install_force_backup">Stok imaj olarak yedekle</string>
+    <string name="install_force_backup_summary">Lütfen seçtiğiniz boot imajının stok imaj olduğundan emin olun</string>
 </resources>

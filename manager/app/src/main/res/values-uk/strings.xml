@@ -176,4 +176,6 @@
     <string name="tab_info">Інформація</string>
     <string name="safe_mode_module_disabled">Встановлення модулів вимкнено в безпечному режимі</string>
     <string name="profile_flags_desc_no_new_privs">Запобігає подальшому підвищенню привілеїв через KernelSU у контексті цього root-профілю.</string>
+    <string name="install_force_backup">Зберегти резервну копію як оригінальний образ</string>
+    <string name="install_force_backup_summary">Будь ласка, переконайтеся, що вибраний образ boot є оригінальним образом</string>
 </resources>

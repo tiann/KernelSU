@@ -126,4 +126,6 @@
     <string name="settings_kernel_umount">Umount del kernel</string>
     <string name="settings_kernel_umount_summary">Comportamento di umount a livello di kernel controllato da KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Impedisce un\'ulteriore escalation dei privilegi tramite KernelSU nel contesto di questo profilo root.</string>
+    <string name="install_force_backup">Esegui backup come immagine originale</string>
+    <string name="install_force_backup_summary">Assicurati che l\'immagine di boot selezionata sia l\'immagine originale</string>
 </resources>

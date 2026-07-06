@@ -83,4 +83,6 @@
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Ponašanje umount na razini kernela kontrolira KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Sprječava daljnju eskalaciju privilegija putem KernelSU-a unutar konteksta ovog root profila.</string>
+    <string name="install_force_backup">Napravi sigurnosnu kopiju kao fabričku sliku</string>
+    <string name="install_force_backup_summary">Uvjerite se da je odabrana boot slika fabrička slika</string>
 </resources>

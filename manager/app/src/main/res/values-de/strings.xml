@@ -142,4 +142,6 @@
     <string name="install_upload_lkm_file">Nutze lokale LKM Datei</string>
     <string name="install_only_support_ko_file">Nur .ko Dateien unterstützt</string>
     <string name="profile_flags_desc_no_new_privs">Verhindert eine weitere Rechteausweitung über KernelSU innerhalb dieses Root-Profils.</string>
+    <string name="install_force_backup">Als Original-Image sichern</string>
+    <string name="install_force_backup_summary">Bitte stelle sicher, dass das ausgewählte Boot-Image das Original-Image ist</string>
 </resources>

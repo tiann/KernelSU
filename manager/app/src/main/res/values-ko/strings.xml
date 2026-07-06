@@ -173,4 +173,6 @@
     <string name="settings_kernel_umount">모듈 언마운트</string>
     <string name="settings_kernel_umount_summary">앱 프로필에 따라 커널에서 모듈을 언마운트합니다</string>
     <string name="profile_flags_desc_no_new_privs">이 루트 프로필의 컨텍스트 내에서 KernelSU를 통한 추가 권한 상승을 방지합니다.</string>
+    <string name="install_force_backup">순정 이미지로 백업</string>
+    <string name="install_force_backup_summary">선택한 boot 이미지가 순정 이미지인지 확인하세요</string>
 </resources>

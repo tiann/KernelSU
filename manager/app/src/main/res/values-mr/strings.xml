@@ -79,4 +79,6 @@
     <string name="settings_kernel_umount">कर्नल अनमाउंट</string>
     <string name="settings_kernel_umount_summary">KernelSU द्वारे नियंत्रित कर्नल-स्तरीय अनमाउंट वर्तन</string>
     <string name="profile_flags_desc_no_new_privs">या रूट प्रोफाइलच्या संदर्भात KernelSU द्वारे पुढील अधिकारवाढ रोखते.</string>
+    <string name="install_force_backup">स्टॉक इमेज म्हणून बॅकअप करा</string>
+    <string name="install_force_backup_summary">कृपया तुम्ही निवडलेली boot इमेज ही स्टॉक इमेज असल्याची खात्री करा</string>
 </resources>

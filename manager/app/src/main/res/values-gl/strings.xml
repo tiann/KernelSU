@@ -6,4 +6,6 @@
     <string name="settings_kernel_umount">Desmontar núcleo</string>
     <string name="settings_kernel_umount_summary">Comportamento de desmontaxe a nivel de núcleo controlado por KernelSU</string>
     <string name="profile_flags_desc_no_new_privs">Impide unha maior escalada de privilexios mediante KernelSU dentro do contexto deste perfil root.</string>
+    <string name="install_force_backup">Facer copia de seguridade como imaxe orixinal</string>
+    <string name="install_force_backup_summary">Asegúrate de que a imaxe de arranque seleccionada sexa a imaxe orixinal</string>
 </resources>
