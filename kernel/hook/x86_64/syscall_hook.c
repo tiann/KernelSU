@@ -9,9 +9,14 @@
 #include "../patch_memory.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
+#include "linux/nospec.h"
 
 sys_call_ptr_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
+
+#ifndef __NR_syscalls
+#define __NR_syscalls __NR_syscall_max
+#endif
 
 // Hook registration table — read with READ_ONCE from tracepoint/dispatcher
 // context, written with WRITE_ONCE from init/exit context.
@@ -202,14 +207,90 @@ bool ksu_has_syscall_hook(int nr)
 // harden syscall table was introduced in 6.9, but it was backported to almost
 // all of GKI kernel except 5.10
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
-static unsigned long x64_sys_call_fn;
-static char orig_insn[14];
+static void *x64_sys_call_patch_addr;
+static char x64_sys_call_patch_orig_insn[14];
 
 static long my_x64_sys_call(const struct pt_regs *regs, unsigned int nr)
 {
     return ksu_syscall_table[nr](regs);
 }
+
+// avd 13-5.15 missing this commit:
+// https://github.com/torvalds/linux/commit/fb13b11d53875e28e7fbf0c26b288e4ea676aa9f
+// we need to patch the whole do_syscall_64
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
+static void *do_syscall_64_patch_addr;
+static char do_syscall_64_orig_insn[14];
+
+static long (*syscall_enter_from_user_mode_fn)(struct pt_regs *regs, long syscall);
+static void (*syscall_exit_to_user_mode_fn)(struct pt_regs *regs);
+
+static __always_inline bool my_do_syscall_x64(struct pt_regs *regs, int nr)
+{
+    /*
+	 * Convert negative numbers to very high and thus out of range
+	 * numbers for comparisons.
+	 */
+    unsigned int unr = nr;
+
+    if (likely(unr < NR_syscalls)) {
+        unr = array_index_nospec(unr, NR_syscalls);
+        regs->ax = ksu_syscall_table[unr](regs);
+        return true;
+    }
+    return false;
+}
+
+static void __nocfi my_do_syscall_64(struct pt_regs *regs, int nr)
+{
+    nr = syscall_enter_from_user_mode_fn(regs, nr);
+    nr = syscall_get_nr(current, regs);
+
+    // AVD doesn't have x32 support after A13, we can ignore do_syscall_x32
+
+    if (!my_do_syscall_x64(regs, nr) && nr != -1) {
+        /* Invalid system call, but still a system call. */
+        regs->ax = -ENOSYS;
+    }
+
+    syscall_exit_to_user_mode_fn(regs);
+}
 #endif
+#endif
+
+static void patch_abs_jump(const char *sym, void **patch_addr, void *target, char backup[14])
+{
+    *patch_addr = (void *)find_kernel_symbol_exact(sym);
+    pr_info("%s=0x%lx\n", sym, (unsigned long)*patch_addr);
+    if (*patch_addr) {
+        pr_info("patching %s\n", sym);
+        // skip endbr64
+        static const char endbr64_insn[] = {
+            // clang-format off
+            0xf3, 0x0f, 0x1e, 0xfa
+            // clang-format on
+        };
+        if (memcmp((void *)*patch_addr, endbr64_insn, sizeof(endbr64_insn)) == 0) {
+            pr_info("%s: skip endbr64\n", sym);
+            *patch_addr += 4;
+        }
+        // clang-format off
+        char buf[] = {
+            // jmp *(%rip) = addr
+            0xff, 0x25, 0x00, 0x00, 0x00, 0x00,
+            // addr: .quad 0
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        };
+        // clang-format on
+        *((void **)(buf + 6)) = target;
+        memcpy(backup, *patch_addr, sizeof(buf));
+        int ret = ksu_patch_text(*patch_addr, buf, sizeof(buf), KSU_PATCH_TEXT_FLUSH_ICACHE);
+        if (ret) {
+            pr_err("patch %s err: %d\n", sym, ret);
+            *patch_addr = NULL;
+        }
+    }
+}
 
 void __init __nocfi ksu_syscall_hook_init(void)
 {
@@ -224,29 +305,16 @@ void __init __nocfi ksu_syscall_hook_init(void)
         return;
 
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
-    x64_sys_call_fn = find_kernel_symbol_exact("x64_sys_call");
-    pr_info("x64_sys_call=0x%lx\n", x64_sys_call_fn);
-    if (x64_sys_call_fn) {
-        pr_info("patching x64_sys_call\n");
-        unsigned long target_fn = (unsigned long)my_x64_sys_call;
-        // skip endbr64
-        unsigned long offset = x64_sys_call_fn + 4;
-        // clang-format off
-        char buf[] = {
-            // jmp *(%rip) = addr
-            0xff, 0x25, 0x00, 0x00, 0x00, 0x00,
-            // addr: .quad 0
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        };
-        // clang-format on
-        *((unsigned long *)(buf + 6)) = target_fn;
-        memcpy(orig_insn, offset, sizeof(orig_insn));
-        int ret = ksu_patch_text((void *)offset, buf, sizeof(buf), KSU_PATCH_TEXT_FLUSH_ICACHE);
-        if (ret) {
-            pr_err("patch x64_sys_call err: %d\n", ret);
-            return;
-        }
+    patch_abs_jump("x64_sys_call", &x64_sys_call_patch_addr, my_x64_sys_call, x64_sys_call_patch_orig_insn);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
+    syscall_enter_from_user_mode_fn = find_kernel_symbol_exact("syscall_enter_from_user_mode");
+    syscall_exit_to_user_mode_fn = find_kernel_symbol_exact("syscall_exit_to_user_mode");
+    pr_info("syscall_enter_from_user_mode: 0x%lx, syscall_exit_to_user_mode: 0x%lx\n",
+            (unsigned long)syscall_enter_from_user_mode_fn, (unsigned long)syscall_exit_to_user_mode_fn);
+    if (syscall_enter_from_user_mode_fn && syscall_exit_to_user_mode_fn) {
+        patch_abs_jump("do_syscall_64", &do_syscall_64_patch_addr, my_do_syscall_64, do_syscall_64_orig_insn);
     }
+#endif
 #endif
 
     // Find one ni_syscall slot for the dispatcher
@@ -265,10 +333,19 @@ void __exit ksu_syscall_hook_exit(void)
     int i;
 
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
-    int ret = ksu_patch_text((void *)(x64_sys_call_fn + 4), orig_insn, sizeof(orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
+    int ret = ksu_patch_text((void *)x64_sys_call_patch_addr, x64_sys_call_patch_orig_insn,
+                             sizeof(x64_sys_call_patch_orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
     if (ret) {
         pr_err("restore x64_sys_call err: %d\n", ret);
     }
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
+    ret = ksu_patch_text((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn, sizeof(do_syscall_64_orig_insn),
+                         KSU_PATCH_TEXT_FLUSH_ICACHE);
+    if (ret) {
+        pr_err("restore x64_sys_call err: %d\n", ret);
+    }
+#endif
 #endif
 
     if (!ksu_syscall_table)
