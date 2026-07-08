@@ -29,10 +29,6 @@ kernelsu-objs += manager/pkg_observer.o
 kernelsu-objs += manager/throne_tracker.o
 endif
 
-ifeq ($(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER),y)
-ccflags-y += -DCONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
-endif
-
 kernelsu-objs += policy/allowlist.o
 kernelsu-objs += policy/app_profile.o
 kernelsu-objs += policy/feature.o
@@ -64,6 +60,9 @@ ccflags-y += -DCONFIG_KSU_DISABLE_POLICY=1
 endif
 ifeq ($(CONFIG_KSU_DEBUG),y)
 ccflags-y += -DCONFIG_KSU_DEBUG=1
+endif
+ifeq ($(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER),y)
+ccflags-y += -DCONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=1
 endif
 endif
 
