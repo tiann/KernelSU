@@ -4,18 +4,18 @@
 
 #include <linux/kallsyms.h>
 #include <linux/mutex.h>
+#include <linux/nospec.h>
 #include <asm/cacheflush.h>
 #include "infra/symbol_resolver.h"
 #include "../patch_memory.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
-#include "linux/nospec.h"
 
 sys_call_ptr_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
 
 #ifndef __NR_syscalls
-#define __NR_syscalls __NR_syscall_max
+#define __NR_syscalls (__NR_syscall_max + 1)
 #endif
 
 // Hook registration table — read with READ_ONCE from tracepoint/dispatcher
@@ -272,7 +272,7 @@ static void patch_abs_jump(const char *sym, void **patch_addr, void *target, cha
         };
         if (memcmp((void *)*patch_addr, endbr64_insn, sizeof(endbr64_insn)) == 0) {
             pr_info("%s: skip endbr64\n", sym);
-            *patch_addr += 4;
+            *patch_addr = (void *)((char *)(*patch_addr) + 4);
         }
         // clang-format off
         char buf[] = {
@@ -333,17 +333,22 @@ void __exit ksu_syscall_hook_exit(void)
     int i;
 
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
-    int ret = ksu_patch_text((void *)x64_sys_call_patch_addr, x64_sys_call_patch_orig_insn,
+    int ret;
+    if (x64_sys_call_patch_addr) {
+        ret = ksu_patch_text((void *)x64_sys_call_patch_addr, x64_sys_call_patch_orig_insn,
                              sizeof(x64_sys_call_patch_orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
-    if (ret) {
-        pr_err("restore x64_sys_call err: %d\n", ret);
+        if (ret) {
+            pr_err("restore x64_sys_call err: %d\n", ret);
+        }
     }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
-    ret = ksu_patch_text((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn, sizeof(do_syscall_64_orig_insn),
-                         KSU_PATCH_TEXT_FLUSH_ICACHE);
-    if (ret) {
-        pr_err("restore x64_sys_call err: %d\n", ret);
+    if (do_syscall_64_patch_addr) {
+        ret = ksu_patch_text((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn, sizeof(do_syscall_64_orig_insn),
+                             KSU_PATCH_TEXT_FLUSH_ICACHE);
+        if (ret) {
+            pr_err("restore x64_sys_call err: %d\n", ret);
+        }
     }
 #endif
 #endif
