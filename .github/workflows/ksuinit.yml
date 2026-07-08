@@ -18,6 +18,7 @@ jobs:
       run: |
         rustup update stable
         rustup target add aarch64-unknown-linux-musl
+        rustup target add x86_64-unknown-linux-musl
 
     - uses: Swatinem/rust-cache@v2
       with:
@@ -34,5 +35,17 @@ jobs:
     - name: Upload ksuinit artifact
       uses: actions/upload-artifact@v7
       with:
-        name: ksuinit
-        path: target/**/release/ksuinit
+        name: ksuinit-aarch64
+        path: target/aarch64-unknown-linux-musl/release/ksuinit
+
+    - name: Build ksuinit x64
+      run: |
+        LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
+        export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/x86_64-linux-android26-clang"
+        cargo build --package ksuinit --target=x86_64-unknown-linux-musl --release
+
+    - name: Upload x64 ksuinit artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ksuinit-x86_64
+        path: target/x86_64-unknown-linux-musl/release/ksuinit
