@@ -134,7 +134,6 @@ import top.yukonga.miuix.kmp.basic.FloatingActionButton
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -284,6 +283,13 @@ fun ModulePagerMiuix(
     }
     val offsetHeight by animateDpAsState(
         targetValue = if (fabVisible) 0.dp else 180.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
+        animationSpec = tween(durationMillis = 350)
+    )
+    // The scaffold stacks the snackbar above the FAB slot's measured height, which the
+    // offset-based hide animation does not shrink; slide the snackbar down by the FAB's
+    // footprint (60dp min height + 12dp scaffold spacing) when the FAB is hidden.
+    val snackbarOffsetHeight by animateDpAsState(
+        targetValue = if (fabVisible) 0.dp else 72.dp,
         animationSpec = tween(durationMillis = 350)
     )
 
@@ -482,7 +488,15 @@ fun ModulePagerMiuix(
             }
         },
         snackbarHost = {
-            SnackbarHost(state = snackbarHostState)
+            SnackbarHost(
+                state = snackbarHostState,
+                modifier = if (uiState.installButtonVisible) {
+                    Modifier.offset { IntOffset(x = 0, y = snackbarOffsetHeight.roundToPx()) }
+                } else {
+                    // No FAB slot to stack above: keep the snackbar clear of the main bottom bar.
+                    Modifier.padding(bottom = bottomInnerPadding + 20.dp)
+                },
+            )
         },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
@@ -515,77 +529,65 @@ fun ModulePagerMiuix(
                 end = innerPadding.calculateEndPadding(layoutDirection),
                 bottom = bottomInnerPadding,
             )
-            if (modules.isEmpty() && !uiState.hasLoaded) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                            bottom = bottomInnerPadding
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    InfiniteProgressIndicator()
-                }
-            } else {
-                PullToRefresh(
-                    isRefreshing = uiState.isRefreshing,
-                    pullToRefreshState = pullToRefreshState,
-                    onRefresh = {
-                        actions.onRefresh()
-                        refreshTick.intValue++
-                    },
-                    refreshTexts = refreshTexts,
-                    contentPadding = contentPadding,
-                ) {
-                    if (modules.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    top = innerPadding.calculateTopPadding(),
-                                    start = innerPadding.calculateStartPadding(layoutDirection),
-                                    end = innerPadding.calculateEndPadding(layoutDirection),
-                                    bottom = bottomInnerPadding
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
+            PullToRefresh(
+                isRefreshing = uiState.isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = {
+                    actions.onRefresh()
+                    refreshTick.intValue++
+                },
+                refreshTexts = refreshTexts,
+                contentPadding = contentPadding,
+            ) {
+                if (modules.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding(),
+                                start = innerPadding.calculateStartPadding(layoutDirection),
+                                end = innerPadding.calculateEndPadding(layoutDirection),
+                                bottom = bottomInnerPadding
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // The refresh indicator doubles as the first-load hint;
+                        // only announce emptiness once loading has finished.
+                        if (uiState.hasLoaded) {
                             Text(
                                 stringResource(R.string.module_empty),
                                 textAlign = TextAlign.Center,
                                 color = Color.Gray,
                             )
                         }
-                    } else {
-                        val latestModules = rememberUpdatedState(modules)
-                        val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
-                        ScrollToTopOnChange(
-                            listState,
-                            uiState.sortEnabledFirst,
-                            uiState.sortActionFirst,
-                            refreshTick.intValue,
-                            isBusy = { latestRefreshing.value },
-                        ) { latestModules.value }
-                        Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
-                            ModuleList(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .scrollEndHaptic()
-                                    .overScrollVertical()
-                                    .nestedScroll(scrollBehavior.nestedScrollConnection)
-                                    .nestedScroll(nestedScrollConnection),
-                                modules = modules,
-                                updateInfoMap = uiState.updateInfo,
-                                actions = actions,
-                                onModuleAddShortcut = { module, type ->
-                                    onModuleAddShortcut(module, type)
-                                },
-                                contentPadding = contentPadding,
-                                listState = listState,
-                            )
-                        }
+                    }
+                } else {
+                    val latestModules = rememberUpdatedState(modules)
+                    val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
+                    ScrollToTopOnChange(
+                        listState,
+                        uiState.sortEnabledFirst,
+                        uiState.sortActionFirst,
+                        refreshTick.intValue,
+                        isBusy = { latestRefreshing.value },
+                    ) { latestModules.value }
+                    Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+                        ModuleList(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .scrollEndHaptic()
+                                .overScrollVertical()
+                                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                                .nestedScroll(nestedScrollConnection),
+                            modules = modules,
+                            updateInfoMap = uiState.updateInfo,
+                            actions = actions,
+                            onModuleAddShortcut = { module, type ->
+                                onModuleAddShortcut(module, type)
+                            },
+                            contentPadding = contentPadding,
+                            listState = listState,
+                        )
                     }
                 }
             }

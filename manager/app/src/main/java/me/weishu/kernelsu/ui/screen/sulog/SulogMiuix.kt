@@ -364,6 +364,15 @@ private fun SulogStatusSection(
     state: SulogScreenState,
     actions: SulogActions,
 ) {
+    // Skip entirely when no banner is shown; an empty Row would still take up
+    // its bottom padding above the file selector.
+    val showBanner = when (state.sulogStatus) {
+        "unsupported", "managed" -> true
+        "supported" -> !state.isSulogEnabled
+        else -> false
+    }
+    if (!showBanner) return
+
     Row(
         modifier = Modifier
             .padding(horizontal = 12.dp)
@@ -389,6 +398,9 @@ private fun SulogStatusSection(
                         TextButton(
                             text = stringResource(R.string.sulog_enable_action),
                             onClick = actions.onEnableSulog,
+                            minHeight = 28.dp,
+                            cornerRadius = 50.dp,
+                            insideMargin = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                             colors = ButtonDefaults.textButtonColors(
                                 color = if (isDynamicColor) colorScheme.onErrorContainer else Color(0xFFF72727),
                                 textColor = colorScheme.onError,

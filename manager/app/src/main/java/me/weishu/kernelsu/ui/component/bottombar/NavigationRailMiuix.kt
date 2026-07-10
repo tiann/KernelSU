@@ -1,25 +1,20 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.Natives
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
-import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.NavigationRail
 import top.yukonga.miuix.kmp.basic.NavigationRailItem
-import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.basic.rememberNavigationRailState
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun NavigationRailMiuix(
-    blurBackdrop: LayerBackdrop?,
+    moduleBadge: ModuleBadgeState,
     modifier: Modifier = Modifier,
 ) {
     val isManager = Natives.isManager
@@ -32,25 +27,23 @@ fun NavigationRailMiuix(
         Pair(stringResource(destination.label), destination.icon)
     }
 
-    BlurredBar(blurBackdrop) {
-        NavigationRail(
-            modifier = modifier
-                .fillMaxHeight(),
-            color = if (blurBackdrop != null) Color.Transparent else MiuixTheme.colorScheme.surface,
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            items.forEachIndexed { index, (label, icon) ->
-                NavigationRailItem(
-                    icon = icon,
-                    label = label,
-                    selected = mainState.selectedPage == index,
-                    onClick = {
-                        mainState.animateToPage(index)
-                    },
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
+    NavigationRail(
+        modifier = modifier,
+        state = rememberNavigationRailState(),
+        color = MiuixTheme.colorScheme.surface,
+        expandContentDescription = stringResource(R.string.nav_rail_expand),
+        collapseContentDescription = stringResource(R.string.nav_rail_collapse),
+    ) {
+        items.forEachIndexed { index, (label, icon) ->
+            NavigationRailItem(
+                selected = mainState.selectedPage == index,
+                onClick = {
+                    mainState.animateToPage(index)
+                },
+                icon = icon,
+                label = label,
+                badge = moduleBadgeFor(index, moduleBadge),
+            )
         }
     }
 }

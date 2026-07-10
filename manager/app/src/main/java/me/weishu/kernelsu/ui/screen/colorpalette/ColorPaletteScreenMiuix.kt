@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
 import androidx.compose.material.icons.rounded.Colorize
 import androidx.compose.material.icons.rounded.DesignServices
+import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
@@ -331,6 +332,22 @@ fun ColorPaletteScreenMiuix(
                                 }
                             )
                         }
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_navigation_badge),
+                            summary = stringResource(id = R.string.settings_navigation_badge_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Pin,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_navigation_badge),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.enableNavigationBadge,
+                            onCheckedChange = {
+                                actions.onSetEnableNavigationBadge(it)
+                            }
+                        )
                     }
 
                     Card(

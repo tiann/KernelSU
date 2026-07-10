@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DesignServices
+import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
@@ -252,6 +253,21 @@ fun ColorPaletteScreenMaterial(
                                 onItemSelected = { index ->
                                     actions.onSetColorSpec(specs[index].name)
                                 }
+                            )
+                        }
+                    )
+                )
+
+                SegmentedColumn(
+                    modifier = Modifier.padding(top = 4.dp),
+                    content = listOf(
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Rounded.Pin,
+                                title = stringResource(id = R.string.settings_navigation_badge),
+                                summary = stringResource(id = R.string.settings_navigation_badge_summary),
+                                checked = uiState.enableNavigationBadge,
+                                onCheckedChange = actions.onSetEnableNavigationBadge
                             )
                         }
                     )
