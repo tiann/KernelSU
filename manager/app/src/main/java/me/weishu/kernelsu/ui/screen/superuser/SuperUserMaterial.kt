@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.Article
@@ -440,7 +439,6 @@ private fun SimpleAppItem(
     ListItem(
         onClick = onNavigate,
         modifier = Modifier.padding(horizontal = 4.dp),
-        shapes = ListItemDefaults.shapes(shape = RoundedCornerShape(0.dp)),
         colors = ListItemDefaults.colors(
             containerColor = if (matched) {
                 colorScheme.secondaryContainer
