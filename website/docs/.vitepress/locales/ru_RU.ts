@@ -54,6 +54,7 @@ function sidebarGuide() {
           { text: 'Конфигурация модулей', link: '/ru_RU/guide/module-config.md' },
           { text: 'Профиль приложений', link: '/ru_RU/guide/app-profile.md' },
           { text: 'Выход из циклической загрузки', link: '/ru_RU/guide/rescue-from-bootloop.md' },
+          { text: 'Поддержка x86_64', link: '/ru_RU/guide/x86_64-support' },
           { text: 'FAQ', link: '/ru_RU/guide/faq' },
           { text: 'Скрытые возможности', link: '/ru_RU/guide/hidden-features' },
         ]
