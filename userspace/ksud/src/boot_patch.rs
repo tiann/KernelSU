@@ -636,10 +636,10 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         println!("- Preparing assets");
         println!("- Unpacking boot image");
         let boot_image_data = map_file(&boot_image_file)?;
-        let boot_image = if !ramdisk {
-            BootImage::parse(&boot_image_data)?
-        } else {
+        let boot_image = if ramdisk {
             BootImage::parse_raw_ramdisk(&boot_image_data)?
+        } else {
+            BootImage::parse(&boot_image_data)?
         };
         enforce_bootimage_version(&boot_image)?;
 
