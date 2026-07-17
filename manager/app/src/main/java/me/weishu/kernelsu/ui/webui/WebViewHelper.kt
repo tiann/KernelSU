@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -25,6 +26,8 @@ import me.weishu.kernelsu.ui.util.AppIconCache
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.withMainUserUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 private fun loadDownloadJs(context: Context): String {
@@ -122,15 +125,15 @@ internal suspend fun prepareWebView(
                             if (appInfo != null) {
                                 val icon = AppIconCache.loadIconSync(activity, appInfo.withMainUserUid(activity), 512)
                                 val stream = java.io.ByteArrayOutputStream()
-                                icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                icon.compress(Bitmap.CompressFormat.PNG, 100, stream)
                                 return WebResourceResponse(
                                     "image/png", null, 200, "OK",
                                     mapOf("Access-Control-Allow-Origin" to "*"),
-                                    java.io.ByteArrayInputStream(stream.toByteArray())
+                                    ByteArrayInputStream(stream.toByteArray())
                                 )
                             } else {
                                 val errorMsg = "No such package"
-                                val errorStream = java.io.ByteArrayInputStream(errorMsg.toByteArray(Charsets.UTF_8))
+                                val errorStream = ByteArrayInputStream(errorMsg.toByteArray(Charsets.UTF_8))
                                 return WebResourceResponse(
                                     "text/plain",
                                     "utf-8",
