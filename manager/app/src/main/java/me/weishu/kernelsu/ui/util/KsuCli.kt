@@ -91,13 +91,13 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     }
 }
 
-fun execKsud(args: String, newShell: Boolean = false): Boolean {
+fun execKsud(args: String, newShell: Boolean = false, globalMnt: Boolean = false): Boolean {
     return if (newShell) {
-        withNewRootShell {
+        withNewRootShell(globalMnt = globalMnt) {
             ShellUtils.fastCmdResult(this, "${getKsuDaemonPath()} $args")
         }
     } else {
-        ShellUtils.fastCmdResult(getRootShell(), "${getKsuDaemonPath()} $args")
+        ShellUtils.fastCmdResult(getRootShell(globalMnt), "${getKsuDaemonPath()} $args")
     }
 }
 
@@ -362,7 +362,7 @@ fun installBoot(
 
 fun reboot(reason: String = "") {
     if (reason == "soft_reboot") {
-        execKsud("soft-reboot", true)
+        execKsud("soft-reboot", true, true)
         return
     }
     val shell = getRootShell()
