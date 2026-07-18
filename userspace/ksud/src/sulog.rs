@@ -789,7 +789,9 @@ pub fn spawn_sulogd() -> Result<()> {
 
         let err = command.exec();
         log::error!("failed to exec sulogd: {err:#}");
-        std::process::exit(1)
+        unsafe {
+            libc::_exit(1);
+        }
     }
     Ok(())
 }
