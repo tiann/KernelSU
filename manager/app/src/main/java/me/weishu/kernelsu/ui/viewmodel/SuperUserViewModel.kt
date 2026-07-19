@@ -23,7 +23,7 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.screen.superuser.GroupedApps
 import me.weishu.kernelsu.ui.screen.superuser.SuperUserUiState
-import me.weishu.kernelsu.ui.util.HanziToPinyin
+import me.weishu.kernelsu.ui.util.PinyinUtil
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.pickPrimary
 import java.text.Collator
@@ -180,7 +180,7 @@ class SuperUserViewModel(
             val matchedPackageNames = group.apps.filter {
                 it.label.contains(text, true) ||
                         it.packageName.contains(text, true) ||
-                        HanziToPinyin.getInstance().toPinyinString(it.label).contains(text, true)
+                        PinyinUtil.toPinyin(it.label).contains(text, true)
             }.mapTo(linkedSetOf()) { it.packageName }
 
             if (matchedPackageNames.isEmpty()) {

@@ -20,6 +20,7 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.screen.modulerepo.ModuleRepoUiState
 import me.weishu.kernelsu.ui.screen.modulerepo.RepoSort
+import me.weishu.kernelsu.ui.util.PinyinUtil
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import java.text.Collator
 import java.util.Locale
@@ -75,8 +76,7 @@ class ModuleRepoViewModel(
                     it.moduleName.contains(text, true) ||
                     it.authors.contains(text, true) ||
                     it.summary.contains(text, true) ||
-                    me.weishu.kernelsu.ui.util.HanziToPinyin.getInstance().toPinyinString(it.moduleName)
-                        .contains(text, true)
+                    PinyinUtil.toPinyin(it.moduleName).contains(text, true)
         }
     }
 
