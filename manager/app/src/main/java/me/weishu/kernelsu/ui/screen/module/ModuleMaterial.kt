@@ -255,6 +255,7 @@ fun ModulePagerMaterial(
             is ModuleEffect.SnackBar -> {
                 // Cancel the previous reboot snackbar so a new one replaces it instead of queueing
                 snackbarJob.value?.cancel()
+                snackBarHost.currentSnackbarData?.dismiss()
                 snackbarJob.value = scope.launch {
                     val result = snackBarHost.showSnackbar(
                         message = event.message,
