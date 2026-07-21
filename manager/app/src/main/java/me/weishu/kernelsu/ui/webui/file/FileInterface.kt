@@ -47,12 +47,16 @@ class FileInterface(private val path: String) {
     }.getOrDefault(false)
 
     @JavascriptInterface
-    fun list(): Array<String> = runCatching { suFile.list() ?: emptyArray() }.getOrDefault(emptyArray())
+    fun list(): String = runCatching {
+        val names = suFile.list() ?: emptyArray()
+        org.json.JSONArray(names.toList()).toString()
+    }.getOrElse { "[]" }
 
     @JavascriptInterface
-    fun listFiles(): Array<String> = runCatching {
-        suFile.listFiles()?.map { it.absolutePath }?.toTypedArray() ?: emptyArray()
-    }.getOrDefault(emptyArray())
+    fun listFiles(): String = runCatching {
+        val paths = suFile.listFiles()?.map { it.absolutePath } ?: emptyList()
+        org.json.JSONArray(paths).toString()
+    }.getOrElse { "[]" }
 
     @JavascriptInterface
     fun length(): Long = runCatching { suFile.length() }.getOrDefault(-1L)

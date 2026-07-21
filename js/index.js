@@ -148,7 +148,60 @@ export function exit() {
 
 export const io = {
   File(path) {
-    return ksu.io().File(path);
+    const impl = ksu.io().File(path);
+    return {
+      exists() { return impl.exists(); },
+      isFile() { return impl.isFile(); },
+      isDirectory() { return impl.isDirectory(); },
+      canRead() { return impl.canRead(); },
+      canWrite() { return impl.canWrite(); },
+      canExecute() { return impl.canExecute(); },
+      createNewFile() { return impl.createNewFile(); },
+      delete() { return impl.delete(); },
+      deleteRecursive() { return impl.deleteRecursive(); },
+      mkdir() { return impl.mkdir(); },
+      mkdirs() { return impl.mkdirs(); },
+      renameTo(destPath) { return impl.renameTo(destPath); },
+      list() {
+        try {
+          return JSON.parse(impl.list() || '[]');
+        } catch (error) {
+          return [];
+        }
+      },
+      listFiles() {
+        try {
+          return JSON.parse(impl.listFiles() || '[]');
+        } catch (error) {
+          return [];
+        }
+      },
+      length() { return impl.length(); },
+      lastModified() { return impl.lastModified(); },
+      setLastModified(time) { return impl.setLastModified(time); },
+      getAbsolutePath() { return impl.getAbsolutePath(); },
+      getCanonicalPath() { return impl.getCanonicalPath(); },
+      getParent() { return impl.getParent(); },
+      getPath() { return impl.getPath(); },
+      getName() { return impl.getName(); },
+      isHidden() { return impl.isHidden(); },
+      isBlock() { return impl.isBlock(); },
+      isCharacter() { return impl.isCharacter(); },
+      isSymlink() { return impl.isSymlink(); },
+      createNewSymlink(target) { return impl.createNewSymlink(target); },
+      createNewLink(existing) { return impl.createNewLink(existing); },
+      clear() { return impl.clear(); },
+      setReadOnly() { return impl.setReadOnly(); },
+      setReadable(readable, ownerOnly) { return impl.setReadable(readable, ownerOnly); },
+      setWritable(writable, ownerOnly) { return impl.setWritable(writable, ownerOnly); },
+      setExecutable(executable, ownerOnly) { return impl.setExecutable(executable, ownerOnly); },
+      getFreeSpace() { return impl.getFreeSpace(); },
+      getTotalSpace() { return impl.getTotalSpace(); },
+      getUsableSpace() { return impl.getUsableSpace(); },
+      newInputStream() { return impl.newInputStream(); },
+      newOutputStream(append) { return append !== undefined ? impl.newOutputStream(append) : impl.newOutputStream(); },
+      toString() { return impl.toString(); },
+    };
   },
 
   FileInputStream() {
