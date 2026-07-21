@@ -75,7 +75,7 @@ private fun attachWebView(
 
     val webviewInterface = WebViewInterface(runtime, { moduleDir }, dispatch)
     webView.addJavascriptInterface(webviewInterface, KSU_JS_INTERFACE_NAME)
-    dispatch(WebUIIntent.ModuleReady(moduleName, moduleDir, shell, webView))
+    dispatch(WebUIIntent.ModuleReady(shell, webView))
 }
 
 private fun createAssetLoader(

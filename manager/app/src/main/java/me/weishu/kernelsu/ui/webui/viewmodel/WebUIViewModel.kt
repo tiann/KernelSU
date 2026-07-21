@@ -4,12 +4,11 @@ import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.webui.model.WebUIEffect
@@ -25,8 +24,8 @@ class WebUIViewModel : ViewModel() {
     private val _state = MutableStateFlow(WebUIState())
     val state: StateFlow<WebUIState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<WebUIEffect>()
-    val effect: SharedFlow<WebUIEffect> = _effect.asSharedFlow()
+    private val _effect = Channel<WebUIEffect>(Channel.BUFFERED)
+    val effect = _effect.receiveAsFlow()
 
     private var pendingJsResult: JsResult? = null
     private var pendingJsPromptResult: JsPromptResult? = null
@@ -39,15 +38,15 @@ class WebUIViewModel : ViewModel() {
                 _state.update {
                     it.copy(
                         loadState = WebUILoadState.Ready,
-                        moduleName = intent.moduleName,
-                        moduleDir = intent.moduleDir,
+                        isUrlLoaded = false,
+                        webCanGoBack = false,
+                        overlay = null,
+                        externalLinkUrl = null,
                     )
                 }
             }
 
-            is WebUIIntent.Error -> emitEffect(WebUIEffect.ShowToast(intent.message)) {
-                emitEffect(WebUIEffect.Finish)
-            }
+            is WebUIIntent.Error -> emitEffects(WebUIEffect.ShowToast(intent.message), WebUIEffect.Finish)
 
             WebUIIntent.ExitRequested -> emitEffect(WebUIEffect.Finish)
 
@@ -122,10 +121,17 @@ class WebUIViewModel : ViewModel() {
         }
     }
 
-    private fun emitEffect(effect: WebUIEffect, after: (() -> Unit)? = null) {
+    private fun emitEffect(effect: WebUIEffect) {
         viewModelScope.launch {
-            _effect.emit(effect)
-            after?.invoke()
+            _effect.send(effect)
+        }
+    }
+
+    private fun emitEffects(vararg effects: WebUIEffect) {
+        viewModelScope.launch {
+            for (effect in effects) {
+                _effect.send(effect)
+            }
         }
     }
 
