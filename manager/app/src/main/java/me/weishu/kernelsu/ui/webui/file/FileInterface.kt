@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.webui.file
 import android.util.Log
 import android.webkit.JavascriptInterface
 import com.topjohnwu.superuser.io.SuFile
+import org.json.JSONArray
 import java.io.BufferedOutputStream
 
 class FileInterface(private val path: String) {
@@ -47,12 +48,16 @@ class FileInterface(private val path: String) {
     }.getOrDefault(false)
 
     @JavascriptInterface
-    fun list(): Array<String> = runCatching { suFile.list() ?: emptyArray() }.getOrDefault(emptyArray())
+    fun list(): String = runCatching {
+        val names = suFile.list() ?: emptyArray()
+        JSONArray(names.toList()).toString()
+    }.getOrElse { "[]" }
 
     @JavascriptInterface
-    fun listFiles(): Array<String> = runCatching {
-        suFile.listFiles()?.map { it.absolutePath }?.toTypedArray() ?: emptyArray()
-    }.getOrDefault(emptyArray())
+    fun listFiles(): String = runCatching {
+        val paths = suFile.listFiles()?.map { it.absolutePath } ?: emptyList()
+        JSONArray(paths).toString()
+    }.getOrElse { "[]" }
 
     @JavascriptInterface
     fun length(): Long = runCatching { suFile.length() }.getOrDefault(-1L)
