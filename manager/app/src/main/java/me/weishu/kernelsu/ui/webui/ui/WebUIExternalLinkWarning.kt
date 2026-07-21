@@ -54,19 +54,18 @@ internal fun ExternalLinkWarningOverlay(
     externalLinkUrl: String?,
     dispatch: (WebUIIntent) -> Unit,
 ) {
-    val showExternalLink = externalLinkUrl != null
     val visibilityState = remember { MutableTransitionState(false) }
     var displayedExternalLinkUrl by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(externalLinkUrl, showExternalLink) {
+    LaunchedEffect(externalLinkUrl) {
         if (externalLinkUrl != null) {
             displayedExternalLinkUrl = externalLinkUrl
         }
-        visibilityState.targetState = showExternalLink
+        visibilityState.targetState = externalLinkUrl != null
     }
 
-    LaunchedEffect(visibilityState.currentState, visibilityState.targetState) {
-        if (!visibilityState.currentState && !visibilityState.targetState) {
+    LaunchedEffect(visibilityState.isIdle, visibilityState.currentState) {
+        if (visibilityState.isIdle && !visibilityState.currentState) {
             displayedExternalLinkUrl = null
         }
     }

@@ -55,7 +55,7 @@ internal fun createWebViewClient(
 
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url
-            if (isInternalUrl(url)) return false
+            if (LOCAL_WEBVIEW_SCHEMES.any { url.scheme.equals(it, ignoreCase = true) } || isInternalUrl(url)) return false
             dispatch(WebUIIntent.ExternalLinkIntercepted(url.toString()))
             return true
         }
@@ -110,6 +110,8 @@ internal fun createWebChromeClient(
         }
     }
 }
+
+internal val LOCAL_WEBVIEW_SCHEMES = setOf("about", "blob", "data")
 
 /**
  * Only keep navigation inside the WebView for the trusted WebUI host over HTTPS

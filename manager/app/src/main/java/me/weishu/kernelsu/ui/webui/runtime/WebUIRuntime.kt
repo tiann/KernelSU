@@ -4,10 +4,13 @@ import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.ValueCallback
 import android.webkit.WebView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.topjohnwu.superuser.Shell
 
 class WebUIRuntime {
-    var webView: WebView? = null
+    var webView: WebView? by mutableStateOf(null)
     var rootShell: Shell? = null
     var pendingFileCallback: ValueCallback<Array<Uri>>? = null
 

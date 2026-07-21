@@ -5,8 +5,6 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class WebUIState(
     val loadState: WebUILoadState = WebUILoadState.Loading,
-    val moduleName: String = "",
-    val moduleDir: String = "",
     val isUrlLoaded: Boolean = false,
     val currentInsets: Insets = Insets(0, 0, 0, 0),
     val isInsetsEnabled: Boolean = false,
