@@ -7,7 +7,7 @@ import android.webkit.WebView
 import com.topjohnwu.superuser.Shell
 
 sealed interface WebUIIntent {
-    data class ModuleReady(val moduleName: String, val moduleDir: String, val shell: Shell, val webView: WebView) : WebUIIntent
+    data class ModuleReady(val shell: Shell, val webView: WebView) : WebUIIntent
     data class Error(val message: String) : WebUIIntent
     data object ExitRequested : WebUIIntent
     data object HomePageLoaded : WebUIIntent
