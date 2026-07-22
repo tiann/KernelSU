@@ -16,6 +16,7 @@ interface SettingsRepository {
     var enableNavigationBadge: Boolean
     var pageScale: Float
     var enableWebDebugging: Boolean
+    var allowWebUiExternalContent: Boolean
     var moduleSortEnabledFirst: Boolean
     var moduleSortActionFirst: Boolean
     var moduleRepoSortOrder: Int

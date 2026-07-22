@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.ElectricalServices
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material.icons.rounded.RemoveCircle
@@ -352,6 +353,20 @@ fun SettingPagerMiuix(
                                 },
                                 checked = uiState.enableWebDebugging,
                                 onCheckedChange = actions.onSetEnableWebDebugging
+                            )
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_allow_webui_external_content),
+                                summary = stringResource(id = R.string.settings_allow_webui_external_content_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.Language,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_allow_webui_external_content),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = uiState.allowWebUiExternalContent,
+                                onCheckedChange = actions.onSetAllowWebUiExternalContent
                             )
                             SwitchPreference(
                                 title = stringResource(id = R.string.settings_auto_jailbreak),
