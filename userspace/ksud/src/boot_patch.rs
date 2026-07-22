@@ -504,6 +504,14 @@ pub struct BootPatchArgs {
     /// Do not load custom rc
     #[arg(long, default_value = "false")]
     no_custom_rc: bool,
+
+    #[cfg(not(target_os = "android"))]
+    #[arg(long, default_value = "x86_64")]
+    arch: String,
+
+    /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
+    #[arg(long, default_value = "false")]
+    ramdisk: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -530,6 +538,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             #[cfg(target_os = "android")]
             partition,
             no_custom_rc,
+            #[cfg(not(target_os = "android"))]
+            arch,
+            ramdisk,
         } = args;
 
         println!(include_str!("banner"));
@@ -543,6 +554,15 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         }
 
         let is_replace_kernel = kernel.is_some();
+
+        if ramdisk && is_replace_kernel {
+            bail!("incompatiable option: --ramdisk and --kernel")
+        }
+
+        #[cfg(target_os = "android")]
+        if ramdisk && flash {
+            bail!("incompatiable option: --ramdisk and --flash")
+        }
 
         if is_replace_kernel {
             ensure!(
@@ -616,7 +636,11 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         println!("- Preparing assets");
         println!("- Unpacking boot image");
         let boot_image_data = map_file(&boot_image_file)?;
-        let boot_image = BootImage::parse(&boot_image_data)?;
+        let boot_image = if ramdisk {
+            BootImage::parse_raw_ramdisk(&boot_image_data)?
+        } else {
+            BootImage::parse(&boot_image_data)?
+        };
         enforce_bootimage_version(&boot_image)?;
 
         let mut patcher = BootImagePatchOption::new(&boot_image);
@@ -637,9 +661,19 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         } else if let Some(kmod_path) = kmod {
             Box::new(map_file(&kmod_path)?)
         } else {
-            println!("- KMI: {kmi}");
-            let name = format!("{kmi}_kernelsu.ko");
-            assets::get_asset(&name).with_context(|| format!("Failed to load {name}"))?
+            #[cfg(target_os = "android")]
+            {
+                println!("- KMI: {kmi}");
+                let name = format!("{kmi}_kernelsu.ko");
+                assets::get_asset(&name).with_context(|| format!("Failed to load {name}"))?
+            }
+            #[cfg(not(target_os = "android"))]
+            {
+                println!("- KMI: {kmi}");
+                println!("- Arch: {arch}");
+                let name = format!("{arch}/{kmi}_kernelsu.ko");
+                assets::get_asset(&name).with_context(|| format!("Failed to load {name}"))?
+            }
         };
 
         let ksu_init: Box<dyn AsRef<[u8]>> = if no_install {
@@ -647,7 +681,14 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         } else if let Some(init_path) = init {
             Box::new(map_file(&init_path)?)
         } else {
-            assets::get_asset("ksuinit").context("Failed to load ksuinit")?
+            #[cfg(not(target_os = "android"))]
+            {
+                assets::get_asset(&format!("{arch}/ksuinit")).context("Failed to load ksuinit")?
+            }
+            #[cfg(target_os = "android")]
+            {
+                assets::get_asset("ksuinit").context("Failed to load ksuinit")?
+            }
         };
 
         let (mut cpio, vendor_ramdisk_idx) =
