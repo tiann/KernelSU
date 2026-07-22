@@ -4,7 +4,9 @@
 #include "ss/hashtab.h"
 #include "ss/policydb.h"
 #include "ss/services.h"
+#include <linux/err.h>
 #include <linux/gfp.h>
+#include <linux/sched.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/version.h>
@@ -53,6 +55,19 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type, 
 
 static bool add_typeattribute(struct policydb *db, const char *type, const char *attr);
 
+static bool clone_type_attributes(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied);
+
+static bool clone_type_roles(struct policydb *db, struct type_datum *src, struct type_datum *dst);
+
+static bool clone_type_constraints(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied);
+
+static bool clone_type_permissive(struct policydb *db, struct type_datum *src, struct type_datum *dst, bool *copied);
+
+static bool clone_avtab_rules(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied);
+
+static bool clone_filename_trans_rules(struct policydb *db, struct type_datum *src, struct type_datum *dst,
+                                       u32 *copied);
+
 //////////////////////////////////////////////////////
 // Implementation
 //////////////////////////////////////////////////////
@@ -81,7 +96,7 @@ static bool add_typeattribute(struct policydb *db, const char *type, const char 
 #define symtab_insert(s, name, datum) hashtab_insert((s)->table, name, datum)
 #endif
 
-#define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
+#define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur)
 
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
                                          struct avtab_extended_perms *xperms)
@@ -764,7 +779,17 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type, 
         struct class_datum *cls = (struct class_datum *)(node->datum);
         for (n = cls->constraints; n; n = n->next) {
             for (e = n->expr; e; e = e->next) {
-                if (e->expr_type == CEXPR_NAMES && ebitmap_get_bit(&e->type_names->types, attr->value - 1)) {
+                if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) && e->type_names &&
+                    ebitmap_get_bit(&e->type_names->types, attr->value - 1)) {
+                    ebitmap_set_bit(&e->names, type->value - 1, 1);
+                }
+            }
+        }
+
+        for (n = cls->validatetrans; n; n = n->next) {
+            for (e = n->expr; e; e = e->next) {
+                if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) && e->type_names &&
+                    ebitmap_get_bit(&e->type_names->types, attr->value - 1)) {
                     ebitmap_set_bit(&e->names, type->value - 1, 1);
                 }
             }
@@ -794,6 +819,273 @@ static bool add_typeattribute(struct policydb *db, const char *type, const char 
 
     add_typeattribute_raw(db, type_d, attr_d);
     return true;
+}
+
+static bool clone_type_attributes(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied)
+{
+    struct ebitmap *src_attrs = &db->type_attr_map_array[src->value - 1];
+    u32 bit;
+
+    for (bit = 0; bit <= src_attrs->highbit; bit++) {
+        struct type_datum *attr;
+
+        if (!ebitmap_get_bit(src_attrs, bit))
+            continue;
+
+        attr = db->type_val_to_struct[bit];
+        if (!attr || !attr->attribute)
+            continue;
+
+        add_typeattribute_raw(db, dst, attr);
+        (*copied)++;
+    }
+
+    return true;
+}
+
+static bool clone_type_roles(struct policydb *db, struct type_datum *src, struct type_datum *dst)
+{
+    int i;
+
+    for (i = 0; i < db->p_roles.nprim; i++) {
+        struct role_datum *role = db->role_val_to_struct[i];
+        bool has_src;
+
+        if (!role)
+            continue;
+
+        has_src = ebitmap_get_bit(&role->types, src->value - 1);
+        if (ebitmap_set_bit(&role->types, dst->value - 1, has_src ? 1 : 0))
+            return false;
+    }
+
+    return true;
+}
+
+static bool clone_type_constraints(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied)
+{
+    struct hashtab_node *node;
+
+    ksu_hashtab_for_each(db->p_classes.table, node)
+    {
+        struct class_datum *cls = (struct class_datum *)node->datum;
+        struct constraint_node *n;
+
+        for (n = cls->constraints; n; n = n->next) {
+            struct constraint_expr *e;
+
+            for (e = n->expr; e; e = e->next) {
+                if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) &&
+                    ebitmap_get_bit(&e->names, src->value - 1) && ebitmap_set_bit(&e->names, dst->value - 1, 1)) {
+                    return false;
+                } else if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) &&
+                           ebitmap_get_bit(&e->names, src->value - 1)) {
+                    (*copied)++;
+                }
+            }
+        }
+
+        for (n = cls->validatetrans; n; n = n->next) {
+            struct constraint_expr *e;
+
+            for (e = n->expr; e; e = e->next) {
+                if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) &&
+                    ebitmap_get_bit(&e->names, src->value - 1) && ebitmap_set_bit(&e->names, dst->value - 1, 1)) {
+                    return false;
+                } else if (e->expr_type == CEXPR_NAMES && (e->attr & CEXPR_TYPE) &&
+                           ebitmap_get_bit(&e->names, src->value - 1)) {
+                    (*copied)++;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+static bool clone_type_permissive(struct policydb *db, struct type_datum *src, struct type_datum *dst, bool *copied)
+{
+    if (!ebitmap_get_bit(&db->permissive_map, src->value))
+        return true;
+
+    *copied = true;
+    return ebitmap_set_bit(&db->permissive_map, dst->value, 1) == 0;
+}
+
+static bool clone_avtab_rules(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied)
+{
+    struct avtab_node **snapshot;
+    struct avtab_node *node;
+    u32 idx = 0;
+    u32 count = db->te_avtab.nel;
+
+    if (count == 0)
+        return true;
+
+    snapshot = kvcalloc(count, sizeof(*snapshot), GFP_KERNEL);
+    if (!snapshot)
+        return false;
+
+    avtab_for_each(db->te_avtab, node)
+    {
+        snapshot[idx++] = node;
+    }
+
+    count = idx;
+    for (idx = 0; idx < count; idx++) {
+        struct avtab_key key;
+        struct avtab_node *new_node;
+        struct avtab_extended_perms *new_xperms = NULL;
+        struct avtab_node *old_node = snapshot[idx];
+
+        if ((idx & 0x3ff) == 0)
+            cond_resched();
+
+        if (old_node->key.source_type != src->value && old_node->key.target_type != src->value)
+            continue;
+
+        key = old_node->key;
+        if (key.source_type == src->value)
+            key.source_type = dst->value;
+        if (key.target_type == src->value)
+            key.target_type = dst->value;
+
+        if (key.specified & AVTAB_XPERMS) {
+            new_xperms = kmemdup(old_node->datum.u.xperms, sizeof(*new_xperms), GFP_KERNEL);
+            if (!new_xperms)
+                goto err;
+            new_node = get_avtab_node(db, &key, new_xperms);
+            if (!new_node) {
+                kfree(new_xperms);
+                goto err;
+            }
+            if (new_node->datum.u.xperms != new_xperms) {
+                if (!new_node->datum.u.xperms) {
+                    new_node->datum.u.xperms = kmemdup(old_node->datum.u.xperms, sizeof(*new_xperms), GFP_KERNEL);
+                    if (!new_node->datum.u.xperms) {
+                        kfree(new_xperms);
+                        goto err;
+                    }
+                } else {
+                    memcpy(new_node->datum.u.xperms, old_node->datum.u.xperms, sizeof(*new_xperms));
+                }
+                kfree(new_xperms);
+            }
+            (*copied)++;
+        } else {
+            new_node = get_avtab_node(db, &key, NULL);
+            if (!new_node)
+                goto err;
+            new_node->datum.u.data = old_node->datum.u.data;
+            if ((key.specified & AVTAB_TYPE) && new_node->datum.u.data == src->value)
+                new_node->datum.u.data = dst->value;
+            (*copied)++;
+        }
+    }
+
+    kvfree(snapshot);
+    return true;
+
+err:
+    kvfree(snapshot);
+    return false;
+}
+
+static bool clone_filename_trans_rules(struct policydb *db, struct type_datum *src, struct type_datum *dst, u32 *copied)
+{
+    struct filename_trans_datum **datums;
+    struct filename_trans_key **keys;
+    struct hashtab_node *node;
+    u32 idx = 0;
+    u32 count = 0;
+    int slot;
+
+    for (slot = 0; slot < db->filename_trans.size; slot++) {
+        for (node = db->filename_trans.htable[slot]; node; node = node->next) {
+            struct filename_trans_datum *datum = node->datum;
+            while (datum) {
+                count++;
+                datum = datum->next;
+            }
+        }
+    }
+
+    if (count == 0)
+        return true;
+
+    datums = kvcalloc(count, sizeof(*datums), GFP_KERNEL);
+    if (!datums)
+        return false;
+    keys = kvcalloc(count, sizeof(*keys), GFP_KERNEL);
+    if (!keys) {
+        kvfree(datums);
+        return false;
+    }
+
+    for (slot = 0; slot < db->filename_trans.size; slot++) {
+        for (node = db->filename_trans.htable[slot]; node; node = node->next) {
+            struct filename_trans_key *key = node->key;
+            struct filename_trans_datum *datum = node->datum;
+            while (datum) {
+                if (idx >= count)
+                    break;
+                keys[idx] = key;
+                datums[idx] = datum;
+                idx++;
+                datum = datum->next;
+            }
+        }
+    }
+
+    count = idx;
+    for (idx = 0; idx < count; idx++) {
+        struct filename_trans_key *key = keys[idx];
+        struct filename_trans_datum *datum = datums[idx];
+        const char *src_name;
+        const char *tgt_name;
+        const char *def_name;
+        u32 bit;
+
+        if ((idx & 0xff) == 0)
+            cond_resched();
+
+        if (key->ttype != src->value && datum->otype != src->value && !ebitmap_get_bit(&datum->stypes, src->value - 1))
+            continue;
+
+        tgt_name = sym_name(db, SYM_TYPES, (key->ttype == src->value ? dst->value : key->ttype) - 1);
+        def_name = sym_name(db, SYM_TYPES, (datum->otype == src->value ? dst->value : datum->otype) - 1);
+        if (!tgt_name || !def_name)
+            goto err;
+
+        for (bit = 0; bit <= datum->stypes.highbit; bit++) {
+            u32 source_type;
+
+            if (!ebitmap_get_bit(&datum->stypes, bit))
+                continue;
+
+            source_type = bit + 1;
+            if (source_type == src->value)
+                src_name = sym_name(db, SYM_TYPES, dst->value - 1);
+            else
+                src_name = sym_name(db, SYM_TYPES, source_type - 1);
+            if (!src_name)
+                goto err;
+
+            if (!add_filename_trans(db, src_name, tgt_name, sym_name(db, SYM_CLASSES, key->tclass - 1), def_name,
+                                    key->name))
+                goto err;
+            (*copied)++;
+        }
+    }
+
+    kvfree(keys);
+    kvfree(datums);
+    return true;
+
+err:
+    kvfree(keys);
+    kvfree(datums);
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -827,6 +1119,70 @@ bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr)
 bool ksu_exists(struct policydb *db, const char *type)
 {
     return symtab_search(&db->p_types, type) != NULL;
+}
+
+bool ksu_clone_type(struct policydb *db, const char *src, const char *dst)
+{
+    struct type_datum *src_d;
+    struct type_datum *dst_d;
+    u32 attr_count = 0;
+    u32 constraint_count = 0;
+    u32 avtab_count = 0;
+    u32 filename_trans_count = 0;
+    bool permissive_copied = false;
+
+    if (!src || !dst) {
+        pr_err("clone_type: source/destination cannot be NULL\n");
+        return false;
+    }
+
+    if (!strcmp(src, dst)) {
+        pr_err("clone_type: source and destination must differ (%s)\n", src);
+        return false;
+    }
+
+    src_d = symtab_search(&db->p_types, src);
+    if (!src_d || src_d->attribute) {
+        pr_err("clone_type: invalid source type %s\n", src);
+        return false;
+    }
+
+    if (symtab_search(&db->p_types, dst) != NULL) {
+        pr_err("clone_type: destination type %s already exists\n", dst);
+        return false;
+    }
+
+    if (!add_type(db, dst, false))
+        return false;
+    pr_info("clone_type: added type %s\n", dst);
+
+    dst_d = symtab_search(&db->p_types, dst);
+    if (!dst_d || dst_d->attribute)
+        return false;
+
+    if (!clone_type_attributes(db, src_d, dst_d, &attr_count))
+        return false;
+    pr_info("clone_type: attributes copied count=%u\n", attr_count);
+    if (!clone_type_roles(db, src_d, dst_d))
+        return false;
+    pr_info("clone_type: roles copied\n");
+    if (!clone_type_constraints(db, src_d, dst_d, &constraint_count))
+        return false;
+    pr_info("clone_type: constraints copied count=%u\n", constraint_count);
+    if (!clone_type_permissive(db, src_d, dst_d, &permissive_copied))
+        return false;
+    pr_info("clone_type: permissive copied=%d\n", permissive_copied ? 1 : 0);
+    if (!clone_avtab_rules(db, src_d, dst_d, &avtab_count))
+        return false;
+    pr_info("clone_type: avtab copied count=%u\n", avtab_count);
+    if (!clone_filename_trans_rules(db, src_d, dst_d, &filename_trans_count))
+        return false;
+    pr_info("clone_type: filename_trans copied count=%u\n", filename_trans_count);
+
+    pr_info("clone_type: %s -> %s attrs=%u constraints=%u avtab=%u filename_trans=%u permissive=%d\n", src, dst,
+            attr_count, constraint_count, avtab_count, filename_trans_count, permissive_copied ? 1 : 0);
+
+    return true;
 }
 
 // Access vector rules
@@ -904,32 +1260,54 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 {
     int ret;
     size_t len;
+    size_t actual_len;
+    size_t alloc_len;
     struct selinux_policy *new_pol;
     void *data;
     struct policy_file fp;
+    int attempt;
 
     len = old_pol->policydb.len;
-    data = vmalloc(len);
-    if (!data) {
-        pr_err("alloc policy len %ld\n", len);
-        ret = -ENOMEM;
-        goto out_free_data;
+    alloc_len = len;
+    pr_info("sepolicy: duplicating live policy len=%zu\n", len);
+
+    data = NULL;
+    for (attempt = 0; attempt < 4; attempt++) {
+        data = vmalloc(alloc_len);
+        if (!data) {
+            pr_err("alloc policy len %zu\n", alloc_len);
+            ret = -ENOMEM;
+            goto out_free_data;
+        }
+
+        fp.data = data;
+        fp.len = alloc_len;
+
+        ret = policydb_write(&old_pol->policydb, &fp);
+        if (!ret)
+            break;
+
+        kvfree(data);
+        data = NULL;
+
+        if (ret != -EINVAL || alloc_len > (SIZE_MAX >> 1)) {
+            pr_err("sepolicy: policydb_write: %d\n", ret);
+            goto out_free_data;
+        }
+
+        alloc_len <<= 1;
+        pr_warn("sepolicy: policydb_write buffer too small, retry with len=%zu\n", alloc_len);
     }
-
-    fp.data = data;
-    fp.len = len;
-
-    ret = policydb_write(&old_pol->policydb, &fp);
-    if (ret) {
-        pr_err("sepolicy: policydb_write: %d\n", ret);
+    if (ret)
         goto out_free_data;
-    }
 
+    actual_len = (size_t)((unsigned long)fp.data - (unsigned long)data);
+    pr_info("sepolicy: policydb_write complete len=%zu alloc_len=%zu actual_len=%zu\n", len, alloc_len, actual_len);
     // https://android-review.googlesource.com/c/kernel/common/+/3009995/11/security/selinux/ss/policydb.c
     // fixup config
     // 4*2+8+4
     static const size_t kConfigOff = 20;
-    if (len >= kConfigOff + sizeof(u32)) {
+    if (actual_len >= kConfigOff + sizeof(u32)) {
         u32 *config_ptr = (u32 *)((unsigned long)data + kConfigOff);
         pr_info("old config: %u\n", *config_ptr);
         if (old_pol->policydb.android_netlink_route) {
@@ -949,18 +1327,21 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
         pr_err("sepolicy: dup old pol\n");
         goto out_free_data;
     }
+    pr_info("sepolicy: selinux_policy header duplicated\n");
     memset(&new_pol->policydb, 0, sizeof(new_pol->policydb));
 
     // rewind fp
     fp.data = data;
-    fp.len = len;
+    fp.len = actual_len;
 
+    pr_info("sepolicy: policydb_read begin len=%zu\n", actual_len);
     ret = policydb_read(&new_pol->policydb, &fp);
     if (ret) {
         pr_err("sepolicy: policydb_read: %d\n", ret);
         goto out_free_policydb;
     }
-    new_pol->policydb.len = old_pol->policydb.len;
+    pr_info("sepolicy: policydb_read complete len=%zu\n", actual_len);
+    new_pol->policydb.len = actual_len;
     kvfree(data);
 
     return new_pol;
