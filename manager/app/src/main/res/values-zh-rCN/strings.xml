@@ -295,4 +295,6 @@
     <string name="webui_go_back">返回</string>
     <string name="webui_open_in_external">在外部打开</string>
     <string name="webui_external_link_no_app">未找到能打开此链接的应用</string>
+    <string name="settings_allow_webui_external_content">允许 WebUI 加载外部内容</string>
+    <string name="settings_allow_webui_external_content_summary">允许 WebUI 加载外部内容。这些内容也可以访问 WebUI 接口并可能造成安全问题</string>
 </resources>

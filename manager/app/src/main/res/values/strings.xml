@@ -301,4 +301,6 @@
     <string name="webui_go_back">Go Back</string>
     <string name="webui_open_in_external">Open in External</string>
     <string name="webui_external_link_no_app">No app found to open this link</string>
+    <string name="settings_allow_webui_external_content">Allow WebUI load external content</string>
+    <string name="settings_allow_webui_external_content_summary">Allow WebUI to load external content. This content can also access the WebUI interface and may cause security issues.</string>
 </resources>

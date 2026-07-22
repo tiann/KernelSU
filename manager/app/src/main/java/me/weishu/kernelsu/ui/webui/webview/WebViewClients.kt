@@ -12,6 +12,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewAssetLoader
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.util.AppIconCache
 import me.weishu.kernelsu.ui.util.withMainUserUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
@@ -28,6 +29,7 @@ internal fun createWebViewClient(
     dispatch: (WebUIIntent) -> Unit,
 ): WebViewClient {
     return object : WebViewClient() {
+        val allowExternalContent = SettingsRepositoryImpl().allowWebUiExternalContent
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
             val url = request.url
             if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
@@ -42,20 +44,22 @@ internal fun createWebViewClient(
                             "image/png", null, 200, "OK", mapOf("Access-Control-Allow-Origin" to "*"), java.io.ByteArrayInputStream(stream.toByteArray())
                         )
                     } else {
-                        val errorMsg = "No such package"
-                        val errorStream = java.io.ByteArrayInputStream(errorMsg.toByteArray(Charsets.UTF_8))
-                        return WebResourceResponse(
-                            "text/plain", "utf-8", 404, "Not Found", mapOf("Access-Control-Allow-Origin" to "*"), errorStream
-                        )
+                        return notFoundResponse("No such package")
                     }
                 }
             }
-            return webViewAssetLoader.shouldInterceptRequest(url)
+            if (isInternalUrl(url)) {
+                return webViewAssetLoader.shouldInterceptRequest(url)
+            }
+            if (request.isForMainFrame || !allowExternalContent) {
+                return blockedResponse()
+            }
+            return null
         }
 
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url
-            if (LOCAL_WEBVIEW_SCHEMES.any { url.scheme.equals(it, ignoreCase = true) } || isInternalUrl(url)) return false
+            if (isInternalUrl(url)) return false
             dispatch(WebUIIntent.ExternalLinkIntercepted(url.toString()))
             return true
         }
@@ -111,15 +115,23 @@ internal fun createWebChromeClient(
     }
 }
 
-internal val LOCAL_WEBVIEW_SCHEMES = setOf("about", "blob", "data")
-
 /**
  * Only keep navigation inside the WebView for the trusted WebUI host over HTTPS
  * or for local loopback endpoints used by modules.
  */
 internal fun isInternalUrl(url: Uri): Boolean {
+    val localSchemes = setOf("about", "blob", "data")
+    if (localSchemes.contains(url.scheme?.lowercase() ?: "")) return true
     val host = url.host ?: return false
     val isTrustedWebUi = host.equals(other = WEBUI_DOMAIN, ignoreCase = true) && url.scheme.equals(other = "https", ignoreCase = true)
     val isLoopback = host.equals(other = "localhost", ignoreCase = true) || host == "127.0.0.1" || host == "[::1]"
     return isTrustedWebUi || isLoopback
 }
+
+internal fun blockedResponse(msg: String = "") = WebResourceResponse(
+    "text/plain", "utf-8", 403, "Forbidden", emptyMap(), java.io.ByteArrayInputStream(msg.toByteArray())
+)
+
+internal fun notFoundResponse(msg: String = "") = WebResourceResponse(
+    "text/plain", "utf-8", 404, "Not Found", emptyMap(), java.io.ByteArrayInputStream(msg.toByteArray())
+)
