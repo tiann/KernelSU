@@ -30,11 +30,15 @@ data class KernelVersion(val major: Int, val patchLevel: Int, val subLevel: Int)
 
 fun parseKernelVersion(version: String): KernelVersion {
     val find = "(\\d+)\\.(\\d+)\\.(\\d+)".toRegex().find(version)
-    return if (find != null) {
-        KernelVersion(find.groupValues[1].toInt(), find.groupValues[2].toInt(), find.groupValues[3].toInt())
-    } else {
-        KernelVersion(-1, -1, -1)
+    if (find != null) {
+        val major = find.groupValues[1].toIntOrNull()
+        val patchLevel = find.groupValues[2].toIntOrNull()
+        val subLevel = find.groupValues[3].toIntOrNull()
+        if (major != null && patchLevel != null && subLevel != null) {
+            return KernelVersion(major, patchLevel, subLevel)
+        }
     }
+    return KernelVersion(-1, -1, -1)
 }
 
 fun getKernelVersion(): KernelVersion {
