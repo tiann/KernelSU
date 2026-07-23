@@ -21,6 +21,8 @@ fun ColorScheme.amoledBackground(amoled: Boolean): ColorScheme =
         surfaceContainerLowest = Color.Black,
         surfaceContainerLow = Color.Black,
         surfaceContainer = Color.Black,
+        surfaceContainerHigh = Color.Black,
+        surfaceContainerHighest = Color.Black,
     )
 
 @Composable
