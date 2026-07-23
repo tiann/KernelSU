@@ -112,6 +112,12 @@ int ksu_observer_init(void)
         return PTR_ERR(g);
 
     ret = watch_one_dir(&g_watch);
+    if (ret) {
+        pr_err("observer init failed: %d\n", ret);
+        fsnotify_put_group(g);
+        g = NULL;
+        return ret;
+    }
     pr_info("observer init done\n");
     return 0;
 }
