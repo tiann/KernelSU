@@ -222,9 +222,9 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
     regs->__PT_PARM1_REG = tmp_fd;
 
     {
-        long profile_ret = escape_with_root_profile();
+        int profile_ret = escape_with_root_profile();
         if (profile_ret) {
-            pr_err("escape_with_root_profile failed: %ld\n", profile_ret);
+            pr_err("escape_with_root_profile failed: %d\n", profile_ret);
         }
         ksu_sulog_emit_pending(pending_sucompat, profile_ret, GFP_KERNEL);
     }

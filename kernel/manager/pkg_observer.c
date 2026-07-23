@@ -115,6 +115,7 @@ int ksu_observer_init(void)
     if (ret) {
         pr_err("observer init failed: %d\n", ret);
         fsnotify_put_group(g);
+        g = NULL;
         return ret;
     }
     pr_info("observer init done\n");
