@@ -296,4 +296,11 @@
     <string name="nav_rail_collapse">Collapse navigation rail</string>
     <string name="settings_navigation_badge">Module badge</string>
     <string name="settings_navigation_badge_summary">Show the enabled module count on the navigation bar, or the pending update count in red</string>
+    <string name="webui_external_link_warning_title">External Link</string>
+    <string name="webui_external_link_warning_message">You are about to leave the module WebUI and open an external link:</string>
+    <string name="webui_go_back">Go Back</string>
+    <string name="webui_open_in_external">Open in External</string>
+    <string name="webui_external_link_no_app">No app found to open this link</string>
+    <string name="settings_allow_webui_external_content">Allow WebUI load external content</string>
+    <string name="settings_allow_webui_external_content_summary">Allow WebUI to load external content. This content can also access the WebUI interface and may cause security issues.</string>
 </resources>

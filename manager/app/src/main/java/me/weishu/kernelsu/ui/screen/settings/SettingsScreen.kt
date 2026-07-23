@@ -40,6 +40,7 @@ fun SettingPager(
         onSetAdbRootEnabled = viewModel::setAdbRootEnabled,
         onSetDefaultUmountModules = viewModel::setDefaultUmountModules,
         onSetEnableWebDebugging = viewModel::setEnableWebDebugging,
+        onSetAllowWebUiExternalContent = viewModel::setAllowWebUiExternalContent,
         onSetAutoJailbreak = viewModel::setAutoJailbreak,
         onOpenAbout = { navigator.push(Route.About) },
     )

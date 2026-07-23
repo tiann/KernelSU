@@ -89,6 +89,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getBoolean("enable_web_debugging", false)
         set(value) = prefs.edit { putBoolean("enable_web_debugging", value) }
 
+    override var allowWebUiExternalContent: Boolean
+        get() = prefs.getBoolean("allow_webui_external_content", false)
+        set(value) = prefs.edit { putBoolean("allow_webui_external_content", value) }
+
     override var moduleSortEnabledFirst: Boolean
         get() = prefs.getBoolean("module_sort_enabled_first", false)
         set(value) = prefs.edit { putBoolean("module_sort_enabled_first", value) }

@@ -22,6 +22,7 @@ data class SettingsUiState(
     val enableNavigationBadge: Boolean = true,
     val pageScale: Float = 1.0f,
     val enableWebDebugging: Boolean = false,
+    val allowWebUiExternalContent: Boolean = false,
 
     // Su Compat
     val suCompatStatus: String = "",
@@ -68,6 +69,7 @@ data class SettingsScreenActions(
     val onSetAdbRootEnabled: (Boolean) -> Unit,
     val onSetDefaultUmountModules: (Boolean) -> Unit,
     val onSetEnableWebDebugging: (Boolean) -> Unit,
+    val onSetAllowWebUiExternalContent: (Boolean) -> Unit,
     val onSetAutoJailbreak: (Boolean) -> Unit,
     val onOpenAbout: () -> Unit,
 )
