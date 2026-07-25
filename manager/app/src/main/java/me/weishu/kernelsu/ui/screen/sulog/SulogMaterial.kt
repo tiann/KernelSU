@@ -97,9 +97,9 @@ fun SulogScreenMaterial(
         localSearchText = state.searchText
     }
 
-    if (selectedEntry != null) {
+    selectedEntry?.let { entry ->
         SulogDetailDialog(
-            entry = selectedEntry!!,
+            entry = entry,
             onDismiss = { selectedEntry = null },
         )
     }

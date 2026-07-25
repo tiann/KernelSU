@@ -97,6 +97,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -170,11 +171,14 @@ fun ModulePagerMaterial(
     val searchListState = rememberLazyListState()
     val refreshTick = remember { mutableIntStateOf(0) }
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
+
+    // Track scroll direction to expand/collapse the FAB. State must live outside
+    // derivedStateOf so mutations are observable across recompositions.
+    var lastIndex by remember { mutableIntStateOf(0) }
+    var lastOffset by remember { mutableIntStateOf(0) }
+    var scrollDelta by remember { mutableFloatStateOf(0f) }
+    var expanded by remember { mutableStateOf(true) }
     val fabExpanded by remember {
-        var lastIndex = 0
-        var lastOffset = 0
-        var scrollDelta = 0f
-        var expanded = true
         derivedStateOf {
             val currentIndex = listState.firstVisibleItemIndex
             val currentOffset = listState.firstVisibleItemScrollOffset
