@@ -29,7 +29,6 @@ android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg", rev = "1
 rustix = { version = "1", features = [
     "all-apis",
 ] }
-android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 android_logger = { version = "0.15", default-features = false }
 zip = { version = "8",  features = [
     "deflate",
