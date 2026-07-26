@@ -166,7 +166,6 @@ fun ColorPaletteScreenMiuix(
                         onTabSelected = { index ->
                             actions.onSetThemeMode(index)
                         },
-                        height = 48.dp,
                     )
 
                     Card(

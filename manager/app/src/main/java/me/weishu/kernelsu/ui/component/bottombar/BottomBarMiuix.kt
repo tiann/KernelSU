@@ -46,7 +46,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun BottomBarMiuix(
     blurBackdrop: LayerBackdrop?,
     backdrop: Backdrop,
-    moduleBadge: ModuleBadgeState,
+    navigationBadge: NavigationBadgeState,
     modifier: Modifier,
 ) {
     val isManager = Natives.isManager
@@ -78,7 +78,7 @@ fun BottomBarMiuix(
                             onClick = {
                                 mainState.animateToPage(index)
                             },
-                            badge = moduleBadgeFor(index, moduleBadge),
+                            badge = navigationBadgeFor(index, navigationBadge),
                         )
                     }
                 }
@@ -108,7 +108,7 @@ fun BottomBarMiuix(
                 ) {
                     // Icon and label take LocalContentColor so the FloatingBottomBar backdrop copy
                     // can recolor them to the accent tone inside the indicator pill.
-                    val badge = moduleBadgeFor(index, moduleBadge, floating = true)
+                    val badge = navigationBadgeFor(index, navigationBadge, floating = true)
                     val icon: @Composable () -> Unit = {
                         Icon(
                             imageVector = item.icon,
@@ -144,28 +144,30 @@ enum class BottomBarDestination(
     Setting(R.string.settings, Icons.Rounded.Settings)
 }
 
-internal fun moduleBadgeFor(
+internal fun navigationBadgeFor(
     index: Int,
-    badge: ModuleBadgeState,
+    state: NavigationBadgeState,
     floating: Boolean = false,
 ): (@Composable () -> Unit)? {
-    if (index != BottomBarDestination.Module.ordinal) return null
-    // Pending updates take priority: default badge color (red) with the updatable count;
-    // otherwise the theme-colored badge shows the enabled count.
-    if (badge.updatableCount > 0) {
-        return {
-            Badge {
-                Text(badge.updatableCount.toString())
+    val badge = badgeFor(index, state) ?: return null
+    return when (badge.tone) {
+        BadgeTone.Alert -> {
+            {
+                Badge {
+                    Text(badge.count.toString())
+                }
             }
         }
-    }
-    if (badge.enabledCount <= 0) return null
-    return {
-        Badge(
-            containerColor = if (floating) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.primary,
-            contentColor = if (floating) MiuixTheme.colorScheme.onPrimaryContainer else MiuixTheme.colorScheme.onPrimary,
-        ) {
-            Text(badge.enabledCount.toString())
+
+        BadgeTone.Accent -> {
+            {
+                Badge(
+                    containerColor = if (floating) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.primary,
+                    contentColor = if (floating) MiuixTheme.colorScheme.onPrimaryContainer else MiuixTheme.colorScheme.onPrimary,
+                ) {
+                    Text(badge.count.toString())
+                }
+            }
         }
     }
 }

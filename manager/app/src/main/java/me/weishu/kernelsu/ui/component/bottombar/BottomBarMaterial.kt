@@ -32,7 +32,7 @@ import me.weishu.kernelsu.ui.LocalMainPagerState
 import me.weishu.kernelsu.ui.util.rootAvailable
 
 @Composable
-fun BottomBarMaterial(moduleBadge: ModuleBadgeState) {
+fun BottomBarMaterial(navigationBadge: NavigationBadgeState) {
     val isManager = Natives.isManager
     val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     val mainPagerState = LocalMainPagerState.current
@@ -65,7 +65,7 @@ fun BottomBarMaterial(moduleBadge: ModuleBadgeState) {
                     NavigationIconWithBadge(
                         icon = if (selected) selectedIcon else unselectedIcon,
                         contentDescription = stringResource(label),
-                        badge = if (index == BottomBarDestination.Module.ordinal) moduleBadge else null,
+                        badge = badgeFor(index, navigationBadge),
                     )
                 },
                 label = {
@@ -84,23 +84,21 @@ fun BottomBarMaterial(moduleBadge: ModuleBadgeState) {
 internal fun NavigationIconWithBadge(
     icon: ImageVector,
     contentDescription: String?,
-    badge: ModuleBadgeState?,
+    badge: NavBadge?,
 ) {
-    if (badge != null && (badge.updatableCount > 0 || badge.enabledCount > 0)) {
+    if (badge != null) {
         BadgedBox(
             badge = {
-                // Pending updates take priority: default badge color (red) with the updatable
-                // count; otherwise the theme-colored badge shows the enabled count.
-                if (badge.updatableCount > 0) {
-                    Badge {
-                        Text(badge.updatableCount.toString())
+                when (badge.tone) {
+                    BadgeTone.Alert -> Badge {
+                        Text(badge.count.toString())
                     }
-                } else {
-                    Badge(
+
+                    BadgeTone.Accent -> Badge(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ) {
-                        Text(badge.enabledCount.toString())
+                        Text(badge.count.toString())
                     }
                 }
             }
