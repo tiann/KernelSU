@@ -19,6 +19,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.util.shouldShowSplitPane
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import kotlin.math.abs
@@ -108,6 +109,11 @@ internal fun badgeFor(index: Int, state: NavigationBadgeState): NavBadge? = when
     }
 
     else -> null
+}
+
+@Composable
+fun useNavigationRail(enableFloatingBottomBar: Boolean): Boolean {
+    return shouldShowSplitPane() && !(LocalUiMode.current == UiMode.Miuix && enableFloatingBottomBar)
 }
 
 @Composable

@@ -36,8 +36,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,6 +58,7 @@ import me.weishu.kernelsu.ui.component.bottombar.MainPagerState
 import me.weishu.kernelsu.ui.component.bottombar.NavigationBadgeState
 import me.weishu.kernelsu.ui.component.bottombar.SideRail
 import me.weishu.kernelsu.ui.component.bottombar.rememberMainPagerState
+import me.weishu.kernelsu.ui.component.bottombar.useNavigationRail
 import me.weishu.kernelsu.ui.navigation3.IntentDispatcher
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
@@ -108,8 +107,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val isManager = Natives.isManager
-        if (isManager && !Natives.requireNewKernel()) install()
+        if (Natives.isManager && !Natives.requireNewKernel()) install()
 
         if (savedInstanceState == null) intent?.let { intentChannel.trySend(it) }
 
@@ -298,13 +296,7 @@ fun MainScreen(
 
     MainScreenBackHandler(mainPagerState, navController)
 
-    val windowInfo = LocalWindowInfo.current
-    val deviceDensity = LocalResources.current.displayMetrics.density
-    val widthDp = windowInfo.containerSize.width / deviceDensity
-    val heightDp = windowInfo.containerSize.height / deviceDensity
-    val showSplitPane = widthDp >= 840f ||
-            (widthDp >= 600f && heightDp / widthDp < 1.2f)
-    val useNavigationRail = showSplitPane && !(uiMode == UiMode.Miuix && enableFloatingBottomBar)
+    val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
 
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState
