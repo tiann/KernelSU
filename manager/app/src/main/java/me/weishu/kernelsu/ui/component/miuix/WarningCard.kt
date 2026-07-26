@@ -33,8 +33,8 @@ fun WarningCard(
         colors = CardDefaults.defaultColors(
             color = color ?: when {
                 isDynamicColor -> colorScheme.errorContainer
-                isInDarkTheme() -> Color(0XFF310808)
-                else -> Color(0xFFF8E2E2)
+                isInDarkTheme() -> colorScheme.errorContainer.copy(alpha = 0.3f)
+                else -> colorScheme.errorContainer
             }
         ),
         showIndication = onClick != null,
@@ -49,7 +49,7 @@ fun WarningCard(
         ) {
             Text(
                 text = message,
-                color = if (isDynamicColor) colorScheme.onErrorContainer else Color(0xFFF72727),
+                color = if (isDynamicColor) colorScheme.onErrorContainer else colorScheme.error,
                 fontSize = 14.sp
             )
             action?.invoke()
