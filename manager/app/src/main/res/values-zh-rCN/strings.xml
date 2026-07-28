@@ -288,6 +288,6 @@
     <string name="sulog_entry_title_dropped_events">丢弃的事件</string>
     <string name="nav_rail_expand">展开导航栏</string>
     <string name="nav_rail_collapse">收起导航栏</string>
-    <string name="settings_navigation_badge">模块角标</string>
-    <string name="settings_navigation_badge_summary">在导航栏显示已启用模块数量，有可更新模块时以红色显示可更新数量</string>
+    <string name="settings_navigation_badge">导航栏角标</string>
+    <string name="settings_navigation_badge_summary">在导航栏显示已授权应用和已启用模块数量</string>
 </resources>

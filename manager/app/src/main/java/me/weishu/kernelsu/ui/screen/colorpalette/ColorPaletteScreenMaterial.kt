@@ -15,7 +15,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.captionBar
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,6 +85,7 @@ import androidx.compose.ui.unit.dp
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.ui.component.bottombar.useNavigationRail
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
 import me.weishu.kernelsu.ui.component.material.ExpressiveToggleButton
 import me.weishu.kernelsu.ui.component.material.SegmentedColumn
@@ -357,6 +361,7 @@ private fun ThemePreviewCard(
     val screenWidth = configuration.screenWidthDp.toFloat()
     val screenHeight = configuration.screenHeightDp.toFloat()
     val screenRatio = screenWidth / screenHeight
+    val useRail = useNavigationRail(enableFloatingBottomBar = false)
 
     val colorScheme = rememberKernelSUColorScheme(
         seedColor = if (keyColor == 0) Color.Unspecified else Color(keyColor),
@@ -375,92 +380,95 @@ private fun ThemePreviewCard(
             shape = RoundedCornerShape(20.dp),
             border = BorderStroke(1.dp, color = colorScheme.outlineVariant)
         ) {
-            Column {
-                // top bar
-                Box(
-                    modifier = Modifier
-                        .height(48.dp)
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.TopStart
-                ) {
-                    Row(
+            val content: @Composable ColumnScope.() -> Unit = {
+                    // top bar
+                    Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(start = 12.dp, top = 16.dp, bottom = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(if (useRail) 36.dp else 48.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.TopStart
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.app_name),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colorScheme.onSurface
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.TopStart
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        TonalCard(
-                            containerColor = colorScheme.secondaryContainer,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            content = { }
-                        )
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(start = 12.dp, top = if (useRail) 8.dp else 16.dp, bottom = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TonalCard(
-                                containerColor = colorScheme.surfaceBright,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(32.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                content = { }
-                            )
-                            TonalCard(
-                                containerColor = colorScheme.surfaceBright,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(32.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                content = { }
+                            Text(
+                                text = stringResource(id = R.string.app_name),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colorScheme.onSurface
                             )
                         }
-                        TonalCard(
-                            containerColor = colorScheme.surfaceBright,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(96.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            content = { }
-                        )
                     }
-                }
 
-                // bottom bar
-                Surface(
-                    color = colorScheme.surfaceContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    BoxWithConstraints(modifier = Modifier.weight(1f)) {
+                        val showInfoCard = maxHeight >= 72.dp
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            TonalCard(
+                                containerColor = colorScheme.secondaryContainer,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                content = { }
+                            )
+                            if (showInfoCard) {
+                                TonalCard(
+                                    containerColor = colorScheme.surfaceBright,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    content = { }
+                                )
+                            }
+                        }
+                    }
+            }
+
+            if (useRail) {
+                Row {
+                    Surface(
+                        color = colorScheme.surfaceContainer,
+                        modifier = Modifier.fillMaxHeight()
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(36.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Icon(Icons.Filled.Home, null, tint = colorScheme.primary)
+                        }
+                    }
+                    Column(modifier = Modifier.weight(1f)) { content() }
+                }
+            } else {
+                Column {
+                    content()
+
+                    // bottom bar
+                    Surface(
+                        color = colorScheme.surfaceContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Filled.Home, null, tint = colorScheme.primary)
+                            }
                         }
                     }
                 }

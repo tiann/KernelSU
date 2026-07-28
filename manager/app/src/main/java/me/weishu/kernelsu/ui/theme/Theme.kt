@@ -130,7 +130,6 @@ fun isInDarkTheme(): Boolean {
     }
 }
 
-
 val LocalColorMode = staticCompositionLocalOf { 0 }
 
 val LocalEnableBlur = staticCompositionLocalOf { false }

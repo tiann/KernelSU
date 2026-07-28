@@ -19,6 +19,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.util.shouldShowSplitPane
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import kotlin.math.abs
@@ -86,31 +87,55 @@ fun rememberMainPagerState(
 }
 
 @Immutable
-data class ModuleBadgeState(
-    val enabledCount: Int = 0,
-    val updatableCount: Int = 0,
+data class NavigationBadgeState(
+    val superuserCount: Int = 0,
+    val moduleEnabledCount: Int = 0,
+    val moduleUpdatableCount: Int = 0,
 )
+
+internal enum class BadgeTone { Alert, Accent }
+
+@Immutable
+internal data class NavBadge(val count: Int, val tone: BadgeTone)
+
+internal fun badgeFor(index: Int, state: NavigationBadgeState): NavBadge? = when (index) {
+    BottomBarDestination.SuperUser.ordinal ->
+        state.superuserCount.takeIf { it > 0 }?.let { NavBadge(it, BadgeTone.Accent) }
+
+    BottomBarDestination.Module.ordinal -> when {
+        state.moduleUpdatableCount > 0 -> NavBadge(state.moduleUpdatableCount, BadgeTone.Alert)
+        state.moduleEnabledCount > 0 -> NavBadge(state.moduleEnabledCount, BadgeTone.Accent)
+        else -> null
+    }
+
+    else -> null
+}
+
+@Composable
+fun useNavigationRail(enableFloatingBottomBar: Boolean): Boolean {
+    return shouldShowSplitPane() && !(LocalUiMode.current == UiMode.Miuix && enableFloatingBottomBar)
+}
 
 @Composable
 fun BottomBar(
     blurBackdrop: LayerBackdrop?,
     backdrop: Backdrop,
-    moduleBadge: ModuleBadgeState,
+    navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
     when (LocalUiMode.current) {
-        UiMode.Miuix -> BottomBarMiuix(blurBackdrop, backdrop, moduleBadge, modifier)
-        UiMode.Material -> BottomBarMaterial(moduleBadge)
+        UiMode.Miuix -> BottomBarMiuix(blurBackdrop, backdrop, navigationBadge, modifier)
+        UiMode.Material -> BottomBarMaterial(navigationBadge)
     }
 }
 
 @Composable
 fun SideRail(
-    moduleBadge: ModuleBadgeState,
+    navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
     when (LocalUiMode.current) {
-        UiMode.Miuix -> NavigationRailMiuix(moduleBadge, modifier)
-        UiMode.Material -> NavigationRailMaterial(moduleBadge, modifier)
+        UiMode.Miuix -> NavigationRailMiuix(navigationBadge, modifier)
+        UiMode.Material -> NavigationRailMaterial(navigationBadge, modifier)
     }
 }
