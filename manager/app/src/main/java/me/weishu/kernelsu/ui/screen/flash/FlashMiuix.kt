@@ -93,7 +93,7 @@ fun FlashScreenMiuix(
         },
         floatingActionButton = {
             if (state.showRebootAction) {
-                val reboot = stringResource(id = R.string.reboot)
+                val reboot = stringResource(id = state.rebootLabelRes)
                 FloatingActionButton(
                     modifier = Modifier
                         .padding(

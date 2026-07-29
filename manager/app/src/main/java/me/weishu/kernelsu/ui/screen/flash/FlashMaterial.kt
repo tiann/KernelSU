@@ -94,7 +94,7 @@ fun FlashScreenMaterial(
                 SmallExtendedFloatingActionButton(
                     onClick = actions.onReboot,
                     icon = { Icon(Icons.Filled.Refresh, null) },
-                    text = { Text(stringResource(R.string.reboot)) },
+                    text = { Text(stringResource(state.rebootLabelRes)) },
                     modifier = Modifier.padding(
                         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
                                 WindowInsets.captionBar.asPaddingValues().calculateBottomPadding(),

@@ -1,5 +1,6 @@
 package me.weishu.kernelsu.ui.screen.flash
 
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 
 @Immutable
@@ -8,6 +9,7 @@ data class FlashUiState(
     val showRebootAction: Boolean,
     val flashingStatus: FlashingStatus,
     val showJailbreakWarning: Boolean,
+    @param:StringRes val rebootLabelRes: Int,
 )
 
 @Immutable
