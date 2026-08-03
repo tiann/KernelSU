@@ -297,15 +297,27 @@ jobs:
       - name: Repack and resign
         if: ${{ github.event_name == 'pull_request' || (github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')) || github.ref_type == 'tag' }}
         run: |
+          APK_NAME=$(basename manager/app/build/outputs/apk/release/*.apk)
+          APK_NAME=${APK_NAME%.apk}
           python3 repack_apk.py repack \
             -b release \
             -t release \
             -a arm64-v8a \
+            -K "$SIGN_KEYSTORE_FILE" \
+            -A "$SIGN_KEY_ALIAS" \
+            -P "$SIGN_KEYSTORE_PASSWORD" \
+            -S "$SIGN_KEY_PASSWORD" \
+            -n "$APK_NAME-arm64.apk" \
+            --strip
+          python3 repack_apk.py repack \
+            -b release \
+            -t release \
             -a x86_64 \
             -K "$SIGN_KEYSTORE_FILE" \
             -A "$SIGN_KEY_ALIAS" \
             -P "$SIGN_KEYSTORE_PASSWORD" \
             -S "$SIGN_KEY_PASSWORD" \
+            -n "$APK_NAME-x64.apk" \
             --strip
 
       - name: Upload build artifact
