@@ -593,7 +593,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                         println!("- {e}");
                     }
                 }
-                Ok(if let Some(image_path) = &image {
+                Ok(if ramdisk {
+                    bail!("please specify kmi manually")
+                } else if let Some(image_path) = &image {
                     println!(
                         "- Trying to auto detect KMI version for {}",
                         image_path.display()
