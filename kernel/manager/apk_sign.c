@@ -2,6 +2,7 @@
 #include <linux/fs.h>
 #include <linux/gfp.h>
 #include <linux/kernel.h>
+#include <linux/limits.h>
 #include <linux/slab.h>
 #include <linux/version.h>
 #ifdef CONFIG_KSU_DEBUG
@@ -71,59 +72,73 @@ static int ksu_sha256(const unsigned char *data, unsigned int datalen, unsigned 
     return ret;
 }
 
-static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset, unsigned expected_size,
+static bool read_exact(struct file *fp, void *buffer, size_t size, loff_t *pos, loff_t end)
+{
+    if (*pos < 0 || *pos > end || size > (size_t)(end - *pos))
+        return false;
+
+    return kernel_read(fp, buffer, size, pos) == (ssize_t)size;
+}
+
+static bool read_length_prefixed_end(struct file *fp, loff_t *pos, loff_t container_end, loff_t *value_end)
+{
+    u32 length;
+
+    if (!read_exact(fp, &length, sizeof(length), pos, container_end))
+        return false;
+    if (length > INT_MAX || length > (u64)(container_end - *pos))
+        return false;
+
+    *value_end = *pos + length;
+    return true;
+}
+
+static bool check_block(struct file *fp, loff_t *pos, loff_t block_end, unsigned expected_size,
                         const char *expected_sha256)
 {
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // signer-sequence length
-        return false;
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // signer length
-        return false;
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // signed data length
+    loff_t signers_end, signer_end, signed_data_end, digests_end, certificates_end;
+    u32 certificate_size;
+
+    // v2 block: signers sequence -> first signer -> signed data -> digests
+    if (!read_length_prefixed_end(fp, pos, block_end, &signers_end) ||
+        !read_length_prefixed_end(fp, pos, signers_end, &signer_end) ||
+        !read_length_prefixed_end(fp, pos, signer_end, &signed_data_end) ||
+        !read_length_prefixed_end(fp, pos, signed_data_end, &digests_end))
         return false;
 
-    *offset += 0x4 * 3;
-
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // digests-sequence length
+    *pos = digests_end;
+    if (!read_length_prefixed_end(fp, pos, signed_data_end, &certificates_end) ||
+        !read_exact(fp, &certificate_size, sizeof(certificate_size), pos, certificates_end))
         return false;
 
-    *pos += *size4;
-    *offset += 0x4 + *size4;
-
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // certificates length
+    if (certificate_size > INT_MAX || certificate_size > (u64)(certificates_end - *pos))
         return false;
-    if (kernel_read(fp, size4, 0x4, pos) != 0x4) // certificate length
-        return false;
-    *offset += 0x4 * 2;
-
-    if (*size4 == expected_size) {
-        *offset += *size4;
 
 #define CERT_MAX_LENGTH 1024
-        char cert[CERT_MAX_LENGTH];
-        if (*size4 > CERT_MAX_LENGTH) {
-            pr_info("cert length overlimit\n");
-            return false;
-        }
-        if (kernel_read(fp, cert, *size4, pos) != *size4) {
-            pr_info("read cert failed\n");
-            return false;
-        }
-        unsigned char digest[SHA256_DIGEST_SIZE];
-        if (IS_ERR(ksu_sha256(cert, *size4, digest))) {
-            pr_info("sha256 error\n");
-            return false;
-        }
+    if (certificate_size != expected_size)
+        return false;
 
-        char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
-        hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
-
-        bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
-        pr_info("sha256: %s, expected: %s\n", hash_str, expected_sha256);
-        if (strcmp(expected_sha256, hash_str) == 0) {
-            return true;
-        }
+    if (certificate_size > CERT_MAX_LENGTH) {
+        pr_info("cert length overlimit\n");
+        return false;
     }
-    return false;
+
+    char cert[CERT_MAX_LENGTH];
+    if (!read_exact(fp, cert, certificate_size, pos, certificates_end))
+        return false;
+
+    unsigned char digest[SHA256_DIGEST_SIZE];
+    if (ksu_sha256(cert, certificate_size, digest)) {
+        pr_info("sha256 error\n");
+        return false;
+    }
+
+    char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
+    hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
+
+    bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
+    pr_info("sha256: %s, expected: %s\n", hash_str, expected_sha256);
+    return strcmp(expected_sha256, hash_str) == 0;
 }
 
 struct zip_entry_header {
@@ -181,7 +196,7 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
     u32 size4;
     u64 size8, size_of_block;
 
-    loff_t pos;
+    loff_t pos, pairs_end;
 
     bool v2_signing_valid = false;
     int v2_signing_blocks = 0;
@@ -221,45 +236,47 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
     if (kernel_read(fp, &size4, 0x4, &pos) != 0x4) {
         goto clean;
     }
-    pos = size4 - 0x18;
+    if (size4 < 0x20)
+        goto clean;
 
-    if (kernel_read(fp, &size8, 0x8, &pos) != 0x8) {
+    pairs_end = (loff_t)size4 - 0x18;
+    pos = pairs_end;
+
+    if (!read_exact(fp, &size8, sizeof(size8), &pos, size4) || !read_exact(fp, buffer, sizeof(buffer) - 1, &pos, size4))
         goto clean;
-    }
-    if (kernel_read(fp, buffer, 0x10, &pos) != 0x10) {
-        goto clean;
-    }
     if (strcmp((char *)buffer, "APK Sig Block 42")) {
         goto clean;
     }
 
-    pos = size4 - (size8 + 0x8);
-    if (kernel_read(fp, &size_of_block, 0x8, &pos) != 0x8) {
+    if (size8 < 0x18 || size8 > INT_MAX - 0x8 || size8 > (u64)size4 - 0x8)
         goto clean;
-    }
+
+    pos = (loff_t)size4 - (loff_t)size8 - 0x8;
+    if (!read_exact(fp, &size_of_block, sizeof(size_of_block), &pos, pairs_end))
+        goto clean;
     if (size_of_block != size8) {
         goto clean;
     }
 
-    int loop_count = 0;
-    while (loop_count++ < 10) {
+    // Scan every length-prefixed pair, matching AOSP's signing block parser
+    // Each valid pair consumes an 8-byte length plus at least a 4-byte ID, so
+    // malformed entries fail below instead of spinning in place.
+    while (pos < pairs_end) {
         uint32_t id;
-        uint32_t offset;
-        if (kernel_read(fp, &size8, 0x8, &pos) != 0x8) { // sequence length
-            v2_signing_valid = false;
-            goto clean;
-        }
-        if (size8 == size_of_block) {
-            break;
-        }
-        if (kernel_read(fp, &id, 0x4, &pos) != 0x4) { // id
-            v2_signing_valid = false;
-            goto clean;
-        }
-        offset = 4;
+        loff_t pair_end;
+
+        if (!read_exact(fp, &size8, sizeof(size8), &pos, pairs_end))
+            goto invalid;
+        if (size8 < sizeof(id) || size8 > INT_MAX || size8 > (u64)(pairs_end - pos))
+            goto invalid;
+
+        pair_end = pos + (loff_t)size8;
+        if (!read_exact(fp, &id, sizeof(id), &pos, pair_end))
+            goto invalid;
+
         if (id == 0x7109871au) {
             v2_signing_blocks++;
-            v2_signing_valid = check_block(fp, &size4, &pos, &offset, expected_size, expected_sha256);
+            v2_signing_valid = check_block(fp, &pos, pair_end, expected_size, expected_sha256);
         } else if (id == 0xf05368c0u) {
             // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
             v3_signing_exist = true;
@@ -271,7 +288,7 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
             pr_info("Unknown id: 0x%08x\n", id);
 #endif
         }
-        pos += (size8 - offset);
+        pos = pair_end;
     }
 
     if (v2_signing_blocks != 1) {
@@ -289,6 +306,10 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
             return false;
         }
     }
+    goto clean;
+
+invalid:
+    v2_signing_valid = false;
 clean:
     filp_close(fp, 0);
 
