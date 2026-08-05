@@ -23,7 +23,7 @@ tempfile = "3"
 chrono = "0.4"
 regex-lite = "0.1"
 memmap2 = "0.9"
-android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg", rev = "153423f6310fd4ae187e32da48e97b9fc613b783" }
+android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg", rev = "150425b027c76ea104c82e408571651f2181b2c2" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 rustix = { version = "1", features = [
