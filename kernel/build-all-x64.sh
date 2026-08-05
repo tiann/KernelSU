@@ -19,9 +19,7 @@ export ARCH=x86_64
 export LLVM=1
 export LLVM_IAS=1
 
-#mv .ddk-version .ddk-version.bak 2> /dev/null || true
-
-for i in ${!KMIS[@]}; do
+for i in "${!KMIS[@]}"; do
     kmi=${KMIS[i]}
     skip=true
     for t in $TARGETS; do
@@ -40,11 +38,11 @@ for i in ${!KMIS[@]}; do
     
     ORIG_PATH="$PATH"
 
-    CLANG_PATH=$(realpath /opt/ddk/clang/$clangv/bin)
+    CLANG_PATH=$(realpath /opt/ddk/clang/"$clangv"/bin)
     NEW_PATH=$CLANG_PATH
 
     if [ "$rustv" != "none" ]; then
-        RUST_PATH=$(realpath /opt/ddk/rust/$rustv/bin)
+        RUST_PATH=$(realpath /opt/ddk/rust/"$rustv"/bin)
         NEW_PATH=$NEW_PATH:$RUST_PATH
     fi
     echo "$NEW_PATH"
@@ -56,13 +54,11 @@ for i in ${!KMIS[@]}; do
     MDIR=$(realpath .)
     KDIR=/opt/ddk/kdir-x64/$kmi
 
-    make -C $KDIR M=$ODIR src=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y
+    make -C "$KDIR" "M=$ODIR" "src=$MDIR" compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y
 
     export PATH="$ORIG_PATH"
     echo ""
 done
-
-#mv .ddk-version.bak .ddk-version 2> /dev/null || true
 
 echo "========== Final output =========="
 ls -l out-x64/*/kernelsu.ko
