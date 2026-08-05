@@ -506,7 +506,7 @@ pub struct BootPatchArgs {
     no_custom_rc: bool,
 
     #[cfg(not(target_os = "android"))]
-    #[arg(long, default_value = "x86_64")]
+    #[arg(long, default_value = "aarch64")]
     arch: String,
 
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
