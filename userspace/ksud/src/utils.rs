@@ -1,7 +1,8 @@
 use anyhow::{Context, Error, Ok, Result, bail};
-use rustix::fs::{Mode, OFlags, open};
+use rustix::fs::{Mode, OFlags, chown, open};
 use rustix::process::setpgid;
 use rustix::stdio::{dup2_stderr, dup2_stdin, dup2_stdout};
+use rustix::thread::{Gid, Uid};
 use std::{
     fs::{File, OpenOptions, create_dir_all, remove_file, write},
     io::{
@@ -190,15 +191,42 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Result<()> {
+pub fn stage_daemon() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
-    let _ = std::fs::remove_file(defs::DAEMON_PATH);
-    std::fs::copy(
-        // We should use /proc/self/exe, DO NOT resolve the real path
-        // So that if someone execute /data/adb/ksud install, ksud won't be removed unexpectedly
-        "/proc/self/exe",
-        defs::DAEMON_PATH,
-    )?;
+
+    let current_exe = std::env::current_exe().with_context(|| "Failed to get self exe path")?;
+    if current_exe == Path::new(defs::DAEMON_PATH) {
+        return Ok(());
+    }
+
+    let daemon = std::fs::read(&current_exe)
+        .with_context(|| format!("Failed to read {}", current_exe.display()))?;
+    std::fs::write(defs::DAEMON_PATH, daemon)
+        .with_context(|| format!("Failed to write {}", defs::DAEMON_PATH))?;
+    #[cfg(unix)]
+    set_permissions(defs::DAEMON_PATH, Permissions::from_mode(0o755))?;
+
+    Ok(())
+}
+
+pub fn stage_daemon_from(staged_exe: impl AsRef<Path>) -> Result<()> {
+    ensure_dir_exists(defs::ADB_DIR)?;
+
+    std::fs::rename(staged_exe.as_ref(), defs::DAEMON_PATH).with_context(|| {
+        format!(
+            "Failed to rename {} to {}",
+            staged_exe.as_ref().display(),
+            defs::DAEMON_PATH
+        )
+    })?;
+    chown(defs::DAEMON_PATH, Some(Uid::ROOT), Some(Gid::ROOT))?;
+    #[cfg(unix)]
+    set_permissions(defs::DAEMON_PATH, Permissions::from_mode(0o755))?;
+
+    Ok(())
+}
+
+pub fn finish_install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Result<()> {
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::KSU_CON)?;
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
@@ -234,6 +262,11 @@ pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Resul
     }
 
     Ok(())
+}
+
+pub fn install(libadbroot: Option<PathBuf>, data_path: Option<PathBuf>) -> Result<()> {
+    stage_daemon()?;
+    finish_install(libadbroot, data_path)
 }
 
 pub fn uninstall(package_name: &str) -> Result<()> {
@@ -278,10 +311,6 @@ pub fn daemonize_with<F: FnOnce() -> Result<()>>(use_init_pgrp: bool, configure:
         unsafe { libc::_exit(0) }
     }
     Ok(())
-}
-
-pub fn daemonize(use_init_pgrp: bool) -> Result<()> {
-    daemonize_with(use_init_pgrp, || Ok(()))
 }
 
 pub fn create_daemon(use_init_pgrp: bool) -> Result<bool> {
