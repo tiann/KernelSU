@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.weishu.kernelsu.KernelVersion
+import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.WarningLevel
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -111,7 +112,7 @@ fun HomePagerMiuix(
             ) {
                 item {
                     Column(
-                        modifier = Modifier.padding(vertical = 12.dp),
+                        modifier = Modifier.padding(top = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -158,7 +159,7 @@ fun HomePagerMiuix(
                                     stringResource(
                                         id = R.string.require_kernel_version,
                                         state.ksuVersion ?: 0,
-                                        me.weishu.kernelsu.Natives.MINIMAL_SUPPORTED_KERNEL
+                                        Natives.MINIMAL_SUPPORTED_KERNEL
                                     )
                                 )
                             }
@@ -173,8 +174,8 @@ fun HomePagerMiuix(
                         InfoCard(systemInfo = state.systemInfo)
                         DonateCard(onOpenUrl = actions.onOpenUrl)
                         LearnMoreCard(onOpenUrl = actions.onOpenUrl)
+                        Spacer(Modifier.height(bottomInnerPadding))
                     }
-                    Spacer(Modifier.height(bottomInnerPadding))
                 }
             }
         }
@@ -325,7 +326,10 @@ private fun StatusCard(
                                     )
                                     Spacer(Modifier.height(1.dp))
                                     Text(
-                                        text = stringResource(R.string.home_working_version, "${state.ksuVersion}-${state.kernelUAPIVersion}"),
+                                        text = stringResource(
+                                            R.string.home_working_version,
+                                            "${state.ksuVersion}-${state.kernelUAPIVersion}"
+                                        ),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium,
                                     )
