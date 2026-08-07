@@ -13,6 +13,7 @@
 #include <linux/uidgid.h>
 
 #include "policy/allowlist.h"
+#include "policy/app_profile.h"
 #include "hook/setuid_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
@@ -24,6 +25,9 @@
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {
     // we rely on the fact that zygote always call setresuid(3) with same uids
+
+    if (test_thread_flag(TIF_KSU_DISABLE_KSU))
+        return 0;
 
     pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
 

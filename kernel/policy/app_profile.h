@@ -4,6 +4,7 @@
 #include "uapi/app_profile.h"
 
 #define TIF_KSU_DISABLE_ESCAPE_WITH_ROOT 63
+#define TIF_KSU_DISABLE_KSU 62
 
 // Escalate current process to root with the appropriate profile
 int escape_with_root_profile(void);
