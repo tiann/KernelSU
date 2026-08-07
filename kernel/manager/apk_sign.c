@@ -192,11 +192,11 @@ static bool has_v1_signature_file(struct file *fp)
 
 static __always_inline bool check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
 {
-    unsigned char buffer[0x11] = { 0 };
-    u32 size4;
-    u64 size8, size_of_block;
+    unsigned char buffer[0x10] = { 0 };
+    u32 cd_offset;
+    u64 size_of_block, size_of_block_at_head;
 
-    loff_t pos, pairs_end;
+    loff_t pos, pairs_end, file_size;
 
     bool v2_signing_valid = false;
     int v2_signing_blocks = 0;
@@ -213,15 +213,22 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
     // disable inotify for this file
     fp->f_mode |= FMODE_NONOTIFY;
 
+    file_size = generic_file_llseek(fp, 0, SEEK_END);
+    if (file_size < 0)
+        goto clean;
+
     // https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
     for (i = 0;; ++i) {
-        unsigned short n;
-        pos = generic_file_llseek(fp, -i - 2, SEEK_END);
-        kernel_read(fp, &n, 2, &pos);
-        if (n == i) {
+        unsigned short comment_size;
+        u32 magic;
+        pos = file_size - i - 2;
+        if (!read_exact(fp, &comment_size, sizeof(comment_size), &pos, file_size))
+            goto clean;
+        if (comment_size == i) {
             pos -= 22;
-            kernel_read(fp, &size4, 4, &pos);
-            if ((size4 ^ 0xcafebabeu) == 0xccfbf1eeu) {
+            if (!read_exact(fp, &magic, sizeof(magic), &pos, file_size))
+                goto clean;
+            if (magic == 0x06054b50) {
                 break;
             }
         }
@@ -232,45 +239,45 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
     }
 
     pos += 12;
-    // offset
-    if (kernel_read(fp, &size4, 0x4, &pos) != 0x4) {
+    // offset of central directory
+    if (!read_exact(fp, &cd_offset, sizeof(cd_offset), &pos, file_size))
         goto clean;
-    }
-    if (size4 < 0x20)
+    if (cd_offset < 0x20)
         goto clean;
 
-    pairs_end = (loff_t)size4 - 0x18;
+    pairs_end = (loff_t)cd_offset - 0x18;
     pos = pairs_end;
 
-    if (!read_exact(fp, &size8, sizeof(size8), &pos, size4) || !read_exact(fp, buffer, sizeof(buffer) - 1, &pos, size4))
+    if (!read_exact(fp, &size_of_block, sizeof(size_of_block), &pos, cd_offset))
         goto clean;
-    if (strcmp((char *)buffer, "APK Sig Block 42")) {
+    if (!read_exact(fp, buffer, sizeof(buffer), &pos, cd_offset))
         goto clean;
-    }
-
-    if (size8 < 0x18 || size8 > INT_MAX - 0x8 || size8 > (u64)size4 - 0x8)
+    if (memcmp((char *)buffer, "APK Sig Block 42", sizeof(buffer)))
         goto clean;
 
-    pos = (loff_t)size4 - (loff_t)size8 - 0x8;
-    if (!read_exact(fp, &size_of_block, sizeof(size_of_block), &pos, pairs_end))
+    if (size_of_block < 0x18 || size_of_block > INT_MAX - 0x8 || size_of_block > (u64)cd_offset - 0x8)
         goto clean;
-    if (size_of_block != size8) {
+
+    pos = (loff_t)cd_offset - (loff_t)size_of_block - 0x8;
+    if (!read_exact(fp, &size_of_block_at_head, sizeof(size_of_block_at_head), &pos, pairs_end))
         goto clean;
-    }
+    if (size_of_block_at_head != size_of_block)
+        goto clean;
 
     // Scan every length-prefixed pair, matching AOSP's signing block parser
     // Each valid pair consumes an 8-byte length plus at least a 4-byte ID, so
     // malformed entries fail below instead of spinning in place.
     while (pos < pairs_end) {
         uint32_t id;
+        u64 size_of_pair;
         loff_t pair_end;
 
-        if (!read_exact(fp, &size8, sizeof(size8), &pos, pairs_end))
+        if (!read_exact(fp, &size_of_pair, sizeof(size_of_pair), &pos, pairs_end))
             goto invalid;
-        if (size8 < sizeof(id) || size8 > INT_MAX || size8 > (u64)(pairs_end - pos))
+        if (size_of_pair < sizeof(id) || size_of_pair > INT_MAX || size_of_pair > (u64)(pairs_end - pos))
             goto invalid;
 
-        pair_end = pos + (loff_t)size8;
+        pair_end = pos + (loff_t)size_of_pair;
         if (!read_exact(fp, &id, sizeof(id), &pos, pair_end))
             goto invalid;
 
@@ -302,8 +309,7 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
         int has_v1_signing = has_v1_signature_file(fp);
         if (has_v1_signing) {
             pr_err("Unexpected v1 signature scheme found!\n");
-            filp_close(fp, 0);
-            return false;
+            goto invalid;
         }
     }
     goto clean;
@@ -313,10 +319,8 @@ invalid:
 clean:
     filp_close(fp, 0);
 
-    if (v3_signing_exist || v3_1_signing_exist) {
-#ifdef CONFIG_KSU_DEBUG
+    if (v2_signing_valid && (v3_signing_exist || v3_1_signing_exist)) {
         pr_err("Unexpected v3 signature scheme found!\n");
-#endif
         return false;
     }
 
