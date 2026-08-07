@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.ElectricalServices
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.FolderDelete
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.RemoveCircle
@@ -277,6 +278,15 @@ fun SettingPagerMaterial(
                                 summary = stringResource(id = R.string.enable_web_debugging_summary),
                                 checked = uiState.enableWebDebugging,
                                 onCheckedChange = actions.onSetEnableWebDebugging
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.Language,
+                                title = stringResource(id = R.string.settings_allow_webui_external_content),
+                                summary = stringResource(id = R.string.settings_allow_webui_external_content_summary),
+                                checked = uiState.allowWebUiExternalContent,
+                                onCheckedChange = actions.onSetAllowWebUiExternalContent
                             )
                         },
                         {
