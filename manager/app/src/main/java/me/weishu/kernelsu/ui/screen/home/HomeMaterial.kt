@@ -291,16 +291,16 @@ private fun StatusCard(
                             Spacer(Modifier.width(8.dp))
                             StatusTag(
                                 label = stringResource(id = R.string.safe_mode),
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                backgroundColor = MaterialTheme.colorScheme.secondaryContainer
                             )
                         }
                         if (ksuActive && state.isLateLoadMode) {
                             Spacer(Modifier.width(8.dp))
                             StatusTag(
                                 label = stringResource(id = R.string.jailbreak_mode),
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                backgroundColor = MaterialTheme.colorScheme.secondaryContainer
                             )
                         }
                     }
@@ -391,7 +391,7 @@ private fun InfoCard(systemInfo: SystemInfo) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 12.dp)
+                .padding(all = 16.dp)
         ) {
             @Composable
             fun InfoCardItem(label: String, content: String) {
