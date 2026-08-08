@@ -143,7 +143,7 @@ pub fn getprop(name: &str) -> Option<String> {
         __system_property_read_callback(
             property_info,
             property_read_callback,
-            std::ptr::from_mut(&mut value).cast(),
+            std::ptr::addr_of_mut!(value).cast(),
         );
     }
     value
