@@ -1,4 +1,5 @@
 #include "feature/selinux_hide.h"
+#include "hook/syscall_event_bridge.h"
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
@@ -31,6 +32,7 @@ void on_post_fs_data(void)
     // Sanity check for safe mode only needs early-boot input samples.
     ksu_stop_input_hook_runtime();
     ksu_selinux_hide_handle_post_fs_data();
+    ksu_stop_ksud_execve_hook();
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
