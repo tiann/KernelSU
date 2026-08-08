@@ -299,8 +299,8 @@ bool ksu_uid_should_umount(uid_t uid)
         return false;
     }
     if (unlikely(uid == WEBVIEW_ZYGOTE_UID)) {
-        // we should not umount for webview zygote
-        return false;
+        // umount due to active exploit
+        return true;
     }
 #ifdef CONFIG_KSU_DISABLE_POLICY
     return !__ksu_is_allow_uid(uid);

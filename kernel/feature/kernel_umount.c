@@ -87,10 +87,10 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     // 1. Normal app: zygote -> appuid
     // 2. Isolated process forked from zygote: zygote -> isolated_process
     // 3. App zygote forked from zygote: zygote -> appuid
-    // 4. Webview zygote forked from zygote: zygote -> WEBVIEW_ZYGOTE_UID (no need to handle, app cannot run custom code)
+    // 4. Webview zygote forked from zygote: zygote -> webview_zygote (unconditionally handle due to exploit)
     // 5. Isolated process forked from app zygote: appuid -> isolated_process (already handled by 3)
-    // 6. Isolated process forked from webview zygote (no need to handle, app cannot run custom code)
-    if (!is_appuid(new_uid) && !is_isolated_process(new_uid)) {
+    // 6. Isolated process forked from webview zygote (already handled by 4)
+    if (!is_appuid(new_uid) && new_uid != WEBVIEW_ZYGOTE_UID && !is_isolated_process(new_uid)) {
         return 0;
     }
 
