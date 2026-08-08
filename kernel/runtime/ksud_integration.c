@@ -148,9 +148,6 @@ fail:
 
 void ksu_handle_execveat_ksud(const char *path, struct user_arg_ptr *argv)
 {
-    static const char app_process[] = "/system/bin/app_process";
-    static bool first_zygote = true;
-
     /* This applies to versions Android 10+ */
     static const char system_bin_init[] = "/system/bin/init";
     static bool init_second_stage_executed = false;
@@ -167,15 +164,24 @@ void ksu_handle_execveat_ksud(const char *path, struct user_arg_ptr *argv)
             init_second_stage_executed = true;
         }
     }
+}
 
-    if (unlikely(first_zygote && !memcmp(path, app_process, sizeof(app_process) - 1) && argv)) {
-        char buf[16];
-        if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
-            pr_info("exec zygote, /data prepared, second_stage: %d\n", init_second_stage_executed);
-            on_post_fs_data();
-            first_zygote = false;
-            ksu_stop_ksud_execve_hook();
-        }
+// https://cs.android.com/android/platform/superproject/+/android-latest-release:system/core/init/service.cpp;l=665-669;drc=23c1f7a9675f769eca38c6457561e646427cd83c
+// When init failed to stat /data/adb/ksud (this often happens when first boot), we need to trigger on_post_fs_data
+// TODO: restorecon may also stat this file
+void ksu_handle_stat_ksud(long ret, const struct pt_regs *regs)
+{
+    if (current->pid != 1 || ret != -ENOENT)
+        return;
+
+    static const char ksud[] = "/data/adb/ksud";
+    char buf[sizeof(ksud) + 1];
+    memset(buf, 0, sizeof(buf));
+    if (strncpy_from_user(buf, PT_REGS_PARM2(regs), sizeof(ksud)) < 0)
+        return;
+    if (memcmp(buf, ksud, sizeof(ksud)) == 0) {
+        pr_info("first stat /data/adb/ksud failed: %ld, run on_post_fs_data fallback\n", ret);
+        on_post_fs_data();
     }
 }
 

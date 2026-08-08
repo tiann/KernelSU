@@ -9,5 +9,6 @@ long ksu_hook_execve(int orig_nr, const struct pt_regs *regs);
 long ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs);
 
 void ksu_stop_ksud_execve_hook(void);
+void ksu_handle_stat_ksud(long ret, const struct pt_regs *regs);
 
 #endif // __KSU_H_SYSCALL_EVENT_BRIDGE

@@ -48,12 +48,27 @@ static int ksu_handle_init_mark_tracker(const char __user **filename_user)
     return 0;
 }
 
+DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
+
+void ksu_stop_ksud_execve_hook()
+{
+    static_branch_disable(&ksud_execve_key);
+}
+
 long __nocfi ksu_hook_newfstatat(int orig_nr, const struct pt_regs *regs)
 {
-    if (!ksu_su_compat_enabled)
-        return ksu_syscall_table[orig_nr](regs);
+    long ret;
 
-    return ksu_handle_stat_sucompat(orig_nr, (struct pt_regs *)regs);
+    if (ksu_su_compat_enabled) {
+        ret = ksu_handle_stat_sucompat(orig_nr, (struct pt_regs *)regs);
+    } else {
+        ret = ksu_syscall_table[orig_nr](regs);
+    }
+
+    if (static_branch_unlikely(&ksud_execve_key))
+        ksu_handle_stat_ksud(ret, regs);
+
+    return ret;
 }
 
 long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
@@ -62,13 +77,6 @@ long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
         return ksu_syscall_table[orig_nr](regs);
 
     return ksu_handle_faccessat_sucompat(orig_nr, (struct pt_regs *)regs);
-}
-
-DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
-
-void ksu_stop_ksud_execve_hook()
-{
-    static_branch_disable(&ksud_execve_key);
 }
 
 long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
