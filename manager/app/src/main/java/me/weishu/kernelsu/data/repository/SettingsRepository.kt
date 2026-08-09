@@ -37,6 +37,10 @@ interface SettingsRepository {
     fun isKernelUmountEnabled(): Boolean
     fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
+    suspend fun getWebViewZygoteUmountStatus(): String
+    fun isWebViewZygoteUmountEnabled(): Boolean
+    fun setWebViewZygoteUmountEnabled(enabled: Boolean): Boolean
+
     suspend fun getSelinuxHideStatus(): String
     fun isSelinuxHideEnabled(): Boolean
     fun setSelinuxHideEnabled(enabled: Boolean): Int
