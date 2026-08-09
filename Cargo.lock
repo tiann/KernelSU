@@ -59,12 +59,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "android-properties"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc7eb209b1518d6bb87b283c20095f5228ecda460da70b44f0802523dea6da04"
-
-[[package]]
 name = "android_log-sys"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1002,7 +996,6 @@ version = "0.1.0"
 dependencies = [
  "adb_client",
  "android-bootimg",
- "android-properties",
  "android_logger",
  "anyhow",
  "base16ct",
