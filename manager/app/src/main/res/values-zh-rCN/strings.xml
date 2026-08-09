@@ -169,6 +169,8 @@
     <string name="settings_sucompat_summary">允许通过 /system/bin/su 获取 Root 权限</string>
     <string name="settings_kernel_umount">卸载模块（内核级）</string>
     <string name="settings_kernel_umount_summary">在内核给需要的应用卸载模块</string>
+    <string name="settings_webview_zygote_umount">卸载 WebView Zygote 模块</string>
+    <string name="settings_webview_zygote_umount_summary">防止 WebView 隔离进程泄露模块挂载信息；可能导致 WebView 字体模块失效，重启后生效</string>
     <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
     <string name="confirm">确认</string>
     <string name="processing">处理中…</string>

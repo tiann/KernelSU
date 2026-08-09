@@ -162,6 +162,13 @@ class SettingsRepositoryImpl : SettingsRepository {
 
     override fun setKernelUmountEnabled(enabled: Boolean): Boolean = Natives.setKernelUmountEnabled(enabled)
 
+    override suspend fun getWebViewZygoteUmountStatus(): String = getFeatureStatus("webview_zygote_umount")
+
+    override fun isWebViewZygoteUmountEnabled(): Boolean = Natives.isWebViewZygoteUmountEnabled()
+
+    override fun setWebViewZygoteUmountEnabled(enabled: Boolean): Boolean =
+        Natives.setWebViewZygoteUmountEnabled(enabled)
+
     override suspend fun getSelinuxHideStatus(): String = getFeatureStatus("selinux_hide")
 
     override fun isSelinuxHideEnabled(): Boolean = Natives.isSelinuxHideEnabled()

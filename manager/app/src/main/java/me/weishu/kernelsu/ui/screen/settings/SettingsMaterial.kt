@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.ElectricalServices
 import androidx.compose.material.icons.filled.Fence
 import androidx.compose.material.icons.filled.FolderDelete
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.RemoveCircle
@@ -208,6 +209,21 @@ fun SettingPagerMaterial(
                                 enabled = uiState.kernelUmountStatus == "supported",
                                 checked = uiState.isKernelUmountEnabled,
                                 onCheckedChange = actions.onSetKernelUmountEnabled
+                            )
+                        },
+                        {
+                            val webViewUmountSummary = when (uiState.webViewZygoteUmountStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_webview_zygote_umount_summary)
+                            }
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.Language,
+                                title = stringResource(id = R.string.settings_webview_zygote_umount),
+                                summary = webViewUmountSummary,
+                                enabled = uiState.webViewZygoteUmountStatus == "supported",
+                                checked = uiState.isWebViewZygoteUmountEnabled,
+                                onCheckedChange = actions.onSetWebViewZygoteUmountEnabled
                             )
                         },
                         {
