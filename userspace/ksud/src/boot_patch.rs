@@ -328,7 +328,7 @@ fn map_file(file: &Path) -> Result<Mmap> {
     Ok(mmap)
 }
 
-fn parse_kmi(buffer: &[u8]) -> Result<String> {
+pub fn parse_kmi(buffer: &[u8]) -> Result<String> {
     let re = Regex::new(r"(\d+\.\d+)(?:\S+)?(android\d+)").context("Failed to compile regex")?;
     buffer
         .windows(4)
