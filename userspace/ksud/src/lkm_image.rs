@@ -15,6 +15,7 @@ use android_bootimg::parser::BootImage;
 use android_bootimg::patcher::BootImagePatchOption;
 use anyhow::{Context, Result, anyhow, bail, ensure};
 
+use crate::lkm_image_btf::{KernelBtf, find_btf_candidates};
 use crate::{assets, boot_patch};
 
 // Image, capsule, ELF, and kallsyms wire constants.
@@ -59,6 +60,8 @@ const KALLSYMS_MIN_MARKERS: usize = 8;
 const KALLSYMS_MAX_MARKERS: usize = 4096;
 const TEXT_CAVE_ALIGNMENT: usize = 16;
 const TEXT_CAVE_PREFERRED_ALIGNMENT: usize = 4096;
+const MINIMUM_LOAD_INFO_STORAGE_SIZE: u64 = 256;
+const MAXIMUM_LOAD_INFO_STORAGE_SIZE: u64 = 4096;
 const BOOTSTRAP_OBJECT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/lkm_image_bootstrap.o"));
 
 // CLI and top-level result types.
@@ -352,51 +355,105 @@ struct RecoveredKallsyms {
     count: usize,
 }
 
+#[derive(Debug)]
+struct RecoveredKernelMetadata {
+    kallsyms: RecoveredKallsyms,
+    btf: Option<KernelBtf>,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct GkiAbi {
-    load_info_size: u64,
+    load_info_structure_size: Option<u64>,
+    load_info_storage_size: u64,
     load_info_hdr_offset: u64,
     load_info_len_offset: u64,
     cap_sys_module: u64,
     loading_module_id: u64,
+    loading_module_from_btf: bool,
     gfp_kernel: u64,
 }
 
 const GKI_ABI: GkiAbi = GkiAbi {
-    load_info_size: 256,
+    load_info_structure_size: None,
+    load_info_storage_size: MINIMUM_LOAD_INFO_STORAGE_SIZE,
     load_info_hdr_offset: 16,
     load_info_len_offset: 24,
     cap_sys_module: 16,
     loading_module_id: 2,
+    loading_module_from_btf: false,
     gfp_kernel: 0xcc0,
 };
 
 impl GkiAbi {
+    fn apply_btf(mut self, btf: &KernelBtf) -> Result<Self> {
+        if let Some(layout) = btf.load_info {
+            self.load_info_structure_size = Some(layout.structure_size);
+            self.load_info_storage_size = align_up_u64(
+                layout.structure_size.max(MINIMUM_LOAD_INFO_STORAGE_SIZE),
+                16,
+            )
+            .context("BTF load_info storage size overflow")?;
+            self.load_info_hdr_offset = layout.hdr_offset;
+            self.load_info_len_offset = layout.len_offset;
+        }
+        if let Some(loading_module_id) = btf.loading_module_id {
+            self.loading_module_id = loading_module_id;
+            self.loading_module_from_btf = true;
+        }
+        self.validate()?;
+        Ok(self)
+    }
+
     fn validate(self) -> Result<()> {
         ensure!(
-            self.load_info_size > 0
-                && self.load_info_size <= 4096
-                && self.load_info_size.is_multiple_of(16),
-            "invalid built-in GKI load_info size"
+            self.load_info_storage_size > 0
+                && self.load_info_storage_size <= MAXIMUM_LOAD_INFO_STORAGE_SIZE
+                && self.load_info_storage_size.is_multiple_of(16),
+            "invalid GKI load_info storage size"
+        );
+        let layout_size = self
+            .load_info_structure_size
+            .unwrap_or(self.load_info_storage_size);
+        ensure!(
+            layout_size > 0 && layout_size <= self.load_info_storage_size,
+            "invalid GKI load_info structure size"
         );
         for (field, offset) in [
             ("hdr_offset", self.load_info_hdr_offset),
             ("len_offset", self.load_info_len_offset),
         ] {
             ensure!(
-                offset.is_multiple_of(8) && offset.saturating_add(8) <= self.load_info_size,
-                "invalid built-in GKI load_info {field}"
+                offset.is_multiple_of(8) && offset.saturating_add(8) <= layout_size,
+                "invalid GKI load_info {field}"
             );
         }
+        ensure!(
+            u32::try_from(self.loading_module_id).is_ok(),
+            "GKI LOADING_MODULE does not fit u32"
+        );
         Ok(())
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct BtfReport {
+    file_offset: usize,
+    size: usize,
+    type_count: usize,
 }
 
 #[derive(Debug)]
 struct ImageInjectionReport {
     kernel_release: String,
+    btf: Option<BtfReport>,
     kallsyms_layout: &'static str,
     kallsyms_count: usize,
+    load_info_structure_size: Option<u64>,
+    load_info_storage_size: u64,
+    load_info_hdr_offset: u64,
+    load_info_len_offset: u64,
+    loading_module_id: u64,
+    loading_module_from_btf: bool,
     code_offset: usize,
     code_size: usize,
     memblock_call_offset: usize,
@@ -421,6 +478,13 @@ fn normalize_symbol(name: &str) -> &str {
 
 const fn align_up(value: usize, alignment: usize) -> usize {
     (value + alignment - 1) & !(alignment - 1)
+}
+
+const fn align_up_u64(value: u64, alignment: u64) -> Option<u64> {
+    match value.checked_add(alignment - 1) {
+        Some(value) => Some(value & !(alignment - 1)),
+        None => None,
+    }
 }
 
 fn get_slice(data: &[u8], offset: usize, size: usize) -> Result<&[u8]> {
@@ -543,7 +607,7 @@ fn parse_kallsyms_token_table_at(
     Some((tokens, token_index_offset))
 }
 
-fn find_kallsyms_token_table(image: &[u8]) -> Result<(Vec<Vec<u8>>, usize, usize)> {
+fn find_kallsyms_token_tables(image: &[u8]) -> Vec<(Vec<Vec<u8>>, usize, usize)> {
     let mut digit_tokens = Vec::with_capacity(20);
     for value in b'0'..=b'9' {
         digit_tokens.extend_from_slice(&[value, 0]);
@@ -568,12 +632,7 @@ fn find_kallsyms_token_table(image: &[u8]) -> Result<(Vec<Vec<u8>>, usize, usize
         }
     }
 
-    ensure!(
-        candidates.len() == 1,
-        "cannot uniquely recover kallsyms_token_table from ARM64 Image ({} candidates)",
-        candidates.len()
-    );
-    Ok(candidates.into_values().next().expect("one token table"))
+    candidates.into_values().collect()
 }
 
 fn read_kallsyms_markers(image: &[u8], start: usize, limit: usize) -> Vec<u32> {
@@ -883,48 +942,122 @@ fn decode_kallsyms_addresses(
     )
 }
 
-fn recover_arm64_kallsyms(image: &[u8]) -> Result<RecoveredKallsyms> {
-    let image_size = parse_arm64_image_size(image)?;
-    let (tokens, token_table_offset, token_index_offset) = find_kallsyms_token_table(image)?;
-    let name_tables = find_kallsyms_names(image, &tokens, token_table_offset);
-    let mut candidates = Vec::new();
+fn validate_kallsyms_btf_boundaries(
+    symbols: &SymbolMap,
+    btf_file_offset: usize,
+    btf_size: usize,
+) -> Result<()> {
+    let image_base = symbols.resolve("_text")?;
+    let btf_start = symbols.resolve("__start_BTF")?;
+    let btf_stop = symbols.resolve("__stop_BTF")?;
+    let recovered_offset = btf_start
+        .address
+        .checked_sub(image_base.address)
+        .context("__start_BTF is below _text")?;
+    let recovered_size = btf_stop
+        .address
+        .checked_sub(btf_start.address)
+        .context("__stop_BTF is below __start_BTF")?;
+    ensure!(
+        recovered_offset == btf_file_offset as u64,
+        "kallsyms __start_BTF offset 0x{recovered_offset:x} does not match BTF file offset 0x{btf_file_offset:x}"
+    );
+    ensure!(
+        recovered_size == btf_size as u64,
+        "kallsyms BTF size 0x{recovered_size:x} does not match parsed BTF size 0x{btf_size:x}"
+    );
+    Ok(())
+}
 
-    for (num_syms_offset, _, _, names) in name_tables {
-        let count = names.len();
-        let old_relative_base_offset = num_syms_offset.saturating_sub(8);
-        let old_offsets_offset = old_relative_base_offset.saturating_sub(align_up(count * 4, 8));
-        let new_offsets_offset = align_up(
-            token_index_offset + KALLSYMS_TOKEN_INDEX_SIZE,
-            KALLSYMS_ALIGNMENT,
-        );
-        let new_relative_base_offset = align_up(new_offsets_offset + count * 4, KALLSYMS_ALIGNMENT);
-        for (layout, offsets_offset, relative_base_offset) in [
-            ("pre-6.4", old_offsets_offset, old_relative_base_offset),
-            ("6.4+", new_offsets_offset, new_relative_base_offset),
-        ] {
-            let Some(entries) = decode_kallsyms_addresses(
-                image,
-                image_size,
-                &names,
-                offsets_offset,
-                relative_base_offset,
-            ) else {
-                continue;
-            };
-            candidates.push(RecoveredKallsyms {
-                symbols: SymbolMap::new(entries)?,
-                layout,
-                count,
-            });
+fn recover_arm64_kernel_metadata(image: &[u8]) -> Result<RecoveredKernelMetadata> {
+    let image_size = parse_arm64_image_size(image)?;
+    let btf_candidates = find_btf_candidates(image);
+    let token_tables = find_kallsyms_token_tables(image);
+    let token_table_count = token_tables.len();
+    let mut candidates = Vec::new();
+    let mut complete_candidates = 0usize;
+
+    for (tokens, token_table_offset, token_index_offset) in token_tables {
+        let name_tables = find_kallsyms_names(image, &tokens, token_table_offset);
+        for (num_syms_offset, _, _, names) in name_tables {
+            let count = names.len();
+            let old_relative_base_offset = num_syms_offset.saturating_sub(8);
+            let old_offsets_offset =
+                old_relative_base_offset.saturating_sub(align_up(count * 4, 8));
+            let new_offsets_offset = align_up(
+                token_index_offset + KALLSYMS_TOKEN_INDEX_SIZE,
+                KALLSYMS_ALIGNMENT,
+            );
+            let new_relative_base_offset =
+                align_up(new_offsets_offset + count * 4, KALLSYMS_ALIGNMENT);
+            for (layout, offsets_offset, relative_base_offset) in [
+                ("pre-6.4", old_offsets_offset, old_relative_base_offset),
+                ("6.4+", new_offsets_offset, new_relative_base_offset),
+            ] {
+                let Some(entries) = decode_kallsyms_addresses(
+                    image,
+                    image_size,
+                    &names,
+                    offsets_offset,
+                    relative_base_offset,
+                ) else {
+                    continue;
+                };
+                complete_candidates += 1;
+                let recovered = RecoveredKallsyms {
+                    symbols: SymbolMap::new(entries)?,
+                    layout,
+                    count,
+                };
+                candidates.push(recovered);
+            }
         }
     }
 
-    ensure!(
-        candidates.len() == 1,
-        "cannot uniquely recover GKI kallsyms from ARM64 Image ({} candidates); CONFIG_KALLSYMS_ALL is required",
-        candidates.len()
-    );
-    Ok(candidates.pop().expect("one kallsyms candidate"))
+    // Built-in BPF skeletons can embed independent raw BTF blobs. Only the
+    // candidate delimited by this kallsyms table belongs to vmlinux.
+    let mut boundary_matches = Vec::new();
+    for (kallsyms_index, kallsyms) in candidates.iter().enumerate() {
+        for (btf_index, btf) in btf_candidates.iter().enumerate() {
+            if validate_kallsyms_btf_boundaries(&kallsyms.symbols, btf.file_offset(), btf.size())
+                .is_ok()
+            {
+                boundary_matches.push((kallsyms_index, btf_index));
+            }
+        }
+    }
+
+    if boundary_matches.len() > 1 {
+        bail!(
+            "cannot uniquely match vmlinux BTF to GKI kallsyms in ARM64 Image ({} token tables, {complete_candidates} complete kallsyms candidates, {} valid BTF blobs, {} boundary matches)",
+            token_table_count,
+            btf_candidates.len(),
+            boundary_matches.len()
+        );
+    }
+
+    if let Some((kallsyms_index, btf_index)) = boundary_matches.pop() {
+        let kallsyms = candidates.swap_remove(kallsyms_index);
+        let btf = btf_candidates[btf_index]
+            .to_kernel_btf()
+            .context("cannot parse vmlinux BTF selected by kallsyms boundaries")?;
+        return Ok(RecoveredKernelMetadata {
+            kallsyms,
+            btf: Some(btf),
+        });
+    }
+
+    if candidates.len() != 1 {
+        bail!(
+            "cannot uniquely recover GKI kallsyms from ARM64 Image ({} token tables, {complete_candidates} complete candidates, {} valid BTF blobs, no BTF boundary match); CONFIG_KALLSYMS_ALL is required",
+            token_table_count,
+            btf_candidates.len()
+        );
+    }
+    Ok(RecoveredKernelMetadata {
+        kallsyms: candidates.pop().expect("one kallsyms candidate"),
+        btf: None,
+    })
 }
 
 fn parse_arm64_image_size(image: &[u8]) -> Result<usize> {
@@ -950,6 +1083,7 @@ fn recover_gki_abi(
     image: &[u8],
     image_base: u64,
     linux_banner: &MapSymbol,
+    btf: Option<&KernelBtf>,
 ) -> Result<(String, GkiAbi)> {
     let offset = address_to_offset(
         linux_banner.address,
@@ -988,7 +1122,12 @@ fn recover_gki_abi(
         matches!((major, minor), (5, 10 | 15) | (6, 1 | 6 | 12)),
         "unsupported GKI kernel series {major}.{minor}; validated series: 5.10, 5.15, 6.1, 6.6, 6.12"
     );
-    Ok((release.to_owned(), GKI_ABI))
+    let abi = match btf {
+        Some(btf) => GKI_ABI.apply_btf(btf)?,
+        None => GKI_ABI,
+    };
+    abi.validate()?;
+    Ok((release.to_owned(), abi))
 }
 
 fn decode_bl_target(instruction: u32, source_address: u64) -> Option<u64> {
@@ -2259,16 +2398,24 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
         "input has bytes beyond ARM64 image_size; appended DTB/metadata is unsupported"
     );
 
-    let RecoveredKallsyms {
-        symbols,
-        layout: kallsyms_layout,
-        count: kallsyms_count,
-    } = recover_arm64_kallsyms(&image)?;
+    let RecoveredKernelMetadata {
+        kallsyms:
+            RecoveredKallsyms {
+                symbols,
+                layout: kallsyms_layout,
+                count: kallsyms_count,
+            },
+        btf: kernel_btf,
+    } = recover_arm64_kernel_metadata(&image)?;
     let required = RequiredSymbols::resolve(&symbols)?;
     required.validate_image_bounds(image_size)?;
     let image_base = required.image_base();
-    let (kernel_release, gki_abi) = recover_gki_abi(&image, image_base, &required.linux_banner)?;
-    gki_abi.validate()?;
+    let (kernel_release, gki_abi) = recover_gki_abi(
+        &image,
+        image_base,
+        &required.linux_banner,
+        kernel_btf.as_ref(),
+    )?;
     let sites = analyze_patch_sites(&image, &symbols, &required)?;
 
     let (fixups, unresolved) = collect_module_fixups(module, &symbols, image_base, image_size)?;
@@ -2324,7 +2471,7 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
     definitions.insert("ksu_page_offset", sites.page_offset);
     definitions.insert("ksu_module_size", module.len() as u64);
     definitions.insert("ksu_fixup_count", fixups.len() as u64);
-    definitions.insert("ksu_load_info_size", gki_abi.load_info_size);
+    definitions.insert("ksu_load_info_size", gki_abi.load_info_storage_size);
     definitions.insert("ksu_load_info_hdr_offset", gki_abi.load_info_hdr_offset);
     definitions.insert("ksu_load_info_len_offset", gki_abi.load_info_len_offset);
     definitions.insert("ksu_loading_module_id", gki_abi.loading_module_id);
@@ -2412,8 +2559,19 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
         image,
         ImageInjectionReport {
             kernel_release,
+            btf: kernel_btf.map(|btf| BtfReport {
+                file_offset: btf.file_offset,
+                size: btf.size,
+                type_count: btf.type_count,
+            }),
             kallsyms_layout,
             kallsyms_count,
+            load_info_structure_size: gki_abi.load_info_structure_size,
+            load_info_storage_size: gki_abi.load_info_storage_size,
+            load_info_hdr_offset: gki_abi.load_info_hdr_offset,
+            load_info_len_offset: gki_abi.load_info_len_offset,
+            loading_module_id: gki_abi.loading_module_id,
+            loading_module_from_btf: gki_abi.loading_module_from_btf,
             code_offset,
             code_size: bootstrap.data.len(),
             memblock_call_offset: sites.memblock_reserve_call.file_offset,
@@ -2499,7 +2657,7 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
             .into_owned()
     };
 
-    println!("- Recovering kallsyms and injecting module");
+    println!("- Recovering BTF/kallsyms and injecting module");
     let (patched_kernel, report) = inject_image(&raw_kernel, &module)?;
 
     println!("- Repacking boot image");
@@ -2548,9 +2706,37 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
     })?;
 
     println!("- Kernel: {}", report.kernel_release);
+    if let Some(btf) = report.btf {
+        println!(
+            "- BTF: v1 at 0x{:x}, {} bytes, {} types",
+            btf.file_offset, btf.size, btf.type_count
+        );
+    } else {
+        println!("- BTF: unavailable; using built-in GKI ABI");
+    }
     println!(
         "- Kallsyms: {} ({} symbols)",
         report.kallsyms_layout, report.kallsyms_count
+    );
+    println!(
+        "- Load ABI: load_info={}{} storage={} hdr={} len={}, LOADING_MODULE={} ({})",
+        report
+            .load_info_structure_size
+            .map_or_else(|| "unknown".to_owned(), |size| size.to_string()),
+        if report.load_info_structure_size.is_some() {
+            " (BTF)"
+        } else {
+            " (built-in)"
+        },
+        report.load_info_storage_size,
+        report.load_info_hdr_offset,
+        report.load_info_len_offset,
+        report.loading_module_id,
+        if report.loading_module_from_btf {
+            "BTF"
+        } else {
+            "built-in"
+        }
     );
     println!(
         "- Bootstrap: offset 0x{:x}, {} bytes",
@@ -2612,7 +2798,41 @@ mod tests {
         offset
     }
 
-    fn build_kallsyms_fixture(layout: &str) -> (Vec<u8>, u64) {
+    fn build_test_btf(types: &[u8], strings: &[u8]) -> Vec<u8> {
+        assert!(!strings.is_empty());
+        let mut output = Vec::new();
+        output.extend_from_slice(&0xeb9fu16.to_le_bytes());
+        output.extend_from_slice(&[1, 0]);
+        for value in [
+            24u32,
+            0,
+            u32::try_from(types.len()).unwrap(),
+            u32::try_from(types.len()).unwrap(),
+            u32::try_from(strings.len()).unwrap(),
+        ] {
+            output.extend_from_slice(&value.to_le_bytes());
+        }
+        output.extend_from_slice(types);
+        output.extend_from_slice(strings);
+        output
+    }
+
+    fn minimal_test_btf() -> Vec<u8> {
+        build_test_btf(&[], &[0])
+    }
+
+    fn unusable_load_info_test_btf() -> Vec<u8> {
+        let mut types = Vec::new();
+        types.extend_from_slice(&1u32.to_le_bytes());
+        types.extend_from_slice(&(4u32 << 24).to_le_bytes());
+        types.extend_from_slice(&8u32.to_le_bytes());
+        build_test_btf(&types, b"\0load_info\0")
+    }
+
+    fn build_kallsyms_fixture_with_btf(
+        layout: &str,
+        btf_range: Option<(usize, usize)>,
+    ) -> (Vec<u8>, u64) {
         let base = 0xffff_ffc0_0800_0000;
         let image_size = 0x20_0000usize;
         let count = 2049usize;
@@ -2620,12 +2840,20 @@ mod tests {
             (base, b'T', "_text".to_owned()),
             (base + 0x1000, b't', "load_module".to_owned()),
         ];
-        for index in 0..count - 3 {
+        let boundary_symbol_count = usize::from(btf_range.is_some()) * 2;
+        for index in 0..count - 3 - boundary_symbol_count {
             entries.push((
                 base + 0x2000 + index as u64 * 0x20,
                 b't',
                 format!("fixture_symbol_{index:04}"),
             ));
+        }
+        if let Some((btf_offset, btf_size)) = btf_range {
+            let btf_end = btf_offset.checked_add(btf_size).unwrap();
+            assert!(btf_end < image_size);
+            assert!(base + btf_offset as u64 > entries.last().unwrap().0);
+            entries.push((base + btf_offset as u64, b'R', "__start_BTF".to_owned()));
+            entries.push((base + btf_end as u64, b'R', "__stop_BTF".to_owned()));
         }
         entries.push((base + image_size as u64, b'B', "_end".to_owned()));
 
@@ -2706,6 +2934,10 @@ mod tests {
             _ => panic!("unknown fixture layout"),
         }
         (image, base)
+    }
+
+    fn build_kallsyms_fixture(layout: &str) -> (Vec<u8>, u64) {
+        build_kallsyms_fixture_with_btf(layout, None)
     }
 
     #[test]
@@ -2866,7 +3098,9 @@ mod tests {
     #[test]
     fn recovers_pre_6_4_kallsyms() {
         let (image, base) = build_kallsyms_fixture("pre-6.4");
-        let recovered = recover_arm64_kallsyms(&image).unwrap();
+        let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+        assert!(recovered.btf.is_none());
+        let recovered = recovered.kallsyms;
         assert_eq!(recovered.layout, "pre-6.4");
         assert_eq!(recovered.count, 2049);
         assert_eq!(recovered.symbols.resolve("_text").unwrap().address, base);
@@ -2883,7 +3117,9 @@ mod tests {
     #[test]
     fn recovers_6_4_plus_kallsyms() {
         let (image, base) = build_kallsyms_fixture("6.4+");
-        let recovered = recover_arm64_kallsyms(&image).unwrap();
+        let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+        assert!(recovered.btf.is_none());
+        let recovered = recovered.kallsyms;
         assert_eq!(recovered.layout, "6.4+");
         assert_eq!(recovered.count, 2049);
         assert_eq!(recovered.symbols.resolve("_text").unwrap().address, base);
@@ -2895,5 +3131,110 @@ mod tests {
                 .address,
             base + 0x2000 + 1024 * 0x20
         );
+    }
+
+    #[test]
+    fn selects_vmlinux_btf_by_kallsyms_boundaries() {
+        let unrelated_btf = unusable_load_info_test_btf();
+        let kernel_btf = minimal_test_btf();
+        let unrelated_offset = 0x17_0000usize;
+        let kernel_offset = 0x18_0000usize;
+        let (mut image, _) =
+            build_kallsyms_fixture_with_btf("6.4+", Some((kernel_offset, kernel_btf.len())));
+        image[unrelated_offset..unrelated_offset + unrelated_btf.len()]
+            .copy_from_slice(&unrelated_btf);
+        image[kernel_offset..kernel_offset + kernel_btf.len()].copy_from_slice(&kernel_btf);
+
+        assert_eq!(find_btf_candidates(&image).len(), 2);
+        let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+        let selected = recovered.btf.unwrap();
+        assert_eq!(selected.file_offset, kernel_offset);
+        assert_eq!(selected.size, kernel_btf.len());
+    }
+
+    #[test]
+    fn ignores_unmatched_embedded_btf() {
+        let unrelated_btf = unusable_load_info_test_btf();
+        let unrelated_offset = 0x17_0000usize;
+        let (mut image, _) = build_kallsyms_fixture("6.4+");
+        image[unrelated_offset..unrelated_offset + unrelated_btf.len()]
+            .copy_from_slice(&unrelated_btf);
+
+        assert_eq!(find_btf_candidates(&image).len(), 1);
+        let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+        assert!(recovered.btf.is_none());
+    }
+
+    #[test]
+    fn validates_btf_boundaries_against_kallsyms() {
+        let base = 0xffff_ffc0_0800_0000;
+        let btf = KernelBtf {
+            file_offset: 0x1234,
+            size: 0x5678,
+            type_count: 1,
+            load_info: None,
+            loading_module_id: None,
+        };
+        let symbols = SymbolMap::new(vec![
+            MapSymbol {
+                address: base,
+                name: "_text".to_owned(),
+            },
+            MapSymbol {
+                address: base + btf.file_offset as u64,
+                name: "__start_BTF".to_owned(),
+            },
+            MapSymbol {
+                address: base + (btf.file_offset + btf.size) as u64,
+                name: "__stop_BTF".to_owned(),
+            },
+        ])
+        .unwrap();
+        validate_kallsyms_btf_boundaries(&symbols, btf.file_offset, btf.size).unwrap();
+
+        let mismatched = KernelBtf {
+            size: btf.size + 1,
+            ..btf
+        };
+        assert!(
+            validate_kallsyms_btf_boundaries(&symbols, mismatched.file_offset, mismatched.size)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn btf_overlays_load_info_abi_with_aligned_storage() {
+        let current = KernelBtf {
+            file_offset: 0,
+            size: 1,
+            type_count: 1,
+            load_info: Some(crate::lkm_image_btf::LoadInfoLayout {
+                structure_size: 136,
+                hdr_offset: 16,
+                len_offset: 24,
+            }),
+            loading_module_id: Some(2),
+        };
+        let current_abi = GKI_ABI.apply_btf(&current).unwrap();
+        assert_eq!(current_abi.load_info_storage_size, 256);
+
+        let btf = KernelBtf {
+            file_offset: 0,
+            size: 1,
+            type_count: 1,
+            load_info: Some(crate::lkm_image_btf::LoadInfoLayout {
+                structure_size: 264,
+                hdr_offset: 24,
+                len_offset: 32,
+            }),
+            loading_module_id: Some(7),
+        };
+        let abi = GKI_ABI.apply_btf(&btf).unwrap();
+        assert_eq!(abi.load_info_structure_size, Some(264));
+        assert_eq!(abi.load_info_storage_size, 272);
+        assert_eq!(abi.load_info_hdr_offset, 24);
+        assert_eq!(abi.load_info_len_offset, 32);
+        assert_eq!(abi.loading_module_id, 7);
+        assert!(abi.loading_module_from_btf);
     }
 }
