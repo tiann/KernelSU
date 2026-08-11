@@ -141,62 +141,14 @@ static bool check_block(struct file *fp, loff_t *pos, loff_t block_end, unsigned
     return strcmp(expected_sha256, hash_str) == 0;
 }
 
-struct zip_entry_header {
-    uint32_t signature;
-    uint16_t version;
-    uint16_t flags;
-    uint16_t compression;
-    uint16_t mod_time;
-    uint16_t mod_date;
-    uint32_t crc32;
-    uint32_t compressed_size;
-    uint32_t uncompressed_size;
-    uint16_t file_name_length;
-    uint16_t extra_field_length;
-} __attribute__((packed));
-
-// This is a necessary but not sufficient condition, but it is enough for us
-static bool has_v1_signature_file(struct file *fp)
-{
-    struct zip_entry_header header;
-    const char MANIFEST[] = "META-INF/MANIFEST.MF";
-
-    loff_t pos = 0;
-
-    while (kernel_read(fp, &header, sizeof(struct zip_entry_header), &pos) == sizeof(struct zip_entry_header)) {
-        if (header.signature != 0x04034b50) {
-            // ZIP magic: 'PK'
-            return false;
-        }
-        // Read the entry file name
-        if (header.file_name_length == sizeof(MANIFEST) - 1) {
-            char fileName[sizeof(MANIFEST)];
-            kernel_read(fp, fileName, header.file_name_length, &pos);
-            fileName[header.file_name_length] = '\0';
-
-            // Check if the entry matches META-INF/MANIFEST.MF
-            if (strncmp(MANIFEST, fileName, sizeof(MANIFEST) - 1) == 0) {
-                return true;
-            }
-        } else {
-            // Skip the entry file name
-            pos += header.file_name_length;
-        }
-
-        // Skip to the next entry
-        pos += header.extra_field_length + header.compressed_size;
-    }
-
-    return false;
-}
-
 static __always_inline bool check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
 {
     unsigned char buffer[0x10] = { 0 };
-    u32 cd_offset;
+    u32 cd_offset, cd_size;
+    u32 zip64_locator_magic;
     u64 size_of_block, size_of_block_at_head;
 
-    loff_t pos, pairs_end, file_size;
+    loff_t pos, pairs_end, file_size, eocd_offset;
 
     bool v2_signing_valid = false;
     int v2_signing_blocks = 0;
@@ -229,6 +181,7 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
             if (!read_exact(fp, &magic, sizeof(magic), &pos, file_size))
                 goto clean;
             if (magic == 0x06054b50) {
+                eocd_offset = pos - sizeof(magic);
                 break;
             }
         }
@@ -238,9 +191,23 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
         }
     }
 
-    pos += 12;
+    // reject ZIP64 before looking for a signing block
+    if (eocd_offset >= 20) {
+        pos = eocd_offset - 20;
+        if (!read_exact(fp, &zip64_locator_magic, sizeof(zip64_locator_magic), &pos, file_size))
+            goto clean;
+        if (zip64_locator_magic == 0x07064b50)
+            goto clean;
+    }
+
+    pos = eocd_offset + 12;
+    // size of central directory
+    if (!read_exact(fp, &cd_size, sizeof(cd_size), &pos, file_size))
+        goto clean;
     // offset of central directory
     if (!read_exact(fp, &cd_offset, sizeof(cd_offset), &pos, file_size))
+        goto clean;
+    if ((u64)cd_offset > (u64)eocd_offset || (u64)cd_size != (u64)eocd_offset - cd_offset)
         goto clean;
     if (cd_offset < 0x20)
         goto clean;
@@ -305,13 +272,6 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
         v2_signing_valid = false;
     }
 
-    if (v2_signing_valid) {
-        int has_v1_signing = has_v1_signature_file(fp);
-        if (has_v1_signing) {
-            pr_err("Unexpected v1 signature scheme found!\n");
-            goto invalid;
-        }
-    }
     goto clean;
 
 invalid:
