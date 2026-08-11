@@ -417,13 +417,9 @@ impl<'a> BtfCandidate<'a> {
     fn validate_function_abis(&self) -> Result<()> {
         const EXPECTED_ARITIES: &[(&str, u16)] = &[
             ("load_module", 3),
-            ("security_kernel_load_data", 2),
-            ("security_kernel_post_load_data", 4),
-            ("capable", 1),
             ("vmalloc", 1),
             ("vmalloc_noprof", 1),
             ("memcpy", 3),
-            ("vfree", 1),
             ("kstrdup", 2),
             ("strndup_user", 2),
             ("memblock_reserve", 2),

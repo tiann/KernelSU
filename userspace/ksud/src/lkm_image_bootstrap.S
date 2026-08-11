@@ -132,10 +132,6 @@ ksu_bootstrap:
     add sp, sp, x20
     b .Lbootstrap_out
 
-.Lfree_copy:
-    mov x0, x19
-    bl ksu_ext_vfree
-
 .Lbootstrap_out:
     ldp x23, x24, [sp], #16
     ldp x21, x22, [sp], #16

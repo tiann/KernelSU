@@ -196,13 +196,8 @@ struct RequiredSymbols {
     async_synchronize_full: MapSymbol,
     load_module: MapSymbol,
     strndup_user: MapSymbol,
-    capable: MapSymbol,
-    modules_disabled: MapSymbol,
-    security_kernel_load_data: MapSymbol,
-    security_kernel_post_load_data: MapSymbol,
     vmalloc: MapSymbol,
     memcpy: MapSymbol,
-    vfree: MapSymbol,
     kstrdup: MapSymbol,
 }
 
@@ -227,13 +222,8 @@ impl RequiredSymbols {
             async_synchronize_full: symbols.resolve("async_synchronize_full")?,
             load_module: symbols.resolve("load_module")?,
             strndup_user: symbols.resolve("strndup_user")?,
-            capable: symbols.resolve("capable")?,
-            modules_disabled: symbols.resolve("modules_disabled")?,
-            security_kernel_load_data: symbols.resolve("security_kernel_load_data")?,
-            security_kernel_post_load_data: symbols.resolve("security_kernel_post_load_data")?,
             vmalloc,
             memcpy: symbols.resolve("memcpy")?,
-            vfree: symbols.resolve("vfree")?,
             kstrdup: symbols.resolve("kstrdup")?,
         })
     }
@@ -279,7 +269,7 @@ impl RequiredSymbols {
         Ok(())
     }
 
-    const fn entries(&self) -> [(&'static str, &MapSymbol, bool); 21] {
+    const fn entries(&self) -> [(&'static str, &MapSymbol, bool); 16] {
         [
             ("image_base", &self.image_base, false),
             ("image_end", &self.image_end, true),
@@ -298,21 +288,8 @@ impl RequiredSymbols {
             ),
             ("load_module", &self.load_module, false),
             ("strndup_user", &self.strndup_user, false),
-            ("capable", &self.capable, false),
-            ("modules_disabled", &self.modules_disabled, false),
-            (
-                "security_kernel_load_data",
-                &self.security_kernel_load_data,
-                false,
-            ),
-            (
-                "security_kernel_post_load_data",
-                &self.security_kernel_post_load_data,
-                false,
-            ),
             ("vmalloc", &self.vmalloc, false),
             ("memcpy", &self.memcpy, false),
-            ("vfree", &self.vfree, false),
             ("kstrdup", &self.kstrdup, false),
         ]
     }
@@ -2418,18 +2395,9 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
     definitions.insert("ksu_ext_memstart_addr", required.memstart_addr.address);
     definitions.insert("ksu_ext_kimage_voffset", required.kimage_voffset.address);
     definitions.insert("ksu_ext_async_synchronize_full", sites.async_call.target);
-    definitions.insert(
-        "ksu_ext_security_kernel_load_data",
-        required.security_kernel_load_data.address,
-    );
     definitions.insert("ksu_ext_vmalloc", required.vmalloc.address);
     definitions.insert("ksu_ext_memcpy", required.memcpy.address);
-    definitions.insert(
-        "ksu_ext_security_kernel_post_load_data",
-        required.security_kernel_post_load_data.address,
-    );
     definitions.insert("ksu_ext_load_module", required.load_module.address);
-    definitions.insert("ksu_ext_vfree", required.vfree.address);
     definitions.insert("ksu_ext_kstrdup", required.kstrdup.address);
     definitions.insert("ksu_ext_strndup_user", sites.strndup_call.target);
     definitions.insert("ksu_image_base", image_base);
