@@ -196,13 +196,8 @@ struct RequiredSymbols {
     async_synchronize_full: MapSymbol,
     load_module: MapSymbol,
     strndup_user: MapSymbol,
-    capable: MapSymbol,
-    modules_disabled: MapSymbol,
-    security_kernel_load_data: MapSymbol,
-    security_kernel_post_load_data: MapSymbol,
     vmalloc: MapSymbol,
     memcpy: MapSymbol,
-    vfree: MapSymbol,
     kstrdup: MapSymbol,
 }
 
@@ -227,13 +222,8 @@ impl RequiredSymbols {
             async_synchronize_full: symbols.resolve("async_synchronize_full")?,
             load_module: symbols.resolve("load_module")?,
             strndup_user: symbols.resolve("strndup_user")?,
-            capable: symbols.resolve("capable")?,
-            modules_disabled: symbols.resolve("modules_disabled")?,
-            security_kernel_load_data: symbols.resolve("security_kernel_load_data")?,
-            security_kernel_post_load_data: symbols.resolve("security_kernel_post_load_data")?,
             vmalloc,
             memcpy: symbols.resolve("memcpy")?,
-            vfree: symbols.resolve("vfree")?,
             kstrdup: symbols.resolve("kstrdup")?,
         })
     }
@@ -279,7 +269,7 @@ impl RequiredSymbols {
         Ok(())
     }
 
-    const fn entries(&self) -> [(&'static str, &MapSymbol, bool); 21] {
+    const fn entries(&self) -> [(&'static str, &MapSymbol, bool); 16] {
         [
             ("image_base", &self.image_base, false),
             ("image_end", &self.image_end, true),
@@ -298,21 +288,8 @@ impl RequiredSymbols {
             ),
             ("load_module", &self.load_module, false),
             ("strndup_user", &self.strndup_user, false),
-            ("capable", &self.capable, false),
-            ("modules_disabled", &self.modules_disabled, false),
-            (
-                "security_kernel_load_data",
-                &self.security_kernel_load_data,
-                false,
-            ),
-            (
-                "security_kernel_post_load_data",
-                &self.security_kernel_post_load_data,
-                false,
-            ),
             ("vmalloc", &self.vmalloc, false),
             ("memcpy", &self.memcpy, false),
-            ("vfree", &self.vfree, false),
             ("kstrdup", &self.kstrdup, false),
         ]
     }
@@ -367,9 +344,6 @@ struct GkiAbi {
     load_info_storage_size: u64,
     load_info_hdr_offset: u64,
     load_info_len_offset: u64,
-    cap_sys_module: u64,
-    loading_module_id: u64,
-    loading_module_from_btf: bool,
     gfp_kernel: u64,
 }
 
@@ -378,9 +352,6 @@ const GKI_ABI: GkiAbi = GkiAbi {
     load_info_storage_size: MINIMUM_LOAD_INFO_STORAGE_SIZE,
     load_info_hdr_offset: 16,
     load_info_len_offset: 24,
-    cap_sys_module: 16,
-    loading_module_id: 2,
-    loading_module_from_btf: false,
     gfp_kernel: 0xcc0,
 };
 
@@ -395,10 +366,6 @@ impl GkiAbi {
             .context("BTF load_info storage size overflow")?;
             self.load_info_hdr_offset = layout.hdr_offset;
             self.load_info_len_offset = layout.len_offset;
-        }
-        if let Some(loading_module_id) = btf.loading_module_id {
-            self.loading_module_id = loading_module_id;
-            self.loading_module_from_btf = true;
         }
         self.validate()?;
         Ok(self)
@@ -427,10 +394,6 @@ impl GkiAbi {
                 "invalid GKI load_info {field}"
             );
         }
-        ensure!(
-            u32::try_from(self.loading_module_id).is_ok(),
-            "GKI LOADING_MODULE does not fit u32"
-        );
         Ok(())
     }
 }
@@ -452,8 +415,6 @@ struct ImageInjectionReport {
     load_info_storage_size: u64,
     load_info_hdr_offset: u64,
     load_info_len_offset: u64,
-    loading_module_id: u64,
-    loading_module_from_btf: bool,
     code_offset: usize,
     code_size: usize,
     memblock_call_offset: usize,
@@ -2434,23 +2395,9 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
     definitions.insert("ksu_ext_memstart_addr", required.memstart_addr.address);
     definitions.insert("ksu_ext_kimage_voffset", required.kimage_voffset.address);
     definitions.insert("ksu_ext_async_synchronize_full", sites.async_call.target);
-    definitions.insert("ksu_ext_capable", required.capable.address);
-    definitions.insert(
-        "ksu_ext_modules_disabled",
-        required.modules_disabled.address,
-    );
-    definitions.insert(
-        "ksu_ext_security_kernel_load_data",
-        required.security_kernel_load_data.address,
-    );
     definitions.insert("ksu_ext_vmalloc", required.vmalloc.address);
     definitions.insert("ksu_ext_memcpy", required.memcpy.address);
-    definitions.insert(
-        "ksu_ext_security_kernel_post_load_data",
-        required.security_kernel_post_load_data.address,
-    );
     definitions.insert("ksu_ext_load_module", required.load_module.address);
-    definitions.insert("ksu_ext_vfree", required.vfree.address);
     definitions.insert("ksu_ext_kstrdup", required.kstrdup.address);
     definitions.insert("ksu_ext_strndup_user", sites.strndup_call.target);
     definitions.insert("ksu_image_base", image_base);
@@ -2474,8 +2421,6 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
     definitions.insert("ksu_load_info_size", gki_abi.load_info_storage_size);
     definitions.insert("ksu_load_info_hdr_offset", gki_abi.load_info_hdr_offset);
     definitions.insert("ksu_load_info_len_offset", gki_abi.load_info_len_offset);
-    definitions.insert("ksu_loading_module_id", gki_abi.loading_module_id);
-    definitions.insert("ksu_cap_sys_module", gki_abi.cap_sys_module);
     definitions.insert("ksu_gfp_kernel", gki_abi.gfp_kernel);
 
     let bootstrap_object = BootstrapObject::parse(BOOTSTRAP_OBJECT)
@@ -2570,8 +2515,6 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
             load_info_storage_size: gki_abi.load_info_storage_size,
             load_info_hdr_offset: gki_abi.load_info_hdr_offset,
             load_info_len_offset: gki_abi.load_info_len_offset,
-            loading_module_id: gki_abi.loading_module_id,
-            loading_module_from_btf: gki_abi.loading_module_from_btf,
             code_offset,
             code_size: bootstrap.data.len(),
             memblock_call_offset: sites.memblock_reserve_call.file_offset,
@@ -2719,7 +2662,7 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
         report.kallsyms_layout, report.kallsyms_count
     );
     println!(
-        "- Load ABI: load_info={}{} storage={} hdr={} len={}, LOADING_MODULE={} ({})",
+        "- Load ABI: load_info={}{} storage={} hdr={} len={}",
         report
             .load_info_structure_size
             .map_or_else(|| "unknown".to_owned(), |size| size.to_string()),
@@ -2731,12 +2674,6 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
         report.load_info_storage_size,
         report.load_info_hdr_offset,
         report.load_info_len_offset,
-        report.loading_module_id,
-        if report.loading_module_from_btf {
-            "BTF"
-        } else {
-            "built-in"
-        }
     );
     println!(
         "- Bootstrap: offset 0x{:x}, {} bytes",
@@ -3173,7 +3110,6 @@ mod tests {
             size: 0x5678,
             type_count: 1,
             load_info: None,
-            loading_module_id: None,
         };
         let symbols = SymbolMap::new(vec![
             MapSymbol {
@@ -3213,7 +3149,6 @@ mod tests {
                 hdr_offset: 16,
                 len_offset: 24,
             }),
-            loading_module_id: Some(2),
         };
         let current_abi = GKI_ABI.apply_btf(&current).unwrap();
         assert_eq!(current_abi.load_info_storage_size, 256);
@@ -3227,14 +3162,11 @@ mod tests {
                 hdr_offset: 24,
                 len_offset: 32,
             }),
-            loading_module_id: Some(7),
         };
         let abi = GKI_ABI.apply_btf(&btf).unwrap();
         assert_eq!(abi.load_info_structure_size, Some(264));
         assert_eq!(abi.load_info_storage_size, 272);
         assert_eq!(abi.load_info_hdr_offset, 24);
         assert_eq!(abi.load_info_len_offset, 32);
-        assert_eq!(abi.loading_module_id, 7);
-        assert!(abi.loading_module_from_btf);
     }
 }

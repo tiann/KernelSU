@@ -45,7 +45,6 @@ pub struct KernelBtf {
     pub size: usize,
     pub type_count: usize,
     pub load_info: Option<LoadInfoLayout>,
-    pub loading_module_id: Option<u64>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -415,74 +414,12 @@ impl<'a> BtfCandidate<'a> {
         Ok(layouts.into_iter().next())
     }
 
-    fn loading_module_id(&self) -> Result<Option<u64>> {
-        let mut values = BTreeSet::new();
-        for enumeration in self
-            .types
-            .iter()
-            .filter(|btf_type| matches!(btf_type.kind, BTF_KIND_ENUM | BTF_KIND_ENUM64))
-        {
-            let stride = if enumeration.kind == BTF_KIND_ENUM {
-                8
-            } else {
-                12
-            };
-            for index in 0..usize::from(enumeration.vlen) {
-                let offset = enumeration.payload_offset + index * stride;
-                let Some(name_offset) = read_u32(self.data, offset) else {
-                    continue;
-                };
-                if self.string(name_offset) != Some("LOADING_MODULE") {
-                    continue;
-                }
-                let value = if enumeration.kind == BTF_KIND_ENUM {
-                    let raw = read_u32(self.data, offset + 4)
-                        .ok_or_else(|| anyhow::anyhow!("BTF enum value is truncated"))?;
-                    if enumeration.kind_flag {
-                        let signed = i64::from(i32::from_le_bytes(raw.to_le_bytes()));
-                        ensure!(signed >= 0, "BTF LOADING_MODULE is negative");
-                        u64::try_from(signed)?
-                    } else {
-                        u64::from(raw)
-                    }
-                } else {
-                    let low = u64::from(
-                        read_u32(self.data, offset + 4)
-                            .ok_or_else(|| anyhow::anyhow!("BTF enum64 value is truncated"))?,
-                    );
-                    let high = u64::from(
-                        read_u32(self.data, offset + 8)
-                            .ok_or_else(|| anyhow::anyhow!("BTF enum64 value is truncated"))?,
-                    );
-                    let raw = low | (high << 32);
-                    if enumeration.kind_flag {
-                        let signed = i64::from_le_bytes(raw.to_le_bytes());
-                        ensure!(signed >= 0, "BTF LOADING_MODULE is negative");
-                        u64::try_from(signed)?
-                    } else {
-                        raw
-                    }
-                };
-                values.insert(value);
-            }
-        }
-        ensure!(
-            values.len() <= 1,
-            "BTF contains conflicting LOADING_MODULE values"
-        );
-        Ok(values.into_iter().next())
-    }
-
     fn validate_function_abis(&self) -> Result<()> {
         const EXPECTED_ARITIES: &[(&str, u16)] = &[
             ("load_module", 3),
-            ("security_kernel_load_data", 2),
-            ("security_kernel_post_load_data", 4),
-            ("capable", 1),
             ("vmalloc", 1),
             ("vmalloc_noprof", 1),
             ("memcpy", 3),
-            ("vfree", 1),
             ("kstrdup", 2),
             ("strndup_user", 2),
             ("memblock_reserve", 2),
@@ -523,14 +460,12 @@ impl<'a> BtfCandidate<'a> {
 
     pub fn to_kernel_btf(&self) -> Result<KernelBtf> {
         let load_info = self.load_info_layout()?;
-        let loading_module_id = self.loading_module_id()?;
         self.validate_function_abis()?;
         Ok(KernelBtf {
             file_offset: self.file_offset,
             size: self.size(),
             type_count: self.types.len(),
             load_info,
-            loading_module_id,
         })
     }
 }
@@ -677,7 +612,6 @@ mod tests {
                 len_offset: 24,
             })
         );
-        assert_eq!(btf.loading_module_id, Some(2));
     }
 
     #[test]
@@ -731,7 +665,6 @@ mod tests {
         let blob = build_btf(&[], &[], 0);
         let btf = recover_single_btf(&blob).unwrap();
         assert_eq!(btf.load_info, None);
-        assert_eq!(btf.loading_module_id, None);
     }
 
     #[test]

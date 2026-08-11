@@ -24,15 +24,6 @@ ksu_bootstrap:
     /* Preserve the original kernel_init() call first. */
     bl ksu_ext_async_synchronize_full
 
-    /* Mirror the init_module() policy gates omitted by load_module(). */
-    ldr w0, =ksu_cap_sys_module
-    bl ksu_ext_capable
-    cbz w0, .Lbootstrap_out
-    adrp x8, ksu_ext_modules_disabled
-    add x8, x8, :lo12:ksu_ext_modules_disabled
-    ldr w8, [x8]
-    cbnz w8, .Lbootstrap_out
-
     /*
      * capsule_phys = __pa_symbol(_text) + capsule_image_offset
      * capsule_virt = (capsule_phys - memstart_addr) | PAGE_OFFSET
@@ -86,18 +77,13 @@ ksu_bootstrap:
     cmp x8, x9
     b.ne .Lbootstrap_out
 
-    ldr w0, =ksu_loading_module_id
-    mov w1, #1
-    bl ksu_ext_security_kernel_load_data
-    cbnz w0, .Lbootstrap_out
-
     /* load_module() owns and vfree()s this temporary copy. */
     ldr x0, =ksu_module_size
     bl ksu_ext_vmalloc
     cbz x0, .Lbootstrap_out
+    // x19: vmalloc-ed ksu module
     mov x19, x0
 
-    mov x0, x19
     ldr x8, =ksu_module_capsule_offset
     add x1, x23, x8
     ldr x2, =ksu_module_size
@@ -123,15 +109,6 @@ ksu_bootstrap:
     b.ne .Lfixup_loop
 .Lfixups_done:
 
-    /* Let the target LSM inspect the final bytes passed to load_module(). */
-    mov x0, x19
-    ldr x1, =ksu_module_size
-    ldr w2, =ksu_loading_module_id
-    adrp x3, ksu_load_description
-    add x3, x3, :lo12:ksu_load_description
-    bl ksu_ext_security_kernel_post_load_data
-    cbnz w0, .Lfree_copy
-
     /* Oversized, zeroed target_load_info storage; only hdr/len are seeded. */
     ldr x20, =ksu_load_info_size
     sub sp, sp, x20
@@ -154,10 +131,6 @@ ksu_bootstrap:
     bl ksu_ext_load_module
     add sp, sp, x20
     b .Lbootstrap_out
-
-.Lfree_copy:
-    mov x0, x19
-    bl ksu_ext_vfree
 
 .Lbootstrap_out:
     ldp x23, x24, [sp], #16
@@ -216,6 +189,3 @@ ksu_strndup_user_adapter:
     .balign 8
 ksu_empty_args:
     .asciz ""
-ksu_load_description:
-    /* Stable LSM description; changing it can alter policy and audit behavior. */
-    .asciz "ksu-image-mvp"
