@@ -1,3 +1,6 @@
+#include "hook/patch_memory.h"
+#include "infra/symbol_resolver.h"
+#include "linux/kallsyms.h"
 #include <linux/capability.h>
 #include <linux/cred.h>
 #include <linux/sched.h>
@@ -63,6 +66,17 @@ void setup_groups(struct root_profile *profile, struct cred *cred)
 
 void seccomp_filter_release(struct task_struct *tsk);
 
+// https://cs.android.com/android/_/android/kernel/common/+/5346453405bf12d7ed6003f45dd47b71744fe1be
+// Some 15-6.6 kernel have this backport while others don't have, e.g. Pixel 10
+// See also:
+// https://github.com/tiann/KernelSU/issues/3629
+#define NEED_BACKPORT_COMPAT                                                                                           \
+    LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 11, 0)
+
+#if NEED_BACKPORT_COMPAT
+static bool has_call_to_spin_lock = false;
+#endif
+
 static void disable_seccomp(void)
 {
     struct task_struct *fake;
@@ -93,6 +107,12 @@ static void disable_seccomp(void)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
     // https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
     fake->flags |= PF_EXITING;
+#elif NEED_BACKPORT_COMPAT
+    if (has_call_to_spin_lock) {
+        fake->flags |= PF_EXITING;
+    } else {
+        fake->sighand = NULL;
+    }
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
     // https://github.com/torvalds/linux/commit/0d8315dddd2899f519fe1ca3d4d5cdaf44ea421e#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R556-R558
     fake->sighand = NULL;
@@ -211,4 +231,21 @@ void escape_to_root_for_init(void)
 
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
+}
+
+void __init ksu_app_profile_init(void)
+{
+#if NEED_BACKPORT_COMPAT
+    unsigned long size = 0;
+    int ret;
+    void *raw_spin_lock_irq_sym = find_kernel_symbol_exact("_raw_spin_lock_irq");
+    void *seccomp_filter_release_sym = find_kernel_symbol_exact("seccomp_filter_release");
+    ret = kallsyms_lookup_size_offset(seccomp_filter_release_sym, &size, NULL);
+    if (!ret || !size) {
+        pr_err("failed to get size of seccomp_filter_release: %d, use 128\n", ret);
+        size = 128;
+    }
+    has_call_to_spin_lock = scan_call_to(seccomp_filter_release_sym, size, raw_spin_lock_irq_sym) != NULL;
+    pr_info("seccomp_filter_release has_call_to_spin_lock = %d\n", has_call_to_spin_lock);
+#endif
 }
