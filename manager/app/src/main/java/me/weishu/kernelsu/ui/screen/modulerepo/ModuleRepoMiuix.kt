@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -77,6 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
+import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
@@ -1091,7 +1091,10 @@ fun ModuleRepoDetailScreenMiuix(
                             selectedTabIndex = pagerState.currentPage,
                             onTabSelected = { index ->
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(page = index, animationSpec = tween(easing = EaseInOut))
+                                    pagerState.animateScrollToPage(
+                                        page = index,
+                                        animationSpec = PagerNavigationSpringSpec,
+                                    )
                                 }
                             },
                             colors = TabRowDefaults.tabRowColors(
@@ -1109,6 +1112,7 @@ fun ModuleRepoDetailScreenMiuix(
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
+            overscrollEffect = null,
         ) { page ->
             val innerPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),
