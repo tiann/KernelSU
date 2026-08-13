@@ -59,8 +59,8 @@ struct Args {
     wait: bool,
 
     /// Timeout in seconds for --wait (default: wait forever).
-    #[arg(long = "timeout")]
-    timeout: Option<f64>,
+    #[arg(long = "timeout", value_parser = parse_timeout)]
+    timeout: Option<Duration>,
 
     /// Load and set properties from FILE.
     #[arg(short = 'f', long = "file")]
@@ -85,6 +85,11 @@ struct Args {
         hide = true,
     )]
     arguments: Vec<String>,
+}
+
+fn parse_timeout(s: &str) -> Result<Duration> {
+    let timeout: f64 = s.parse()?;
+    Ok(Duration::try_from_secs_f64(timeout)?)
 }
 
 impl Args {
@@ -152,9 +157,12 @@ fn run_from_args(args: &[String]) -> Result<()> {
     // -w: wait mode
     if cli.wait {
         let name = cli.name().context("--wait requires a property name")?;
-        let timeout = cli.timeout.map(Duration::from_secs_f64);
         let ok = rp
-            .wait(name, cli.value().map(std::string::String::as_str), timeout)
+            .wait(
+                name,
+                cli.value().map(std::string::String::as_str),
+                cli.timeout,
+            )
             .context("wait failed")?;
         if !ok {
             return Err(WaitTimeoutError {

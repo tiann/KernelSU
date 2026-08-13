@@ -77,6 +77,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getBoolean("enable_floating_bottom_bar_blur", false)
         set(value) = prefs.edit { putBoolean("enable_floating_bottom_bar_blur", value) }
 
+    override var enableNavigationBadge: Boolean
+        get() = prefs.getBoolean("enable_navigation_badge", true)
+        set(value) = prefs.edit { putBoolean("enable_navigation_badge", value) }
+
     override var pageScale: Float
         get() = prefs.getFloat("page_scale", 1.0f)
         set(value) = prefs.edit { putFloat("page_scale", value) }

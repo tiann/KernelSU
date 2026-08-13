@@ -42,6 +42,7 @@ import me.weishu.kernelsu.ui.util.rootAvailable
 
 @Composable
 fun NavigationRailMaterial(
+    navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
     val isManager = Natives.isManager
@@ -83,7 +84,9 @@ fun NavigationRailMaterial(
             ) {
                 Icon(
                     if (expanded) Icons.AutoMirrored.Filled.MenuOpen else Icons.Filled.Menu,
-                    contentDescription = null
+                    contentDescription = stringResource(
+                        if (expanded) R.string.nav_rail_collapse else R.string.nav_rail_expand
+                    )
                 )
             }
         },
@@ -99,9 +102,10 @@ fun NavigationRailMaterial(
                     }
                 },
                 icon = {
-                    Icon(
-                        if (selected) selectedIcon else unselectedIcon,
-                        stringResource(label)
+                    NavigationIconWithBadge(
+                        icon = if (selected) selectedIcon else unselectedIcon,
+                        contentDescription = stringResource(label),
+                        badge = badgeFor(index, navigationBadge),
                     )
                 },
                 label = { Text(stringResource(label)) }

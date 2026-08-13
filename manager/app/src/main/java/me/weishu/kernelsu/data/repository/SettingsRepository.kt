@@ -13,6 +13,7 @@ interface SettingsRepository {
     var enableBlur: Boolean
     var enableFloatingBottomBar: Boolean
     var enableFloatingBottomBarBlur: Boolean
+    var enableNavigationBadge: Boolean
     var pageScale: Float
     var enableWebDebugging: Boolean
     var moduleSortEnabledFirst: Boolean

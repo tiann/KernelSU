@@ -103,6 +103,7 @@ import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
+import top.yukonga.miuix.kmp.basic.RefreshState
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.SmallTitle
@@ -409,7 +410,7 @@ fun ModuleRepoScreenMiuix(
                                     onClick = actions.onRefresh,
                                 )
                             }
-                        } else {
+                        } else if (pullToRefreshState.refreshState == RefreshState.Idle) {
                             InfiniteProgressIndicator()
                         }
                     }

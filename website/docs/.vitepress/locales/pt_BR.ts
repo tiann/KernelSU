@@ -56,6 +56,7 @@ function sidebarGuide() {
           { text: 'Configuração de Módulo', link: '/pt_BR/guide/module-config.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
+          { text: 'Suporte a x86_64', link: '/pt_BR/guide/x86_64-support' },
           { text: 'Perguntas frequentes', link: '/pt_BR/guide/faq' },
           { text: 'Recursos ocultos', link: '/pt_BR/guide/hidden-features' },
         ]

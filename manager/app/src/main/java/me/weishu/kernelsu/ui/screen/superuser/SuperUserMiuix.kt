@@ -84,7 +84,6 @@ import top.yukonga.miuix.kmp.basic.DropdownImpl
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -420,82 +419,66 @@ fun SuperUserPagerMiuix(
                 stringResource(R.string.refresh_complete),
             )
 
-            if (uiState.groupedApps.isEmpty() && !uiState.hasLoaded) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
+            val expandedUids = remember { mutableStateOf(setOf<Int>()) }
+            PullToRefresh(
+                isRefreshing = uiState.isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = {
+                    actions.onRefresh()
+                    refreshTick.intValue++
+                },
+                refreshTexts = refreshTexts,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
+            ) {
+                Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .scrollEndHaptic()
+                            .overScrollVertical()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding() + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                            bottom = bottomInnerPadding
+                            end = innerPadding.calculateEndPadding(layoutDirection)
                         ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    InfiniteProgressIndicator()
-                }
-            } else {
-                val expandedUids = remember { mutableStateOf(setOf<Int>()) }
-                PullToRefresh(
-                    isRefreshing = uiState.isRefreshing,
-                    pullToRefreshState = pullToRefreshState,
-                    onRefresh = {
-                        actions.onRefresh()
-                        refreshTick.intValue++
-                    },
-                    refreshTexts = refreshTexts,
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                ) {
-                    Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .scrollEndHaptic()
-                                .overScrollVertical()
-                                .nestedScroll(scrollBehavior.nestedScrollConnection),
-                            contentPadding = PaddingValues(
-                                top = innerPadding.calculateTopPadding() + 6.dp,
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection)
-                            ),
-                            overscrollEffect = null,
-                        ) {
-                            items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
-                                val expanded = expandedUids.value.contains(group.uid)
-                                Column {
-                                    GroupItem(
-                                        group = group,
-                                        onToggleExpand = {
-                                            if (group.apps.size > 1) {
-                                                expandedUids.value =
-                                                    if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
-                                            }
+                        overscrollEffect = null,
+                    ) {
+                        items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
+                            val expanded = expandedUids.value.contains(group.uid)
+                            Column {
+                                GroupItem(
+                                    group = group,
+                                    onToggleExpand = {
+                                        if (group.apps.size > 1) {
+                                            expandedUids.value =
+                                                if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
                                         }
-                                    ) {
-                                        actions.onOpenProfile(group)
                                     }
-                                    AnimatedVisibility(
-                                        visible = expanded && group.apps.size > 1,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Column {
-                                            group.apps.forEach { app ->
-                                                SimpleAppItem(app = app)
-                                            }
-                                            Spacer(Modifier.height(6.dp))
+                                ) {
+                                    actions.onOpenProfile(group)
+                                }
+                                AnimatedVisibility(
+                                    visible = expanded && group.apps.size > 1,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    Column {
+                                        group.apps.forEach { app ->
+                                            SimpleAppItem(app = app)
                                         }
+                                        Spacer(Modifier.height(6.dp))
                                     }
                                 }
                             }
-                            item {
-                                Spacer(Modifier.height(bottomInnerPadding))
-                            }
+                        }
+                        item {
+                            Spacer(Modifier.height(bottomInnerPadding))
                         }
                     }
                 }

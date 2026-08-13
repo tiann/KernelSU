@@ -35,6 +35,7 @@ import me.weishu.kernelsu.ui.screen.module.ModuleConfirmDialogState
 import me.weishu.kernelsu.ui.screen.module.ModuleConfirmRequest
 import me.weishu.kernelsu.ui.screen.module.ModuleEffect
 import me.weishu.kernelsu.ui.screen.module.ModuleUiState
+import me.weishu.kernelsu.ui.util.PinyinUtil
 import me.weishu.kernelsu.ui.util.hasMagisk
 import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
 import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
@@ -149,8 +150,7 @@ class ModuleViewModel(
         return modules.filter {
             it.id.contains(text, true) || it.name.contains(text, true) ||
                     it.description.contains(text, true) || it.author.contains(text, true) ||
-                    me.weishu.kernelsu.ui.util.HanziToPinyin.getInstance().toPinyinString(it.name)
-                        .contains(text, true)
+                    PinyinUtil.toPinyin(it.name).contains(text, true)
         }
     }
 

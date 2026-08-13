@@ -143,6 +143,10 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
                 }
             } else {
                 struct apk_path_hash *apk_data = kzalloc(sizeof(struct apk_path_hash), GFP_KERNEL);
+                if (!apk_data) {
+                    pr_err("Failed to allocate apk_path_hash for %s\n", dirpath);
+                    return FILLDIR_ACTOR_CONTINUE;
+                }
                 apk_data->hash = hash;
                 apk_data->exists = true;
                 list_add_tail(&apk_data->list, &apk_path_hash_list);

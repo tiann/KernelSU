@@ -95,26 +95,24 @@ fun GithubMarkdown(
     val rendered = remember(content, isMarkdown) {
         if (isMarkdown) renderer.render(parser.parse(content)) else content
     }
-    val body = """
-        <style>
-         :root {
-             --background: ${Color.TRANSPARENT};
-             --pre-background: $bgCode;
-             --code-background: $bgCode;
-             --tr-alt-background: $bgRowAlt;
-             --thead-background: $bgRowAlt;
-             --textPrimary: $fgDefault;
-             --link: $fgLink;
-         }
-          html, body { margin: 0; padding: 0 }
-          img, video { max-width: 100%; height: auto; }
-          .markdown-body { padding: 16px; }
-        </style>
-        $rendered
+    val styleContent = """
+        :root {
+            --background: ${Color.TRANSPARENT};
+            --pre-background: $bgCode;
+            --code-background: $bgCode;
+            --tr-alt-background: $bgRowAlt;
+            --thead-background: $bgRowAlt;
+            --textPrimary: $fgDefault;
+            --link: $fgLink;
+        }
+        html, body { margin: 0; padding: 0 }
+        img, video { max-width: 100%; height: auto; }
+        .markdown-body { padding: 16px; }
     """.trimIndent()
     val html = template
         .replace("@dir@", dir)
-        .replace("@body@", body)
+        .replace("@style@", styleContent)
+        .replace("@body@", rendered)
 
     AndroidView(
         factory = { context ->

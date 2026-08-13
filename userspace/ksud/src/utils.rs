@@ -3,6 +3,7 @@ use rustix::fs::{Mode, OFlags, open};
 use rustix::process::setpgid;
 use rustix::stdio::{dup2_stderr, dup2_stdin, dup2_stdout};
 use std::{
+    ffi::{CStr, CString, c_char, c_void},
     fs::{File, OpenOptions, create_dir_all, remove_file, write},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
@@ -27,6 +28,17 @@ use rustix::{
     process,
     thread::{LinkNameSpaceType, move_into_link_name_space},
 };
+
+type PropertyReadCallback = unsafe extern "C" fn(*mut c_void, *const c_char, *const c_char, u32);
+
+unsafe extern "C" {
+    fn __system_property_find(name: *const c_char) -> *const c_void;
+    fn __system_property_read_callback(
+        property_info: *const c_void,
+        callback: PropertyReadCallback,
+        cookie: *mut c_void,
+    );
+}
 
 #[macro_export]
 macro_rules! debug_select {
@@ -104,8 +116,37 @@ pub fn ensure_binary<T: AsRef<Path>>(
     Ok(())
 }
 
-pub fn getprop(prop: &str) -> Option<String> {
-    android_properties::getprop(prop).value()
+unsafe extern "C" fn property_read_callback(
+    cookie: *mut c_void,
+    _name: *const c_char,
+    value: *const c_char,
+    _serial: u32,
+) {
+    if cookie.is_null() || value.is_null() {
+        return;
+    }
+
+    let result = unsafe { &mut *cookie.cast::<Option<String>>() };
+    let value = unsafe { CStr::from_ptr(value) };
+    *result = Some(value.to_string_lossy().into_owned());
+}
+
+pub fn getprop(name: &str) -> Option<String> {
+    let name = CString::new(name).ok()?;
+    let property_info = unsafe { __system_property_find(name.as_ptr()) };
+    if property_info.is_null() {
+        return None;
+    }
+
+    let mut value = None;
+    unsafe {
+        __system_property_read_callback(
+            property_info,
+            property_read_callback,
+            std::ptr::addr_of_mut!(value).cast(),
+        );
+    }
+    value
 }
 
 pub fn is_safe_mode() -> bool {
