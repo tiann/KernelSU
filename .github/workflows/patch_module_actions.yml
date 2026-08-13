@@ -1,0 +1,43 @@
+name: Patch module actions
+
+on:
+  push:
+    branches:
+      - ci
+    paths:
+      - '.github/workflows/patch_module_actions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Apply patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('manager/app/src/main/java/me/weishu/kernelsu/ui/screen/module/ModuleMiuix.kt')
+          text = path.read_text()
+          old = 'visible = module.enabled && !module.remove && !module.update,'
+          new = 'visible = module.enabled && !module.remove,'
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one match, found {count}')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          rm .github/workflows/patch_module_actions.yml
+          git diff --check
+
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "manager: keep module actions available during pending update"
+          git push origin HEAD:ci
