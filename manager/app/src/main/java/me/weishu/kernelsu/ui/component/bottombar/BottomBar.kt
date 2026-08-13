@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -18,6 +17,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import kotlin.math.abs
@@ -75,15 +75,9 @@ private suspend fun PagerState.springAnimateToPage(target: Int) {
 
         var consumedScroll = 0f
         var skipScroll = false
-        val springStiffness = 322.2f
-        val springDampingRatio = 32.31f / (2f * kotlin.math.sqrt(springStiffness))
         Animatable(0f).animateTo(
             targetValue = scrollPixels,
-            animationSpec = spring(
-                stiffness = springStiffness,
-                dampingRatio = springDampingRatio,
-                visibilityThreshold = 0.5f,
-            ),
+            animationSpec = PagerNavigationSpringSpec,
         ) {
             if (skipScroll) return@animateTo
 
