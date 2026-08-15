@@ -12,5 +12,6 @@ void ksu_sucompat_exit(void);
 long ksu_handle_faccessat_sucompat(int orig_nr, struct pt_regs *regs);
 long ksu_handle_stat_sucompat(int orig_nr, struct pt_regs *regs);
 long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, struct pt_regs *regs);
+long ksu_handle_execveat_sucompat(const char __user **filename_user, int orig_nr, struct pt_regs *regs);
 
 #endif

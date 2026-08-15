@@ -19,11 +19,10 @@
 
 DEFINE_STATIC_KEY_FALSE(ksu_adb_root);
 
-static long is_exec_adbd(struct pt_regs *regs)
+static long is_exec_adbd(const char __user *filename_user)
 {
     static const char kAdbd[] = "/adbd";
     static const size_t kAdbdLen = sizeof(kAdbd) - 1;
-    char __user *filename_user = (char __user *)PT_REGS_PARM1(regs);
     // should be bigger than `/apex/com.android.adbd/bin/adbd`
     char buf[40];
     char __user *fn;
@@ -65,7 +64,7 @@ static long is_libadbroot_ok()
     return ret;
 }
 
-static long setup_ld_preload(struct pt_regs *regs)
+static long setup_ld_preload(struct pt_regs *regs, unsigned long *envp_p)
 {
     static const char kLdPreload[] = "LD_PRELOAD=/data/adb/ksu/lib/libadbroot.so";
     static const char kLdLibraryPath[] = "LD_LIBRARY_PATH=/data/adb/ksu/lib";
@@ -73,7 +72,6 @@ static long setup_ld_preload(struct pt_regs *regs)
     static const size_t kPtrSize = sizeof(unsigned long);
     unsigned long stackp = user_stack_pointer(regs);
     unsigned long envp, ld_preload_p, ld_library_path_p;
-    unsigned long *envp_p = (unsigned long *)&PT_REGS_PARM3(regs);
     unsigned long *tmp_env_p = NULL, *tmp_env_p2 = NULL;
     size_t env_count = 0, total_size;
     long ret;
@@ -159,9 +157,9 @@ out_release_env_p:
     return ret;
 }
 
-static long do_ksu_adb_root_handle_execve(struct pt_regs *regs)
+static long do_ksu_adb_root_handle_execve(const char __user *filename_user, struct pt_regs *regs, unsigned long *envp_p)
 {
-    if (likely(is_exec_adbd(regs) != 1)) {
+    if (likely(is_exec_adbd(filename_user) != 1)) {
         return 0;
     }
 
@@ -169,7 +167,7 @@ static long do_ksu_adb_root_handle_execve(struct pt_regs *regs)
         return 0;
     }
 
-    long ret = setup_ld_preload(regs);
+    long ret = setup_ld_preload(regs, envp_p);
     if (ret) {
         return ret;
     }
@@ -182,7 +180,17 @@ static long do_ksu_adb_root_handle_execve(struct pt_regs *regs)
 long ksu_adb_root_handle_execve(struct pt_regs *regs)
 {
     if (static_branch_unlikely(&ksu_adb_root)) {
-        return do_ksu_adb_root_handle_execve(regs);
+        return do_ksu_adb_root_handle_execve((const char __user *)PT_REGS_PARM1(regs), regs,
+                                             (unsigned long *)&PT_REGS_PARM3(regs));
+    }
+    return 0;
+}
+
+long ksu_adb_root_handle_execveat(struct pt_regs *regs)
+{
+    if (static_branch_unlikely(&ksu_adb_root)) {
+        return do_ksu_adb_root_handle_execve((const char __user *)PT_REGS_PARM2(regs), regs,
+                                             (unsigned long *)&PT_REGS_SYSCALL_PARM4(regs));
     }
     return 0;
 }
