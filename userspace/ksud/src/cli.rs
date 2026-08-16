@@ -489,12 +489,85 @@ enum Initrc {
     Refresh,
 }
 
+// Safety net for the reboot()-based driver probe used by `ksucalls`.
+//
+// seccomp is evaluated at syscall entry, before the kernel-side kprobe that
+// backs the supercall can run. On a device whose seccomp policy denies
+// reboot(2) in a context KernelSU did not pre-authorize (for example an
+// unprivileged `su` attempt), the probe in `init_driver_fd` raises a fatal
+// SIGSYS and aborts the process. When that process is one init depends on, the
+// abort cascades into an init crash and a boot loop (#3638).
+//
+// Turn only a seccomp-blocked reboot() into an -EPERM return so the caller just
+// fails to acquire the driver fd and degrades gracefully. Any other blocked
+// syscall keeps the fatal default disposition so genuine violations are not
+// masked.
+#[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
+#[allow(clippy::not_unsafe_ptr_arg_deref)]
+extern "C" fn sigsys_handler(
+    _sig: libc::c_int,
+    info: *mut libc::siginfo_t,
+    ctx: *mut libc::c_void,
+) {
+    // Signal context: async-signal-safe operations only (no alloc/lock/log).
+    if info.is_null() || ctx.is_null() {
+        return;
+    }
+
+    unsafe {
+        let uc = ctx.cast::<libc::ucontext_t>();
+
+        // seccomp traps at syscall entry, so the syscall-number register still
+        // holds the blocked number.
+        #[cfg(target_arch = "aarch64")]
+        let nr = (*uc).uc_mcontext.regs[8] as libc::c_long;
+        #[cfg(target_arch = "x86_64")]
+        let nr = (*uc).uc_mcontext.gregs[libc::REG_RAX as usize] as libc::c_long;
+
+        // SYS_SECCOMP == 1. Only neutralize a seccomp-blocked reboot().
+        if (*info).si_code != 1 || nr != libc::SYS_reboot {
+            libc::signal(libc::SIGSYS, libc::SIG_DFL);
+            libc::raise(libc::SIGSYS);
+            return;
+        }
+
+        #[cfg(target_arch = "aarch64")]
+        {
+            (*uc).uc_mcontext.regs[0] = (-libc::EPERM) as u64;
+        }
+        #[cfg(target_arch = "x86_64")]
+        {
+            (*uc).uc_mcontext.gregs[libc::REG_RAX as usize] = i64::from(-libc::EPERM);
+        }
+    }
+}
+
+#[cfg(any(target_arch = "aarch64", target_arch = "x86_64"))]
+fn setup_sigsys_handler() {
+    unsafe {
+        let mut sa: libc::sigaction = std::mem::zeroed();
+        sa.sa_flags = libc::SA_SIGINFO;
+        sa.sa_sigaction = sigsys_handler as *const () as usize;
+        libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
+        if libc::sigaction(libc::SIGSYS, std::ptr::addr_of!(sa), std::ptr::null_mut()) != 0 {
+            error!("failed to install SIGSYS handler");
+        }
+    }
+}
+
+#[cfg(not(any(target_arch = "aarch64", target_arch = "x86_64")))]
+fn setup_sigsys_handler() {}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
             .with_max_level(crate::debug_select!(LevelFilter::Trace, LevelFilter::Info))
             .with_tag("KernelSU"),
     );
+
+    // Install the SIGSYS safety net before any code path can issue the
+    // reboot()-based driver probe.
+    setup_sigsys_handler();
 
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
