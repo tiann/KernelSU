@@ -66,6 +66,7 @@ class SettingsViewModel(
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
+            val useSoftReboot = repo.useSoftReboot
             val isLateLoadMode = Natives.isLateLoadMode
 
             _uiState.update {
@@ -99,6 +100,7 @@ class SettingsViewModel(
                     isDefaultUmountModules = isDefaultUmountModules,
                     isLkmMode = isLkmMode,
                     autoJailbreak = autoJailbreak,
+                    useSoftReboot = useSoftReboot,
                     isLateLoadMode = isLateLoadMode,
                 )
             }
@@ -287,6 +289,11 @@ class SettingsViewModel(
     fun setAutoJailbreak(enabled: Boolean) {
         repo.autoJailbreak = enabled
         _uiState.update { it.copy(autoJailbreak = enabled) }
+    }
+
+    fun setUseSoftReboot(enabled: Boolean) {
+        repo.useSoftReboot = enabled
+        _uiState.update { it.copy(useSoftReboot = enabled) }
     }
 
     fun setSulogEnabled(enabled: Boolean) {
