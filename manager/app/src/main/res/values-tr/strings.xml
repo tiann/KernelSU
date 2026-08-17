@@ -102,7 +102,12 @@
     <string name="enable_web_debugging">WebView hata ayıklaması</string>
     <string name="enable_web_debugging_summary">Web kullanıcı arayüzünde hata ayıklamak için kullanılabilir, lütfen yalnızca gerektiğinde etkinleştirin.</string>
     <string name="direct_install">Doğrudan kur (Tavsiye edilen)</string>
-    <string name="select_file">Bir dosya seçin</string>
+    <string name="select_file">Bir dosya seçin ve yamalayın</string>
+    <string name="download_file">Bir dosya indirin ve yamalayın</string>
+    <string name="download_dialog_title">Görüntü URL\'sini girin</string>
+    <string name="download_dialog_msg">Tam OTA görüntüsü veya fabrika görüntüsü</string>
+    <string name="download_no_boot_partition">Görüntüde boot, init_boot veya vendor_boot bölümü bulunamadı</string>
+    <string name="download_probe_failed">Görüntü incelenemedi: %1$s</string>
     <string name="install_inactive_slot">Etkin olmayan yuvaya kur (OTA\'dan sonra)</string>
     <string name="install_inactive_slot_warning">Cihazınız geçerli etkin olmayan yuvaya **ZORLA** yeniden başlatılacaktır!
 \nBu seçeneği yalnızca OTA tamamlandıktan sonra kullanın.

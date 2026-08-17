@@ -17,6 +17,13 @@ internal sealed class InstallMethod : Parcelable {
         override val summary: String?
     ) : InstallMethod()
 
+    data class DownloadFile(
+        val url: String? = null,
+        val partition: String? = null,
+        @get:StringRes override val label: Int = R.string.download_file,
+        override val summary: String?
+    ) : InstallMethod()
+
     data object DirectInstall : InstallMethod() {
         override val label: Int
             get() = R.string.direct_install

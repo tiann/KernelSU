@@ -138,7 +138,12 @@
     <string name="enable_web_debugging">WebView 调试</string>
     <string name="enable_web_debugging_summary">可用于调试 WebUI，请仅在需要时启用</string>
     <string name="direct_install">直接安装（推荐）</string>
-    <string name="select_file">选择一个文件</string>
+    <string name="select_file">选择文件并修补</string>
+    <string name="download_file">下载文件并修补</string>
+    <string name="download_dialog_title">输入链接</string>
+    <string name="download_dialog_msg">完整 OTA 镜像或 factory 镜像</string>
+    <string name="download_no_boot_partition">镜像中未找到 boot、init_boot 或 vendor_boot 分区</string>
+    <string name="download_probe_failed">探测镜像失败：%1$s</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
     <string name="install_inactive_slot_warning">将在重启后强制切换到另一个槽位！注意只能在 OTA 更新完成后的重启之前使用</string>
     <string name="jailbreak_flash_warning">当前处于**越狱模式**。在**未解锁 Bootloader** 的设备上刷写分区会破坏 AVB（Android 验证启动），可能导致设备**无法开机**。\n\n请确保 Bootloader 已解锁后再继续操作！</string>

@@ -296,13 +296,13 @@ private class ConfirmDialogHandleImpl(
 }
 
 @Composable
-fun rememberLoadingDialog(): LoadingDialogHandle {
+fun rememberLoadingDialog(onDismiss: () -> Unit = {}): LoadingDialogHandle {
     val visible = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     when (LocalUiMode.current) {
-        UiMode.Miuix -> LoadingDialogMiuix(visible)
-        UiMode.Material -> LoadingDialogMaterial(visible)
+        UiMode.Miuix -> LoadingDialogMiuix(visible, onDismiss)
+        UiMode.Material -> LoadingDialogMaterial(visible, onDismiss)
     }
 
     return remember {

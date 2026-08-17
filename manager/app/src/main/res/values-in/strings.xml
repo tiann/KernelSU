@@ -102,7 +102,12 @@
     <string name="install_next">Selanjutnya</string>
     <string name="install_inactive_slot_warning">Perangkat Anda akan **DIPAKSA** untuk boot ke slot nonaktif saat ini setelah mulai ulang! \nGunakan hanya setelah proses OTA selesai. \nLanjutkan?</string>
     <string name="direct_install">Langsung pasang (Disarankan)</string>
-    <string name="select_file">Pilih berkas</string>
+    <string name="select_file">Pilih dan tambal berkas</string>
+    <string name="download_file">Unduh dan tambal berkas</string>
+    <string name="download_dialog_title">Masukkan URL image</string>
+    <string name="download_dialog_msg">Image OTA penuh atau image pabrik</string>
+    <string name="download_no_boot_partition">Tidak ada partisi boot, init_boot, atau vendor_boot yang ditemukan di image</string>
+    <string name="download_probe_failed">Gagal memeriksa image: %1$s</string>
     <string name="install_inactive_slot">Pasang ke slot nonaktif (setelah OTA)</string>
     <string name="grant_root_failed">Gagal memberikan akses root!</string>
     <string name="open">Buka</string>

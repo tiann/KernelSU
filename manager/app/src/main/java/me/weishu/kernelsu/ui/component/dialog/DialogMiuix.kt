@@ -31,9 +31,16 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.window.WindowDialog
 
 @Composable
-fun LoadingDialogMiuix(showDialog: MutableState<Boolean>) {
+fun LoadingDialogMiuix(
+    showDialog: MutableState<Boolean>,
+    onDismiss: () -> Unit = {},
+) {
     WindowDialog(
         show = showDialog.value,
+        onDismissRequest = {
+            onDismiss()
+            showDialog.value = false
+        },
         content = {
             Box(
                 modifier = Modifier.fillMaxWidth(),

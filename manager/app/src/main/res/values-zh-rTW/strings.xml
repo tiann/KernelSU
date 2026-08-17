@@ -101,7 +101,12 @@
     <string name="open">開啟</string>
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">開啟本應用程式時，自動檢查更新</string>
-    <string name="select_file">選擇檔案</string>
+    <string name="select_file">選擇並修補檔案</string>
+    <string name="download_file">下載並修補檔案</string>
+    <string name="download_dialog_title">輸入連結</string>
+    <string name="download_dialog_msg">完整 OTA 映像或原廠映像</string>
+    <string name="download_no_boot_partition">映像中找不到 boot、init_boot 或 vendor_boot 分割區</string>
+    <string name="download_probe_failed">偵測映像失敗：%1$s</string>
     <string name="install_inactive_slot">安裝至非作用擴充槽（適用於 OTA 更新過後）</string>
     <string name="install_inactive_slot_warning">你的裝置將在重新啟動時**強制**開機至目前的非作用擴充槽！\n確保僅在 OTA 更新過後選擇此選項。\n是否繼續？</string>
     <string name="direct_install">直接安裝（推薦）</string>

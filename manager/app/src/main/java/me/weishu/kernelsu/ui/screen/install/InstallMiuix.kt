@@ -117,6 +117,7 @@ internal fun InstallScreenMiuix(
                         SelectInstallMethod(
                             state = uiState,
                             onSelected = actions.onSelectMethod,
+                            onDownloadFile = actions.onDownloadFile,
                             onSelectBootImage = actions.onSelectBootImage,
                         )
                     }
@@ -125,15 +126,30 @@ internal fun InstallScreenMiuix(
                         enter = expandVertically(),
                         exit = shrinkVertically()
                     ) {
+                        val isDownload = uiState.installMethod is InstallMethod.DownloadFile
+                        val partitionItems = if (isDownload) {
+                            uiState.remoteDisplayPartitions
+                        } else {
+                            uiState.displayPartitions
+                        }
+                        val partitionIndex = if (isDownload) {
+                            uiState.remotePartitionSelectionIndex
+                        } else {
+                            uiState.partitionSelectionIndex
+                        }
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 12.dp),
                         ) {
                             OverlayDropdownPreference(
-                                items = uiState.displayPartitions,
-                                selectedIndex = uiState.partitionSelectionIndex,
-                                title = "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})",
+                                items = partitionItems,
+                                selectedIndex = partitionIndex,
+                                title = if (isDownload) {
+                                    stringResource(R.string.install_select_partition)
+                                } else {
+                                    "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})"
+                                },
                                 onSelectedIndexChange = actions.onSelectPartition,
                                 startAction = {
                                     Icon(
@@ -273,6 +289,7 @@ internal fun InstallScreenMiuix(
 private fun SelectInstallMethod(
     state: InstallUiState,
     onSelected: (InstallMethod) -> Unit,
+    onDownloadFile: () -> Unit,
     onSelectBootImage: () -> Unit,
 ) {
     val confirmDialog = rememberConfirmDialog(
@@ -286,6 +303,7 @@ private fun SelectInstallMethod(
     val onClick = { option: InstallMethod ->
         when (option) {
             is InstallMethod.SelectFile -> onSelectBootImage()
+            is InstallMethod.DownloadFile -> onDownloadFile()
             is InstallMethod.DirectInstall -> onSelected(option)
             is InstallMethod.DirectInstallToInactiveSlot -> confirmDialog.showConfirm(dialogTitle, dialogContent)
         }
