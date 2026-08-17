@@ -98,7 +98,12 @@
     <string name="enable_web_debugging">WebView 除錯模式</string>
     <string name="enable_web_debugging_summary">可用於 WebUI 除錯，請僅在需要時啟用</string>
     <string name="direct_install">直接安裝（建議）</string>
-    <string name="select_file">選取檔案</string>
+    <string name="select_file">選取檔案並修補</string>
+    <string name="download_file">下載檔案並修補</string>
+    <string name="download_dialog_title">輸入連結</string>
+    <string name="download_dialog_msg">完整 OTA 映像或 factory 映像</string>
+    <string name="download_no_boot_partition">映像中未找到 boot、init_boot 或 vendor_boot 分區</string>
+    <string name="download_probe_failed">偵測映像失敗：%1$s</string>
     <string name="install_inactive_slot">安裝至非活動插槽（OTA 後）</string>
     <string name="install_inactive_slot_warning">重新啟動後將強制由目前非活動插槽開機！請僅在 OTA 完成後才使用此選項</string>
     <string name="install_next">下一步</string>

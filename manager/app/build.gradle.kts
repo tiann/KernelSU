@@ -1,10 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.google.protobuf.gradle.id
+
 plugins {
     alias(libs.plugins.agp.app)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.lsplugin.apksign)
+    alias(libs.plugins.protobuf)
     id("kotlin-parcelize")
 }
 
@@ -30,6 +33,24 @@ apksign {
     storePasswordProperty = "KEYSTORE_PASSWORD"
     keyAliasProperty = "KEY_ALIAS"
     keyPasswordProperty = "KEY_PASSWORD"
+}
+
+protobuf {
+    protoc {
+        artifact = libs.protobuf.protoc.get().toString()
+    }
+    generateProtoTasks {
+        ofNonTest().forEach { task ->
+            task.builtins {
+                id("java") {
+                    option("lite")
+                }
+                id("kotlin") {
+                    option("lite")
+                }
+            }
+        }
+    }
 }
 
 val baseCFlags = listOf(
@@ -218,6 +239,10 @@ dependencies {
     implementation(libs.material.kolor)
 
     implementation(libs.appiconloader)
+
+    implementation(libs.commons.compress)
+    implementation(libs.xz)
+    implementation(libs.protobuf.kotlin.lite)
 }
 
 kotlin {

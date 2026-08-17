@@ -1,24 +1,27 @@
 [versions]
 agp = "9.3.1"
 kotlin = "2.4.10"
-compose-bom = "2026.06.01"
+compose-bom = "2026.08.00"
 lifecycle = "2.11.0"
 activity-compose = "1.13.0"
 kotlinx-coroutines = "1.11.0"
-navigation3 = "1.1.4"
+navigation3 = "1.1.6"
 navigationevent = "1.1.2"
-commonmark = "0.29.0"
-webkit = "1.16.0"
+commonmark = "0.30.0"
+webkit = "1.17.0"
 parcelablelist = "2.0.1"
-material3 = "1.5.0-alpha24"
+material3 = "1.5.0-alpha26"
 materialKolor = "5.0.0"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
 miuix = "0.9.3"
-okhttp = "5.4.0"
+okhttp = "5.5.0"
 hiddenapibypass = "6.1"
 appiconloader = "1.5.0"
+protobuf = "4.35.1"
+commons-compress = "1.28.0"
+xz = "1.12"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -28,6 +31,7 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version.ref = "apksign" }
+protobuf = { id = "com.google.protobuf", version = "0.10.0" }
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
@@ -80,3 +84,8 @@ hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", vers
 material-kolor = { group = "com.materialkolor", name = "material-kolor", version.ref = "materialKolor" }
 
 appiconloader = { module = "me.zhanghai.android.appiconloader:appiconloader", version.ref = "appiconloader" }
+
+protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
+protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons-compress" }
+xz = { module = "org.tukaani:xz", version.ref = "xz" }

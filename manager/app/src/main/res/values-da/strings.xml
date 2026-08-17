@@ -108,7 +108,12 @@
     <string name="enable_web_debugging">WebView-fejlsøgning</string>
     <string name="enable_web_debugging_summary">Kan bruges til at fejlfinde af WebUI. Aktiver kun når det er nødvendigt.</string>
     <string name="direct_install">Direkte installation (Anbefalet)</string>
-    <string name="select_file">Vælg en fil</string>
+    <string name="select_file">Vælg en fil og patch</string>
+    <string name="download_file">Download en fil og patch</string>
+    <string name="download_dialog_title">Indtast billed-URL</string>
+    <string name="download_dialog_msg">Fuldt OTA-billede eller fabriksbillede</string>
+    <string name="download_no_boot_partition">Ingen boot-, init_boot- eller vendor_boot-partition fundet i billedet</string>
+    <string name="download_probe_failed">Kunne ikke scanne billedet: %1$s</string>
     <string name="install_inactive_slot">Installer på inaktiv slot (efter OTA-opdatering)</string>
     <string name="install_inactive_slot_warning">Din enhed vil blive **TVUNGET** til at starte op fra det aktuelt inaktive slot efter en genstart!\nBrug kun denne mulighed, når OTA er færdig.\nFortsæt?</string>
     <string name="install_next">Næste</string>

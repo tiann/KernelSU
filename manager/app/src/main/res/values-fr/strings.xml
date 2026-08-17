@@ -101,7 +101,12 @@
     <string name="grant_root_failed">Impossible d\'accorder les privilèges root !</string>
     <string name="open">Ouvrir</string>
     <string name="direct_install">Installation directe (recommandé)</string>
-    <string name="select_file">Sélectionner un fichier</string>
+    <string name="select_file">Sélectionner un fichier et le patcher</string>
+    <string name="download_file">Télécharger un fichier et le patcher</string>
+    <string name="download_dialog_title">Saisir l\'URL de l\'image</string>
+    <string name="download_dialog_msg">Image OTA complète ou image d\'usine</string>
+    <string name="download_no_boot_partition">Aucune partition boot, init_boot ou vendor_boot trouvée dans l\'image</string>
+    <string name="download_probe_failed">Échec de l\'analyse de l\'image : %1$s</string>
     <string name="install_inactive_slot">Installer dans l\'emplacement inactif (après OTA)</string>
     <string name="install_inactive_slot_warning">Votre appareil sera **FORCÉ** à démarrer sur l\'emplacement inactif actuel après un redémarrage ! \nN\'utilisez cette option qu\'une fois la mise à jour OTA terminée. \nContinuer ?</string>
     <string name="install_next">Suivant</string>

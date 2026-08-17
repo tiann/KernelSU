@@ -112,7 +112,12 @@ Csatlakozzon a %2$s csatornánkhoz</string>
     <string name="flash_failed">Sikertelen telepítés</string>
     <string name="grant_root_failed">A root jog megadása sikertelen!</string>
     <string name="install_inactive_slot">Telepítés inaktív helyre (OTA után)</string>
-    <string name="select_file">Fájl kiválasztása</string>
+    <string name="select_file">Fájl kiválasztása és módosítása</string>
+    <string name="download_file">Fájl letöltése és módosítása</string>
+    <string name="download_dialog_title">Adja meg a kép URL-jét</string>
+    <string name="download_dialog_msg">Teljes OTA-kép vagy gyári kép</string>
+    <string name="download_no_boot_partition">A képen nem található boot, init_boot vagy vendor_boot partíció</string>
+    <string name="download_probe_failed">A kép vizsgálata sikertelen: %1$s</string>
     <string name="settings_uninstall_permanent_message">A KernelSU eltávolítása (root és az összes modul) teljesen és véglegesen.</string>
     <string name="settings_restore_stock_image">Eredeti képfájl visszaállítása</string>
     <string name="action">Művelet</string>

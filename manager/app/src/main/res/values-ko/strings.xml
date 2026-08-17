@@ -113,7 +113,12 @@
     <string name="app_profile_template_edit">템플릿 편집</string>
     <string name="app_profile_template_view">템플릿 보기</string>
     <string name="app_profile_template_export_empty">내보낼 로컬 템플릿을 찾을 수 없습니다!</string>
-    <string name="select_file">파일 선택</string>
+    <string name="select_file">파일 선택 및 패치</string>
+    <string name="download_file">파일 다운로드 및 패치</string>
+    <string name="download_dialog_title">이미지 URL 입력</string>
+    <string name="download_dialog_msg">전체 OTA 이미지 또는 팩토리 이미지</string>
+    <string name="download_no_boot_partition">이미지에서 boot, init_boot 또는 vendor_boot 파티션을 찾을 수 없습니다</string>
+    <string name="download_probe_failed">이미지 검사 실패: %1$s</string>
     <string name="direct_install">직접 설치 (권장)</string>
     <string name="install_inactive_slot">비활성 슬롯에 설치 (OTA 이후)</string>
     <string name="settings_restore_stock_image">제조사 이미지로 복구</string>

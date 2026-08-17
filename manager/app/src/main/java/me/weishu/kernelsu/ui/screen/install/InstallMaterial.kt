@@ -82,18 +82,34 @@ internal fun InstallScreenMaterial(
             SelectInstallMethod(
                 state = uiState,
                 onSelected = actions.onSelectMethod,
+                onDownloadFile = actions.onDownloadFile,
                 onSelectBootImage = actions.onSelectBootImage,
             )
 
             SegmentedColumn(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 content = buildList {
-                    if (uiState.displayPartitions.isNotEmpty()) add {
+                    val isDownload = uiState.installMethod is InstallMethod.DownloadFile
+                    val partitionItems = if (isDownload) {
+                        uiState.remoteDisplayPartitions
+                    } else {
+                        uiState.displayPartitions
+                    }
+                    val partitionIndex = if (isDownload) {
+                        uiState.remotePartitionSelectionIndex
+                    } else {
+                        uiState.partitionSelectionIndex
+                    }
+                    if (partitionItems.isNotEmpty()) add {
                         SegmentedDropdownItem(
                             enabled = uiState.canSelectPartition,
-                            items = uiState.displayPartitions,
-                            selectedIndex = uiState.partitionSelectionIndex,
-                            title = "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})",
+                            items = partitionItems,
+                            selectedIndex = partitionIndex,
+                            title = if (isDownload) {
+                                stringResource(R.string.install_select_partition)
+                            } else {
+                                "${stringResource(R.string.install_select_partition)} (${uiState.slotSuffix})"
+                            },
                             onItemSelected = actions.onSelectPartition,
                             icon = Icons.Filled.Edit
                         )
@@ -195,6 +211,7 @@ internal fun InstallScreenMaterial(
 private fun SelectInstallMethod(
     state: InstallUiState,
     onSelected: (InstallMethod) -> Unit,
+    onDownloadFile: () -> Unit,
     onSelectBootImage: () -> Unit,
 ) {
     val confirmDialog = rememberConfirmDialog(
@@ -209,6 +226,7 @@ private fun SelectInstallMethod(
     val onClick = { option: InstallMethod ->
         when (option) {
             is InstallMethod.SelectFile -> onSelectBootImage()
+            is InstallMethod.DownloadFile -> onDownloadFile()
             is InstallMethod.DirectInstall -> onSelected(option)
             is InstallMethod.DirectInstallToInactiveSlot -> confirmDialog.showConfirm(dialogTitle, dialogContent)
         }
