@@ -20,6 +20,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.markdown.MarkdownContent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -33,15 +36,17 @@ import top.yukonga.miuix.kmp.window.WindowDialog
 @Composable
 fun LoadingDialogMiuix(
     showDialog: MutableState<Boolean>,
-    onDismiss: () -> Unit = {},
 ) {
     WindowDialog(
         show = showDialog.value,
-        onDismissRequest = {
-            onDismiss()
-            showDialog.value = false
-        },
         content = {
+            // Consume the back gesture before the dialog's own handler
+            val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
+            NavigationBackHandler(
+                state = navEventState,
+                isBackEnabled = true,
+                onBackCompleted = { },
+            )
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart

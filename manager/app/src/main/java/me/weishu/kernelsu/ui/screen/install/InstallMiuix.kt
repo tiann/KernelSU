@@ -53,6 +53,8 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
@@ -79,6 +81,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 internal fun InstallScreenMiuix(
     uiState: InstallUiState,
     actions: InstallScreenActions,
+    snackbarHost: SnackbarHostState,
 ) {
     val enableBlur = LocalEnableBlur.current
     val scrollBehavior = MiuixScrollBehavior()
@@ -96,6 +99,12 @@ internal fun InstallScreenMiuix(
             )
         },
         popupHost = { },
+        snackbarHost = {
+            SnackbarHost(
+                state = snackbarHost,
+                modifier = Modifier.padding(bottom = 20.dp),
+            )
+        },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {

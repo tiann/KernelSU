@@ -2,7 +2,6 @@ package me.weishu.kernelsu.ui.screen.install
 
 import android.app.Activity
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
@@ -41,17 +40,19 @@ import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.probeRemoteBootPartitions
 import me.weishu.kernelsu.ui.util.rootAvailable
+import top.yukonga.miuix.kmp.basic.SnackbarHostState as MiuixSnackbarHostState
 
 @Composable
 fun InstallScreen() {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
     val snackbarHost = remember { SnackbarHostState() }
+    val miuixSnackbarHost = remember { MiuixSnackbarHostState() }
     val uiMode = LocalUiMode.current
     val scope = rememberCoroutineScope()
     val resources = LocalResources.current
     var probeJob by remember { mutableStateOf<Job?>(null) }
-    val loadingDialog = rememberLoadingDialog(onDismiss = { probeJob?.cancel() })
+    val loadingDialog = rememberLoadingDialog()
 
     var installMethod by rememberSaveable { mutableStateOf<InstallMethod?>(null) }
     var downloadDialogShown by rememberSaveable { mutableStateOf(false) }
@@ -114,7 +115,7 @@ fun InstallScreen() {
             if (uiMode == UiMode.Material) {
                 snackbarHost.showSnackbar(message)
             } else {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                miuixSnackbarHost.showSnackbar(message)
             }
         }
     }
@@ -288,7 +289,7 @@ fun InstallScreen() {
     )
 
     when (LocalUiMode.current) {
-        UiMode.Miuix -> InstallScreenMiuix(state, actions)
+        UiMode.Miuix -> InstallScreenMiuix(state, actions, miuixSnackbarHost)
         UiMode.Material -> InstallScreenMaterial(state, actions, snackbarHost)
     }
 }

@@ -164,7 +164,7 @@ class ExtractImage(
 
             ZipMethod.DEFLATED.code -> {
                 InflaterInputStream(
-                    channel.streamRead(entry.dataOffset, entry.size),
+                    channel.streamRead(entry.dataOffset, entry.compressedSize),
                     Inflater(true),
                     16 * 1024
                 ).use { input ->

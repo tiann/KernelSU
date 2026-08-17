@@ -21,15 +21,15 @@ import me.weishu.kernelsu.ui.component.material.ExpressiveDialog
 @Composable
 fun LoadingDialogMaterial(
     showDialog: MutableState<Boolean>,
-    onDismiss: () -> Unit = {},
 ) {
     if (showDialog.value) {
         Dialog(
-            onDismissRequest = {
-                onDismiss()
-                showDialog.value = false
-            },
-            properties = DialogProperties(dismissOnClickOutside = true, dismissOnBackPress = true)
+            onDismissRequest = { },
+            // Keep the dialog non-dismissible
+            properties = DialogProperties(
+                dismissOnClickOutside = false,
+                dismissOnBackPress = false,
+            )
         ) {
             Surface(
                 modifier = Modifier.size(100.dp), shape = MaterialTheme.shapes.extraLarge
