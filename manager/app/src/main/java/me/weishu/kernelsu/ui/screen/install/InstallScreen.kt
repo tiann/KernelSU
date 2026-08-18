@@ -195,26 +195,22 @@ fun InstallScreen() {
     )
 
     val selectLkmLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (it.resultCode == Activity.RESULT_OK) {
-            it.data?.data?.let { uri ->
-                if (isKoFile(context, uri)) {
-                    lkmSelection = LkmSelection.LkmUri(uri)
-                } else {
-                    lkmSelection = LkmSelection.KmiNone
-                    showMessage(resources.getString(R.string.install_only_support_ko_file))
-                }
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: ->
+        if (uri != null) {
+            if (isKoFile(context, uri)) {
+                lkmSelection = LkmSelection.LkmUri(uri)
+            } else {
+                lkmSelection = LkmSelection.KmiNone
+                showMessage(resources.getString(R.string.install_only_support_ko_file))
             }
         }
     }
     val selectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (it.resultCode == Activity.RESULT_OK) {
-            it.data?.data?.let { uri ->
-                installMethod = InstallMethod.SelectFile(uri, summary = if (isGkiDevice) selectFileTip else selectFileTipNoGki)
-            }
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            installMethod = InstallMethod.SelectFile(uri, summary = if (isGkiDevice) selectFileTip else selectFileTipNoGki)
         }
     }
 
@@ -242,10 +238,10 @@ fun InstallScreen() {
         onSelectMethod = { method -> installMethod = method },
         onDownloadFile = { downloadDialogShown = true },
         onSelectBootImage = {
-            selectImageLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/octet-stream" })
+            selectImageLauncher.launch(arrayOf("application/octet-stream"))
         },
         onUploadLkm = {
-            selectLkmLauncher.launch(Intent(Intent.ACTION_GET_CONTENT).apply { type = "application/octet-stream" })
+            selectLkmLauncher.launch(arrayOf("application/octet-stream"))
         },
         onClearLkm = { lkmSelection = LkmSelection.KmiNone },
         onSelectPartition = { index ->
