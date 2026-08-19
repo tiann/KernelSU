@@ -269,12 +269,13 @@ static void initialize_fake_status()
 
     struct selinux_kernel_status *new_status = page_address(new_page);
     memcpy(new_status, status, sizeof(*status));
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
+    new_status->sequence = 4;
+#else
+    new_status->sequence = 0;
+#endif
     if (ksu_late_loaded && !new_status->enforcing) {
-        // In late_load mode, we may be loaded when selinux was set to permissive
-        // So we need to modify the sequence value
-        // We assume that setenforce 0 is just called once
         new_status->enforcing = 1;
-        new_status->sequence = new_status->policyload ? 4 : 0;
     }
 
     fake_status = new_page;
