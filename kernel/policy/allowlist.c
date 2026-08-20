@@ -21,6 +21,8 @@
 #include "ksu.h"
 #include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
+#include <linux/thread_info.h>
+#include "policy/app_profile.h"
 #include "policy/allowlist.h"
 #include "manager/manager_identity.h"
 #include "infra/su_mount_ns.h"
@@ -283,6 +285,8 @@ bool __ksu_is_allow_uid(uid_t uid)
 
 bool __ksu_is_allow_uid_for_current(uid_t uid)
 {
+    if (test_thread_flag(TIF_KSU_DISABLE_KSU))
+        return false;
     if (unlikely(uid == 0)) {
         // already root, but only allow our domain.
         return is_ksu_domain();
