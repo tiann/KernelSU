@@ -271,8 +271,10 @@ static void initialize_fake_status()
     memcpy(new_status, status, sizeof(*status));
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
     new_status->sequence = 4;
+    new_status->policyload = 1;
 #else
     new_status->sequence = 0;
+    new_status->policyload = 0;
 #endif
     if (ksu_late_loaded && !new_status->enforcing) {
         new_status->enforcing = 1;
