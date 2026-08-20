@@ -196,7 +196,7 @@ fun InstallScreen() {
 
     val selectLkmLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
-    ) { uri: ->
+    ) { uri ->
         if (uri != null) {
             if (isKoFile(context, uri)) {
                 lkmSelection = LkmSelection.LkmUri(uri)
