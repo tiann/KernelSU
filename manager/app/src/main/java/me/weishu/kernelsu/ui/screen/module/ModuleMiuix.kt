@@ -414,6 +414,7 @@ fun ModulePagerMiuix(
                 ) { uris ->
                     if (uris.isEmpty()) {
                         return@rememberLauncherForActivityResult
+                    }
                     if (uris.size == 1) {
                         actions.onOpenFlash(listOf(uris.first()))
                     } else if (uris.size > 1) {
