@@ -44,6 +44,7 @@ class SettingsViewModel(
             val enableNavigationBadge = repo.enableNavigationBadge
             val pageScale = repo.pageScale
             val enableWebDebugging = repo.enableWebDebugging
+            val allowWebUiExternalContent = repo.allowWebUiExternalContent
             val colorStyle = repo.colorStyle
             val colorSpec = repo.colorSpec
             val isLkmMode = repo.isLkmMode()
@@ -84,6 +85,7 @@ class SettingsViewModel(
                     enableNavigationBadge = enableNavigationBadge,
                     pageScale = pageScale,
                     enableWebDebugging = enableWebDebugging,
+                    allowWebUiExternalContent = allowWebUiExternalContent,
                     colorStyle = colorStyle,
                     colorSpec = colorSpec,
                     suCompatStatus = suCompatStatus,
@@ -224,6 +226,11 @@ class SettingsViewModel(
     fun setEnableWebDebugging(enabled: Boolean) {
         repo.enableWebDebugging = enabled
         _uiState.update { it.copy(enableWebDebugging = enabled) }
+    }
+
+    fun setAllowWebUiExternalContent(enabled: Boolean) {
+        repo.allowWebUiExternalContent = enabled
+        _uiState.update { it.copy(allowWebUiExternalContent = enabled) }
     }
 
     fun setSuCompatMode(mode: Int) {

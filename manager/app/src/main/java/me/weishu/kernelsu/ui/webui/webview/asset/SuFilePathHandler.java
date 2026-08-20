@@ -1,4 +1,4 @@
-package me.weishu.kernelsu.ui.webui;
+package me.weishu.kernelsu.ui.webui.webview.asset;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
+
+import me.weishu.kernelsu.ui.webui.model.Insets;
+import me.weishu.kernelsu.ui.webui.util.MimeUtil;
 
 /**
  * Handler class to open files from file system by root access
@@ -94,7 +97,7 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
             mInsetsSupplier = insetsSupplier;
             mOnInsetsRequestedListener = onInsetsRequestedListener;
             mDirectory = new File(getCanonicalDirPath(directory));
-            if (!isAllowedInternalStorageDir(context)) {
+            if (!isAllowedInternalStorageDir()) {
                 throw new IllegalArgumentException("The given directory \"" + directory
                         + "\" doesn't exist under an allowed app internal storage directory");
             }
@@ -148,7 +151,7 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
         return mimeType == null ? DEFAULT_MIME_TYPE : mimeType;
     }
 
-    private boolean isAllowedInternalStorageDir(@NonNull Context context) throws IOException {
+    private boolean isAllowedInternalStorageDir() throws IOException {
         String dir = getCanonicalDirPath(mDirectory);
 
         for (String forbiddenPath : FORBIDDEN_DATA_DIRS) {
