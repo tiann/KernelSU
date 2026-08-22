@@ -58,6 +58,11 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
     set_thread_res_uid(uid, uid, uid).ok();
 }
 
+fn set_selinux_context(context: &str) {
+    std::fs::write("/proc/thread-self/attr/current", context)
+        .expect("failed to set SELinux context");
+}
+
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
         if unsafe { libc::isatty(fd) != 1 } {
@@ -162,6 +167,7 @@ pub fn root_shell() -> Result<()> {
         "ksu-no-new-privs",
         "Prevent this process (and its children) from privilege re-escalation via KernelSU",
     );
+    opts.optopt("Z", "context", "Specify the SELinux context", "CONTEXT");
 
     // Replace -cn with -z, -mm with -M for supporting getopt_long
     let args = args
@@ -209,6 +215,7 @@ pub fn root_shell() -> Result<()> {
     let mount_master = matches.opt_present("M");
     let use_fd_wrapper = !matches.opt_present("W");
     let ksu_no_new_privs = matches.opt_present("ksu-no-new-privs");
+    let selinux_context = matches.opt_str("Z");
 
     let groups = matches
         .opt_strs("G")
@@ -315,6 +322,9 @@ pub fn root_shell() -> Result<()> {
             }
 
             set_identity(uid, gid, &groups);
+            if let Some(context) = selinux_context.as_deref() {
+                set_selinux_context(context);
+            }
 
             Result::Ok(())
         })
