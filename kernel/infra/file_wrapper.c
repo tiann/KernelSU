@@ -12,11 +12,10 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 #include <linux/mount.h>
-
-#include "objsec.h"
+#include <linux/module.h>
+#include <linux/security.h>
 
 #include "klog.h" // IWYU pragma: keep
-#include "selinux/selinux.h"
 
 #include "infra/file_wrapper.h"
 
@@ -521,14 +520,16 @@ int ksu_install_file_wrapper(int fd)
     // It should be safe to modify them since the file hasn't been published.
 
     struct inode *wrapper_inode = file_inode(wrapper_file);
+    /*
+     * The wrapper needs a unique inode because libc uses fstat() to identify
+     * TTYs. It is not pathname-addressable, so restore the S_PRIVATE flag
+     * that secure anonymous-inode creation clears. SELinux intentionally
+     * skips inode permission checks for private inodes; descriptor handoff is
+     * still controlled by the file's creator SID and the existing fd/use rule.
+     */
+    wrapper_inode->i_flags |= S_PRIVATE;
     // libc's stdio relies on the fstat() result of the fd to determine its buffer type.
     wrapper_inode->i_mode = file_inode(orig_file)->i_mode;
-    struct inode_security_struct *wrapper_sec = selinux_inode(wrapper_inode);
-    // Use ksu_file_sid to bypass SELinux check.
-    // When we call `su` from terminal app, this is useful.
-    if (wrapper_sec) {
-        wrapper_sec->sid = ksu_file_sid;
-    }
     // Install open file operation for inode.
     wrapper_inode->i_fop = &ksu_file_wrapper_inode_fops;
 

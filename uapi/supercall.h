@@ -176,5 +176,8 @@ static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
 static const __u32 KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT = _IO('K', 21);
+static const __u32 KSU_IOCTL_PREPARE_UNLOAD = _IO('K', 22);
+static const __u32 KSU_IOCTL_COMMIT_UNLOAD = _IO('K', 23);
+static const __u32 KSU_IOCTL_ABORT_UNLOAD = _IO('K', 24);
 
 #endif

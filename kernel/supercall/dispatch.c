@@ -17,6 +17,7 @@
 #include "selinux/selinux.h"
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
+#include "hook/syscall_hook_manager.h"
 #include "policy/app_profile.h"
 #include "sulog/event.h"
 #include "sulog/fd.h"
@@ -101,37 +102,26 @@ static int do_report_event(void __user *arg)
     }
 
     switch (cmd.event) {
-    case EVENT_POST_FS_DATA: {
-        static bool post_fs_data_lock = false;
-        if (!post_fs_data_lock) {
-            post_fs_data_lock = true;
-            if (ksu_late_loaded) {
-                pr_info("post-fs-data skipped (late load)\n");
-            } else {
-                pr_info("post-fs-data triggered\n");
-                on_post_fs_data();
-            }
+    case EVENT_POST_FS_DATA:
+        if (ksu_late_loaded) {
+            pr_info("post-fs-data skipped (late load)\n");
+        } else {
+            pr_info("post-fs-data triggered\n");
+            on_post_fs_data();
         }
         break;
-    }
-    case EVENT_BOOT_COMPLETED: {
-        static bool boot_complete_lock = false;
-        if (!boot_complete_lock) {
-            boot_complete_lock = true;
-            if (ksu_late_loaded) {
-                pr_info("boot_complete skipped (late load)\n");
-            } else {
-                pr_info("boot_complete triggered\n");
-                on_boot_completed();
-            }
+    case EVENT_BOOT_COMPLETED:
+        if (ksu_late_loaded) {
+            pr_info("boot_complete skipped (late load)\n");
+        } else {
+            pr_info("boot_complete triggered\n");
+            on_boot_completed();
         }
         break;
-    }
-    case EVENT_MODULE_MOUNTED: {
+    case EVENT_MODULE_MOUNTED:
         pr_info("module mounted!\n");
         on_module_mounted();
         break;
-    }
     default:
         break;
     }
@@ -468,12 +458,20 @@ static int do_manage_mark(void __user *arg)
         break;
     }
     case KSU_MARK_UNMARK: {
+        /*
+         * SYSCALL_TRACEPOINT is shared by all sys_enter consumers. Preserve
+         * the existing tooling API when KernelSU is the proven sole consumer,
+         * but refuse to clear shared marks while perf/ftrace/eBPF also owns it.
+         */
+        if (!ksu_syscall_tracepoint_allows_selective_marks())
+            return -EBUSY;
+
         if (cmd.pid == 0) {
             ksu_unmark_all_process();
         } else {
             ret = ksu_set_task_mark(cmd.pid, false);
             if (ret < 0) {
-                pr_err("manage_mark: set_unmark failed for pid %d: %d\n", cmd.pid, ret);
+                pr_err("manage_mark: unset_mark failed for pid %d: %d\n", cmd.pid, ret);
                 return ret;
             }
         }
@@ -527,14 +525,36 @@ static int do_nuke_ext4_sysfs(void __user *arg)
     return nuke_ext4_sysfs(mnt);
 }
 
+#define KSU_MAX_UMOUNT_ENTRIES 512U
+
 struct list_head mount_list = LIST_HEAD_INIT(mount_list);
 DECLARE_RWSEM(mount_list_lock);
+static unsigned int mount_list_count;
+
+static int copy_umount_path(char *buf, size_t size, const char __user *path)
+{
+    long len;
+
+    if (!path)
+        return -EINVAL;
+
+    len = strncpy_from_user(buf, path, size);
+    if (len < 0)
+        return -EFAULT;
+    if (len == 0)
+        return -EINVAL;
+    if (len >= size)
+        return -ENAMETOOLONG;
+
+    return 0;
+}
 
 static int add_try_umount(void __user *arg)
 {
     struct mount_entry *new_entry, *entry, *tmp;
     struct ksu_add_try_umount_cmd cmd;
     char buf[256] = { 0 };
+    int ret;
 
     if (copy_from_user(&cmd, arg, sizeof cmd))
         return -EFAULT;
@@ -549,17 +569,16 @@ static int add_try_umount(void __user *arg)
             kfree(entry->umountable);
             kfree(entry);
         }
+        mount_list_count = 0;
         up_write(&mount_list_lock);
 
         return 0;
     }
 
     case KSU_UMOUNT_ADD: {
-        long len = strncpy_from_user(buf, (const char __user *)cmd.arg, 256);
-        if (len <= 0)
-            return -EFAULT;
-
-        buf[sizeof(buf) - 1] = '\0';
+        ret = copy_umount_path(buf, sizeof(buf), (const char __user *)cmd.arg);
+        if (ret)
+            return ret;
 
         new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
         if (!new_entry)
@@ -574,7 +593,6 @@ static int add_try_umount(void __user *arg)
         down_write(&mount_list_lock);
 
         // disallow dupes
-        // if this gets too many, we can consider moving this whole task to a kthread
         list_for_each_entry (entry, &mount_list, list) {
             if (!strcmp(entry->umountable, buf)) {
                 pr_info("cmd_add_try_umount: %s is already here!\n", buf);
@@ -585,28 +603,26 @@ static int add_try_umount(void __user *arg)
             }
         }
 
-        // now check flags and add
-        // this also serves as a null check
-        if (cmd.flags)
-            new_entry->flags = cmd.flags;
-        else
-            new_entry->flags = 0;
+        if (mount_list_count >= KSU_MAX_UMOUNT_ENTRIES) {
+            up_write(&mount_list_lock);
+            kfree(new_entry->umountable);
+            kfree(new_entry);
+            return -E2BIG;
+        }
 
-        // debug
+        new_entry->flags = cmd.flags;
         list_add(&new_entry->list, &mount_list);
+        ++mount_list_count;
         up_write(&mount_list_lock);
         pr_info("cmd_add_try_umount: %s added!\n", buf);
 
         return 0;
     }
 
-    // this is just strcmp'd wipe anyway
     case KSU_UMOUNT_DEL: {
-        long len = strncpy_from_user(buf, (const char __user *)cmd.arg, sizeof(buf) - 1);
-        if (len <= 0)
-            return -EFAULT;
-
-        buf[sizeof(buf) - 1] = '\0';
+        ret = copy_umount_path(buf, sizeof(buf), (const char __user *)cmd.arg);
+        if (ret)
+            return ret;
 
         down_write(&mount_list_lock);
         list_for_each_entry_safe (entry, tmp, &mount_list, list) {
@@ -615,6 +631,9 @@ static int add_try_umount(void __user *arg)
                 list_del(&entry->list);
                 kfree(entry->umountable);
                 kfree(entry);
+                if (mount_list_count)
+                    --mount_list_count;
+                break;
             }
         }
         up_write(&mount_list_lock);
@@ -888,5 +907,6 @@ void ksu_supercall_cleanup_state(void)
         kfree(entry->umountable);
         kfree(entry);
     }
+    mount_list_count = 0;
     up_write(&mount_list_lock);
 }

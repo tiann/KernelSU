@@ -57,7 +57,7 @@ static void __user *userspace_stack_buffer(const void *d, size_t len)
 {
     // To avoid having to mmap a page in userspace, just write below the stack
     // pointer.
-    char __user *p = (void __user *)current_user_stack_pointer() - len;
+    char __user *p = (void __user *)ksu_user_stack_scratch_top(current_user_stack_pointer()) - len;
 
     return copy_to_user(p, d, len) ? NULL : p;
 }
@@ -267,7 +267,7 @@ void __init ksu_sucompat_init()
     }
 }
 
-void __exit ksu_sucompat_exit()
+void ksu_sucompat_exit()
 {
     ksu_unregister_feature_handler(KSU_FEATURE_SU_COMPAT);
 }

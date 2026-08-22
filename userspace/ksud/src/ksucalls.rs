@@ -3,14 +3,30 @@ use anyhow::bail;
 
 use crate::ksu_uapi;
 use std::fs;
-use std::os::fd::RawFd;
-use std::sync::OnceLock;
+use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
-// Global driver fd cache
-static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
+enum DriverFdState {
+    Empty,
+    Owned(OwnedFd),
+    TakenForUnload,
+}
+
+static DRIVER_FD: Mutex<DriverFdState> = Mutex::new(DriverFdState::Empty);
 static INFO_CACHE: OnceLock<ksu_uapi::ksu_get_info_cmd> = OnceLock::new();
 
-fn scan_driver_fd() -> Option<RawFd> {
+fn lock_driver_fd() -> MutexGuard<'static, DriverFdState> {
+    DRIVER_FD
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
+
+fn dup_fd_cloexec(fd: RawFd) -> Option<OwnedFd> {
+    let duplicated = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 0) };
+    (duplicated >= 0).then(|| unsafe { OwnedFd::from_raw_fd(duplicated) })
+}
+
+fn scan_driver_fd() -> Option<OwnedFd> {
     let fd_dir = fs::read_dir("/proc/self/fd").ok()?;
 
     for entry in fd_dir.flatten() {
@@ -18,8 +34,13 @@ fn scan_driver_fd() -> Option<RawFd> {
             let link_path = format!("/proc/self/fd/{fd_num}");
             if let Ok(target) = fs::read_link(&link_path) {
                 let target_str = target.to_string_lossy();
-                if target_str.contains("[ksu_driver]") {
-                    return Some(fd_num);
+                if target_str.contains("[ksu_driver]")
+                    && let Some(duplicated) = dup_fd_cloexec(fd_num)
+                {
+                    // Never create a second OwnedFd for the same raw descriptor.
+                    // The duplicate has independent ownership even if the
+                    // descriptor discovered through /proc closes concurrently.
+                    return Some(duplicated);
                 }
             }
         }
@@ -28,31 +49,67 @@ fn scan_driver_fd() -> Option<RawFd> {
     None
 }
 
-// Get cached driver fd
-fn init_driver_fd() -> Option<RawFd> {
-    let fd = scan_driver_fd();
-    if fd.is_none() {
-        let mut fd = -1;
-        unsafe {
-            libc::syscall(
-                libc::SYS_reboot,
-                ksu_uapi::KSU_INSTALL_MAGIC1,
-                ksu_uapi::KSU_INSTALL_MAGIC2,
-                0,
-                &mut fd,
-            );
-        };
-        if fd >= 0 { Some(fd) } else { None }
-    } else {
-        fd
+fn request_driver_fd() -> Option<OwnedFd> {
+    let mut fd = -1;
+    unsafe {
+        libc::syscall(
+            libc::SYS_reboot,
+            ksu_uapi::KSU_INSTALL_MAGIC1,
+            ksu_uapi::KSU_INSTALL_MAGIC2,
+            0,
+            &mut fd,
+        );
+    };
+    (fd >= 0).then(|| unsafe { OwnedFd::from_raw_fd(fd) })
+}
+
+fn init_driver_fd() -> Option<OwnedFd> {
+    scan_driver_fd().or_else(request_driver_fd)
+}
+
+fn ensure_driver_fd_locked(state: &mut DriverFdState) -> Option<RawFd> {
+    if matches!(&*state, DriverFdState::Empty)
+        && let Some(fd) = init_driver_fd()
+    {
+        *state = DriverFdState::Owned(fd);
+    }
+
+    match state {
+        DriverFdState::Owned(fd) => Some(fd.as_raw_fd()),
+        DriverFdState::Empty | DriverFdState::TakenForUnload => None,
     }
 }
 
-// ioctl wrapper using libc
-fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
+pub fn install_driver_fd() -> Option<OwnedFd> {
+    request_driver_fd()
+}
+
+pub fn take_driver_fd() -> Option<OwnedFd> {
+    let mut state = lock_driver_fd();
+    ensure_driver_fd_locked(&mut state)?;
+
+    match std::mem::replace(&mut *state, DriverFdState::TakenForUnload) {
+        DriverFdState::Owned(fd) => Some(fd),
+        other => {
+            *state = other;
+            None
+        }
+    }
+}
+
+pub fn restore_driver_fd(fd: OwnedFd) {
+    let mut state = lock_driver_fd();
+    if matches!(
+        &*state,
+        DriverFdState::TakenForUnload | DriverFdState::Empty
+    ) {
+        *state = DriverFdState::Owned(fd);
+    }
+}
+
+fn ksuctl_fd<T>(fd: RawFd, request: u32, arg: *mut T) -> std::io::Result<i32> {
     use std::io;
 
-    let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     unsafe {
         let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
         if ret < 0 {
@@ -63,7 +120,20 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
     }
 }
 
-// API implementations
+#[allow(clippy::significant_drop_tightening)]
+fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
+    use std::io;
+
+    // Keep the cache lock through ioctl so unload cannot take and close this
+    // descriptor while the syscall is using its raw fd number.
+    let mut state = lock_driver_fd();
+    if matches!(&*state, DriverFdState::TakenForUnload) {
+        return Err(io::Error::from_raw_os_error(libc::EBUSY));
+    }
+    let fd = ensure_driver_fd_locked(&mut state).unwrap_or(-1);
+    ksuctl_fd(fd, request, arg)
+}
+
 pub fn get_info() -> ksu_uapi::ksu_get_info_cmd {
     *INFO_CACHE.get_or_init(|| {
         let mut cmd = ksu_uapi::ksu_get_info_cmd {
@@ -153,8 +223,6 @@ pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> std::io::Result<i32
     ksuctl(ksu_uapi::KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
-/// Get feature value and support status from kernel
-/// Returns (value, supported)
 pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {
     let mut cmd = ksu_uapi::ksu_get_feature_cmd {
         feature_id,
@@ -165,7 +233,6 @@ pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {
     Ok((cmd.value, cmd.supported != 0))
 }
 
-/// Set feature value in kernel
 pub fn set_feature(feature_id: u32, value: u64) -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_set_feature_cmd { feature_id, value };
     ksuctl(ksu_uapi::KSU_IOCTL_SET_FEATURE, &raw mut cmd)?;
@@ -187,7 +254,6 @@ pub fn get_sulog_fd() -> std::io::Result<RawFd> {
     Ok(result)
 }
 
-/// Get mark status for a process (pid=0 returns total marked count)
 pub fn mark_get(pid: i32) -> std::io::Result<u32> {
     let mut cmd = ksu_uapi::ksu_manage_mark_cmd {
         operation: ksu_uapi::KSU_MARK_GET,
@@ -198,7 +264,6 @@ pub fn mark_get(pid: i32) -> std::io::Result<u32> {
     Ok(cmd.result)
 }
 
-/// Mark a process (pid=0 marks all processes)
 pub fn mark_set(pid: i32) -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_manage_mark_cmd {
         operation: ksu_uapi::KSU_MARK_MARK,
@@ -209,7 +274,6 @@ pub fn mark_set(pid: i32) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Unmark a process (pid=0 unmarks all processes)
 pub fn mark_unset(pid: i32) -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_manage_mark_cmd {
         operation: ksu_uapi::KSU_MARK_UNMARK,
@@ -220,7 +284,6 @@ pub fn mark_unset(pid: i32) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Refresh mark for all running processes
 pub fn mark_refresh() -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_manage_mark_cmd {
         operation: ksu_uapi::KSU_MARK_REFRESH,
@@ -233,14 +296,13 @@ pub fn mark_refresh() -> std::io::Result<()> {
 
 pub fn nuke_ext4_sysfs(mnt: &str) -> anyhow::Result<()> {
     let c_mnt = std::ffi::CString::new(mnt)?;
-    let mut ioctl_cmd = ksu_uapi::ksu_nuke_ext4_sysfs_cmd {
+    let mut ioctl_cmd = crate::ksu_uapi::ksu_nuke_ext4_sysfs_cmd {
         arg: c_mnt.as_ptr() as u64,
     };
     ksuctl(ksu_uapi::KSU_IOCTL_NUKE_EXT4_SYSFS, &raw mut ioctl_cmd)?;
     Ok(())
 }
 
-/// Wipe all entries from umount list
 pub fn umount_list_wipe() -> std::io::Result<()> {
     let mut cmd = ksu_uapi::ksu_add_try_umount_cmd {
         arg: 0,
@@ -251,7 +313,6 @@ pub fn umount_list_wipe() -> std::io::Result<()> {
     Ok(())
 }
 
-/// Add mount point to umount list
 pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
     let c_path = std::ffi::CString::new(path)?;
     let mut cmd = ksu_uapi::ksu_add_try_umount_cmd {
@@ -263,7 +324,6 @@ pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Delete mount point from umount list
 pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
     let c_path = std::ffi::CString::new(path)?;
     let mut cmd = ksu_uapi::ksu_add_try_umount_cmd {
@@ -275,7 +335,6 @@ pub fn umount_list_del(path: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Set current process's process group to init_group (pgid = 0)
 pub fn set_init_pgrp() -> std::io::Result<()> {
     ksuctl(
         ksu_uapi::KSU_IOCTL_SET_INIT_PGRP,
@@ -292,5 +351,32 @@ pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {
     if result != 0 {
         bail!("unexpected result: {result}");
     }
+    Ok(())
+}
+
+pub fn prepare_unload_on(fd: RawFd) -> std::io::Result<()> {
+    ksuctl_fd(
+        fd,
+        ksu_uapi::KSU_IOCTL_PREPARE_UNLOAD,
+        std::ptr::null_mut::<u8>(),
+    )?;
+    Ok(())
+}
+
+pub fn commit_unload_on(fd: RawFd) -> std::io::Result<()> {
+    ksuctl_fd(
+        fd,
+        ksu_uapi::KSU_IOCTL_COMMIT_UNLOAD,
+        std::ptr::null_mut::<u8>(),
+    )?;
+    Ok(())
+}
+
+pub fn abort_unload_on(fd: RawFd) -> std::io::Result<()> {
+    ksuctl_fd(
+        fd,
+        ksu_uapi::KSU_IOCTL_ABORT_UNLOAD,
+        std::ptr::null_mut::<u8>(),
+    )?;
     Ok(())
 }

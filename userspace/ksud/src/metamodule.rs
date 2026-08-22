@@ -5,7 +5,7 @@
 //! and provide hooks for module installation/uninstallation.
 
 use anyhow::{Context, Result, ensure};
-use log::{info, warn};
+use log::{debug, info, warn};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -13,7 +13,7 @@ use std::{
 };
 
 use crate::module::ModuleType::All;
-use crate::{assets, defs};
+use crate::{assets, defs, ksucalls};
 
 /// Determine whether the provided module properties mark it as a metamodule
 pub fn is_metamodule(props: &HashMap<String, String>) -> bool {
@@ -78,6 +78,116 @@ pub fn get_metamodule_id() -> Option<String> {
 /// Check if metamodule exists
 pub fn has_metamodule() -> bool {
     get_metamodule_path().is_some()
+}
+
+fn unescape_mountinfo_field(field: &str) -> String {
+    let bytes = field.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+
+    while i < bytes.len() {
+        if bytes[i] == b'\\'
+            && i + 3 < bytes.len()
+            && matches!(bytes[i + 1], b'0'..=b'7')
+            && matches!(bytes[i + 2], b'0'..=b'7')
+            && matches!(bytes[i + 3], b'0'..=b'7')
+        {
+            out.push(
+                (bytes[i + 1] - b'0') * 64 + (bytes[i + 2] - b'0') * 8 + (bytes[i + 3] - b'0'),
+            );
+            i += 4;
+        } else {
+            out.push(bytes[i]);
+            i += 1;
+        }
+    }
+
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+fn path_is_at_or_under(path: &str, base: &str) -> bool {
+    let base = base.trim_end_matches('/');
+    path == base
+        || path
+            .strip_prefix(base)
+            .is_some_and(|rest| rest.starts_with('/'))
+}
+
+fn is_module_mount_root(root: &str) -> bool {
+    path_is_at_or_under(root, "/adb/modules")
+        || path_is_at_or_under(root, "/adb/metamodule")
+        || path_is_at_or_under(root, defs::MODULE_DIR)
+        || path_is_at_or_under(root, defs::METAMODULE_DIR)
+}
+
+fn io_errno(err: &anyhow::Error) -> Option<i32> {
+    err.downcast_ref::<std::io::Error>()
+        .and_then(std::io::Error::raw_os_error)
+}
+
+fn register_module_mounts() -> Result<()> {
+    let mountinfo = std::fs::read_to_string("/proc/self/mountinfo")
+        .context("Failed to inspect module mounts")?;
+    let mut mounts = Vec::new();
+
+    for line in mountinfo.lines() {
+        let Some((left, right)) = line.split_once(" - ") else {
+            continue;
+        };
+        let mut left = left.split_ascii_whitespace();
+        let Some(root) = left.nth(3) else {
+            continue;
+        };
+        let Some(target) = left.next() else {
+            continue;
+        };
+        let mut right = right.split_ascii_whitespace();
+        right.next();
+        let Some(source) = right.next() else {
+            continue;
+        };
+
+        let root = unescape_mountinfo_field(root);
+        if source != "KSU" && !is_module_mount_root(&root) {
+            continue;
+        }
+        mounts.push(unescape_mountinfo_field(target));
+    }
+
+    mounts.sort_by(|a, b| {
+        let a_depth = a.bytes().filter(|ch| *ch == b'/').count();
+        let b_depth = b.bytes().filter(|ch| *ch == b'/').count();
+        a_depth.cmp(&b_depth).then_with(|| a.cmp(b))
+    });
+    mounts.dedup();
+
+    if mounts.is_empty() {
+        return Ok(());
+    }
+
+    let mut added = Vec::new();
+    for mount in &mounts {
+        match ksucalls::umount_list_add(mount, 0) {
+            Ok(()) => added.push(mount.clone()),
+            Err(err) if io_errno(&err) == Some(libc::EEXIST) => {
+                debug!("Module mount already registered: {mount}");
+            }
+            Err(err) => {
+                for registered in added.iter().rev() {
+                    if let Err(rollback_err) = ksucalls::umount_list_del(registered) {
+                        warn!(
+                            "Failed to roll back module mount registration {registered}: {rollback_err:#}"
+                        );
+                    }
+                }
+                return Err(err)
+                    .with_context(|| format!("Failed to register module mount {mount}"));
+            }
+        }
+    }
+
+    ksucalls::report_module_mounted();
+    Ok(())
 }
 
 /// Check if it's safe to install a regular module
@@ -267,10 +377,16 @@ pub fn exec_mount_script(module_dir: &str) -> Result<()> {
         .env("MODULE_DIR", module_dir)
         .status()?;
 
+    // Inspect and register mounts even when the script failed so partial mounts
+    // do not silently escape app-namespace isolation. A successful script must
+    // also have a fully successful registration transaction.
+    let registration = register_module_mounts();
+
     ensure!(
         result.success(),
         "Metamodule mount script failed with status: {result:?}"
     );
+    registration?;
 
     info!("Metamodule mount script executed successfully");
     Ok(())
