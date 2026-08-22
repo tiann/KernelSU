@@ -43,7 +43,7 @@ fn print_usage(program: &str, opts: &Options) {
     print!("{}", opts.usage(&brief));
 }
 
-fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
+fn set_identity(uid: u32, gid: u32, groups: &[u32]) -> Result<()> {
     rustix::thread::set_thread_groups(
         groups
             .iter()
@@ -51,16 +51,17 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) {
             .collect::<Vec<_>>()
             .as_ref(),
     )
-    .ok();
+    .with_context(|| format!("setgroups {groups:?}"))?;
     let gid = Gid::from_raw(gid);
     let uid = Uid::from_raw(uid);
-    set_thread_res_gid(gid, gid, gid).ok();
-    set_thread_res_uid(uid, uid, uid).ok();
+    set_thread_res_gid(gid, gid, gid).with_context(|| format!("setresgid {gid}"))?;
+    set_thread_res_uid(uid, uid, uid).with_context(|| format!("setresuid {uid}"))?;
+    Ok(())
 }
 
-fn set_selinux_context(context: &str) {
-    std::fs::write("/proc/thread-self/attr/current", context)
-        .expect("failed to set SELinux context");
+fn set_selinux_context(context: &str) -> Result<()> {
+    std::fs::write("/proc/thread-self/attr/current", context)?;
+    Ok(())
 }
 
 fn wrap_tty(fd: c_int) {
@@ -307,32 +308,26 @@ pub fn root_shell() -> Result<()> {
     // escape from the current cgroup and become session leader
     // WARNING!!! This cause some root shell hang forever!
     // command = command.process_group(0);
-    unsafe {
-        command.pre_exec(move || {
-            umask(0o22);
-            utils::switch_cgroups();
-
-            // switch to global mount namespace
-            if mount_master {
-                let _ = utils::switch_mnt_ns(1);
-            }
-
-            if use_fd_wrapper {
-                wrap_tty(0);
-                wrap_tty(1);
-                wrap_tty(2);
-            }
-
-            set_identity(uid, gid, &groups);
-            if let Some(context) = selinux_context.as_deref() {
-                set_selinux_context(context);
-            }
-
-            Result::Ok(())
-        })
-    };
 
     command.args(args).arg0(arg0);
+    umask(0o22);
+    utils::switch_cgroups();
+
+    // switch to global mount namespace
+    if mount_master {
+        let _ = utils::switch_mnt_ns(1);
+    }
+
+    if use_fd_wrapper {
+        wrap_tty(0);
+        wrap_tty(1);
+        wrap_tty(2);
+    }
+
+    set_identity(uid, gid, &groups)?;
+    if let Some(context) = selinux_context.as_deref() {
+        set_selinux_context(context).with_context(|| format!("setcontext {context}"))?;
+    }
     Err(command.exec().into())
 }
 
