@@ -410,23 +410,11 @@ fun ModulePagerMiuix(
                     }
                 )
                 val selectZipLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult()
-                ) { activityResult ->
-                    val uris = mutableListOf<Uri>()
-                    if (activityResult.resultCode != RESULT_OK) {
+                    contract = ActivityResultContracts.OpenMultipleDocuments()
+                ) { uris ->
+                    if (uris.isEmpty()) {
                         return@rememberLauncherForActivityResult
                     }
-                    val data = activityResult.data ?: return@rememberLauncherForActivityResult
-                    val clipData = data.clipData
-
-                    if (clipData != null) {
-                        for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
-                        }
-                    } else {
-                        data.data?.let { uris.add(it) }
-                    }
-
                     if (uris.size == 1) {
                         actions.onOpenFlash(listOf(uris.first()))
                     } else if (uris.size > 1) {
@@ -450,11 +438,7 @@ fun ModulePagerMiuix(
                     shadowElevation = 0.dp,
                     onClick = {
                         // Select the zip files to install
-                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                            type = "application/zip"
-                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                        }
-                        selectZipLauncher.launch(intent)
+                        selectZipLauncher.launch(arrayOf("application/zip"))
                     },
                     content = {
                         Icon(

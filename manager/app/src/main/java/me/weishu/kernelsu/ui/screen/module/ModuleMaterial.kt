@@ -373,23 +373,11 @@ fun ModulePagerMaterial(
             if (uiState.installButtonVisible) {
                 val moduleInstall = stringResource(id = R.string.module_install)
                 val selectZipLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult()
-                ) { activityResult ->
-                    if (activityResult.resultCode != RESULT_OK) {
+                    contract = ActivityResultContracts.OpenMultipleDocuments()
+                ) { uris ->
+                    if (uris.isEmpty()) {
                         return@rememberLauncherForActivityResult
                     }
-                    val data = activityResult.data ?: return@rememberLauncherForActivityResult
-                    val clipData = data.clipData
-
-                    val uris = mutableListOf<Uri>()
-                    if (clipData != null) {
-                        for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
-                        }
-                    } else {
-                        data.data?.let { uris.add(it) }
-                    }
-
                     actions.onOpenFlash(uris)
                 }
 
@@ -397,12 +385,8 @@ fun ModulePagerMaterial(
                     modifier = Modifier.padding(bottom = bottomInnerPadding),
                     expanded = fabExpanded,
                     onClick = {
-                        // Select the zip files to install
-                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                            type = "application/zip"
-                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                        }
-                        selectZipLauncher.launch(intent)
+                        // Select the zip files to instal
+                        selectZipLauncher.launch(arrayOf("application/zip"))
                     },
                     icon = { Icon(Icons.Filled.Add, moduleInstall) },
                     text = { Text(text = moduleInstall) },
