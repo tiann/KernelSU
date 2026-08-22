@@ -104,7 +104,12 @@
     <string name="select_kmi">Scegli il KMI</string>
     <string name="install_next">Avanti</string>
     <string name="direct_install">Installazione diretta (Raccomandata)</string>
-    <string name="select_file">Scegli un file</string>
+    <string name="select_file">Seleziona un file e applica la patch</string>
+    <string name="download_file">Scarica un file e applica la patch</string>
+    <string name="download_dialog_title">Inserisci l\'URL dell\'immagine</string>
+    <string name="download_dialog_msg">Immagine OTA completa o immagine di fabbrica</string>
+    <string name="download_no_boot_partition">Nessuna partizione boot, init_boot o vendor_boot trovata nell\'immagine</string>
+    <string name="download_probe_failed">Impossibile analizzare l\'immagine: %1$s</string>
     <string name="install_inactive_slot">Installa nello slot inattivo (dopo OTA)</string>
     <string name="install_inactive_slot_warning">Il tuo dispositivo sarà **FORZATO** ad avviarsi nello slot inattivo dopo il riavvio!
 \nUsa questa opzione solo quando l\'applicazione dell\'aggiornamento OTA è terminata.

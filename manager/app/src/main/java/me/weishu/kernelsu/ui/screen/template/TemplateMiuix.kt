@@ -79,6 +79,8 @@ import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
+import top.yukonga.miuix.kmp.basic.SnackbarHost
+import top.yukonga.miuix.kmp.basic.SnackbarHostState
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -104,6 +106,7 @@ import top.yukonga.miuix.kmp.utils.scrollEndHaptic
 fun AppProfileTemplateScreenMiuix(
     state: TemplateUiState,
     actions: TemplateActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
 
@@ -178,6 +181,12 @@ fun AppProfileTemplateScreenMiuix(
             )
         },
         popupHost = { },
+        snackbarHost = {
+            SnackbarHost(
+                state = snackBarHost,
+                modifier = Modifier.padding(bottom = 20.dp),
+            )
+        },
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         if (state.templateList.isEmpty() && !state.isRefreshing) {

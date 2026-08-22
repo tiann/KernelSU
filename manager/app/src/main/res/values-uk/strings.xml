@@ -102,7 +102,12 @@
     <string name="settings_check_update_summary">Автоматична перевірка оновлень під час відкриття програми.</string>
     <string name="enable_web_debugging_summary">Можна використовувати для налагодження веб-інтерфейсу. Вмикайте лише за потреби.</string>
     <string name="direct_install">Пряме встановлення (рекомендовано)</string>
-    <string name="select_file">Виберіть файл</string>
+    <string name="select_file">Вибрати і пропатчити файл</string>
+    <string name="download_file">Завантажити і пропатчити файл</string>
+    <string name="download_dialog_title">Введіть URL образу</string>
+    <string name="download_dialog_msg">Повний OTA-образ або заводський образ</string>
+    <string name="download_no_boot_partition">В образі не знайдено розділ boot, init_boot або vendor_boot</string>
+    <string name="download_probe_failed">Не вдалося перевірити образ: %1$s</string>
     <string name="install_inactive_slot">Встановити в неактивний слот (після OTA)</string>
     <string name="install_inactive_slot_warning">Ваш пристрій буде **ПРИМУСОВО** завантажено в поточний неактивний слот після перезавантаження!
 \n Використовуйте цю опцію тільки після завершення OTA.

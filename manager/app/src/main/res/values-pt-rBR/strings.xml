@@ -101,7 +101,12 @@
     <string name="open">Abrir</string>
     <string name="enable_web_debugging">Ativar depuração do WebView</string>
     <string name="enable_web_debugging_summary">Pode ser usado para depurar o WebUI. Por favor, ative somente quando necessário.</string>
-    <string name="select_file">Selecione um arquivo</string>
+    <string name="select_file">Selecione e corrija um arquivo</string>
+    <string name="download_file">Baixe e corrija um arquivo</string>
+    <string name="download_dialog_title">Insira o URL da imagem</string>
+    <string name="download_dialog_msg">Imagem OTA completa ou imagem de fábrica</string>
+    <string name="download_no_boot_partition">Nenhuma partição boot, init_boot ou vendor_boot encontrada na imagem</string>
+    <string name="download_probe_failed">Falha ao analisar a imagem: %1$s</string>
     <string name="direct_install">Instalação direta (recomendada)</string>
     <string name="install_inactive_slot">Instalar no slot inativo (após o OTA)</string>
     <string name="install_inactive_slot_warning">Seu dispositivo será **FORÇADO** a inicializar no slot inativo atual após uma reinicialização!

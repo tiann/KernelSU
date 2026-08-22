@@ -110,7 +110,12 @@
     <string name="enable_web_debugging">Отстраняване на грешки на WebView</string>
     <string name="enable_web_debugging_summary">Може да се използва за отстраняване на грешки в WebUI. Моля активирайте само когато е необходимо.</string>
     <string name="direct_install">Директно изтегляне (Препоръчано)</string>
-    <string name="select_file">Изберете файл</string>
+    <string name="select_file">Избор и закърпване на файл</string>
+    <string name="download_file">Изтегляне и закърпване на файл</string>
+    <string name="download_dialog_title">Въведете URL на изображението</string>
+    <string name="download_dialog_msg">Пълен OTA образ или фабричен образ</string>
+    <string name="download_no_boot_partition">В изображението не е намерен дял boot, init_boot или vendor_boot</string>
+    <string name="download_probe_failed">Неуспешно сканиране на изображението: %1$s</string>
     <string name="install_inactive_slot">Изтеглете в неактивния слот (След софтуерна актуализация)</string>
     <string name="install_inactive_slot_warning">Устройството ви ще бъде **ПРИНУДЕНО** да се стартира от неактивния слот след рестартиране!\nИзползвайте тази опция само след като софтуерната актуализация приключи.\nИскате ли да продължите?</string>
     <string name="install_next">Следваш</string>

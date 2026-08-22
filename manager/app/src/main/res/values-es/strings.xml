@@ -111,7 +111,12 @@
     <string name="flash_success">Éxito de Flash</string>
     <string name="grant_root_failed">¡No se ha podido conceder el acceso root!</string>
     <string name="open">Abrir</string>
-    <string name="select_file">Seleccione un archivo</string>
+    <string name="select_file">Seleccionar y parchar un archivo</string>
+    <string name="download_file">Descargar y parchar un archivo</string>
+    <string name="download_dialog_title">Introduzca la URL de la imagen</string>
+    <string name="download_dialog_msg">Imagen OTA completa o imagen de fábrica</string>
+    <string name="download_no_boot_partition">No se encontró una partición boot, init_boot o vendor_boot en la imagen</string>
+    <string name="download_probe_failed">No se pudo analizar la imagen: %1$s</string>
     <string name="install_inactive_slot">Instalar en ranura inactiva (Después de OTA)</string>
     <string name="settings_uninstall_temporary">Desinstalar temporalmente</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>

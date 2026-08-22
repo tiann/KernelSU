@@ -17,8 +17,13 @@ jobs:
     - name: Setup rustup
       run: |
         rustup update stable
-        rustup target add aarch64-unknown-linux-musl
-        rustup target add x86_64-unknown-linux-musl
+        rustup target add aarch64-linux-android
+        rustup target add x86_64-linux-android
+
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r29
 
     - uses: Swatinem/rust-cache@v2
       with:
@@ -26,26 +31,33 @@ jobs:
         cache-targets: false
 
     - name: Build ksuinit
+      env:
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
-        LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
-        export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
-        export RUSTFLAGS="-C link-arg=-no-pie"
-        cargo build --package ksuinit --target=aarch64-unknown-linux-musl --release
+        source .github/scripts/setup-rust-build.sh aarch64-linux-android 26
+        BUILTINS="$($CLANG_PATH --print-resource-dir)/lib/linux/libclang_rt.builtins-aarch64-android.a"
+        test -f "$BUILTINS"
+        export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wno-unused-command-line-argument -C link-arg=$BUILTINS"
+        cargo build --package ksuinit --target=aarch64-linux-android --release
 
     - name: Upload ksuinit artifact
       uses: actions/upload-artifact@v7
       with:
         name: ksuinit-aarch64
-        path: target/aarch64-unknown-linux-musl/release/ksuinit
+        path: target/aarch64-linux-android/release/ksuinit
 
     - name: Build ksuinit x64
+      env:
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
-        LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
-        export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/x86_64-linux-android26-clang"
-        cargo build --package ksuinit --target=x86_64-unknown-linux-musl --release
+        source .github/scripts/setup-rust-build.sh x86_64-linux-android 26
+        BUILTINS="$($CLANG_PATH --print-resource-dir)/lib/linux/libclang_rt.builtins-x86_64-android.a"
+        test -f "$BUILTINS"
+        export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wno-unused-command-line-argument -C link-arg=$BUILTINS"
+        cargo build --package ksuinit --target=x86_64-linux-android --release
 
     - name: Upload x64 ksuinit artifact
       uses: actions/upload-artifact@v7
       with:
         name: ksuinit-x86_64
-        path: target/x86_64-unknown-linux-musl/release/ksuinit
+        path: target/x86_64-linux-android/release/ksuinit
