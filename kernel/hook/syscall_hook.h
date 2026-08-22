@@ -37,15 +37,24 @@ bool ksu_has_syscall_hook(int nr);
 // Saves the original handler to *@old (if non-NULL) and records the entry
 // for restoration at module exit. Use this for boot-time hooks that replace
 // a real syscall entry (e.g. ksud hooking __NR_execve/__NR_read/__NR_fstat).
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
+int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
 
 // Restore syscall_table[@nr] to its original value recorded by
 // ksu_syscall_table_hook(), and remove the entry from the tracking list.
 // Use this to cleanly undo a direct hook when it is no longer needed
 // (e.g. ksud unhooking __NR_read after init.rc injection is done).
-void ksu_syscall_table_unhook(int nr);
+int ksu_syscall_table_unhook(int nr);
+
+// Persistent direct patches point into KernelSU module text. Keep the module
+// pinned until every such patch is restored by the controlled unload path.
+void ksu_syscall_hook_hold_unload_guard(void);
 
 void ksu_syscall_hook_init(void);
-void ksu_syscall_hook_exit(void);
+// Restore direct patches but retain enough state to re-arm them if unload aborts.
+int ksu_syscall_hook_exit(void);
+// Re-arm a successfully prepared direct-hook set. Transactional on failure.
+int ksu_syscall_hook_abort_exit(void);
+// Finalize bookkeeping only after module removal has actually begun.
+void ksu_syscall_hook_finish_exit(void);
 
 #endif

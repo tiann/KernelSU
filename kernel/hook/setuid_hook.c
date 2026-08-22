@@ -25,7 +25,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {
     // we rely on the fact that zygote always call setresuid(3) with same uids
 
-    pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
+    pr_debug("handle_setresuid from %d to %d\n", old_uid, new_uid);
 
     if (unlikely(is_uid_manager(new_uid))) {
         spin_lock_irq(&current->sighand->siglock);
@@ -46,6 +46,12 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
         }
         ksu_set_task_tracepoint_flag(current);
     } else {
+        /*
+         * Zygote children inherit the syscall tracepoint flag. Drop that
+         * inherited cost for ordinary apps only while KernelSU is known to be
+         * the sole sys_enter consumer; otherwise the flag belongs to shared
+         * perf/ftrace/eBPF tracing state and must stay set.
+         */
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
@@ -60,7 +66,7 @@ void __init ksu_setuid_hook_init(void)
     ksu_kernel_umount_init();
 }
 
-void __exit ksu_setuid_hook_exit(void)
+void ksu_setuid_hook_exit(void)
 {
     pr_info("ksu_core_exit\n");
     ksu_kernel_umount_exit();

@@ -3,6 +3,7 @@
 #include "linux/kallsyms.h"
 #include <linux/capability.h>
 #include <linux/cred.h>
+#include <linux/err.h>
 #include <linux/sched.h>
 #include <linux/sched/user.h>
 #include <linux/sched/signal.h>
@@ -186,7 +187,8 @@ int escape_with_root_profile(void)
     // https://github.com/torvalds/linux/commit/905ae01c4ae2ae3df05bb141801b1db4b7d83c61#diff-ff6060da281bd9ef3f24e17b77a9b0b5b2ed2d7208bb69b29107bee69732bd31
     // on older kernels, per-UID process accounting lives in user_struct.
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
-    if (set_cred_ucounts(cred)) {
+    ret = set_cred_ucounts(cred);
+    if (ret) {
         goto out_abort_creds;
     }
 #endif
@@ -238,14 +240,31 @@ void __init ksu_app_profile_init(void)
 #if NEED_BACKPORT_COMPAT
     unsigned long size = 0;
     int ret;
+    void *call_site;
     void *raw_spin_lock_irq_sym = find_kernel_symbol_exact("_raw_spin_lock_irq");
     void *seccomp_filter_release_sym = find_kernel_symbol_exact("seccomp_filter_release");
+
+    if (!raw_spin_lock_irq_sym || !seccomp_filter_release_sym) {
+        pr_warn("seccomp compatibility symbols unavailable, use safe release path\n");
+        has_call_to_spin_lock = true;
+        return;
+    }
+
     ret = kallsyms_lookup_size_offset(seccomp_filter_release_sym, &size, NULL);
     if (!ret || !size) {
-        pr_err("failed to get size of seccomp_filter_release: %d, use 128\n", ret);
-        size = 128;
+        pr_warn("failed to get seccomp_filter_release size: %d, use safe release path\n", ret);
+        has_call_to_spin_lock = true;
+        return;
     }
-    has_call_to_spin_lock = scan_call_to(seccomp_filter_release_sym, size, raw_spin_lock_irq_sym) != NULL;
+
+    call_site = scan_call_to(seccomp_filter_release_sym, size, raw_spin_lock_irq_sym);
+    if (IS_ERR(call_site)) {
+        pr_warn("failed to inspect seccomp_filter_release: %ld, use safe release path\n", PTR_ERR(call_site));
+        has_call_to_spin_lock = true;
+        return;
+    }
+
+    has_call_to_spin_lock = call_site != NULL;
     pr_info("seccomp_filter_release has_call_to_spin_lock = %d\n", has_call_to_spin_lock);
 #endif
 }

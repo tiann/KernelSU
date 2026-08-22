@@ -13,20 +13,19 @@
 syscall_fn_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
 
-// Hook registration table — read with READ_ONCE from tracepoint/dispatcher
-// context, written with WRITE_ONCE from init/exit context.
 static ksu_syscall_hook_fn syscall_hooks[__NR_syscalls];
 
-// Track all hooked syscall entries for restoration.
-// Protected by hooked_entries_lock.
 struct syscall_hook_entry {
     int nr;
     syscall_fn_t orig;
+    syscall_fn_t hook;
+    bool restore_on_abort;
 };
 
 static DEFINE_MUTEX(hooked_entries_lock);
 static struct syscall_hook_entry hooked_entries[16];
-static int hooked_count = 0;
+static int hooked_count;
+static bool direct_hooks_prepared;
 
 static int patch_syscall_table(int nr, syscall_fn_t fn)
 {
@@ -46,72 +45,117 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
     return 0;
 }
 
-// Direct syscall table patching: overwrite syscall_table[nr] with fn,
-// save original to *old, and record for restoration at module exit.
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
+int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
 {
+    bool added = false;
+    int entry_idx = -1;
+    syscall_fn_t current_fn;
+    int i;
+    int ret;
+
     if (ksu_syscall_table == NULL)
-        return;
+        return -ENOENT;
     if (nr < 0 || nr >= __NR_syscalls) {
         pr_info("invalid nr: %d\n", nr);
-        return;
+        return -EINVAL;
     }
 
     mutex_lock(&hooked_entries_lock);
+    if (direct_hooks_prepared) {
+        ret = -ESHUTDOWN;
+        goto out_unlock;
+    }
 
-    syscall_fn_t orig = READ_ONCE(ksu_syscall_table[nr]);
+    current_fn = READ_ONCE(ksu_syscall_table[nr]);
     if (old)
-        *old = orig;
+        *old = current_fn;
 
-    // Record for later restoration
-    int i;
-    bool found = false;
     for (i = 0; i < hooked_count; i++) {
         if (hooked_entries[i].nr == nr) {
-            found = true;
+            entry_idx = i;
             break;
         }
     }
-    if (!found) {
-        if (hooked_count < ARRAY_SIZE(hooked_entries)) {
-            hooked_entries[hooked_count].nr = nr;
-            hooked_entries[hooked_count].orig = orig;
-            hooked_count++;
-        } else {
-            pr_warn("hooked_entries full, cannot track syscall %d for restoration\n", nr);
+
+    if (entry_idx < 0) {
+        if (hooked_count >= ARRAY_SIZE(hooked_entries)) {
+            pr_err("hooked_entries full, refusing to patch syscall %d\n", nr);
+            ret = -ENOSPC;
+            goto out_unlock;
         }
+        entry_idx = hooked_count++;
+        hooked_entries[entry_idx].nr = nr;
+        hooked_entries[entry_idx].orig = current_fn;
+        hooked_entries[entry_idx].restore_on_abort = false;
+        added = true;
+    } else if (current_fn != hooked_entries[entry_idx].hook && current_fn != hooked_entries[entry_idx].orig) {
+        pr_err("syscall %d ownership lost: current=0x%lx hook=0x%lx orig=0x%lx\n", nr, (unsigned long)current_fn,
+               (unsigned long)hooked_entries[entry_idx].hook, (unsigned long)hooked_entries[entry_idx].orig);
+        ret = -EBUSY;
+        goto out_unlock;
     }
 
-    patch_syscall_table(nr, fn);
+    ret = patch_syscall_table(nr, fn);
+    if (ret) {
+        if (added)
+            --hooked_count;
+    } else {
+        hooked_entries[entry_idx].hook = fn;
+        hooked_entries[entry_idx].restore_on_abort = false;
+        ksu_syscall_hook_hold_unload_guard();
+    }
 
+out_unlock:
     mutex_unlock(&hooked_entries_lock);
+    return ret;
 }
 
-// Restore syscall_table[nr] to its original value and remove from tracking list.
-void ksu_syscall_table_unhook(int nr)
+int ksu_syscall_table_unhook(int nr)
 {
     int i;
+    int ret = -ENOENT;
 
     if (ksu_syscall_table == NULL)
-        return;
+        return -ENOENT;
     if (nr < 0 || nr >= __NR_syscalls)
-        return;
+        return -EINVAL;
 
     mutex_lock(&hooked_entries_lock);
-
-    for (i = 0; i < hooked_count; i++) {
-        if (hooked_entries[i].nr == nr) {
-            patch_syscall_table(nr, hooked_entries[i].orig);
-            // Remove entry by swapping with last
-            hooked_entries[i] = hooked_entries[--hooked_count];
-            mutex_unlock(&hooked_entries_lock);
-            pr_info("unhooked syscall %d\n", nr);
-            return;
-        }
+    if (direct_hooks_prepared) {
+        ret = -ESHUTDOWN;
+        goto out_unlock;
     }
 
+    for (i = 0; i < hooked_count; i++) {
+        syscall_fn_t current_fn;
+
+        if (hooked_entries[i].nr != nr)
+            continue;
+
+        current_fn = READ_ONCE(ksu_syscall_table[nr]);
+        if (current_fn == hooked_entries[i].hook) {
+            ret = patch_syscall_table(nr, hooked_entries[i].orig);
+            if (ret) {
+                pr_err("failed to unhook syscall %d: %d\n", nr, ret);
+                break;
+            }
+        } else if (current_fn == hooked_entries[i].orig) {
+            ret = 0;
+        } else {
+            pr_err("refusing to unhook syscall %d after ownership loss: current=0x%lx\n", nr,
+                   (unsigned long)current_fn);
+            ret = -EBUSY;
+            break;
+        }
+
+        hooked_entries[i] = hooked_entries[--hooked_count];
+        pr_info("unhooked syscall %d\n", nr);
+        break;
+    }
+
+out_unlock:
     mutex_unlock(&hooked_entries_lock);
-    pr_warn("syscall %d not found in hooked entries\n", nr);
+    return ret;
 }
 
 static int __init ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
@@ -139,9 +183,6 @@ static int __init ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     return count;
 }
 
-// Unified dispatcher: reads original NR from x8, dispatches to handler.
-// Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
-// otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
 {
     if (regs->syscallno != ksu_dispatcher_nr)
@@ -152,7 +193,6 @@ static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
     if (regs->syscallno == orig_nr)
         return -ENOSYS;
 
-    // Restore registers to original state before dispatching
     ((struct pt_regs *)regs)->syscallno = orig_nr;
     PT_REGS_ORIG_SYSCALL((struct pt_regs *)regs) = orig_nr;
 
@@ -165,8 +205,6 @@ static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
     return -ENOSYS;
 }
 
-// Register a handler into the dispatcher's routing table.
-// Does not modify the syscall table — the dispatcher slot is shared by all hooks.
 int ksu_register_syscall_hook(int nr, ksu_syscall_hook_fn fn)
 {
     if (nr < 0 || nr >= __NR_syscalls)
@@ -180,8 +218,6 @@ int ksu_register_syscall_hook(int nr, ksu_syscall_hook_fn fn)
     return 0;
 }
 
-// Remove a handler from the dispatcher's routing table.
-// The syscall table is not touched — only the dispatcher stops routing this nr.
 void ksu_unregister_syscall_hook(int nr)
 {
     if (nr < 0 || nr >= __NR_syscalls)
@@ -200,8 +236,10 @@ bool ksu_has_syscall_hook(int nr)
 void __init ksu_syscall_hook_init(void)
 {
     int ni_slot;
+    int ret;
 
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
+    direct_hooks_prepared = false;
 
     ksu_syscall_table = (syscall_fn_t *)ksu_resolve_symbol_for_functable_hook("sys_call_table");
     pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
@@ -209,48 +247,199 @@ void __init ksu_syscall_hook_init(void)
     if (!ksu_syscall_table)
         return;
 
-    // Find one ni_syscall slot for the dispatcher
     if (ksu_find_ni_syscall_slots(&ni_slot, 1) < 1) {
         pr_err("failed to find ni_syscall slot for dispatcher\n");
         return;
     }
 
     ksu_dispatcher_nr = ni_slot;
-    ksu_syscall_table_hook(ksu_dispatcher_nr, (syscall_fn_t)ksu_syscall_dispatcher, NULL);
+    ret = ksu_syscall_table_hook(ksu_dispatcher_nr, (syscall_fn_t)ksu_syscall_dispatcher, NULL);
+    if (ret) {
+        pr_err("failed to install dispatcher at slot %d: %d\n", ksu_dispatcher_nr, ret);
+        ksu_dispatcher_nr = -1;
+        return;
+    }
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
-void __exit ksu_syscall_hook_exit(void)
+static int validate_hook_ownership_locked(void)
 {
     int i;
 
-    if (!ksu_syscall_table)
-        goto clear_state;
-
-    // First, restore all patched syscall table entries while the dispatcher
-    // and hook table are still intact, so in-flight syscalls see valid state.
-    mutex_lock(&hooked_entries_lock);
     for (i = 0; i < hooked_count; i++) {
-        int nr = hooked_entries[i].nr;
-        syscall_fn_t orig = hooked_entries[i].orig;
+        syscall_fn_t current_fn = READ_ONCE(ksu_syscall_table[hooked_entries[i].nr]);
 
-        pr_info("restore syscall %d to 0x%lx\n", nr, (unsigned long)orig);
-        if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
-            pr_err("restore syscall %d failed\n", nr);
+        if (current_fn == hooked_entries[i].hook || current_fn == hooked_entries[i].orig)
+            continue;
+
+        pr_err("syscall %d ownership lost: current=0x%lx hook=0x%lx orig=0x%lx\n", hooked_entries[i].nr,
+               (unsigned long)current_fn, (unsigned long)hooked_entries[i].hook, (unsigned long)hooked_entries[i].orig);
+        return -EBUSY;
+    }
+
+    return 0;
+}
+
+static int rollback_prepared_hooks_locked(void)
+{
+    int rollback_ret = 0;
+    int i;
+
+    for (i = hooked_count - 1; i >= 0; i--) {
+        syscall_fn_t current_fn;
+        int ret;
+
+        if (!hooked_entries[i].restore_on_abort)
+            continue;
+
+        current_fn = READ_ONCE(ksu_syscall_table[hooked_entries[i].nr]);
+        if (current_fn == hooked_entries[i].hook) {
+            hooked_entries[i].restore_on_abort = false;
+            continue;
+        }
+        if (current_fn != hooked_entries[i].orig) {
+            pr_err("cannot rollback syscall %d after ownership loss\n", hooked_entries[i].nr);
+            rollback_ret = -EUCLEAN;
+            continue;
+        }
+
+        ret = patch_syscall_table(hooked_entries[i].nr, hooked_entries[i].hook);
+        if (ret) {
+            rollback_ret = ret;
+            pr_err("rollback syscall %d to hook failed: %d\n", hooked_entries[i].nr, ret);
+            continue;
+        }
+        hooked_entries[i].restore_on_abort = false;
+    }
+
+    return rollback_ret;
+}
+
+int ksu_syscall_hook_exit(void)
+{
+    int rollback_ret;
+    int ret;
+    int i;
+
+    mutex_lock(&hooked_entries_lock);
+    if (direct_hooks_prepared) {
+        mutex_unlock(&hooked_entries_lock);
+        return 0;
+    }
+
+    if (!ksu_syscall_table) {
+        direct_hooks_prepared = true;
+        mutex_unlock(&hooked_entries_lock);
+        return 0;
+    }
+
+    ret = validate_hook_ownership_locked();
+    if (ret) {
+        mutex_unlock(&hooked_entries_lock);
+        return ret;
+    }
+
+    for (i = 0; i < hooked_count; i++) {
+        syscall_fn_t current_fn = READ_ONCE(ksu_syscall_table[hooked_entries[i].nr]);
+
+        hooked_entries[i].restore_on_abort = false;
+        if (current_fn == hooked_entries[i].orig)
+            continue;
+
+        pr_info("restore syscall %d to 0x%lx\n", hooked_entries[i].nr, (unsigned long)hooked_entries[i].orig);
+        ret = patch_syscall_table(hooked_entries[i].nr, hooked_entries[i].orig);
+        if (ret) {
+            pr_err("restore syscall %d failed: %d\n", hooked_entries[i].nr, ret);
+            rollback_ret = rollback_prepared_hooks_locked();
+            mutex_unlock(&hooked_entries_lock);
+            return rollback_ret ? -EUCLEAN : ret;
+        }
+        hooked_entries[i].restore_on_abort = true;
+    }
+
+    direct_hooks_prepared = true;
+    mutex_unlock(&hooked_entries_lock);
+    pr_info("all direct syscall hooks prepared for unload\n");
+    return 0;
+}
+
+int ksu_syscall_hook_abort_exit(void)
+{
+    bool applied[ARRAY_SIZE(hooked_entries)] = { false };
+    int rollback_ret = 0;
+    int ret;
+    int i;
+
+    mutex_lock(&hooked_entries_lock);
+    if (!direct_hooks_prepared) {
+        mutex_unlock(&hooked_entries_lock);
+        return 0;
+    }
+
+    if (!ksu_syscall_table) {
+        direct_hooks_prepared = false;
+        mutex_unlock(&hooked_entries_lock);
+        return 0;
+    }
+
+    for (i = 0; i < hooked_count; i++) {
+        syscall_fn_t current_fn;
+
+        if (!hooked_entries[i].restore_on_abort)
+            continue;
+        current_fn = READ_ONCE(ksu_syscall_table[hooked_entries[i].nr]);
+        if (current_fn != hooked_entries[i].orig && current_fn != hooked_entries[i].hook) {
+            pr_err("cannot re-arm syscall %d after ownership loss\n", hooked_entries[i].nr);
+            mutex_unlock(&hooked_entries_lock);
+            return -EBUSY;
         }
     }
+
+    for (i = 0; i < hooked_count; i++) {
+        syscall_fn_t current_fn;
+
+        if (!hooked_entries[i].restore_on_abort)
+            continue;
+
+        current_fn = READ_ONCE(ksu_syscall_table[hooked_entries[i].nr]);
+        if (current_fn == hooked_entries[i].hook)
+            continue;
+
+        ret = patch_syscall_table(hooked_entries[i].nr, hooked_entries[i].hook);
+        if (ret) {
+            int j;
+
+            pr_err("re-arm syscall %d failed: %d\n", hooked_entries[i].nr, ret);
+            for (j = i - 1; j >= 0; j--) {
+                if (applied[j]) {
+                    int rollback = patch_syscall_table(hooked_entries[j].nr, hooked_entries[j].orig);
+                    if (rollback)
+                        rollback_ret = rollback;
+                }
+            }
+            mutex_unlock(&hooked_entries_lock);
+            return rollback_ret ? -EUCLEAN : ret;
+        }
+        applied[i] = true;
+    }
+
+    for (i = 0; i < hooked_count; i++)
+        hooked_entries[i].restore_on_abort = false;
+    direct_hooks_prepared = false;
+    mutex_unlock(&hooked_entries_lock);
+    pr_info("all direct syscall hooks re-armed\n");
+    return 0;
+}
+
+void ksu_syscall_hook_finish_exit(void)
+{
+    mutex_lock(&hooked_entries_lock);
     hooked_count = 0;
+    direct_hooks_prepared = false;
     mutex_unlock(&hooked_entries_lock);
 
-clear_state:
-    // Now that the syscall table is restored, clear internal state.
-    // At this point the tracepoint is already unregistered and synchronized
-    // (done by ksu_syscall_hook_manager_exit before calling us), so no new
-    // dispatches will occur.
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
     ksu_dispatcher_nr = -1;
-
-    pr_info("all syscall hooks restored\n");
 }
 
 #endif /* __aarch64__ */

@@ -189,7 +189,9 @@ int __init kernelsu_init(void)
 
 void __exit kernelsu_exit(void)
 {
-    // Phase 1: Stop all hooks first to prevent new callbacks
+    // Phase 1: stop every KernelSU entry point before releasing state.
+    // The hook manager fail-stops if a persistent module-text target cannot
+    // be detached because module_exit() cannot cancel an unload in progress.
     ksu_syscall_hook_manager_exit();
 
     ksu_supercalls_exit();

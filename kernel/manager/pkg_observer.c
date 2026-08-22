@@ -3,9 +3,11 @@
 #include <linux/fs.h>
 #include <linux/namei.h>
 #include <linux/fsnotify_backend.h>
+#include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/rculist.h>
 #include <linux/version.h>
+#include <linux/workqueue.h>
 #include "klog.h" // IWYU pragma: keep
 #include "manager/throne_tracker.h"
 
@@ -20,6 +22,16 @@ struct watch_dir {
 };
 
 static struct fsnotify_group *g;
+static DEFINE_MUTEX(observer_lock);
+static bool observer_initialized;
+
+static void ksu_track_throne_work(struct work_struct *work)
+{
+    if (READ_ONCE(observer_initialized))
+        track_throne(false);
+}
+
+static DECLARE_WORK(track_throne_work, ksu_track_throne_work);
 
 static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct inode *inode, struct inode *dir,
                                   const struct qstr *file_name, u32 cookie)
@@ -30,7 +42,8 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct i
         return 0;
     if (file_name->len == 13 && !memcmp(file_name->name, "packages.list", 13)) {
         pr_info("packages.list detected: %d\n", mask);
-        track_throne(false);
+        if (READ_ONCE(observer_initialized))
+            schedule_work(&track_throne_work);
     }
     return 0;
 }
@@ -72,6 +85,7 @@ static int watch_one_dir(struct watch_dir *wd)
     if (ret) {
         pr_err("Add mark failed for %s (%d)\n", wd->path, ret);
         path_put(&wd->kpath);
+        memset(&wd->kpath, 0, sizeof(wd->kpath));
         iput(wd->inode);
         wd->inode = NULL;
         return ret;
@@ -101,24 +115,54 @@ static struct watch_dir g_watch = { .path = "/data/system", .mask = MASK_SYSTEM 
 
 int ksu_observer_init(void)
 {
-    int ret = 0;
+    int ret;
+
+    mutex_lock(&observer_lock);
+    if (READ_ONCE(observer_initialized)) {
+        mutex_unlock(&observer_lock);
+        return 0;
+    }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
     g = fsnotify_alloc_group(&ksu_ops, 0);
 #else
     g = fsnotify_alloc_group(&ksu_ops);
 #endif
-    if (IS_ERR(g))
-        return PTR_ERR(g);
+    if (IS_ERR(g)) {
+        ret = PTR_ERR(g);
+        g = NULL;
+        mutex_unlock(&observer_lock);
+        return ret;
+    }
 
     ret = watch_one_dir(&g_watch);
+    if (ret) {
+        fsnotify_put_group(g);
+        g = NULL;
+        mutex_unlock(&observer_lock);
+        return ret;
+    }
+
+    WRITE_ONCE(observer_initialized, true);
+    mutex_unlock(&observer_lock);
     pr_info("observer init done\n");
     return 0;
 }
 
 void __exit ksu_observer_exit(void)
 {
+    mutex_lock(&observer_lock);
+    if (!READ_ONCE(observer_initialized)) {
+        mutex_unlock(&observer_lock);
+        return;
+    }
+
+    WRITE_ONCE(observer_initialized, false);
     unwatch_one_dir(&g_watch);
     fsnotify_put_group(g);
+    g = NULL;
+    mutex_unlock(&observer_lock);
+
+    cancel_work_sync(&track_throne_work);
     pr_info("observer exit done\n");
 }

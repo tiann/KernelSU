@@ -49,10 +49,13 @@ static const char KERNEL_SU_RC[] =
     "\n";
 // clang-format on
 
-static void stop_init_rc_hook();
+static int stop_init_rc_hook(void);
 static void stop_execve_hook();
 
 static struct work_struct stop_input_hook_work;
+static bool init_rc_read_hooked;
+static bool init_rc_fstat_hooked;
+static bool init_rc_hooks_ready;
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 struct user_arg_ptr {
@@ -422,19 +425,22 @@ static bool is_init_rc(struct file *fp)
 
 static void ksu_install_rc_hook(struct file *file)
 {
-    if (!is_init_rc(file)) {
+    static bool rc_hooked = false;
+    int ret;
+
+    if (!READ_ONCE(init_rc_hooks_ready) || !is_init_rc(file))
         return;
-    }
 
     // we only process the first read
-    static bool rc_hooked = false;
-    if (rc_hooked) {
-        // we don't need these hooks, unregister it!
+    if (rc_hooked)
+        return;
 
+    ret = stop_init_rc_hook();
+    if (ret) {
+        pr_err("failed to stop init_rc syscall hooks: %d\n", ret);
         return;
     }
     rc_hooked = true;
-    stop_init_rc_hook();
 
     // now we can sure that the init process is reading
     // `/system/etc/init/init.rc`
@@ -560,23 +566,28 @@ void ksu_execveat_hook_ksud(const struct pt_regs *regs)
 }
 
 static long (*orig_sys_read)(const struct pt_regs *regs);
+static long (*orig_sys_fstat)(const struct pt_regs *regs);
+
 static long ksu_sys_read(const struct pt_regs *regs)
 {
     unsigned int fd = PT_REGS_PARM1(regs);
     char __user **buf_ptr = (char __user **)&PT_REGS_PARM2(regs);
     size_t *count_ptr = (size_t *)&PT_REGS_PARM3(regs);
 
-    ksu_handle_sys_read(fd, buf_ptr, count_ptr);
+    if (likely(READ_ONCE(init_rc_hooks_ready)))
+        ksu_handle_sys_read(fd, buf_ptr, count_ptr);
     return orig_sys_read(regs);
 }
 
-static long (*orig_sys_fstat)(const struct pt_regs *regs);
 static long ksu_sys_fstat(const struct pt_regs *regs)
 {
     unsigned int fd = PT_REGS_PARM1(regs);
     void __user *statbuf = (void __user *)PT_REGS_PARM2(regs);
     bool is_rc = false;
     long ret;
+
+    if (unlikely(!READ_ONCE(init_rc_hooks_ready)))
+        return orig_sys_fstat(regs);
 
     struct file *file = fget(fd);
     if (file) {
@@ -628,11 +639,46 @@ static void do_stop_input_hook(struct work_struct *work)
     unregister_kprobe(&input_event_kp);
 }
 
-static void stop_init_rc_hook()
+static int stop_init_rc_hook(void)
 {
-    ksu_syscall_table_unhook(__NR_read);
-    ksu_syscall_table_unhook(__NR_fstat);
+    bool was_ready = READ_ONCE(init_rc_hooks_ready);
+    bool fstat_removed = false;
+    int rollback;
+    int ret;
+
+    WRITE_ONCE(init_rc_hooks_ready, false);
+
+    if (init_rc_fstat_hooked) {
+        ret = ksu_syscall_table_unhook(__NR_fstat);
+        if (ret) {
+            pr_err("failed to unhook init_rc fstat: %d\n", ret);
+            WRITE_ONCE(init_rc_hooks_ready, was_ready);
+            return ret;
+        }
+        init_rc_fstat_hooked = false;
+        fstat_removed = true;
+    }
+
+    if (init_rc_read_hooked) {
+        ret = ksu_syscall_table_unhook(__NR_read);
+        if (ret) {
+            pr_err("failed to unhook init_rc read: %d\n", ret);
+            if (fstat_removed) {
+                rollback = ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+                if (rollback) {
+                    pr_err("failed to rollback init_rc fstat hook: %d\n", rollback);
+                    return -EUCLEAN;
+                }
+                init_rc_fstat_hooked = true;
+            }
+            WRITE_ONCE(init_rc_hooks_ready, was_ready);
+            return ret;
+        }
+        init_rc_read_hooked = false;
+    }
+
     pr_info("unregister init_rc syscall hook\n");
+    return 0;
 }
 
 void ksu_stop_input_hook_runtime(void)
@@ -649,15 +695,34 @@ void ksu_stop_input_hook_runtime(void)
 // ksud: module support
 void __init ksu_ksud_init()
 {
+    int rollback;
     int ret;
 
-    ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
-    ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+    ret = ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
+    if (ret) {
+        pr_err("ksud: failed to hook read: %d\n", ret);
+        goto init_input_hook;
+    }
+    init_rc_read_hooked = true;
 
+    ret = ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+    if (ret) {
+        pr_err("ksud: failed to hook fstat: %d\n", ret);
+        rollback = ksu_syscall_table_unhook(__NR_read);
+        if (rollback) {
+            pr_err("ksud: failed to rollback read hook: %d\n", rollback);
+        } else {
+            init_rc_read_hooked = false;
+        }
+        goto init_input_hook;
+    }
+    init_rc_fstat_hooked = true;
+    WRITE_ONCE(init_rc_hooks_ready, true);
+
+init_input_hook:
+    INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
     ret = register_kprobe(&input_event_kp);
     pr_info("ksud: input_event_kp: %d\n", ret);
-
-    INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
 
 void __exit ksu_ksud_exit()
