@@ -131,6 +131,9 @@ out:
     return length;
 }
 
+// stock reads 1; late load may follow a loader load_policy that bumped the backup
+static u32 fake_avd_seqno __read_mostly = 1;
+
 static ssize_t my_write_access(struct file *file, char *buf, size_t size)
 {
     // apply to all app uids
@@ -188,6 +191,7 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
     security_compute_av_user(&fake_state, ssid, tsid, tclass, &avd);
 #endif
 
+    avd.seqno = fake_avd_seqno;
     length = scnprintf(buf, SIMPLE_TRANSACTION_LIMIT, "%x %x %x %x %u %x", avd.allowed, 0xffffffff, avd.auditallow,
                        avd.auditdeny, avd.seqno, avd.flags);
 out:
@@ -326,7 +330,6 @@ static int ksu_selinux_hide_enable()
         pr_err("no backup sepolicy available, please save feature and reboot to retry!\n");
         return -EAGAIN;
     }
-    backup_sepolicy->latest_granting = 1;
     selinux_write_op = find_kernel_symbol_exact("write_op");
     if (!selinux_write_op) {
         pr_err("selinux_hide: no write_op found!\n");
