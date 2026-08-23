@@ -269,15 +269,21 @@ static void initialize_fake_status()
 
     struct selinux_kernel_status *new_status = page_address(new_page);
     memcpy(new_status, status, sizeof(*status));
+    if (ksu_late_loaded) {
+        // In late_load mode the loader may have reloaded sepolicy before us,
+        // so the captured page is not stock. Serve what a stock boot ends
+        // with instead: creation sentinel below 6.10, one load plus one
+        // setenforce above.
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 10, 0)
-    new_status->sequence = 4;
-    new_status->policyload = 1;
+        new_status->sequence = 4;
+        new_status->policyload = 1;
 #else
-    new_status->sequence = 0;
-    new_status->policyload = 0;
+        new_status->sequence = 0;
+        new_status->policyload = 0;
 #endif
-    if (ksu_late_loaded && !new_status->enforcing) {
-        new_status->enforcing = 1;
+        if (!new_status->enforcing) {
+            new_status->enforcing = 1;
+        }
     }
 
     fake_status = new_page;
