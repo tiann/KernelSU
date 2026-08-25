@@ -1,10 +1,15 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use log::{info, warn};
 use rustix::cstr;
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 use crate::module::{handle_updated_modules, prune_modules};
 use crate::{assets, defs, init_event, metamodule, restorecon, utils};
+
+const ZYGOTE_STOP_RETRIES: usize = 100;
+const ZYGOTE_STOP_RETRY_DELAY: Duration = Duration::from_millis(50);
 
 fn dump_process_info(label: &str) {
     use rustix::process::{getgid, getgroups, getpid, getuid};
@@ -33,6 +38,87 @@ fn dump_process_info(label: &str) {
         groups.join(","),
         selinux.trim(),
     );
+}
+
+fn zygote_services_stopped() -> bool {
+    matches!(
+        utils::getprop("init.svc.zygote").as_deref(),
+        Some("stopped")
+    ) && utils::getprop("init.svc.zygote_secondary").is_none_or(|state| state == "stopped")
+}
+
+fn stop_android_services_for_mount() -> Result<()> {
+    let status = Command::new("stop")
+        .status()
+        .context("failed to execute Android stop command")?;
+    if !status.success() {
+        if let Err(start_err) = start_android_services() {
+            return Err(start_err).context(format!(
+                "Android stop exited with status {status}; recovery start also failed"
+            ));
+        }
+        bail!("Android stop exited with status {status}; Android service state restored");
+    }
+
+    for _ in 0..ZYGOTE_STOP_RETRIES {
+        if zygote_services_stopped() {
+            return Ok(());
+        }
+        thread::sleep(ZYGOTE_STOP_RETRY_DELAY);
+    }
+
+    if let Err(start_err) = start_android_services() {
+        return Err(start_err).context(
+            "zygote services did not stop before metamodule mount synchronization; recovery start failed",
+        );
+    }
+    bail!(
+        "zygote services did not stop before metamodule mount synchronization; Android service state restored"
+    )
+}
+
+fn start_android_services() -> Result<()> {
+    let status = Command::new("start")
+        .status()
+        .context("failed to execute Android start command")?;
+    ensure!(
+        status.success(),
+        "Android start exited with status {status}"
+    );
+    Ok(())
+}
+
+fn mount_metamodule_without_app_spawn(module_dir: &str) -> Result<()> {
+    info!("late-load: stopping Android services before metamodule mount synchronization");
+    stop_android_services_for_mount()?;
+
+    if let Err(err) = metamodule::exec_mount_script(module_dir) {
+        match metamodule::register_module_mounts() {
+            Ok(()) => {
+                warn!(
+                    "late-load: metamodule mount failed but isolation resync is safe; restarting Android services"
+                );
+                if let Err(start_err) = start_android_services() {
+                    return Err(start_err).context(format!(
+                        "metamodule mount failed: {err:#}; isolation recovered, but Android service restart failed"
+                    ));
+                }
+                return Err(err).context(
+                    "metamodule mount failed; isolation recovered and Android services restarted",
+                );
+            }
+            Err(sync_err) => {
+                warn!(
+                    "late-load: metamodule mount and isolation resync failed; leaving Android services stopped"
+                );
+                return Err(err).context(format!(
+                    "isolation resync also failed: {sync_err:#}; Android services left stopped"
+                ));
+            }
+        }
+    }
+
+    start_android_services().context("failed to restart Android services after metamodule mount")
 }
 
 pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Result<()> {
@@ -67,6 +153,9 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
         info!("kernelsu.ko loaded successfully!");
         dump_process_info("after load_module");
     }
+
+    crate::ksucalls::ensure_uapi_version_matched()
+        .context("KernelSU UAPI mismatch after late load")?;
 
     // We need to reset stdin/stdout/stderr; otherwise, sending file descriptors via cmd transactions
     // will be blocked by SELinux because its fsec->sid is still u:r:su:s0 instead of u:r:ksu:s0.
@@ -115,10 +204,9 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
         warn!("load system.prop failed: {e}");
     }
 
-    // 10. Execute metamodule mount script (OverlayFS)
-    if let Err(e) = metamodule::exec_mount_script(defs::MODULE_DIR) {
-        warn!("execute metamodule mount failed: {e}");
-    }
+    // 10. Stop zygote-backed app spawning while the metamodule creates mounts
+    // and the kernel isolation list is synchronized from the resulting stack.
+    mount_metamodule_without_app_spawn(defs::MODULE_DIR)?;
 
     // 11. Execute post-mount stage scripts (blocking)
     init_event::run_stage("post-mount", true);

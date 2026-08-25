@@ -125,6 +125,19 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         goto out_unlock;
     }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+    /*
+     * security_hook_heads no longer exists here. The static-call table is a
+     * randomized struct whose per-hook arrays are MAX_LSM_COUNT wide, so the
+     * legacy numeric head offset cannot be mapped safely at runtime.
+     */
+    if (hook->offset) {
+        pr_err("lsm_hook: nonzero hook offsets are unsupported with LSM static calls\n");
+        ret = -EOPNOTSUPP;
+        goto out_unlock;
+    }
+#endif
+
     target = hook->original;
     if (!target)
         target = ksu_resolve_symbol_for_functable_hook(target_name);
@@ -395,41 +408,62 @@ out_unlock:
 
 void ksu_lsm_unhook(struct ksu_lsm_hook *hook)
 {
+    void *slot_value;
+    void *expected;
     void **slot;
+
+    if (!hook)
+        return;
+
     mutex_lock(&ksu_lsm_hook_lock);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-    if (!hook->entry || !hook->scall) {
+    if (!hook->entry || !hook->scall)
 #else
-    if (!hook->entry) {
+    if (!hook->entry)
 #endif
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return;
-    }
+        goto out_unlock;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     slot = (void **)((char *)hook->entry + hook->hook_offset);
+    expected = hook->replacement;
 #else
     if (hook->entry == &hook->list) {
         slot = (void **)&hook->list.head->first;
+        expected = &hook->list;
         pr_info("unhook patch head->first\n");
     } else {
         slot = (void **)((char *)hook->entry + hook->hook_offset);
+        expected = hook->replacement;
         pr_info("unhook patch slot\n");
     }
 #endif
-    if (ksu_lsm_hook_patch_slot(slot, hook->original)) {
+
+    slot_value = READ_ONCE(*slot);
+    if (slot_value != expected && slot_value != hook->original) {
+        pr_err("lsm_hook: refusing to restore %s after ownership loss: current=%px expected=%px orig=%px\n",
+               hook->head_name ?: "unknown", slot_value, expected, hook->original);
+        goto out_unlock;
+    }
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
+    if (slot_value == expected && hook->entry == &hook->list && READ_ONCE(hook->list.list.next)) {
+        pr_err("lsm_hook: refusing to unlink %s after another hook chained behind KernelSU\n",
+               hook->head_name ?: "unknown");
+        goto out_unlock;
+    }
+#endif
+
+    if (slot_value == expected && ksu_lsm_hook_patch_slot(slot, hook->original)) {
         pr_err("lsm_hook: failed to restore %s\n", hook->head_name ?: "unknown");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return;
+        goto out_unlock;
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     if (ksu_lsm_hook_update_scall(hook->scall, hook->original)) {
-        if (ksu_lsm_hook_patch_slot(slot, hook->replacement))
+        if (slot_value == expected && ksu_lsm_hook_patch_slot(slot, hook->replacement))
             pr_err("lsm_hook: failed to reapply %s after static call restore failure\n", hook->head_name ?: "unknown");
-        mutex_unlock(&ksu_lsm_hook_lock);
-        return;
+        goto out_unlock;
     }
 #endif
 
@@ -440,6 +474,8 @@ void ksu_lsm_unhook(struct ksu_lsm_hook *hook)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     hook->scall = NULL;
 #endif
+
+out_unlock:
     mutex_unlock(&ksu_lsm_hook_lock);
 }
 
@@ -470,6 +506,11 @@ void __exit ksu_lsm_hook_exit(void)
         hooks[i] = ksu_lsm_hook_entries[i].hook;
     mutex_unlock(&ksu_lsm_hook_lock);
 
-    for (i = count - 1; i >= 0; i--)
+    for (i = count - 1; i >= 0; i--) {
         ksu_lsm_unhook(hooks[i]);
+        if (hooks[i]->entry) {
+            pr_emerg("lsm_hook: final restore failed for %s\n", hooks[i]->head_name ?: "unknown");
+            panic("KernelSU: refusing unsafe module unload with live LSM hooks");
+        }
+    }
 }

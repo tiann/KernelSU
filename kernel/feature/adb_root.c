@@ -67,11 +67,10 @@ static long is_libadbroot_ok()
 static long setup_ld_preload(struct pt_regs *regs, unsigned long *envp_p)
 {
     static const char kLdPreload[] = "LD_PRELOAD=/data/adb/ksu/lib/libadbroot.so";
-    static const char kLdLibraryPath[] = "LD_LIBRARY_PATH=/data/adb/ksu/lib";
     static const size_t kReadEnvBatch = 16;
     static const size_t kPtrSize = sizeof(unsigned long);
-    unsigned long stackp = user_stack_pointer(regs);
-    unsigned long envp, ld_preload_p, ld_library_path_p;
+    unsigned long stackp = ksu_user_stack_scratch_top(user_stack_pointer(regs));
+    unsigned long envp, ld_preload_p;
     unsigned long *tmp_env_p = NULL, *tmp_env_p2 = NULL;
     size_t env_count = 0, total_size;
     long ret;
@@ -82,13 +81,6 @@ static long setup_ld_preload(struct pt_regs *regs, unsigned long *envp_p)
     ret = copy_to_user(ld_preload_p, kLdPreload, sizeof(kLdPreload));
     if (ret != 0) {
         pr_warn("write ld_preload when adb_root_handle_execve failed: %ld\n", ret);
-        return -EFAULT;
-    }
-
-    ld_library_path_p = stackp = ALIGN_DOWN(stackp - sizeof(kLdLibraryPath), 8);
-    ret = copy_to_user(ld_library_path_p, kLdLibraryPath, sizeof(kLdLibraryPath));
-    if (ret != 0) {
-        pr_warn("write ld_library_path when adb_root_handle_execve failed: %ld\n", ret);
         return -EFAULT;
     }
 
@@ -134,7 +126,6 @@ static long setup_ld_preload(struct pt_regs *regs, unsigned long *envp_p)
     // We should have allocated enough memory
     // TODO: handle existing LD_PRELOAD
     tmp_env_p[env_count++] = ld_preload_p;
-    tmp_env_p[env_count++] = ld_library_path_p;
     tmp_env_p[env_count++] = 0;
     total_size = env_count * kPtrSize;
 
@@ -172,7 +163,7 @@ static long do_ksu_adb_root_handle_execve(const char __user *filename_user, stru
         return ret;
     }
 
-    pr_info("escape to root for adb\n");
+    pr_debug("escape to root for adb\n");
     escape_to_root_for_adb_root();
     return 0;
 }

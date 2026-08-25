@@ -18,17 +18,18 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         }
         var action = intent.getAction();
         if (!Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)
-                && !Intent.ACTION_BOOT_COMPLETED.equals(action)
-                && !"me.weishu.kernelsu.magica.LAUNCH".equals(action)) {
+                && !Intent.ACTION_BOOT_COMPLETED.equals(action)) {
             return;
         }
         if (KsuCliKt.rootAvailable()) return;
-        try {
-            context.startService(new Intent(context, MagicaService.class));
-            Log.i(TAG, "MagicaService started from boot action: " + action);
-        } catch (Throwable e) {
 
-            Log.e(TAG, "Failed to start MagicaService from boot action: " + action, e);
+        PendingResult pendingResult = goAsync();
+        try {
+            MagicaService.start(context, pendingResult::finish);
+            Log.i(TAG, "MagicaService bootstrap started from boot action: " + action);
+        } catch (Throwable e) {
+            pendingResult.finish();
+            Log.e(TAG, "Failed to bootstrap MagicaService from boot action: " + action, e);
         }
     }
 }

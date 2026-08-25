@@ -1,6 +1,7 @@
 #include <asm/current.h>
 #include <linux/compat.h>
 #include <linux/cred.h>
+#include <linux/err.h>
 #include <linux/gfp.h>
 #include <linux/minmax.h>
 #include <linux/overflow.h>
@@ -40,9 +41,8 @@ struct user_arg_ptr {
 static struct ksu_event_queue sulog_queue;
 
 struct ksu_sulog_pending_event {
-    __u16 event_type;
+    struct ksu_event_queue_entry *entry;
     void *payload;
-    __u32 payload_len;
 };
 
 struct ksu_sulog_identity {
@@ -195,18 +195,27 @@ static __u32 ksu_sulog_flatten_argv(const char __user *const __user *argv_user, 
     return used + 1;
 }
 
+static void ksu_sulog_free_pending(struct ksu_sulog_pending_event *pending)
+{
+    if (!pending)
+        return;
+    if (pending->entry)
+        ksu_event_queue_entry_free(pending->entry);
+    kfree(pending);
+}
+
 static struct ksu_sulog_pending_event *ksu_sulog_capture(__u16 event_type, const char __user *filename_user,
                                                          const char __user *const __user *argv_user, gfp_t gfp)
 {
-    struct ksu_sulog_pending_event *pending = NULL;
+    struct ksu_sulog_pending_event *pending;
     struct ksu_sulog_event *event;
-    void *payload = NULL;
     __u32 payload_len;
     __u32 filename_len;
     __u32 argv_len;
     __u32 remaining;
     char *filename_buf;
     char *argv_buf;
+
     if (!ksu_sulog_is_enabled())
         return NULL;
 
@@ -214,41 +223,43 @@ static struct ksu_sulog_pending_event *ksu_sulog_capture(__u16 event_type, const
     if (!pending)
         goto out_drop;
 
-    payload = kzalloc(KSU_SULOG_MAX_PAYLOAD_LEN, gfp);
-    if (!payload)
+    pending->entry = ksu_event_queue_entry_alloc(&sulog_queue, event_type, 0, KSU_SULOG_MAX_PAYLOAD_LEN, gfp);
+    if (IS_ERR(pending->entry)) {
+        pending->entry = NULL;
         goto out_free_pending;
+    }
 
-    event = payload;
+    pending->payload = ksu_event_queue_entry_payload(pending->entry);
+    memset(pending->payload, 0, KSU_SULOG_MAX_PAYLOAD_LEN);
+    event = pending->payload;
     ksu_sulog_fill_task_info(event, event_type, 0);
 
     remaining = KSU_SULOG_MAX_PAYLOAD_LEN - sizeof(*event);
-    filename_buf = (char *)payload + sizeof(*event);
+    filename_buf = (char *)pending->payload + sizeof(*event);
     filename_len = ksu_sulog_copy_filename(filename_user, filename_buf, min(remaining, KSU_SULOG_MAX_FILENAME_LEN));
     if (!filename_len)
-        goto out_free_payload;
+        goto out_free_pending;
 
     remaining -= filename_len;
     argv_buf = filename_buf + filename_len;
     argv_len = ksu_sulog_flatten_argv(argv_user, argv_buf, remaining);
     if (!argv_len)
-        goto out_free_payload;
+        goto out_free_pending;
 
     event->filename_len = filename_len;
     event->argv_len = argv_len;
 
     if (check_add_overflow((__u32)sizeof(*event), filename_len, &payload_len) ||
         check_add_overflow(payload_len, argv_len, &payload_len))
-        goto out_free_payload;
+        goto out_free_pending;
 
-    pending->event_type = event_type;
-    pending->payload = payload;
-    pending->payload_len = payload_len;
+    if (ksu_event_queue_entry_set_len(pending->entry, payload_len))
+        goto out_free_pending;
+
     return pending;
 
-out_free_payload:
-    kfree(payload);
 out_free_pending:
-    kfree(pending);
+    ksu_sulog_free_pending(pending);
 out_drop:
     ksu_event_queue_drop(&sulog_queue);
     return NULL;
@@ -280,14 +291,6 @@ void __exit ksu_sulog_events_exit(void)
     ksu_event_queue_destroy(&sulog_queue);
 }
 
-static void ksu_sulog_free_pending(struct ksu_sulog_pending_event *pending)
-{
-    if (!pending)
-        return;
-    kfree(pending->payload);
-    kfree(pending);
-}
-
 struct ksu_sulog_pending_event *ksu_sulog_capture_root_execve(const char __user *filename_user,
                                                               const char __user *const __user *argv_user, gfp_t gfp)
 {
@@ -304,12 +307,14 @@ void ksu_sulog_emit_pending(struct ksu_sulog_pending_event *pending, int retval,
 {
     struct ksu_sulog_event *event;
 
+    (void)gfp;
     if (!pending)
         return;
 
     event = pending->payload;
     event->retval = retval;
-    ksu_event_queue_push(&sulog_queue, pending->event_type, 0, pending->payload, pending->payload_len, gfp);
+    if (!ksu_event_queue_entry_push(&sulog_queue, pending->entry))
+        pending->entry = NULL;
     ksu_sulog_free_pending(pending);
 }
 

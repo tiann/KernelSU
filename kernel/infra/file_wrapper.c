@@ -12,12 +12,13 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 #include <linux/mount.h>
-
-#include "objsec.h"
+#include <linux/module.h>
+#include <linux/security.h>
 
 #include "klog.h" // IWYU pragma: keep
-#include "selinux/selinux.h"
 
+#include "hook/syscall_hook.h"
+#include "hook/syscall_hook_manager.h"
 #include "infra/file_wrapper.h"
 
 struct ksu_file_wrapper {
@@ -418,6 +419,7 @@ static void ksu_wrapper_d_release(struct dentry *dentry)
     struct path *orig_path = dentry->d_fsdata;
     path_put(orig_path);
     kfree(orig_path);
+    ksu_module_unload_leave();
 }
 
 static const struct dentry_operations ksu_file_wrapper_d_ops = { .d_dname = ksu_wrapper_d_dname,
@@ -521,14 +523,16 @@ int ksu_install_file_wrapper(int fd)
     // It should be safe to modify them since the file hasn't been published.
 
     struct inode *wrapper_inode = file_inode(wrapper_file);
+    /*
+     * The wrapper needs a unique inode because libc uses fstat() to identify
+     * TTYs. It is not pathname-addressable, so restore the S_PRIVATE flag
+     * that secure anonymous-inode creation clears. SELinux intentionally
+     * skips inode permission checks for private inodes; descriptor handoff is
+     * still controlled by the file's creator SID and the existing fd/use rule.
+     */
+    wrapper_inode->i_flags |= S_PRIVATE;
     // libc's stdio relies on the fstat() result of the fd to determine its buffer type.
     wrapper_inode->i_mode = file_inode(orig_file)->i_mode;
-    struct inode_security_struct *wrapper_sec = selinux_inode(wrapper_inode);
-    // Use ksu_file_sid to bypass SELinux check.
-    // When we call `su` from terminal app, this is useful.
-    if (wrapper_sec) {
-        wrapper_sec->sid = ksu_file_sid;
-    }
     // Install open file operation for inode.
     wrapper_inode->i_fop = &ksu_file_wrapper_inode_fops;
 
@@ -539,6 +543,21 @@ int ksu_install_file_wrapper(int fd)
     }
     *orig_path = orig_file->f_path;
     path_get(orig_path);
+
+    /*
+     * dentry_operations has no owner field, so the custom d_dname/d_release
+     * callbacks cannot pin module text by themselves. Keep one logical runtime
+     * reference for the dentry lifetime and a persistent module guard until the
+     * controlled unload path has observed that every wrapper dentry is gone.
+     */
+    if (!ksu_module_unload_try_enter()) {
+        path_put(orig_path);
+        kfree(orig_path);
+        ret = -ESHUTDOWN;
+        goto out_put_wrapper_file;
+    }
+    ksu_syscall_hook_hold_unload_guard();
+
     // Some applications (such as screen) won't work if the tty's path is weird,
     // Therefore, we use d_dname to spoof it to return the path to the original file.
     wrapper_file->f_path.dentry->d_fsdata = orig_path;

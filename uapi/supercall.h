@@ -6,8 +6,9 @@
 
 #include "uapi/app_profile.h"
 
+// 3: managed metamodule mount layer synchronization
 // 2: allowlist v4 root profile flags
-static const __u32 KERNEL_SU_UAPI_VERSION = 2;
+static const __u32 KERNEL_SU_UAPI_VERSION = 3;
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;
@@ -136,17 +137,19 @@ struct ksu_nuke_ext4_sysfs_cmd {
 
 struct ksu_add_try_umount_cmd {
     __aligned_u64 arg; /* char ptr, this is the mountpoint */
-    __u32 flags; /* this is the flag we use for it */
-    __u8 mode; /* denotes what to do with it 0:wipe_list 1:add_to_list 2:delete_entry */
+    __u32 flags; /* umount flags, or layer count for KSU_UMOUNT_MANAGED_SET */
+    __u8 mode; /* KSU_UMOUNT_* operation */
 };
 
 struct ksu_get_sulog_fd_cmd {
     __u32 flags; /* Input: reserved for future use, must be 0 */
 };
 
-static const __u8 KSU_UMOUNT_WIPE = 0; /* ignore everything and wipe list */
-static const __u8 KSU_UMOUNT_ADD = 1; /* add entry (path + flags) */
-static const __u8 KSU_UMOUNT_DEL = 2; /* delete entry, strcmp */
+static const __u8 KSU_UMOUNT_WIPE = 0; /* wipe all entries */
+static const __u8 KSU_UMOUNT_ADD = 1; /* add one unmanaged entry (path + flags) */
+static const __u8 KSU_UMOUNT_DEL = 2; /* delete one entry by path */
+static const __u8 KSU_UMOUNT_MANAGED_WIPE = 3; /* wipe only auto-managed entries */
+static const __u8 KSU_UMOUNT_MANAGED_SET = 4; /* set managed path layer count in flags */
 
 /* IOCTL command definitions */
 static const __u32 KSU_IOCTL_GRANT_ROOT = _IOC(_IOC_NONE, 'K', 1, 0);
@@ -176,5 +179,8 @@ static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
 static const __u32 KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT = _IO('K', 21);
+static const __u32 KSU_IOCTL_PREPARE_UNLOAD = _IO('K', 22);
+static const __u32 KSU_IOCTL_COMMIT_UNLOAD = _IO('K', 23);
+static const __u32 KSU_IOCTL_ABORT_UNLOAD = _IO('K', 24);
 
 #endif
