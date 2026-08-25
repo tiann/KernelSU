@@ -1,0 +1,38 @@
+# temporary resolver; only acts on fix/kernel-hardening
+name: Resolve PR 3650 conflicts
+
+on:
+  push:
+    branches:
+      - fix/kernel-hardening
+
+permissions:
+  contents: write
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/kernel-hardening
+          fetch-depth: 0
+
+      - name: Merge upstream main
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/tiann/KernelSU.git
+          git fetch upstream main
+          git merge --no-ff --no-edit upstream/main -m "Merge upstream main into fix/kernel-hardening"
+          git push origin HEAD:fix/kernel-hardening
+
+      - name: Remove temporary resolver
+        if: success()
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/resolve-pr-3650.yml
+          git commit -m "chore: remove temporary PR 3650 conflict resolver"
+          git push origin HEAD:fix/kernel-hardening
