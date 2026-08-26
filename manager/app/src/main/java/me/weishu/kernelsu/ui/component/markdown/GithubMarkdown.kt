@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -37,7 +38,6 @@ import me.weishu.kernelsu.ui.util.cssColorFromArgb
 import me.weishu.kernelsu.ui.util.ensureVisibleByMix
 import me.weishu.kernelsu.ui.util.relativeLuminance
 import okhttp3.Headers.Companion.toHeaders
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.IOException
 import org.commonmark.ext.autolink.AutolinkExtension
@@ -53,6 +53,9 @@ import kotlin.math.abs
 
 private val SEMICOLON_SPLIT = ";\\s*".toRegex()
 private val EQUALS_SPLIT = "=\\s*".toRegex()
+
+private fun isSupportedExternalUri(uri: Uri): Boolean =
+    uri.scheme.equals("https", ignoreCase = true) || uri.scheme.equals("http", ignoreCase = true)
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "WrongConstant")
 @Composable
@@ -144,6 +147,14 @@ fun GithubMarkdown(
                         private val assetLoader = WebViewAssetLoader.Builder()
                             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
                             .build()
+                        private val httpsOnlyClient = ksuApp.okhttpClient.newBuilder()
+                            .addNetworkInterceptor { chain ->
+                                if (!chain.request().url.isHttps) {
+                                    throw IOException("Blocked non-HTTPS markdown resource")
+                                }
+                                chain.proceed(chain.request())
+                            }
+                            .build()
 
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
@@ -215,13 +226,19 @@ fun GithubMarkdown(
                         override fun shouldOverrideUrlLoading(
                             view: WebView, request: WebResourceRequest
                         ): Boolean {
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, request.url)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(intent)
-                            } catch (_: ActivityNotFoundException) {
-                                Log.w("GithubMarkdown", "No activity to handle: ${request.url}")
+                            val url = request.url
+                            if (request.isForMainFrame && isSupportedExternalUri(url)) {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, url)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                } catch (_: ActivityNotFoundException) {
+                                    Log.w("GithubMarkdown", "No activity to handle: $url")
+                                }
                             }
+                            // Never let a link navigate this bridge-free markdown WebView. Unknown
+                            // schemes (for example javascript:, file:, content:, and intent:) are
+                            // deliberately blocked instead of being forwarded to an implicit intent.
                             return true
                         }
 
@@ -233,10 +250,14 @@ fun GithubMarkdown(
                             view: WebView, request: WebResourceRequest
                         ): WebResourceResponse? {
                             assetLoader.shouldInterceptRequest(request.url)?.let { return it }
-                            val scheme = request.url.scheme ?: return null
-                            if (!scheme.startsWith("http")) return null
-                            val client: OkHttpClient = ksuApp.okhttpClient
-                            val call = client.newCall(
+                            val scheme = request.url.scheme
+                            if (!scheme.equals("https", ignoreCase = true)) {
+                                // Returning null would delegate the request back to WebView and
+                                // could re-enable a cleartext or unsupported fetch. A null-body
+                                // response is an explicit block.
+                                return WebResourceResponse(null, null, null)
+                            }
+                            val call = httpsOnlyClient.newCall(
                                 Request.Builder()
                                     .url(request.url.toString())
                                     .method(request.method, null)
@@ -245,6 +266,10 @@ fun GithubMarkdown(
                             )
                             return try {
                                 val reply = call.execute()
+                                if (!reply.request.url.scheme.equals("https", ignoreCase = true)) {
+                                    reply.close()
+                                    return WebResourceResponse(null, null, null)
+                                }
                                 val header = reply.header("content-type", "text/plain; charset=utf-8")
                                 val contentTypes = header?.split(SEMICOLON_SPLIT) ?: emptyList()
                                 val mimeType = contentTypes.firstOrNull() ?: "image/*"
