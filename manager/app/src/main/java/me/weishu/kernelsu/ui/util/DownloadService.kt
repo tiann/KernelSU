@@ -44,6 +44,7 @@ class DownloadService : Service() {
         const val EXTRA_FILE_PATH = "filePath"
 
         private const val COMPLETION_NOTIFICATION_ID_BASE = 100000
+        private const val FALLBACK_FILE_NAME = "download.bin"
     }
 
     private val activeJobs = ConcurrentHashMap<Int, Job>()
@@ -175,8 +176,9 @@ class DownloadService : Service() {
 
     private fun resolveAvailableTarget(
         directory: File,
-        fileName: String
+        rawFileName: String
     ): File {
+        val fileName = sanitizeFileName(rawFileName)
         val dotIndex = fileName.lastIndexOf('.')
         val baseName = if (dotIndex > 0) fileName.substring(0, dotIndex) else fileName
         val extension = if (dotIndex > 0) fileName.substring(dotIndex) else ""
@@ -194,6 +196,17 @@ class DownloadService : Service() {
             }
             index++
         }
+    }
+
+    /**
+     * Reduces an untrusted name (module metadata, release asset name) to a single
+     * path component so it can never escape the target directory.
+     */
+    private fun sanitizeFileName(fileName: String): String {
+        val name = fileName.substringAfterLast('/').substringAfterLast('\\')
+            .filterNot { it == '\u0000' }
+            .trim()
+        return if (name.isEmpty() || name == "." || name == "..") FALLBACK_FILE_NAME else name
     }
 
     private fun buildProgressNotification(

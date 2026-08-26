@@ -127,7 +127,7 @@ fun GithubMarkdown(
                         offscreenPreRaster = true
                         javaScriptEnabled = true
                         domStorageEnabled = true
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                         allowContentAccess = false
                         allowFileAccess = false
                         cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK

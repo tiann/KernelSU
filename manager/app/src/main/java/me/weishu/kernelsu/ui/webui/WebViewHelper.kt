@@ -27,6 +27,9 @@ import me.weishu.kernelsu.ui.util.withMainUserUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import java.io.File
 
+private const val WEBUI_DOMAIN = "mui.kernelsu.org"
+private const val WEBUI_ORIGIN = "https://$WEBUI_DOMAIN"
+
 fun Activity.setTaskDescription(label: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         @Suppress("DEPRECATION")
@@ -90,7 +93,7 @@ internal suspend fun prepareWebView(
 
             val webRoot = File("${webUIState.modDir}/webroot")
             val webViewAssetLoader = WebViewAssetLoader.Builder()
-                .setDomain("mui.kernelsu.org")
+                .setDomain(WEBUI_DOMAIN)
                 .addPathHandler(
                     "/",
                     SuFilePathHandler(
@@ -118,7 +121,7 @@ internal suspend fun prepareWebView(
                                 icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                                 return WebResourceResponse(
                                     "image/png", null, 200, "OK",
-                                    mapOf("Access-Control-Allow-Origin" to "*"),
+                                    mapOf("Access-Control-Allow-Origin" to WEBUI_ORIGIN),
                                     java.io.ByteArrayInputStream(stream.toByteArray())
                                 )
                             } else {
@@ -129,13 +132,26 @@ internal suspend fun prepareWebView(
                                     "utf-8",
                                     404,
                                     "Not Found",
-                                    mapOf("Access-Control-Allow-Origin" to "*"),
+                                    mapOf("Access-Control-Allow-Origin" to WEBUI_ORIGIN),
                                     errorStream
                                 )
                             }
                         }
                     }
                     return webViewAssetLoader.shouldInterceptRequest(url)
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    val url = request.url
+                    if (url.host.equals(WEBUI_DOMAIN, ignoreCase = true)) return false
+                    if (request.isForMainFrame) {
+                        runCatching {
+                            activity.startActivity(
+                                Intent(Intent.ACTION_VIEW, url).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        }
+                    }
+                    return true
                 }
 
                 override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
