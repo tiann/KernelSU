@@ -16,6 +16,7 @@ bool ksu_permissive(struct policydb *db, const char *type);
 bool ksu_enforce(struct policydb *db, const char *type);
 bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr);
 bool ksu_exists(struct policydb *db, const char *type);
+bool ksu_clone_type(struct policydb *db, const char *src, const char *dst);
 
 // Access vector rules
 bool ksu_allow(struct policydb *db, const char *src, const char *tgt, const char *cls, const char *perm);
