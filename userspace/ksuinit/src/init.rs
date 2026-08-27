@@ -19,7 +19,7 @@ struct AutoUmount {
 const KSU_CONFIG_PATH: &str = "/ksu_config";
 const KSU_BLOCK_MODULES_PATH: &str = "/ksu_block_modules";
 const KSU_BLOCK_MODULES_MAX_LEN: usize = 255;
-const KSU_DEFAULT_BLOCK_MODULES: &str = "vr,vklp,oplus_secure_guard,oplus_secure_guard_new";
+const KSU_DEFAULT_BLOCK_MODULES: &str = "vr,vklp,oplus_secure_guard,oplus_secure_guard_new,mkp";
 
 fn valid_block_modules(modules: &str) -> bool {
     modules.len() <= KSU_BLOCK_MODULES_MAX_LEN
