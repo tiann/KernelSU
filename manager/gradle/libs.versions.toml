@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.1"
+agp = "9.3.2"
 kotlin = "2.4.10"
 compose-bom = "2026.08.00"
 lifecycle = "2.11.0"
@@ -19,7 +19,7 @@ miuix = "0.9.3"
 okhttp = "5.5.0"
 hiddenapibypass = "6.1"
 appiconloader = "1.5.0"
-protobuf = "4.35.1"
+protobuf = "4.36.0"
 commons-compress = "1.28.0"
 xz = "1.12"
 
