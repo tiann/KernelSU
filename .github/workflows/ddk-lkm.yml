@@ -10,7 +10,7 @@ on:
       ddk_release:
         description: 'DDK release version'
         required: false
-        default: '20260313'
+        default: '20260828'
         type: string
       expected_size2:
         description: 'Second expected signature size (for PR builds)'
@@ -99,18 +99,26 @@ jobs:
         kmi=${{ inputs.kmi }}
         pushd /opt/ddk/src/$kmi
         export KDIR=/opt/ddk/kdir-x64/$kmi
+
+        # ddk-min images contain the source tarball, whose modpost patch is
+        # not applied to the fresh x86 kdir.  Keep the patch idempotent so
+        # this also works when the image already contains one or more fixes.
+        MODPOST=scripts/mod/modpost.c
+        sed -i -E 's/^([[:space:]]*)check_exports\(mod\);/\1\/\/ check_exports(mod);/' "$MODPOST"
+        sed -i -E 's/^([[:space:]]*)s->module = exp->module;/\1\/\/ s->module = exp->module;/' "$MODPOST"
+        sed -i 's/^static void check_exports(/static void __attribute__((unused)) check_exports(/' "$MODPOST"
+        sed -i 's/__version_ext_names\\") =\\n/__version_ext_names\\") = \\"\\"\\n/' "$MODPOST"
+
         make O=$KDIR gki_defconfig
         scripts/config --file $KDIR/.config -d LTO_CLANG -e LTO_NONE -d LTO_CLANG_THIN -d LTO_CLANG_FULL -d THINLTO
-        if [ "$kmi" == "android16-6.12" ]; then
+        if [ "$kmi" == "android16-6.12" ] || [ "$kmi" == "android17-6.18" ]; then
             scripts/config --file $KDIR/.config -e CONFIG_CFI_ICALL_NORMALIZE_INTEGERS
         fi
         make O=$KDIR modules_prepare
+        # Generate SELinux headers through Kbuild in this x86 output tree.
+        make O=$KDIR security/selinux/built-in.a
         popd
         
-        SELINUX_PATH=security/selinux
-        mkdir -p $KDIR/$SELINUX_PATH
-        cp /opt/ddk/kdir/$kmi/$SELINUX_PATH/*.h $KDIR/$SELINUX_PATH
-
         echo "=== Building x64 kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
@@ -128,7 +136,11 @@ jobs:
         
         MDIR=$(realpath .)
 
-        make -C $KDIR M=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        if [ "$kmi" == "android17-6.18" ]; then
+          make -C $KDIR M=$MDIR MO=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        else
+          make -C $KDIR M=$MDIR src=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        fi
         
         echo "=== Build completed ==="
 
