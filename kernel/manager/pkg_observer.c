@@ -35,8 +35,14 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct i
     return 0;
 }
 
+static void ksu_free_mark(struct fsnotify_mark *mark)
+{
+    kfree(mark);
+}
+
 static const struct fsnotify_ops ksu_ops = {
     .handle_inode_event = ksu_handle_inode_event,
+    .free_mark = ksu_free_mark,
 };
 
 static int add_mark_on_inode(struct inode *inode, u32 mask, struct fsnotify_mark **out)
