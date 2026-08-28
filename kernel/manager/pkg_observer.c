@@ -119,6 +119,7 @@ int ksu_observer_init(void)
 void __exit ksu_observer_exit(void)
 {
     unwatch_one_dir(&g_watch);
-    fsnotify_put_group(g);
+    if (g)
+        fsnotify_put_group(g);
     pr_info("observer exit done\n");
 }
