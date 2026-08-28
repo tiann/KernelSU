@@ -308,6 +308,15 @@ fun SettingPagerMaterial(
                         },
                         {
                             SegmentedSwitchItem(
+                                icon = Icons.Filled.Language,
+                                title = stringResource(id = R.string.settings_allow_webui_external_content),
+                                summary = stringResource(id = R.string.settings_allow_webui_external_content_summary),
+                                checked = uiState.allowWebUiExternalContent,
+                                onCheckedChange = actions.onSetAllowWebUiExternalContent
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
                                 icon = Icons.Filled.ElectricalServices,
                                 title = stringResource(id = R.string.settings_auto_jailbreak),
                                 summary = stringResource(id = R.string.settings_auto_jailbreak_summary),

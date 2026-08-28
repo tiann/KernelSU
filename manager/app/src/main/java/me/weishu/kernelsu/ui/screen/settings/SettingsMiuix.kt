@@ -392,6 +392,20 @@ fun SettingPagerMiuix(
                                 onCheckedChange = actions.onSetEnableWebDebugging
                             )
                             SwitchPreference(
+                                title = stringResource(id = R.string.settings_allow_webui_external_content),
+                                summary = stringResource(id = R.string.settings_allow_webui_external_content_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.Language,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_allow_webui_external_content),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                checked = uiState.allowWebUiExternalContent,
+                                onCheckedChange = actions.onSetAllowWebUiExternalContent
+                            )
+                            SwitchPreference(
                                 title = stringResource(id = R.string.settings_auto_jailbreak),
                                 summary = stringResource(id = R.string.settings_auto_jailbreak_summary),
                                 startAction = {
