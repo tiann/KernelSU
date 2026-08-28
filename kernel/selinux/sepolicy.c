@@ -924,7 +924,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
         pr_err("sepolicy: policydb_write: %d\n", ret);
         goto out_free_data;
     }
-// https://android.googlesource.com/kernel/common/+/35a7845718734ae638b85b420534cb859498dab6%5E%21
+    // https://android.googlesource.com/kernel/common/+/35a7845718734ae638b85b420534cb859498dab6%5E%21
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
     // https://android-review.googlesource.com/c/kernel/common/+/3009995/11/security/selinux/ss/policydb.c
     // fixup config
