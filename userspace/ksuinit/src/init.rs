@@ -1,7 +1,7 @@
+use std::ffi::CString;
 use std::io::{ErrorKind, Write};
 
 use anyhow::{Context, Result};
-use rustix::cstr;
 use rustix::fs::{Mode, symlink, unlink};
 use rustix::{
     fd::AsFd,
@@ -57,12 +57,6 @@ fn prepare_mount() -> AutoUmount {
         Err(e) => log::error!("Cannot mount procfs: {:?}", e),
     }
 
-    // mount sysfs
-    match mount_filesystem("sysfs", "/sys") {
-        Ok(_) => mountpoints.push("/sys".to_string()),
-        Err(e) => log::error!("Cannot mount sysfs: {:?}", e),
-    }
-
     AutoUmount { mountpoints }
 }
 
@@ -103,7 +97,7 @@ pub fn init() -> Result<()> {
 
     log::info!("Hello, KernelSU!");
 
-    // mount /proc and /sys to access kernel interface
+    // mount /proc to access kernel interface
     let _dontdrop = prepare_mount();
 
     // This relies on the fact that we have /proc mounted
@@ -135,11 +129,8 @@ pub fn init() -> Result<()> {
 fn load_module_from_path(path: &str) -> Result<()> {
     anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
     let buffer = std::fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
-    let params = if std::fs::exists("/ksu_allow_shell").unwrap_or(false) {
-        log::warn!("ksu allow shell at init!");
-        cstr!("allow_shell=1")
-    } else {
-        cstr!("")
-    };
-    ksuinit::load_module(&buffer, params)
+    let params = std::fs::read("/ksu_config").unwrap_or_default();
+    let params = unsafe { CString::from_vec_unchecked(params) };
+    log::info!("load kernelsu with params {params:?}");
+    ksuinit::load_module(&buffer, &params)
 }

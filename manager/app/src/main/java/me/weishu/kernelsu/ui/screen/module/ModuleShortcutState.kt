@@ -57,12 +57,6 @@ class ModuleShortcutState internal constructor(
     var hasExistingShortcut by mutableStateOf(false)
         internal set
 
-    val availableTypes: List<ShortcutType>
-        get() = buildList {
-            if (supportsActionShortcut) add(ShortcutType.Action)
-            if (supportsWebUiShortcut) add(ShortcutType.WebUI)
-        }
-
     val defaultShortcutIconUri: String?
         get() = selectedType?.let(::defaultIconFor)
 
@@ -112,6 +106,15 @@ class ModuleShortcutState internal constructor(
             type = type,
         )
         hasExistingShortcut = true
+    }
+
+    fun buildShortcutUrl(): String? {
+        val currentModuleId = moduleId
+        val type = selectedType
+        if (currentModuleId.isNullOrBlank() || type == null) {
+            return null
+        }
+        return Shortcut.buildShortcutUri(currentModuleId, type).toString()
     }
 
     fun deleteShortcut(context: Context) {

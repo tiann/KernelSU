@@ -3,11 +3,13 @@
 
 #include <linux/types.h>
 
-#define KSU_APP_PROFILE_VER 3
+#define KSU_APP_PROFILE_VER 4
 #define KSU_MAX_PACKAGE_NAME 256
 /* NGROUPS_MAX for Linux is 65535 generally, but we only supports 32 groups. */
 #define KSU_MAX_GROUPS 32
 #define KSU_SELINUX_DOMAIN 64
+
+#define FLAG_KSU_NO_NEW_PRIVS (1ULL << 0)
 
 struct root_profile {
     __s32 uid;
@@ -26,6 +28,8 @@ struct root_profile {
     char selinux_domain[KSU_SELINUX_DOMAIN];
 
     __s32 namespaces;
+
+    __u64 flags;
 };
 
 struct non_root_profile {

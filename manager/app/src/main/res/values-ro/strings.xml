@@ -4,7 +4,7 @@
     <string name="home_not_installed">Nu este instalat</string>
     <string name="home_click_to_install">Click pentru a instala</string>
     <string name="home_working">Funcționează</string>
-    <string name="home_working_version">Versiune: %d</string>
+    <string name="home_working_version">Versiune: %s</string>
     <string name="home_unsupported">Necompatibil</string>
     <string name="home_unsupported_reason">KernelSU suportă doar nuclee GKI acum</string>
     <string name="home_kernel">Nucleu</string>
@@ -107,7 +107,12 @@
 \nContinui?</string>
     <string name="select_kmi">Selectează KMI</string>
     <string name="direct_install">Instalare directă (recomandat)</string>
-    <string name="select_file">Selectează un fișier</string>
+    <string name="select_file">Selectează și patchuiește un fișier</string>
+    <string name="download_file">Descarcă și patchuiește un fișier</string>
+    <string name="download_dialog_title">Introduceți URL-ul imaginii</string>
+    <string name="download_dialog_msg">Imagine OTA completă sau imagine de fabrică</string>
+    <string name="download_no_boot_partition">Nu s-a găsit nicio partiție boot, init_boot sau vendor_boot în imagine</string>
+    <string name="download_probe_failed">Analiza imaginii a eșuat: %1$s</string>
     <string name="install_inactive_slot">Instalează într-un slot inactiv (după OTA)</string>
     <string name="settings_uninstall">Dezinstalează</string>
     <string name="settings_restore_stock_image">Restaurare imagine stoc</string>
@@ -125,4 +130,7 @@
     <string name="settings_sucompat_summary">Permite aplicațiilor cu permisiune de Superutilizator în Profilul Aplicației să obțină un shell de superutilizator executând /system/bin/su; eficient doar pentru procesele noi.</string>
     <string name="settings_kernel_umount">Demontare kernel</string>
     <string name="settings_kernel_umount_summary">Comportament de demontare la nivel de kernel controlat de KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Împiedică escaladarea suplimentară a privilegiilor prin KernelSU în contextul acestui profil root.</string>
+    <string name="install_force_backup">Salvează ca imagine originală</string>
+    <string name="install_force_backup_summary">Asigură-te că imaginea boot selectată este imaginea originală</string>
 </resources>

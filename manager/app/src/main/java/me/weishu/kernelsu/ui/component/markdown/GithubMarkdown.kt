@@ -95,26 +95,24 @@ fun GithubMarkdown(
     val rendered = remember(content, isMarkdown) {
         if (isMarkdown) renderer.render(parser.parse(content)) else content
     }
-    val body = """
-        <style>
-         :root {
-             --background: ${Color.TRANSPARENT};
-             --pre-background: $bgCode;
-             --code-background: $bgCode;
-             --tr-alt-background: $bgRowAlt;
-             --thead-background: $bgRowAlt;
-             --textPrimary: $fgDefault;
-             --link: $fgLink;
-         }
-          html, body { margin: 0; padding: 0 }
-          img, video { max-width: 100%; height: auto; }
-          .markdown-body { padding: 16px; }
-        </style>
-        $rendered
+    val styleContent = """
+        :root {
+            --background: ${Color.TRANSPARENT};
+            --pre-background: $bgCode;
+            --code-background: $bgCode;
+            --tr-alt-background: $bgRowAlt;
+            --thead-background: $bgRowAlt;
+            --textPrimary: $fgDefault;
+            --link: $fgLink;
+        }
+        html, body { margin: 0; padding: 0 }
+        img, video { max-width: 100%; height: auto; }
+        .markdown-body { padding: 16px; }
     """.trimIndent()
     val html = template
         .replace("@dir@", dir)
-        .replace("@body@", body)
+        .replace("@style@", styleContent)
+        .replace("@body@", rendered)
 
     AndroidView(
         factory = { context ->
@@ -305,10 +303,6 @@ fun GithubMarkdown(
                             return false
                         }
                     })
-                    loadDataWithBaseURL(
-                        "https://appassets.androidplatform.net", html,
-                        "text/html", StandardCharsets.UTF_8.name(), null
-                    )
                 } catch (e: Throwable) {
                     Log.e("GithubMarkdown", "WebView setup failed", e)
                 }
@@ -319,11 +313,14 @@ fun GithubMarkdown(
         update = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView ?: return@AndroidView
             webView.settings.textZoom = newTextZoom
-            onLoadingChange(true)
-            webView.loadDataWithBaseURL(
-                "https://appassets.androidplatform.net", html,
-                "text/html", StandardCharsets.UTF_8.name(), null
-            )
+            if (webView.tag != html) {
+                webView.tag = html
+                onLoadingChange(true)
+                webView.loadDataWithBaseURL(
+                    "https://appassets.androidplatform.net", html,
+                    "text/html", StandardCharsets.UTF_8.name(), null
+                )
+            }
         },
         onRelease = { frameLayout ->
             val webView = frameLayout.getChildAt(0) as? WebView

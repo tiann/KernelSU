@@ -27,7 +27,7 @@
 #include "feature/selinux_hide.h"
 #include "infra/symbol_resolver.h"
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
 #include <linux/version.h>
 #ifndef X86_FEATURE_INDIRECT_SAFE
@@ -80,9 +80,12 @@ bool allow_shell = false;
 #endif
 module_param(allow_shell, bool, 0);
 
+bool ksu_no_custom_rc = false;
+module_param_named(norc, ksu_no_custom_rc, bool, 0);
+
 int __init kernelsu_init(void)
 {
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
         pr_alert("*************************************************************");
@@ -120,6 +123,7 @@ int __init kernelsu_init(void)
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
         pr_err("prepare cred failed!\n");
+        return -ENOSYS;
     }
 
     ksu_init_symbol_resolver();
@@ -132,6 +136,7 @@ int __init kernelsu_init(void)
     ksu_selinux_hide_init();
 
     ksu_supercalls_init();
+    ksu_app_profile_init();
 
     if (ksu_late_loaded) {
         pr_info("late load mode, skipping kprobe hooks\n");
@@ -208,9 +213,7 @@ void __exit kernelsu_exit(void)
     ksu_sulog_exit();
     ksu_feature_exit();
 
-    if (ksu_cred) {
-        put_cred(ksu_cred);
-    }
+    put_cred(ksu_cred);
 }
 
 #if NEED_OWN_STACKPROTECTOR

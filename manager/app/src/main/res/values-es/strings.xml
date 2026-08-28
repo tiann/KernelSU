@@ -4,7 +4,7 @@
     <string name="home_not_installed">No instalado</string>
     <string name="home_click_to_install">Haz clic para instalar</string>
     <string name="home_working">Funcionando</string>
-    <string name="home_working_version">Versión: %d</string>
+    <string name="home_working_version">Versión: %s</string>
     <string name="home_unsupported">Sin soporte</string>
     <string name="home_unsupported_reason">KernelSU solo admite kernels GKI por ahora</string>
     <string name="home_kernel">Versión del kernel</string>
@@ -111,7 +111,12 @@
     <string name="flash_success">Éxito de Flash</string>
     <string name="grant_root_failed">¡No se ha podido conceder el acceso root!</string>
     <string name="open">Abrir</string>
-    <string name="select_file">Seleccione un archivo</string>
+    <string name="select_file">Seleccionar y parchar un archivo</string>
+    <string name="download_file">Descargar y parchar un archivo</string>
+    <string name="download_dialog_title">Introduzca la URL de la imagen</string>
+    <string name="download_dialog_msg">Imagen OTA completa o imagen de fábrica</string>
+    <string name="download_no_boot_partition">No se encontró una partición boot, init_boot o vendor_boot en la imagen</string>
+    <string name="download_probe_failed">No se pudo analizar la imagen: %1$s</string>
     <string name="install_inactive_slot">Instalar en ranura inactiva (Después de OTA)</string>
     <string name="settings_uninstall_temporary">Desinstalar temporalmente</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
@@ -124,4 +129,7 @@
     <string name="settings_sucompat_summary">Permite que las aplicaciones con permiso de Superusuario en el perfil de la aplicación obtengan un shell de superusuario ejecutando /system/bin/su; efectivo solo para nuevos procesos.</string>
     <string name="settings_kernel_umount">Desmontaje del kernel</string>
     <string name="settings_kernel_umount_summary">Comportamiento de desmontaje a nivel de kernel controlado por KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Impide una mayor escalada de privilegios mediante KernelSU dentro del contexto de este perfil root.</string>
+    <string name="install_force_backup">Respaldar como imagen original</string>
+    <string name="install_force_backup_summary">Asegúrate de que la imagen de arranque seleccionada sea la imagen original</string>
 </resources>

@@ -71,6 +71,9 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 |   ├── action.sh           <--- This script will be executed when user click the Action button in KernelSU app
 │   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
 │   ├── sepolicy.rule       <--- Additional custom sepolicy rules
+│   ├── initrc/             <--- .rc files in this directory will be injected into init.rc on boot
+│   │   ├── myservice.rc
+│   │   └── ...
 │   │
 │   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
 │   │
@@ -186,6 +189,80 @@ This file follows the same format as `build.prop`. Each line comprises of `[key]
 
 If your module requires some additional sepolicy patches, please add those rules into this file. Each line in this file will be treated as a policy statement.
 
+### initrc Injection {#initrc-injection}
+
+KernelSU provides a mechanism to inject custom Android Init RC directives into the system's `init.rc`. This allows modules to register custom Android services, set property triggers, or perform other Init language actions without modifying the system partition.
+
+During boot, the KernelSU kernel module intercepts `read()` and `fstat()` system calls. When the Android init process reads `/system/etc/init/hw/init.rc`, KernelSU transparently appends the custom RC content to the end of the file. The init process parses these injected directives just like the original init.rc content.
+
+On the userspace side, ksud concatenates all `.rc` files from enabled modules into a single `modules.rc` file, stored on the `/metadata` partition. This file is automatically regenerated whenever a module's state changes (install, enable, disable, uninstall, etc.).
+
+#### Module initrc Files
+
+Create an `initrc/` subdirectory in your module directory and place your `.rc` files there:
+
+```txt
+/data/adb/modules/<MODID>/
+├── initrc/
+│   ├── myservice.rc
+│   └── another.rc
+└── ...
+```
+
+::: tip
+- Files must have an `.rc` extension.
+- As long as the module is enabled, all `.rc` files in the `initrc/` directory will be included (executable permission is not required).
+- Files are processed in **alphabetical order of file name** within the directory, and modules are processed in **alphabetical order of module ID**.
+:::
+
+#### General initrc Files
+
+In addition to module-level RC files, you can place `.rc` files in the global directory:
+
+```txt
+/data/adb/initrc.d/
+├── myservice.rc
+└── another.rc
+```
+
+::: warning General initrc files require executable permission
+Unlike the module `initrc/` directory, files in `/data/adb/initrc.d/` **must have executable permissions** to be included. Non-executable `.rc` files will be silently skipped.
+:::
+
+General `initrc.d/` files are processed before any module RC files.
+
+#### Example
+
+Here is an example `.rc` file that registers a custom Android service:
+
+```rc
+service myservice /data/adb/modules/mymodule/bin/myservice
+    user root
+    group root
+    disabled
+    seclabel u:r:ksu:s0
+
+on property:sys.boot_completed=1
+    start myservice
+```
+
+If this file is placed at `/data/adb/modules/mymodule/initrc/myservice.rc`, it will register a service named `myservice` at boot and start it when `sys.boot_completed=1` is reached.
+
+#### Manual Refresh
+
+You can manually trigger the regeneration of `modules.rc` with the following command (changes take effect on the next boot):
+
+```sh
+ksud initrc refresh
+```
+
+::: tip
+- initrc injection happens extremely early in the boot process (when init reads init.rc), **before** post-fs-data and any module scripts are executed.
+- The injected RC content is treated by init as part of the original init.rc, supporting all Android Init language syntax (service definitions, triggers, property settings, etc.).
+- initrc injection is **not available** in **late-load mode**, as the system call hooks are not installed in that mode.
+- Module RC injection can be disabled by passing the `--no-custom-rc` parameter when patching the image with ksud.
+:::
+
 ## Module installer
 
 A KernelSU module installer is a KernelSU module packaged in a ZIP file that can be flashed in the KernelSU manager. The simplest KernelSU module installer is just a KernelSU module packed as a ZIP file.
@@ -225,6 +302,9 @@ The `customize.sh` script runs in KernelSU's BusyBox `ash` shell with Standalone
 - `ARCH` (string): the CPU architecture of the device. Value is either `arm`, `arm64`, `x86`, or `x64`.
 - `IS64BIT` (bool): `true` if `$ARCH` is either `arm64` or `x64`.
 - `API` (int): the API level (Android version) of the device (e.g., `23` for Android 6.0).
+- `KSU_UAPI_VER` (int): the UAPI version of KernelSU userspace (ksud) (e.g., `2`). This version is incremented when there are breaking changes in the kernel driver, and can be used by modules to check compatibility.
+- `KSU_RUNTIME_MODE` (string): the current KernelSU runtime mode. Possible values are `built-in` (a.k.a. GKI mode, compiled into the kernel), `lkm` (loaded as a kernel module at boot), or `late-load` (loaded as a kernel module after boot).
+- `KSU_LATE_LOAD` (int?): if KernelSU is late-loaded after boot, this variable is set to `1`; otherwise it is not set.
 
 ::: warning
 In KernelSU, `MAGISK_VER_CODE` is always `25200`, and `MAGISK_VER` is always `v25.2`. Please don't use these two variables to determine whether KernelSU is running or not.
@@ -302,6 +382,7 @@ load kernel:
 mount /dev, /dev/pts, /proc, /sys, etc.
 property-init -> read default props
 read init.rc
+  *initrc injection: Kernel hook appends KernelSU core RC and module modules.rc to init.rc
 ...
 early-init -> init -> late_init
 early-fs
@@ -369,6 +450,7 @@ Since the system is already fully running, certain boot-time mechanisms are unav
 | Behavior | Standard boot | Late-load mode |
 |----------|:---:|:---:|
 | Kernel module loaded by init (PID 1) | Yes | No (loaded after boot) |
+| initrc injection (module `.rc` files to init.rc) | Yes | Unavailable |
 | kprobe hooks for ksud (execve/read/fstat/input) | Yes | Skipped |
 | Safe mode detection (volume key) | Yes | Always disabled |
 | Boot log capture (logcat/dmesg) | Yes | Skipped |

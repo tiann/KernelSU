@@ -56,6 +56,7 @@ function sidebarGuide() {
           { text: '模块配置', link: '/zh_CN/guide/module-config.md' },
           { text: 'App Profile', link: '/zh_CN/guide/app-profile.md' },
           { text: '救砖', link: '/zh_CN/guide/rescue-from-bootloop.md' },
+          { text: 'x86_64 支持', link: '/zh_CN/guide/x86_64-support' },
           { text: '常见问题', link: '/zh_CN/guide/faq' },
           { text: '隐藏功能', link: '/zh_CN/guide/hidden-features' },
         ]

@@ -1,10 +1,11 @@
 package me.weishu.kernelsu.ui.screen.template
 
 import android.content.ClipData
-import android.widget.Toast
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
@@ -13,7 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
@@ -22,6 +22,7 @@ import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
+import top.yukonga.miuix.kmp.basic.SnackbarHostState as MiuixSnackbarHostState
 
 @Composable
 fun AppProfileTemplateScreen() {
@@ -33,6 +34,8 @@ fun AppProfileTemplateScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val requestKey = "template_edit"
+    val snackBarHost = remember { SnackbarHostState() }
+    val miuixSnackbarHost = remember { MiuixSnackbarHostState() }
 
     LaunchedEffect(Unit) {
         if (screenState.templateList.isEmpty()) {
@@ -55,9 +58,13 @@ fun AppProfileTemplateScreen() {
     val importSuccessText = stringResource(R.string.app_profile_template_import_success)
     val exportEmptyText = stringResource(R.string.app_profile_template_export_empty)
 
-    val showToast: (String) -> Unit = { message ->
-        scope.launch(Dispatchers.Main) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    fun showMessage(message: String) {
+        scope.launch {
+            if (uiMode == UiMode.Material) {
+                snackBarHost.showSnackbar(message)
+            } else {
+                miuixSnackbarHost.showSnackbar(message)
+            }
         }
     }
 
@@ -73,16 +80,16 @@ fun AppProfileTemplateScreen() {
             scope.launch {
                 clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let { templateText ->
                     if (templateText.isEmpty()) {
-                        showToast(importEmptyText)
+                        showMessage(importEmptyText)
                         return@let
                     }
                     viewModel.importTemplates(
                         templateText,
                         onSuccess = {
-                            showToast(importSuccessText)
+                            showMessage(importSuccessText)
                             viewModel.fetchTemplates(false)
                         },
-                        onFailure = showToast,
+                        onFailure = { showMessage(it) },
                     )
                 }
             }
@@ -91,7 +98,7 @@ fun AppProfileTemplateScreen() {
             scope.launch {
                 viewModel.exportTemplates(
                     onTemplateEmpty = {
-                        showToast(exportEmptyText)
+                        showMessage(exportEmptyText)
                     },
                     callback = { templateText ->
                         clipboard.setClipEntry(
@@ -131,11 +138,13 @@ fun AppProfileTemplateScreen() {
         UiMode.Miuix -> AppProfileTemplateScreenMiuix(
             state = uiState,
             actions = actions,
+            snackBarHost = miuixSnackbarHost,
         )
 
         UiMode.Material -> AppProfileTemplateScreenMaterial(
             state = uiState,
             actions = actions,
+            snackBarHost = snackBarHost,
         )
     }
 }

@@ -4,7 +4,7 @@
     <string name="home_not_installed">Niet geïnstalleerd</string>
     <string name="home_click_to_install">Tik om te installeren</string>
     <string name="home_working">Werkend</string>
-    <string name="home_working_version">Versie: %d</string>
+    <string name="home_working_version">Versie: %s</string>
     <string name="home_unsupported">Niet ondersteund</string>
     <string name="home_unsupported_reason">KernelSU ondersteunt momenteel alleen GKI-kernels, maar je kunt de image patchen voor GKI-apparaten.</string>
     <string name="home_kernel">Kernel version</string>
@@ -101,7 +101,12 @@
     <string name="open">Open</string>
     <string name="settings_check_update_summary">Controleer automatisch op updates bij het openen van de app.</string>
     <string name="direct_install">Directe installatie (aanbevolen)</string>
-    <string name="select_file">Selecteer een bestand</string>
+    <string name="select_file">Kies en patch een bestand</string>
+    <string name="download_file">Download en patch een bestand</string>
+    <string name="download_dialog_title">Afbeeldings-URL invoeren</string>
+    <string name="download_dialog_msg">Volledige OTA-image of fabrieksimage</string>
+    <string name="download_no_boot_partition">Geen boot-, init_boot- of vendor_boot-partitie gevonden in de image</string>
+    <string name="download_probe_failed">Kan image niet controleren: %1$s</string>
     <string name="grant_root_failed">Kan geen root verlenen!</string>
     <string name="select_file_tip">%1$s partitie-image wordt aanbevolen</string>
     <string name="install_next">Naast</string>
@@ -153,4 +158,7 @@
     <string name="feature_status_unsupported_summary">De kernel ondersteunt deze functie niet</string>
     <string name="feature_status_managed_summary">Deze functie wordt beheerd door een module</string>
     <string name="settings_mode_enable_by_default">Inschakelen (Standaard)</string>
+    <string name="profile_flags_desc_no_new_privs">Voorkomt verdere bevoegdheidsescalatie via KernelSU binnen de context van dit root-profiel.</string>
+    <string name="install_force_backup">Back-up maken als origineel image</string>
+    <string name="install_force_backup_summary">Zorg ervoor dat de geselecteerde boot-image het originele image is</string>
 </resources>

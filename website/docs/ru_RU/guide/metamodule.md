@@ -216,7 +216,7 @@ done
 
 Этот скрипт наследует все переменные и функции из встроенного `install.sh`:
 
-- **Переменные**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `BOOTMODE` и т. д.
+- **Переменные**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `KSU_UAPI_VER`, `KSU_RUNTIME_MODE`, `KSU_LATE_LOAD`, `BOOTMODE` и т. д.
 - **Функции**:
   - `ui_print <msg>` - Вывести сообщение в консоль
   - `abort <msg>` - Вывести ошибку и завершить установку

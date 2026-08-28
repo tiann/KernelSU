@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
@@ -27,12 +27,14 @@ jobs:
     - name: Prepare LKM files
       if: ${{ inputs.pack_lkm }}
       run: |
-        cp android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
+        cp aarch64-android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
+        cp x86_64-android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/x86_64/
     
     - name: Prepare ksuinit
       if: ${{ inputs.pack_ksuinit }}
       run: |
-        mv ksuinit/*/release/ksuinit ./userspace/ksud/bin/aarch64/
+        mv ksuinit-aarch64/ksuinit ./userspace/ksud/bin/aarch64/
+        mv ksuinit-x86_64/ksuinit ./userspace/ksud/bin/x86_64/
         
     - name: Setup rustup
       run: |
@@ -53,6 +55,9 @@ jobs:
       env:
         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          export KSU_PACKAGE_NAME="me.weishu.kernelsu.pr"
+        fi
         source .github/scripts/setup-rust-build.sh ${{ inputs.target }} 26
         cargo build --target $TRIPLE --release --manifest-path ./userspace/ksud/Cargo.toml
 

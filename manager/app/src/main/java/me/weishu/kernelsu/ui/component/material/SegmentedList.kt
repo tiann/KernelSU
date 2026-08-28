@@ -1,5 +1,8 @@
 package me.weishu.kernelsu.ui.component.material
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,16 +10,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
@@ -24,15 +27,17 @@ import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,30 +47,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
+import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 val LocalListItemShapes = compositionLocalOf<ListItemShapes?> { null }
+private val SegmentedOuterRadius = 16.dp
+private val SegmentedInnerRadius = 4.dp
+private const val SegmentedSpringStiffness = 800f
+private const val SegmentedSpringDamping = 0.9f
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@DslMarker
+annotation class SegmentedColumnDsl
+
 @Composable
-private fun defaultSegmentedColors(): ListItemColors = ListItemDefaults.segmentedColors().copy(
-    containerColor = colorScheme.surfaceColorAtElevation(1.dp),
-    disabledContainerColor = colorScheme.surfaceColorAtElevation(1.dp),
-    supportingContentColor = colorScheme.outline
+private fun defaultSegmentedColors(): ListItemColors = ListItemDefaults.segmentedColors(
+    containerColor = colorScheme.surfaceBright,
+    disabledContainerColor = colorScheme.surfaceBright,
+    supportingContentColor = colorScheme.onSurfaceVariant
 )
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun defaultSingleSegmentedShape(index: Int, count: Int): ListItemShapes {
     val base = ListItemDefaults.segmentedShapes(index, count)
@@ -76,7 +98,6 @@ private fun defaultSingleSegmentedShape(index: Int, count: Int): ListItemShapes 
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SegmentedColumn(
     modifier: Modifier = Modifier,
@@ -110,7 +131,129 @@ fun SegmentedColumn(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@SegmentedColumnDsl
+class SegmentedColumnScope {
+    internal data class Entry(
+        val key: Any?,
+        val visible: Boolean,
+        val content: @Composable () -> Unit,
+    )
+
+    internal val entries = mutableListOf<Entry>()
+
+    fun item(
+        key: Any? = null,
+        visible: Boolean = true,
+        content: @Composable () -> Unit,
+    ) {
+        entries.add(Entry(key ?: entries.size, visible, content))
+    }
+}
+
+@Composable
+fun SegmentedColumn(
+    modifier: Modifier = Modifier,
+    title: String = "",
+    content: SegmentedColumnScope.() -> Unit,
+) {
+    val entries = SegmentedColumnScope().apply(content).entries
+    if (entries.isEmpty()) return
+
+    Column(modifier = modifier) {
+        if (title.isNotEmpty()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            )
+        }
+
+        val floatSpring = spring<Float>(SegmentedSpringDamping, SegmentedSpringStiffness)
+        val dpSpring = spring<Dp>(SegmentedSpringDamping, SegmentedSpringStiffness)
+
+        val progresses = entries.mapIndexed { index, entry ->
+            key(entry.key ?: index) {
+                animateFloatAsState(
+                    targetValue = if (entry.visible) 1f else 0f,
+                    animationSpec = floatSpring,
+                    label = "SegmentedProgress"
+                )
+            }
+        }
+
+        val firstVisible = entries.indexOfFirst { it.visible }
+        val lastVisible = entries.indexOfLast { it.visible }
+
+        Layout(
+            content = {
+                entries.forEachIndexed { index, entry ->
+                    key(entry.key ?: index) {
+                        val isFirst = if (firstVisible == -1) index == 0 else index == firstVisible
+                        val isLast = if (lastVisible == -1) index == entries.lastIndex else index == lastVisible
+
+                        val topRadius by animateDpAsState(
+                            if (isFirst) SegmentedOuterRadius else SegmentedInnerRadius,
+                            dpSpring, label = "SegmentedTopRadius"
+                        )
+                        val bottomRadius by animateDpAsState(
+                            if (isLast) SegmentedOuterRadius else SegmentedInnerRadius,
+                            dpSpring, label = "SegmentedBottomRadius"
+                        )
+                        val gap by animateDpAsState(
+                            if (isFirst) 0.dp else ListItemDefaults.SegmentedGap,
+                            dpSpring, label = "SegmentedGap"
+                        )
+
+                        val shape = RoundedCornerShape(
+                            topStart = topRadius, topEnd = topRadius,
+                            bottomStart = bottomRadius, bottomEnd = bottomRadius
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .zIndex(if (entry.visible) (entries.size - index).toFloat() else -index.toFloat())
+                                .graphicsLayer {
+                                    val progress = progresses[index].value.coerceAtLeast(0f)
+                                    clip = true
+                                    this.shape = object : Shape {
+                                        override fun createOutline(
+                                            size: Size,
+                                            layoutDirection: LayoutDirection,
+                                            density: Density,
+                                        ): Outline = Outline.Rectangle(Rect(0f, 0f, size.width, size.height * progress))
+                                    }
+                                    alpha = (progress * 1.5f).coerceIn(0f, 1f)
+                                }
+                        ) {
+                            CompositionLocalProvider(
+                                LocalListItemShapes provides ListItemDefaults.segmentedShapes(0, 1).copy(shape = shape)
+                            ) {
+                                Column(modifier = Modifier.padding(top = gap)) {
+                                    entry.content()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ) { measurables, constraints ->
+            val placeables = measurables.map { it.measure(constraints) }
+            val positions = IntArray(placeables.size)
+            var y = 0f
+            placeables.forEachIndexed { index, placeable ->
+                positions[index] = y.roundToInt()
+                y += placeable.height * progresses[index].value.coerceAtLeast(0f)
+            }
+            layout(constraints.maxWidth, y.roundToInt().coerceAtLeast(0)) {
+                placeables.forEachIndexed { index, placeable ->
+                    placeable.placeRelative(0, positions[index])
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun SegmentedItem(
     index: Int,
@@ -124,7 +267,23 @@ fun SegmentedItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun SegmentedItemContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val shapes = LocalListItemShapes.current ?: ListItemDefaults.segmentedShapes(0, 1)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = colorScheme.surfaceBright,
+        shape = shapes.shape,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            content()
+        }
+    }
+}
+
 @Composable
 fun SegmentedListItem(
     modifier: Modifier = Modifier,
@@ -156,7 +315,6 @@ fun SegmentedListItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SegmentedListItem(
     checked: Boolean,
@@ -190,7 +348,6 @@ fun SegmentedListItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SegmentedListItem(
     selected: Boolean,
@@ -273,6 +430,7 @@ fun SegmentedDropdownItem(
 ) {
     val haptic = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
+    var anchorOffset by remember { mutableStateOf(IntOffset.Zero) }
 
     val hasItems = items.isNotEmpty()
     val safeIndex = if (hasItems) {
@@ -281,49 +439,57 @@ fun SegmentedDropdownItem(
         -1
     }
 
-    SegmentedListItem(
-        onClick = if (enabled) {
-            {
-                onClick?.invoke()
-                haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                expanded = true
-            }
-        } else null,
-        enabled = enabled,
-        colors = colors,
-        leadingContent = icon?.let { { Icon(it, title) } },
-        headlineContent = { Text(text = title) },
-        supportingContent = summary?.let { { Text(it) } },
-        trailingContent = {
-            Box(modifier = Modifier.wrapContentSize(Alignment.TopStart)) {
+    Box(modifier = Modifier.trackPressPosition { anchorOffset = it.round() }) {
+        SegmentedListItem(
+            onClick = if (enabled) {
+                {
+                    onClick?.invoke()
+                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    expanded = true
+                }
+            } else null,
+            enabled = enabled,
+            colors = colors,
+            leadingContent = icon?.let { { Icon(it, title) } },
+            headlineContent = { Text(text = title) },
+            supportingContent = summary?.let { { Text(it) } },
+            trailingContent = {
                 Text(
                     text = if (hasItems && safeIndex >= 0) items[safeIndex] else "",
                     textAlign = TextAlign.End,
                     modifier = Modifier.fillMaxWidth(0.3f),
                     color = if (enabled) colorScheme.primary else colorScheme.onSurfaceVariant
                 )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    items.forEachIndexed { index, text ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(text, color = if (index == safeIndex) colorScheme.primary else colorScheme.onSurface)
-                            },
-                            onClick = {
-                                if (index in items.indices) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    onItemSelected(index)
-                                }
-                                expanded = false
-                            }
+            }
+        )
+        OffsetAnchoredExpressiveMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            anchorOffset = anchorOffset,
+        ) {
+            items.forEachIndexed { index, text ->
+                DropdownMenuItem(
+                    text = { Text(text) },
+                    selected = index == safeIndex,
+                    onClick = {
+                        if (index in items.indices) {
+                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onItemSelected(index)
+                        }
+                        expanded = false
+                    },
+                    shapes = MenuDefaults.itemShape(index = index, count = items.size),
+                    selectedLeadingIcon = {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
                         )
-                    }
-                }
+                    },
+                )
             }
         }
-    )
+    }
 }
 
 @Composable

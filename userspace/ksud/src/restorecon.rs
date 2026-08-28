@@ -7,7 +7,7 @@ use anyhow::{Context, Ok};
 use extattr::{Flags as XattrFlags, lsetxattr};
 
 pub const SYSTEM_CON: &str = "u:object_r:system_file:s0";
-pub const ADB_CON: &str = "u:object_r:adb_data_file:s0";
+pub const KSU_CON: &str = "u:object_r:ksu_file:s0";
 pub const UNLABEL_CON: &str = "u:object_r:unlabeled:s0";
 
 const SELINUX_XATTR: &str = "security.selinux";
@@ -59,7 +59,7 @@ fn restore_syscon_if_unlabeled<P: AsRef<Path>>(dir: P) -> Result<()> {
 }
 
 pub fn restorecon() -> Result<()> {
-    lsetfilecon(defs::DAEMON_PATH, ADB_CON)?;
+    lsetfilecon(defs::DAEMON_PATH, KSU_CON)?;
     restore_syscon_if_unlabeled(defs::MODULE_DIR)?;
     Ok(())
 }

@@ -4,7 +4,7 @@
     <string name="home_not_installed">설치되지 않음</string>
     <string name="home_click_to_install">이 곳을 눌러 설치하기</string>
     <string name="home_working">작동 중</string>
-    <string name="home_working_version">버전: %d</string>
+    <string name="home_working_version">버전: %s</string>
     <string name="home_unsupported">지원되지 않음</string>
     <string name="home_unsupported_reason">KernelSU는 현재 GKI 커널만 지원합니다.</string>
     <string name="home_kernel">커널 버전</string>
@@ -113,7 +113,12 @@
     <string name="app_profile_template_edit">템플릿 편집</string>
     <string name="app_profile_template_view">템플릿 보기</string>
     <string name="app_profile_template_export_empty">내보낼 로컬 템플릿을 찾을 수 없습니다!</string>
-    <string name="select_file">파일 선택</string>
+    <string name="select_file">파일 선택 및 패치</string>
+    <string name="download_file">파일 다운로드 및 패치</string>
+    <string name="download_dialog_title">이미지 URL 입력</string>
+    <string name="download_dialog_msg">전체 OTA 이미지 또는 팩토리 이미지</string>
+    <string name="download_no_boot_partition">이미지에서 boot, init_boot 또는 vendor_boot 파티션을 찾을 수 없습니다</string>
+    <string name="download_probe_failed">이미지 검사 실패: %1$s</string>
     <string name="direct_install">직접 설치 (권장)</string>
     <string name="install_inactive_slot">비활성 슬롯에 설치 (OTA 이후)</string>
     <string name="settings_restore_stock_image">제조사 이미지로 복구</string>
@@ -172,4 +177,7 @@
     <string name="settings_sucompat_summary">/system/bin/su를 통한 루트 권한 획득 허용 (새 프로세스 전용)</string>
     <string name="settings_kernel_umount">모듈 언마운트</string>
     <string name="settings_kernel_umount_summary">앱 프로필에 따라 커널에서 모듈을 언마운트합니다</string>
+    <string name="profile_flags_desc_no_new_privs">이 루트 프로필의 컨텍스트 내에서 KernelSU를 통한 추가 권한 상승을 방지합니다.</string>
+    <string name="install_force_backup">순정 이미지로 백업</string>
+    <string name="install_force_backup_summary">선택한 boot 이미지가 순정 이미지인지 확인하세요</string>
 </resources>

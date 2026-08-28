@@ -96,10 +96,13 @@ Por exemplo, se você conceder permissão root a um usuário ADB shell (que é u
 1. A primeira execução de `su` será sujeita ao Perfil do Aplicativo, e mudará para o UID `2000` (ADB shell) em vez de `0` (root).
 2. A segunda execução de `su`, como o UID é `2000` e você concedeu acesso root ao UID `2000` (ADB shell) na configuração, o app obterá privilégios root completo.
 
-::: warning OBSERVAÇÃO
-Este comportamento é totalmente esperado e não é um bug. Portanto, recomendamos o seguinte:
+:::tip dica
+Você pode habilitar a flag `NO_NEW_PRIVS` no seu `App Profile` personalizado.
 
-Se você realmente precisa conceder privilégios root ao ADB (por exemplo, como desenvolvedor), não é aconselhável alterar o UID para `2000` ao configurar o Perfil root. Usar `1000` (sistema) seria uma melhor escolha.
+Isso impede que o processo escape e eleve seus privilégios novamente usando o comando `su`.
+
+No entanto, essa flag **apenas** impede que o KernelSU eleve os privilégios do processo; ele ainda pode escapar usando outros mecanismos do Linux.
+Portanto, tenha muito cuidado com suas configurações de permissão.
 :::
 
 ## Perfil não root

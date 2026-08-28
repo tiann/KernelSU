@@ -22,20 +22,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.SmallExtendedFloatingActionButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -44,7 +44,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,8 +59,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.TemplateInfo
+import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
 import me.weishu.kernelsu.ui.component.material.SegmentedItem
 import me.weishu.kernelsu.ui.component.material.SegmentedListItem
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
+import me.weishu.kernelsu.ui.component.material.TopBarBackButton
+import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
 /**
@@ -69,11 +72,11 @@ import me.weishu.kernelsu.ui.component.statustag.StatusTag
  * @date 2023/10/20.
  */
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppProfileTemplateScreenMaterial(
     state: TemplateUiState,
     actions: TemplateActions,
+    snackBarHost: SnackbarHostState,
 ) {
     val haptic = LocalHapticFeedback.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -112,11 +115,7 @@ fun AppProfileTemplateScreenMaterial(
         }
     }
 
-    LaunchedEffect(Unit) {
-        scrollBehavior.state.heightOffset = scrollBehavior.state.heightOffsetLimit
-    }
-
-    Scaffold(
+    ExpressiveScaffold(
         topBar = {
             TopBar(
                 onBack = actions.onBack,
@@ -125,6 +124,7 @@ fun AppProfileTemplateScreenMaterial(
                 scrollBehavior = scrollBehavior
             )
         },
+        snackbarHost = { SnackBarHost(hostState = snackBarHost) },
         floatingActionButton = {
             SmallExtendedFloatingActionButton(
                 expanded = fabExpanded,
@@ -166,7 +166,7 @@ fun AppProfileTemplateScreenMaterial(
                 ) {
                     if (state.offline) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.outline)
+                            Text(text = stringResource(R.string.network_offline), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = { actions.onRefresh(false) },
@@ -190,7 +190,6 @@ fun AppProfileTemplateScreenMaterial(
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(2.dp),
                     contentPadding = PaddingValues(
                         start = 16.dp,
-                        top = 8.dp,
                         end = 16.dp,
                         bottom = 16.dp + 56.dp + 16.dp + navBars.calculateBottomPadding() + captionBar.calculateBottomPadding()
                     ),
@@ -225,7 +224,7 @@ private fun TemplateItem(
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                 )
-                Text(template.description, color = MaterialTheme.colorScheme.outline)
+                Text(template.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 FlowRow(modifier = Modifier.padding(top = 4.dp)) {
                     StatusTag(
                         label = "UID: ${template.uid}",
@@ -261,7 +260,6 @@ private fun TemplateItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TopBar(
     onBack: () -> Unit,
@@ -275,11 +273,7 @@ private fun TopBar(
             Text(stringResource(R.string.settings_profile_template))
         },
         navigationIcon = {
-            IconButton(
-                onClick = onBack
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            }
+            TopBarBackButton(onClick = onBack)
         },
         actions = {
             var showDropdown by remember { mutableStateOf(false) }
@@ -290,33 +284,32 @@ private fun TopBar(
                     imageVector = Icons.Filled.ContentCopy,
                     contentDescription = stringResource(id = R.string.app_profile_import_export)
                 )
-                DropdownMenu(
+                DropdownMenuPopup(
                     expanded = showDropdown,
                     onDismissRequest = { showDropdown = false }
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.app_profile_import_from_clipboard)) },
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onImport()
-                            showDropdown = false
-                        }
+                    val menuItems = listOf(
+                        R.string.app_profile_import_from_clipboard to onImport,
+                        R.string.app_profile_export_to_clipboard to onExport,
                     )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.app_profile_export_to_clipboard)) },
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onExport()
-                            showDropdown = false
+                    DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                        menuItems.forEachIndexed { index, (resId, action) ->
+                            DropdownMenuItem(
+                                selected = false,
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    action()
+                                    showDropdown = false
+                                },
+                                text = { Text(stringResource(id = resId)) },
+                                shapes = MenuDefaults.itemShape(index = index, count = menuItems.size),
+                            )
                         }
-                    )
+                    }
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            scrolledContainerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors = expressiveTopAppBarColors(),
         scrollBehavior = scrollBehavior
     )
 }

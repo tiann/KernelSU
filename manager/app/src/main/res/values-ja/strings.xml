@@ -4,7 +4,7 @@
     <string name="home_not_installed">未インストール</string>
     <string name="home_click_to_install">タップしてインストール</string>
     <string name="home_working">動作中</string>
-    <string name="home_working_version">バージョン: %d</string>
+    <string name="home_working_version">バージョン: %s</string>
     <string name="home_unsupported">非対応</string>
     <string name="home_unsupported_reason">KernelSU は現在 GKI カーネルのみをサポートしています。ただし、GKI デバイス向けにイメージにパッチを適用することは可能です。</string>
     <string name="home_kernel">カーネル</string>
@@ -107,7 +107,12 @@
     <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
     <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在非アクティブなスロットから起動します。\nこのオプションは、OTA が完了した後にのみ使用してください。\n続行しますか？</string>
     <string name="direct_install">直接インストール (推奨)</string>
-    <string name="select_file">ファイルを選択してください</string>
+    <string name="select_file">パッチするファイルを選択</string>
+    <string name="download_file">パッチするファイルをダウンロード</string>
+    <string name="download_dialog_title">イメージ URL を入力</string>
+    <string name="download_dialog_msg">完全な OTA イメージまたはファクトリーイメージ</string>
+    <string name="download_no_boot_partition">イメージに boot、init_boot、vendor_boot パーティションが見つかりません</string>
+    <string name="download_probe_failed">イメージの検査に失敗しました: %1$s</string>
     <string name="settings_uninstall_permanent">完全にアンインストールする</string>
     <string name="settings_restore_stock_image">ストックイメージを復元</string>
     <string name="settings_uninstall_temporary">一時的にアンインストールする</string>
@@ -199,4 +204,7 @@
     <string name="color_amber">アンバー</string>
     <string name="color_blue_grey">ブルーグレー</string>
     <string name="color_sakura">桜</string>
+    <string name="profile_flags_desc_no_new_privs">この root プロファイルのコンテキスト内で、KernelSU を介したさらなる権限昇格を防止します。</string>
+    <string name="install_force_backup">純正イメージとしてバックアップ</string>
+    <string name="install_force_backup_summary">選択した boot イメージが純正イメージであることを確認してください</string>
 </resources>

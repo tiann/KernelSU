@@ -11,6 +11,7 @@ extern struct cred *ksu_cred;
 extern bool ksu_late_loaded;
 extern bool allow_shell;
 extern struct selinux_policy *backup_sepolicy;
+extern bool ksu_no_custom_rc;
 
 static inline int startswith(char *s, char *prefix)
 {

@@ -39,5 +39,8 @@
             "name": "Shizuku",
             "description": "Permessi essenziali per avviare il servizio Shizuku."
         } 
-    }
+    },
+    "flags":[
+        "NO_NEW_PRIVS"
+    ]
 }

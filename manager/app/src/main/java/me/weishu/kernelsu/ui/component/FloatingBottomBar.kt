@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -73,6 +72,7 @@ import top.yukonga.miuix.kmp.blur.highlight.LightSource
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.sensor.rememberDeviceTilt
+import top.yukonga.miuix.kmp.theme.LocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.PI
 import kotlin.math.abs
@@ -154,7 +154,6 @@ fun RowScope.FloatingBottomBarItem(
     val scale = LocalFloatingBottomBarTabScale.current
     Column(
         modifier
-            .clip(CircleShape)
             .clickable(
                 interactionSource = null,
                 indication = null,
@@ -187,6 +186,7 @@ fun FloatingBottomBar(
     val isInDark = isInDarkTheme()
     val pillShape = remember { CircleShape }
     val accentColor = MiuixTheme.colorScheme.primary
+    val tabContentColor = MiuixTheme.colorScheme.onSurface
     val surfaceContainer = MiuixTheme.colorScheme.surfaceContainer
     val containerColor = if (isBlurEnabled) surfaceContainer.copy(0.4f) else surfaceContainer
 
@@ -347,14 +347,18 @@ fun FloatingBottomBar(
                 .height(64.dp)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            content = content
-        )
+        ) {
+            CompositionLocalProvider(LocalContentColor provides tabContentColor) {
+                content()
+            }
+        }
 
         if (isBlurEnabled) {
             CompositionLocalProvider(
                 LocalFloatingBottomBarTabScale provides {
                     lerp(1f, 1.2f, dampedDragAnimation.pressProgress)
-                }
+                },
+                LocalContentColor provides accentColor,
             ) {
                 Row(
                     Modifier
@@ -377,8 +381,7 @@ fun FloatingBottomBar(
                         )
                         .then(interactiveHighlight.modifier)
                         .height(56.dp)
-                        .padding(horizontal = 4.dp)
-                        .graphicsLayer(colorFilter = ColorFilter.tint(accentColor)),
+                        .padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     content = content
                 )

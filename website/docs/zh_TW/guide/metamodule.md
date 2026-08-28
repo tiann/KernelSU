@@ -216,7 +216,7 @@ done
 
 此腳本繼承內建 `install.sh` 的所有變數和函式:
 
-- **變數**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`BOOTMODE` 等
+- **變數**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`KSU_UAPI_VER`、`KSU_RUNTIME_MODE`、`KSU_LATE_LOAD`、`BOOTMODE` 等
 - **函式**:
   - `ui_print <msg>` - 向主控台列印訊息
   - `abort <msg>` - 列印錯誤並終止安裝

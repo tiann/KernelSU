@@ -19,22 +19,20 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExpandedFullScreenContainedSearchBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberContainedSearchBarState
 import androidx.compose.runtime.Composable
@@ -57,15 +55,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchAppBar(
     title: @Composable () -> Unit,
     searchText: String,
     onSearchTextChange: (String) -> Unit,
     onClearClick: () -> Unit,
+    snackbarHostState: SnackbarHostState,
     navigationIcon: @Composable (() -> Unit)? = null,
     actions: @Composable (() -> Unit)? = null,
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -156,9 +153,15 @@ fun SearchAppBar(
                 leadingIcon = {
                     if (isSearchExpanded) {
                         IconButton(
+                            modifier = Modifier.padding(end = 8.dp),
                             onClick = { collapseAndClear() },
-                            content = { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
-                        )
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            ),
+                        ) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, null)
+                        }
                     } else {
                         Icon(Icons.Filled.Search, null)
                     }
@@ -176,16 +179,13 @@ fun SearchAppBar(
         }
     }
 
-    Surface {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             LargeFlexibleTopAppBar(
                 title = title,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
-                ),
+                colors = expressiveTopAppBarColors(),
                 navigationIcon = { if (navigationIcon != null) navigationIcon() },
                 actions = { if (actions != null) actions() },
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
@@ -197,9 +197,11 @@ fun SearchAppBar(
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 13.dp),
+
                 state = searchBarState,
                 inputField = inputField,
+                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
             )
         }
     }
@@ -208,16 +210,7 @@ fun SearchAppBar(
         state = searchBarState,
         inputField = inputField,
         windowInsets = { SearchBarDefaults.fullScreenWindowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal) },
-        colors = SearchBarDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            inputFieldColors = SearchBarDefaults.inputFieldColors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-            )
-        ),
         content = {
-            val snackBarHostState = LocalSnackbarHost.current
             val bottomPadding = SearchBarDefaults.fullScreenWindowInsets.asPaddingValues().calculateBottomPadding()
             Box(modifier = Modifier.fillMaxSize()) {
                 if (currentQuery.isNotEmpty()) {
@@ -225,14 +218,15 @@ fun SearchAppBar(
                 } else {
                     defaultContent(bottomPadding, collapseAndClear)
                 }
-                SnackbarHost(
-                    hostState = snackBarHostState,
-                    modifier = Modifier
+                Box(
+                    Modifier
                         .align(Alignment.BottomCenter)
                         .navigationBarsPadding()
                         .imePadding()
                         .padding(bottom = 16.dp)
-                )
+                ) {
+                    SnackBarHost(hostState = snackbarHostState)
+                }
             }
         }
     )

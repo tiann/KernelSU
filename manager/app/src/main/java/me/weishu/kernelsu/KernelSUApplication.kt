@@ -8,6 +8,7 @@ import android.system.Os
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -45,8 +46,7 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val prefs = this.getSharedPreferences("settings", MODE_PRIVATE)
-            val enable = prefs.getBoolean("enable_predictive_back", false)
+            val enable = SettingsRepositoryImpl().enablePredictiveBack
             HiddenApiBypass.addHiddenApiExemptions("Landroid/content/pm/ApplicationInfo;->setEnableOnBackInvokedCallback")
             setEnableOnBackInvokedCallback(applicationInfo, enable)
         }

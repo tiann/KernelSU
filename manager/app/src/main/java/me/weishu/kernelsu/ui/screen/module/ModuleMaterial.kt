@@ -2,6 +2,9 @@ package me.weishu.kernelsu.ui.screen.module
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -18,7 +21,6 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -47,10 +49,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Code
@@ -61,24 +66,23 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuGroup
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SmallExtendedFloatingActionButton
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -87,15 +91,17 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -122,31 +128,36 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
 import me.weishu.kernelsu.data.model.ModuleUpdateInfo
+import me.weishu.kernelsu.data.repository.isSoftRebootPreferred
+import me.weishu.kernelsu.ui.component.ObserveAsEvents
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
+import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
 import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
+import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
-import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import me.weishu.kernelsu.ui.util.reboot
 
 @SuppressLint("StringFormatInvalid")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModulePagerMaterial(
     uiState: ModuleUiState,
     confirmDialogState: ModuleConfirmDialogState?,
-    effect: ModuleEffect?,
+    moduleEvent: Flow<ModuleEffect>,
     actions: ModuleActions,
     bottomInnerPadding: Dp,
 ) {
-    val snackBarHost = LocalSnackbarHost.current
+    val snackBarHost = remember { SnackbarHostState() }
     val haptic = LocalHapticFeedback.current
 
     val context = LocalContext.current
@@ -158,6 +169,7 @@ fun ModulePagerMaterial(
 
     val listState = rememberLazyListState()
     val searchListState = rememberLazyListState()
+    val refreshTick = remember { mutableIntStateOf(0) }
     val threshold = with(LocalDensity.current) { 100.dp.toPx() }
     val fabExpanded by remember {
         var lastIndex = 0
@@ -233,37 +245,42 @@ fun ModulePagerMaterial(
         }
     }
 
-    LaunchedEffect(effect) {
-        when (effect) {
+    val scope = rememberCoroutineScope()
+    val snackbarJob = remember { mutableStateOf<Job?>(null) }
+    ObserveAsEvents(moduleEvent) { event ->
+        when (event) {
             is ModuleEffect.Toast -> {
-                Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                actions.onConsumeEffect()
+                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
             }
 
             is ModuleEffect.SnackBar -> {
+                // Cancel the previous reboot snackbar so a new one replaces it instead of queueing
+                snackbarJob.value?.cancel()
                 snackBarHost.currentSnackbarData?.dismiss()
-                val result = snackBarHost.showSnackbar(
-                    message = effect.message,
-                    actionLabel = resource.getString(R.string.reboot),
-                    duration = SnackbarDuration.Long
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    reboot()
+                // Soft reboot keeps the jailbreak and still applies module changes
+                val softReboot = isSoftRebootPreferred()
+                snackbarJob.value = scope.launch {
+                    val result = snackBarHost.showSnackbar(
+                        message = event.message,
+                        actionLabel = resource.getString(if (softReboot) R.string.reboot_soft else R.string.reboot),
+                        duration = SnackbarDuration.Long
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        reboot(if (softReboot) "soft_reboot" else "")
+                    }
                 }
-                actions.onConsumeEffect()
             }
-
-            null -> Unit
         }
     }
 
-    Scaffold(
+    ExpressiveScaffold(
         topBar = {
             SearchAppBar(
                 title = { Text(stringResource(R.string.module)) },
                 searchText = uiState.searchStatus.searchText,
                 onSearchTextChange = actions.onSearchTextChange,
                 onClearClick = actions.onClearSearch,
+                snackbarHostState = snackBarHost,
                 navigationIcon = {
                     IconButton(
                         onClick = { actions.onOpenRepo() }
@@ -285,34 +302,54 @@ fun ModulePagerMaterial(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = stringResource(id = R.string.settings)
                         )
-                        DropdownMenu(
+                        DropdownMenuPopup(
                             expanded = showDropdown,
                             onDismissRequest = { showDropdown = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_sort_action_first)) },
-                                trailingIcon = { Checkbox(uiState.sortActionFirst, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleSortActionFirst()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_sort_enabled_first)) },
-                                trailingIcon = { Checkbox(uiState.sortEnabledFirst, null) },
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                    actions.onToggleSortEnabledFirst()
-                                }
-                            )
+                            DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.module_sort_action_first)) },
+                                    checked = uiState.sortActionFirst,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleSortActionFirst()
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = 0, count = 2),
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.module_sort_enabled_first)) },
+                                    checked = uiState.sortEnabledFirst,
+                                    checkedLeadingIcon = {
+                                        Icon(
+                                            Icons.Filled.Check,
+                                            modifier = Modifier.size(MenuDefaults.LeadingIconSize),
+                                            contentDescription = null,
+                                        )
+                                    },
+                                    onCheckedChange = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                        actions.onToggleSortEnabledFirst()
+                                    },
+                                    shapes = MenuDefaults.itemShape(index = 1, count = 2),
+                                )
+                            }
                         }
                     }
                 },
                 scrollBehavior = scrollBehavior,
                 searchContent = { bottomPadding, closeSearch ->
-                    LaunchedEffect(uiState.searchStatus.searchText) {
-                        searchListState.scrollToItem(0)
-                    }
+                    val latestSearchResults = rememberUpdatedState(uiState.searchResults)
+                    ScrollToTopOnChange(
+                        searchListState,
+                        uiState.searchStatus.searchText,
+                    ) { latestSearchResults.value }
                     ModuleList(
                         bottomInnerPadding = bottomPadding,
                         modifier = Modifier.fillMaxSize(),
@@ -373,7 +410,14 @@ fun ModulePagerMaterial(
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
-        snackbarHost = { SnackbarHost(hostState = snackBarHost) }
+        snackbarHost = {
+            SnackBarHost(hostState = snackBarHost, modifier = Modifier.let {
+                if (!uiState.installButtonVisible) it.padding(
+                    bottom =
+                        bottomInnerPadding
+                ) else it
+            })
+        }
     ) { innerPadding ->
         PullToRefreshBox(
             modifier = Modifier
@@ -383,6 +427,7 @@ fun ModulePagerMaterial(
             onRefresh = {
                 haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 actions.onRefresh()
+                refreshTick.intValue++
             },
             state = pullToRefreshState,
             indicator = {
@@ -407,6 +452,15 @@ fun ModulePagerMaterial(
                 }
                 return@PullToRefreshBox
             }
+            val latestModuleList = rememberUpdatedState(uiState.moduleList)
+            val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
+            ScrollToTopOnChange(
+                listState,
+                uiState.sortEnabledFirst,
+                uiState.sortActionFirst,
+                refreshTick.intValue,
+                isBusy = { latestRefreshing.value },
+            ) { latestModuleList.value }
             ModuleList(
                 bottomInnerPadding = bottomInnerPadding,
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -440,7 +494,6 @@ fun ModulePagerMaterial(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleList(
     bottomInnerPadding: Dp,
@@ -457,10 +510,9 @@ private fun ModuleList(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(13.dp),
         contentPadding = PaddingValues(
             start = 16.dp,
-            top = 8.dp,
             end = 16.dp,
             bottom = 16.dp + bottomInnerPadding + 56.dp + 16.dp
         ),
@@ -498,7 +550,6 @@ private fun ModuleList(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModuleShortcutSheet(
     show: Boolean,
@@ -509,17 +560,30 @@ private fun ModuleShortcutSheet(
     onConfirmShortcut: () -> Unit,
 ) {
     if (!show) return
+    val context = LocalContext.current
+    val resources = LocalResources.current
+
+    fun copyShortcutUrl() {
+        val url = shortcutState.buildShortcutUrl() ?: return
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("KernelSU deep link", url))
+        Toast.makeText(context, resources.getString(R.string.module_shortcut_scheme_copied), Toast.LENGTH_SHORT).show()
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+        )
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = stringResource(R.string.module_shortcut_title),
@@ -528,7 +592,7 @@ private fun ModuleShortcutSheet(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 13.dp)
                     .size(100.dp)
                     .clip(RoundedCornerShape(25.dp))
             ) {
@@ -557,8 +621,16 @@ private fun ModuleShortcutSheet(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onPickShortcutIcon) {
-                    Text(stringResource(id = R.string.module_shortcut_icon_pick))
+                TextButton(
+                    onClick = onPickShortcutIcon,
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    )
+                ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        text = stringResource(id = R.string.module_shortcut_icon_pick)
+                    )
                 }
                 AnimatedVisibility(
                     visible = shortcutState.iconUri != shortcutState.defaultShortcutIconUri,
@@ -581,19 +653,33 @@ private fun ModuleShortcutSheet(
                 value = shortcutState.name,
                 onValueChange = shortcutState::updateName,
                 label = { Text(stringResource(id = R.string.module_shortcut_name_label)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 3.dp)
             )
             if (shortcutState.hasExistingShortcut) {
                 TextButton(
                     onClick = onDeleteShortcut,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.error,
+                    )
                 ) {
                     Text(stringResource(id = R.string.module_shortcut_delete))
                 }
             }
+            TextButton(
+                onClick = ::copyShortcutUrl,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                )
+            ) {
+                Text(stringResource(id = R.string.module_shortcut_copy_scheme))
+            }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(13.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedButton(
@@ -615,12 +701,10 @@ private fun ModuleShortcutSheet(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModuleItem(
     module: Module,
@@ -659,7 +743,7 @@ private fun ModuleItem(
                         this
                     }
                 }
-                .padding(22.dp, 18.dp, 22.dp, 12.dp)
+                .padding(16.dp, 14.dp, 16.dp, 10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -733,7 +817,7 @@ private fun ModuleItem(
                         }
                     ),
                 text = module.description,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
                 overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                 maxLines = if (expanded) Int.MAX_VALUE else 4,

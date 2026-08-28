@@ -30,7 +30,7 @@
     <string name="selinux_status_permissive">পারমিসিভ</string>
     <string name="module_failed_to_disable">মোডিউল ডিসেবল করা যায়নি: %s</string>
     <string name="module_empty">কোনো মোডিউল ইন্সটল করা নেই</string>
-    <string name="home_working_version">সংস্করণ: %d</string>
+    <string name="home_working_version">সংস্করণ: %s</string>
     <string name="profile_namespace">নেইম স্পেস মাউন্ট</string>
     <string name="profile_namespace_inherited">ইনহেরিটেড</string>
     <string name="profile_namespace_individual">ইন্ডিভিজুয়াল</string>
@@ -51,4 +51,7 @@
     <string name="settings_sucompat_summary">অ্যাপ প্রোফাইলে সুপারইউজার অনুমতি সহ অ্যাপের জন্য /system/bin/su কে ksud-এ পুনর্নির্দেশ করুন; শুধুমাত্র নতুন প্রক্রিয়ার জন্য কার্যকর।</string>
     <string name="settings_kernel_umount">কার্নেল আনমাউন্ট</string>
     <string name="settings_kernel_umount_summary">KernelSU দ্বারা নিয়ন্ত্রিত কার্নেল-লেভেল আনমাউন্ট আচরণ</string>
+    <string name="profile_flags_desc_no_new_privs">এই রুট প্রোফাইলের প্রেক্ষাপটে KernelSU-এর মাধ্যমে আরও বিশেষাধিকার বৃদ্ধি প্রতিরোধ করে।</string>
+    <string name="install_force_backup">স্টক ইমেজ হিসেবে ব্যাকআপ করুন</string>
+    <string name="install_force_backup_summary">অনুগ্রহ করে নিশ্চিত করুন যে আপনি যে boot ইমেজটি বেছে নিয়েছেন সেটি স্টক ইমেজ</string>
 </resources>

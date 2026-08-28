@@ -26,8 +26,8 @@ fun AppProfileConfigMiuix(
         if (!fixedName) {
             EditText(
                 title = stringResource(R.string.profile_name),
-                textValue = remember { mutableStateOf(profile.name) },
-                onTextValueChange = { onProfileChange(profile.copy(name = it)) },
+                value = profile.name,
+                onValueChange = { onProfileChange(profile.copy(name = it)) },
                 enabled = enabled,
             )
         }

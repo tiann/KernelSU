@@ -59,17 +59,10 @@ If you find that your kernel version is `android12-5.10.101`, but your Android s
 
 Since version [0.9.0](https://github.com/tiann/KernelSU/releases/tag/v0.9.0), KernelSU supports two running modes on GKI devices:
 
-1. `GKI`: Replace the original kernel of the device with the **Generic Kernel Image** (GKI) provided by KernelSU.
-2. `LKM`: Load the **Loadable Kernel Module** (LKM) into the device kernel without replacing the original kernel.
+1. `LKM`: Load the **Loadable Kernel Module** (LKM) into the device kernel without replacing the original kernel.
+2. `GKI`: Replace the original kernel of the device with the **Generic Kernel Image** (GKI) provided by KernelSU.
 
 These two modes are suitable for different scenarios, and you can choose the one according to your needs.
-
-### GKI mode {#gki-mode}
-
-In GKI mode, the original kernel of the device will be replaced with the generic kernel image provided by KernelSU. The advantages of GKI mode are:
-
-1. Strong universality, suitable for most devices. For example, Samsung has enabled KNOX devices, and LKM mode cannot work. There are also some niche modified devices that can only use GKI mode.
-2. Can be used without relying on official firmware, and there is no need to wait for official firmware updates, as long as the KMI is consistent, it can be used.
 
 ### LKM mode {#lkm-mode}
 
@@ -80,9 +73,12 @@ In LKM mode, the original kernel of the device won't be replaced, but the loadab
 3. Suitable for some special scenarios. For example, LKM can also be loaded with temporary root permissions. Since it doesn't need to replace the boot partition, it won't trigger AVB and won't cause the device to be bricked.
 4. LKM can be temporarily uninstalled. If you want to temporarily disable root access, you can uninstall LKM. This process doesn't require flashing partitions, or even rebooting the device. If you want to enable root again, just reboot the device.
 
-::: tip COEXISTENCE OF TWO MODES
-After opening the manager, you can see the current mode of the device on the homepage. Note that the priority of GKI mode is higher than that of LKM. For example, if you use GKI kernel to replace the original kernel, and use LKM to patch the GKI kernel, the LKM will be ignored, and the device will always run in GKI mode.
-:::
+### GKI mode {#gki-mode}
+
+In GKI mode, the original kernel of the device will be replaced with the generic kernel image provided by KernelSU. The advantages of GKI mode are:
+
+1. Strong universality, suitable for most devices. For example, Samsung has enabled KNOX devices, and LKM mode cannot work. There are also some niche modified devices that can only use GKI mode.
+2. Can be used without relying on official firmware, and there is no need to wait for official firmware updates, as long as the KMI is consistent, it can be used.
 
 ### Which one to choose? {#which-one}
 
@@ -107,6 +103,13 @@ Open the manager, click the installation icon in the upper right corner, and sev
 1. Select a file. If your device doesn't have root privileges, you can choose this option and then select your official firmware. The manager will automatically patch it. After that, just flash this patched file to obtain root privileges permanently.
 2. Direct install. If your device is already rooted, you can choose this option. The manager will automatically get your device information, and then automatically patch the official firmware, and flash it automatically. You can consider using `fastboot boot` KernelSU's GKI kernel to get temporary root and install the manager, and then use this option. This is also the main way to upgrade KernelSU.
 3. Install to inactive slot. If your device supports A/B partition, you can choose this option. The manager will automatically patch the official firmware and install it to another partition. This method is suitable for devices after OTA, you can directly install it to another partition after OTA, and then restart the device.
+
+:::tip Back up the stock boot image
+Using the manager's "Direct install" can automatically back up the stock boot (or init_boot) image for temporarily restoring it during incremental OTA updates. Note that this backup is created only if the current slot has not already been patched by KernelSU.
+The SHA1 of the backup image is stored in the patched boot image, and the backup file is saved at `/data/adb/ksu/ksu_backup_$SHA1`.
+When you use the manager's "Uninstall → Restore stock image" feature, if there is a matching backup file for the SHA1 recorded in the currently patched image, it will be restored directly.
+Since 3.2.6, if you are installing KernelSU for the first time without root, after patching the boot image via "Select a file" you can choose "Backup as stock image". In that case, the backup image is stored in the manager's internal storage; after flashing and booting the patched image, opening the manager for the first time will automatically move that backup to `/data/adb/ksu`.
+:::
 
 ### Use the command line
 

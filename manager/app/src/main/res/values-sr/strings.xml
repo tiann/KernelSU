@@ -3,11 +3,14 @@
     <string name="home_click_to_install">Додирните да бисте инсталирали</string>
     <string name="home">Почетна</string>
     <string name="home_not_installed">Није инсталирано</string>
-    <string name="home_working_version">Верзија: %d</string>
+    <string name="home_working_version">Верзија: %s</string>
     <string name="home_working">Ради</string>
     <string name="save_log">Сачувај Дневнике</string>
     <string name="settings_sucompat">Preusmeri su binarni fajl</string>
     <string name="settings_sucompat_summary">Preusmeri /system/bin/su na ksud za aplikacije sa dozvolom Superkorisnika u Profilu aplikacije; efektivno samo za nove procese.</string>
     <string name="settings_kernel_umount">Kernel umount</string>
     <string name="settings_kernel_umount_summary">Ponašanje umount-a na nivou kernela kontrolisano od strane KernelSU-a</string>
+    <string name="profile_flags_desc_no_new_privs">Sprečava dalje podizanje privilegija putem KernelSU-a u okviru ovog root profila.</string>
+    <string name="install_force_backup">Napravi rezervnu kopiju kao originalnu sliku</string>
+    <string name="install_force_backup_summary">Uverite se da je izabrana boot slika originalna slika</string>
 </resources>

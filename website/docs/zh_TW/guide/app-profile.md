@@ -97,10 +97,13 @@ allow app1 * * *
 1. 第一次執行 `su`，由於 App Profile 強制生效，會正常切換到 UID 為 `2000` (adb shell) 而非 `0` (root)。
 2. 第二次執行 `su`，由於此時它 UID 是 `2000`，而你給 `2000` (adb shell) 配置了允許 root，它會獲得完整的 root 權限！
 
-:::warning 注意
-這是完全符合預期的行為，並非 BUG！因此我們建議：
+:::tip 提示
+你可以在自訂 `App Profile` 中啟用 `NO_NEW_PRIVS` 標誌。
 
-如果你的確需要給 adb 授予 root 權限（例如你是開發者），那麼不建議你在配置 Root Profile 的時候將 UID 改成 `2000`，用 `1000` (system) 會更好。
+這樣可以防止該進程再次透過 `su` 命令逃逸並提升權限。
+
+但是，此標誌**僅**阻止 KernelSU 為該程序提升權限，它仍然可以利用其他 Linux 機制來逃逸。
+因此，請務必注意你的權限設定。
 :::
 
 ## Non Root Profile {#non-root-profile}

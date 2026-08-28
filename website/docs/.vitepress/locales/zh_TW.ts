@@ -56,6 +56,7 @@ function sidebarGuide() {
           { text: '模組配置', link: '/zh_TW/guide/module-config.md' },
           { text: 'App Profile', link: '/zh_TW/guide/app-profile.md' },
           { text: '搶救開機迴圈', link: '/zh_TW/guide/rescue-from-bootloop.md' },
+          { text: 'x86_64 支援', link: '/zh_TW/guide/x86_64-support' },
           { text: '常見問題', link: '/zh_TW/guide/faq' },
           { text: '隱藏功能', link: '/zh_TW/guide/hidden-features' },
         ]

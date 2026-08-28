@@ -2,6 +2,7 @@ package me.weishu.kernelsu.data.model
 
 import android.os.Parcelable
 import android.util.Log
+import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.profile.Capabilities
@@ -10,6 +11,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
 
+@Immutable
 @Parcelize
 data class TemplateInfo(
     val id: String = "",
@@ -24,6 +26,9 @@ data class TemplateInfo(
     val capabilities: List<Int> = mutableListOf(),
     val context: String = Natives.KERNEL_SU_DOMAIN,
     val rules: List<String> = mutableListOf(),
+    val flags: List<Int> = mutableListOf(
+        Natives.Profile.RootProfileFlag.NO_NEW_PRIVS.ordinal // default no new privs for new template
+    )
 ) : Parcelable {
     companion object {
         private const val TAG = "TemplateInfo"
@@ -32,6 +37,7 @@ data class TemplateInfo(
             return runCatching {
                 val groupsJsonArray = templateJson.optJSONArray("groups")
                 val capabilitiesJsonArray = templateJson.optJSONArray("capabilities")
+                val flagsJsonArray = templateJson.optJSONArray("flags")
                 val context = templateJson.optString("context").takeIf { it.isNotEmpty() }
                     ?: Natives.KERNEL_SU_DOMAIN
                 val namespace = templateJson.optString("namespace").takeIf { it.isNotEmpty() }
@@ -56,7 +62,13 @@ data class TemplateInfo(
                     context = context,
                     rules = rulesJsonArray?.mapCatching<String, String>({ it }, {
                         Log.e(TAG, "ignore invalid rule: $it", it)
-                    }).orEmpty()
+                    }).orEmpty(),
+                    flags = flagsJsonArray?.let {
+                        getEnumOrdinals(
+                            it,
+                            Natives.Profile.RootProfileFlag::class.java
+                        ).map { flag -> flag.ordinal }
+                    } ?: listOf(Natives.Profile.RootProfileFlag.NO_NEW_PRIVS.ordinal)
                 )
                 templateInfo
             }.onFailure {
@@ -146,6 +158,16 @@ data class TemplateInfo(
             if (template.rules.isNotEmpty()) {
                 put("rules", JSONArray(template.rules))
             }
+
+            put(
+                "flags", JSONArray(
+                    Natives.Profile.RootProfileFlag.entries.filter {
+                        template.flags.contains(it.ordinal)
+                    }.map {
+                        it.name
+                    }
+                )
+            )
         }
     }
 }

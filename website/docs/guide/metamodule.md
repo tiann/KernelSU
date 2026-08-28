@@ -218,7 +218,7 @@ done
 
 This script inherits all variables and functions from the built-in `install.sh`:
 
-- **Variables**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `BOOTMODE`, etc.
+- **Variables**: `MODPATH`, `TMPDIR`, `ZIPFILE`, `ARCH`, `API`, `IS64BIT`, `KSU`, `KSU_VER`, `KSU_VER_CODE`, `KSU_UAPI_VER`, `KSU_RUNTIME_MODE`, `KSU_LATE_LOAD`, `BOOTMODE`, etc.
 - **Functions**:
   - `ui_print <msg>` - Print message to console
   - `abort <msg>` - Print error and terminate installation

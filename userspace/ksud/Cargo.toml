@@ -16,17 +16,19 @@ rust-embed = { version = "8", features = [
     "compression", # must clean build after updating binaries
 ] }
 which = "8"
-sha1 = "0.10"
+sha1 = "0.11"
+base16ct = { version = "1.0", features = ["alloc"] }
 sha256 = "1"
 tempfile = "3"
 chrono = "0.4"
 regex-lite = "0.1"
+memmap2 = "0.9"
+android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg", rev = "150425b027c76ea104c82e408571651f2181b2c2" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 rustix = { version = "1", features = [
     "all-apis",
 ] }
-android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 android_logger = { version = "0.15", default-features = false }
 zip = { version = "8",  features = [
     "deflate",
@@ -46,14 +48,14 @@ encoding_rs = "0.8"
 humansize = "2"
 libc = "0.2"
 extattr = "1"
-jwalk = "0.8"
+jwalk = "0.9"
 is_executable = "1"
 nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
 adb_client = { git = "https://github.com/Kernel-SU/adb_client" }
-prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props" }
+prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props", rev = "6f5723105d8d4cacad31d83d343defbf032c7b33" }
 
 [build-dependencies]
-bindgen = "0.71.0"
+bindgen = "0.72"

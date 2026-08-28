@@ -43,7 +43,7 @@ fun ModuleRepoScreen() {
         onSearchTextChange = viewModel::updateSearchText,
         onClearSearch = { viewModel.updateSearchText("") },
         onSearchStatusChange = viewModel::updateSearchStatus,
-        onToggleSortByName = viewModel::toggleSortByName,
+        onSetSortOrder = viewModel::setSortOrder,
         onOpenRepoDetail = { module ->
             val args = RepoModuleArg(
                 moduleId = module.moduleId,
@@ -81,10 +81,10 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
                     val detail = fetchModuleDetail(module.moduleId)
                     if (detail != null) {
                         readmeHtml = detail.readmeHtml
-                        if (detail.url.isNotEmpty() && !detail.url.equals("null")) {
+                        if (detail.url.isNotEmpty() && detail.url != "null") {
                             webUrl = detail.url
                         }
-                        if (detail.sourceUrl.isNotEmpty() && !detail.sourceUrl.equals("null")) {
+                        if (detail.sourceUrl.isNotEmpty() && detail.sourceUrl != "null") {
                             sourceUrl = detail.sourceUrl
                         }
                         detailReleases = detail.releases.map { r ->

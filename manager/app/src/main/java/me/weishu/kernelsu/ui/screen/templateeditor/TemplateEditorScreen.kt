@@ -11,6 +11,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.dropUnlessResumed
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.toOrdinalList
+import me.weishu.kernelsu.toRootProfileFlags
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -120,6 +122,7 @@ fun TemplateEditorScreen(template: TemplateViewModel.TemplateInfo, readOnly: Boo
                     context = profile.context,
                     namespace = profile.namespace,
                     rules = profile.rules.split("\n"),
+                    flags = profile.flags.toRootProfileFlags().toOrdinalList(),
                 )
             )
         },

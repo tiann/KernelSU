@@ -1,6 +1,8 @@
 package me.weishu.kernelsu.ui.screen.executemoduleaction
 
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,6 +13,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.dropUnlessResumed
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -24,7 +27,8 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     var text by rememberSaveable { mutableStateOf("") }
     val logContent = remember { StringBuilder() }
     var isComplete by rememberSaveable { mutableStateOf(false) }
-
+    val uiMode = LocalUiMode.current
+    val snackbarHost = remember { SnackbarHostState() }
     val exitExecute = {
         if (fromShortcut && activity != null) {
             activity.finishAndRemoveTask()
@@ -33,7 +37,17 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
         }
     }
 
-    // 始终自动关闭来自快捷方式的启动
+    fun showMessage(message: String) {
+        scope.launch {
+            if (uiMode == UiMode.Material) {
+                snackbarHost.showSnackbar(message)
+            } else {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Always auto disable from shortcuts
     LaunchedEffect(isComplete) {
         if (isComplete) {
             if (fromShortcut) {
@@ -58,12 +72,12 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     )
     val actions = ExecuteModuleActionScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
-        onSaveLog = saveLog(logContent, context, scope),
+        onSaveLog = saveLog(logContent, scope) { showMessage(it) },
         onClose = exitExecute,
     )
 
-    when (LocalUiMode.current) {
+    when (uiMode) {
         UiMode.Miuix -> ExecuteModuleActionScreenMiuix(state, actions)
-        UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions)
+        UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions, snackbarHost)
     }
 }

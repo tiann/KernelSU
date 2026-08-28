@@ -1,19 +1,21 @@
 KDIR := $(KDIR)
 MDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+ODIR := $(MDIR)
 
 $(info -- KDIR: $(KDIR))
 $(info -- MDIR: $(MDIR))
+$(info -- OUTPUT DIR: $(ODIR))
 
 .PHONY: all compdb clean format check-format
 
 all: check_symbol
-	make -C $(KDIR) M=$(MDIR) modules -j$(shell nproc)
-	./check_symbol kernelsu.ko $(KDIR)/vmlinux
+	make -C $(KDIR) M=$(ODIR) src=$(MDIR) modules compile_commands.json -j$(shell nproc)
+	./check_symbol $(ODIR)/kernelsu.ko $(KDIR)/vmlinux
 
 compdb:
-	python3 $(MDIR)/.vscode/generate_compdb.py -O $(KDIR) $(MDIR)
+	python3 $(MDIR)/.vscode/generate_compdb.py -O $(ODIR) $(MDIR)
 clean:
-	make -C $(KDIR) M=$(MDIR) clean
+	make -C $(KDIR) M=$(ODIR) src=$(MDIR) clean
 	rm check_symbol
 check_symbol: tools/check_symbol.c
 	$(CC) tools/check_symbol.c -o check_symbol

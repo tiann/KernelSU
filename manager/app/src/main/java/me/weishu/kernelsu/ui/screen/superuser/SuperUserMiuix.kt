@@ -39,8 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -64,6 +66,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.component.AppIconImage
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
+import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
@@ -74,12 +77,13 @@ import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.ownerNameForUid
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
+import me.weishu.kernelsu.ui.viewmodel.AppSortType
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownImpl
+import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
@@ -93,6 +97,7 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.basic.ArrowRight
 import top.yukonga.miuix.kmp.icon.extended.MoreCircle
 import top.yukonga.miuix.kmp.icon.extended.Notes
+import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
@@ -136,54 +141,118 @@ fun SuperUserPagerMiuix(
                             }
                         },
                         actions = {
-                            val showTopPopup = remember { mutableStateOf(false) }
-                            OverlayListPopup(
-                                show = showTopPopup.value,
-                                popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
-                                alignment = PopupPositionProvider.Align.TopEnd,
-                                onDismissRequest = {
-                                    showTopPopup.value = false
-                                },
-                                content = {
-                                    val isMultiUser = uiState.userIds.size > 1
-                                    val size = if (isMultiUser) 2 else 1
-                                    ListPopupColumn {
-                                        DropdownImpl(
-                                            text = stringResource(R.string.show_system_apps),
-                                            isSelected = uiState.showSystemApps,
-                                            optionSize = size,
-                                            onSelectedIndexChange = {
-                                                actions.onToggleShowSystemApps()
-                                                showTopPopup.value = false
-                                            },
-                                            index = 0
-                                        )
-                                        if (isMultiUser) {
+                            Box {
+                                val showSortPopup = remember { mutableStateOf(false) }
+                                OverlayListPopup(
+                                    show = showSortPopup.value,
+                                    popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                                    alignment = PopupPositionProvider.Align.TopEnd,
+                                    onDismissRequest = { showSortPopup.value = false },
+                                    content = {
+                                        ListPopupColumn {
+                                            val sortEntries = listOf(
+                                                AppSortType.NAME to R.string.sort_by_name,
+                                                AppSortType.PACKAGE_NAME to R.string.sort_by_package_name,
+                                                AppSortType.INSTALL_TIME to R.string.sort_by_install_time,
+                                                AppSortType.UPDATE_TIME to R.string.sort_by_update_time,
+                                            )
+                                            val sortConfig = uiState.sortConfig
+                                            val sortGroupSize = sortEntries.size + 1
+
+                                            sortEntries.forEachIndexed { index, (type, resId) ->
+                                                DropdownImpl(
+                                                    text = stringResource(resId),
+                                                    optionSize = sortGroupSize,
+                                                    isSelected = sortConfig.sortType == type,
+                                                    index = index,
+                                                    onSelectedIndexChange = {
+                                                        actions.onUpdateSortConfig(sortConfig.withType(type))
+                                                        showSortPopup.value = false
+                                                    }
+                                                )
+                                            }
+
+                                            HorizontalDivider(
+                                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                                                thickness = 1.5.dp,
+                                            )
+
                                             DropdownImpl(
-                                                text = stringResource(R.string.show_only_primary_user_apps),
-                                                isSelected = uiState.showOnlyPrimaryUserApps,
-                                                optionSize = size,
+                                                text = stringResource(R.string.sort_reverse),
+                                                optionSize = sortGroupSize,
+                                                isSelected = sortConfig.reversed,
+                                                index = sortEntries.size,
                                                 onSelectedIndexChange = {
-                                                    actions.onToggleShowOnlyPrimaryUserApps()
-                                                    showTopPopup.value = false
-                                                },
-                                                index = 1
+                                                    actions.onUpdateSortConfig(sortConfig.toggleReversed())
+                                                    showSortPopup.value = false
+                                                }
                                             )
                                         }
                                     }
-                                }
-                            )
-                            IconButton(
-                                onClick = {
-                                    showTopPopup.value = true
-                                },
-                                holdDownState = showTopPopup.value
-                            ) {
-                                Icon(
-                                    imageVector = MiuixIcons.MoreCircle,
-                                    tint = colorScheme.onSurface,
-                                    contentDescription = null
                                 )
+
+                                IconButton(
+                                    onClick = { showSortPopup.value = true },
+                                    holdDownState = showSortPopup.value,
+                                ) {
+                                    Icon(
+                                        imageVector = MiuixIcons.Sort,
+                                        tint = colorScheme.onSurface,
+                                        contentDescription = stringResource(R.string.menu_sort)
+                                    )
+                                }
+                            }
+
+                            Box {
+                                val showTopPopup = remember { mutableStateOf(false) }
+                                OverlayListPopup(
+                                    show = showTopPopup.value,
+                                    popupPositionProvider = ListPopupDefaults.MenuPositionProvider,
+                                    alignment = PopupPositionProvider.Align.TopEnd,
+                                    onDismissRequest = {
+                                        showTopPopup.value = false
+                                    },
+                                    content = {
+                                        val isMultiUser = uiState.userIds.size > 1
+                                        val size = if (isMultiUser) 2 else 1
+                                        ListPopupColumn {
+                                            DropdownImpl(
+                                                text = stringResource(R.string.show_system_apps),
+                                                isSelected = uiState.showSystemApps,
+                                                optionSize = size,
+                                                onSelectedIndexChange = {
+                                                    actions.onToggleShowSystemApps()
+                                                    showTopPopup.value = false
+                                                },
+                                                index = 0
+                                            )
+                                            if (isMultiUser) {
+                                                DropdownImpl(
+                                                    text = stringResource(R.string.show_only_primary_user_apps),
+                                                    isSelected = uiState.showOnlyPrimaryUserApps,
+                                                    optionSize = size,
+                                                    onSelectedIndexChange = {
+                                                        actions.onToggleShowOnlyPrimaryUserApps()
+                                                        showTopPopup.value = false
+                                                    },
+                                                    index = 1
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+                                IconButton(
+                                    onClick = {
+                                        showTopPopup.value = true
+                                    },
+                                    holdDownState = showTopPopup.value
+                                ) {
+                                    Icon(
+                                        imageVector = MiuixIcons.MoreCircle,
+                                        tint = colorScheme.onSurface,
+                                        contentDescription = null
+                                    )
+                                }
                             }
                         },
                         scrollBehavior = scrollBehavior,
@@ -331,11 +400,17 @@ fun SuperUserPagerMiuix(
         val layoutDirection = LocalLayoutDirection.current
         searchStatus.SearchBox {
             val lazyListState = rememberLazyListState()
-            val prevRefreshing = remember { booleanArrayOf(false) }
-            if (prevRefreshing[0] && !uiState.isRefreshing) {
-                lazyListState.requestScrollToItem(0)
-            }
-            prevRefreshing[0] = uiState.isRefreshing
+            val refreshTick = remember { mutableIntStateOf(0) }
+            val latestGroupedApps = rememberUpdatedState(uiState.groupedApps)
+            val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
+            ScrollToTopOnChange(
+                lazyListState,
+                uiState.sortConfig,
+                uiState.showSystemApps,
+                uiState.showOnlyPrimaryUserApps,
+                refreshTick.intValue,
+                isBusy = { latestRefreshing.value },
+            ) { latestGroupedApps.value }
             val pullToRefreshState = rememberPullToRefreshState()
             val refreshTexts = listOf(
                 stringResource(R.string.refresh_pulling),
@@ -344,79 +419,66 @@ fun SuperUserPagerMiuix(
                 stringResource(R.string.refresh_complete),
             )
 
-            if (uiState.groupedApps.isEmpty() && !uiState.hasLoaded) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = innerPadding.calculateTopPadding(),
+            val expandedUids = remember { mutableStateOf(setOf<Int>()) }
+            PullToRefresh(
+                isRefreshing = uiState.isRefreshing,
+                pullToRefreshState = pullToRefreshState,
+                onRefresh = {
+                    actions.onRefresh()
+                    refreshTick.intValue++
+                },
+                refreshTexts = refreshTexts,
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding() + 6.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    end = innerPadding.calculateEndPadding(layoutDirection)
+                ),
+            ) {
+                Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .scrollEndHaptic()
+                            .overScrollVertical()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding() + 6.dp,
                             start = innerPadding.calculateStartPadding(layoutDirection),
-                            end = innerPadding.calculateEndPadding(layoutDirection),
-                            bottom = bottomInnerPadding
+                            end = innerPadding.calculateEndPadding(layoutDirection)
                         ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    InfiniteProgressIndicator()
-                }
-            } else {
-                val expandedUids = remember { mutableStateOf(setOf<Int>()) }
-                PullToRefresh(
-                    isRefreshing = uiState.isRefreshing,
-                    pullToRefreshState = pullToRefreshState,
-                    onRefresh = actions.onRefresh,
-                    refreshTexts = refreshTexts,
-                    contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 6.dp,
-                        start = innerPadding.calculateStartPadding(layoutDirection),
-                        end = innerPadding.calculateEndPadding(layoutDirection)
-                    ),
-                ) {
-                    Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .scrollEndHaptic()
-                                .overScrollVertical()
-                                .nestedScroll(scrollBehavior.nestedScrollConnection),
-                            contentPadding = PaddingValues(
-                                top = innerPadding.calculateTopPadding() + 6.dp,
-                                start = innerPadding.calculateStartPadding(layoutDirection),
-                                end = innerPadding.calculateEndPadding(layoutDirection)
-                            ),
-                            overscrollEffect = null,
-                        ) {
-                            items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
-                                val expanded = expandedUids.value.contains(group.uid)
-                                Column {
-                                    GroupItem(
-                                        group = group,
-                                        onToggleExpand = {
-                                            if (group.apps.size > 1) {
-                                                expandedUids.value =
-                                                    if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
-                                            }
+                        overscrollEffect = null,
+                    ) {
+                        items(uiState.groupedApps, key = { it.uid }, contentType = { "group" }) { group ->
+                            val expanded = expandedUids.value.contains(group.uid)
+                            Column {
+                                GroupItem(
+                                    group = group,
+                                    onToggleExpand = {
+                                        if (group.apps.size > 1) {
+                                            expandedUids.value =
+                                                if (expanded) expandedUids.value - group.uid else expandedUids.value + group.uid
                                         }
-                                    ) {
-                                        actions.onOpenProfile(group)
                                     }
-                                    AnimatedVisibility(
-                                        visible = expanded && group.apps.size > 1,
-                                        enter = expandVertically() + fadeIn(),
-                                        exit = shrinkVertically() + fadeOut()
-                                    ) {
-                                        Column {
-                                            group.apps.forEach { app ->
-                                                SimpleAppItem(app = app)
-                                            }
-                                            Spacer(Modifier.height(6.dp))
+                                ) {
+                                    actions.onOpenProfile(group)
+                                }
+                                AnimatedVisibility(
+                                    visible = expanded && group.apps.size > 1,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    Column {
+                                        group.apps.forEach { app ->
+                                            SimpleAppItem(app = app)
                                         }
+                                        Spacer(Modifier.height(6.dp))
                                     }
                                 }
                             }
-                            item {
-                                Spacer(Modifier.height(bottomInnerPadding))
-                            }
+                        }
+                        item {
+                            Spacer(Modifier.height(bottomInnerPadding))
                         }
                     }
                 }

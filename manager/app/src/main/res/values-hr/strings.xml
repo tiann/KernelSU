@@ -7,7 +7,7 @@
     <string name="failed_to_update_sepolicy">Nije uspjelo ažuriranje SELinux pravila za %s</string>
     <string name="home">Početna</string>
     <string name="home_not_installed">Nije instalirano</string>
-    <string name="home_working_version">Verzija: %d</string>
+    <string name="home_working_version">Verzija: %s</string>
     <string name="home_click_to_install">Kliknite da instalirate</string>
     <string name="home_working">Radi</string>
     <string name="home_unsupported">Nepodržano</string>
@@ -106,7 +106,12 @@
     <string name="enable_web_debugging">WebView otklanjanje pogrešaka</string>
     <string name="enable_web_debugging_summary">Može se koristiti za otklanjanje pogrešaka u WebUI-ju. Omogućite samo kada je potrebno.</string>
     <string name="direct_install">Izravna instalacija (preporučeno)</string>
-    <string name="select_file">Odaberite datoteku</string>
+    <string name="select_file">Odaberite datoteku i patchirajte je</string>
+    <string name="download_file">Preuzmite datoteku i patchirajte je</string>
+    <string name="download_dialog_title">Unesite URL slike</string>
+    <string name="download_dialog_msg">Potpuna OTA slika ili tvornička slika</string>
+    <string name="download_no_boot_partition">Particija boot, init_boot ili vendor_boot nije pronađena u slici</string>
+    <string name="download_probe_failed">Neuspješno ispitivanje slike: %1$s</string>
     <string name="install_inactive_slot">Instaliraj u neaktivni utor (nakon OTA)</string>
     <string name="install_inactive_slot_warning">Vaš će uređaj biti **PRISILNO** pokrenuti se u trenutno neaktivni utor nakon ponovnog pokretanja!\nKoristite ovu opciju tek nakon što je OTA završen.\nNastaviti?</string>
     <string name="install_next">Dalje</string>
@@ -172,4 +177,7 @@
     <string name="tab_readme">PROČITAJ ME</string>
     <string name="tab_releases">Izdanja</string>
     <string name="tab_info">Info</string>
+    <string name="profile_flags_desc_no_new_privs">Sprječava daljnju eskalaciju privilegija putem KernelSU-a unutar konteksta ovog root profila.</string>
+    <string name="install_force_backup">Sigurnosno kopiraj kao izvornu sliku</string>
+    <string name="install_force_backup_summary">Provjerite je li odabrana boot slika izvorna slika</string>
 </resources>

@@ -215,7 +215,7 @@ done
 
 此脚本继承内置 `install.sh` 的所有变量和函数:
 
-- **变量**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`BOOTMODE` 等
+- **变量**: `MODPATH`、`TMPDIR`、`ZIPFILE`、`ARCH`、`API`、`IS64BIT`、`KSU`、`KSU_VER`、`KSU_VER_CODE`、`KSU_UAPI_VER`、`KSU_RUNTIME_MODE`、`KSU_LATE_LOAD`、`BOOTMODE` 等
 - **函数**:
   - `ui_print <msg>` - 向控制台打印消息
   - `abort <msg>` - 打印错误并终止安装

@@ -36,7 +36,6 @@ class MainActivityViewModel(
 
     override fun onCleared() {
         prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        super.onCleared()
     }
 
     fun setSelectedMainPage(page: Int) {
@@ -45,11 +44,12 @@ class MainActivityViewModel(
 
     private fun readUiState(): MainActivityUiState {
         return MainActivityUiState(
-            appSettings = ThemeController.getAppSettings(ksuApp),
+            appSettings = ThemeController.getAppSettings(),
             pageScale = settingRepo.pageScale,
             enableBlur = settingRepo.enableBlur,
             enableFloatingBottomBar = settingRepo.enableFloatingBottomBar,
             enableFloatingBottomBarBlur = settingRepo.enableFloatingBottomBarBlur,
+            enableNavigationBadge = settingRepo.enableNavigationBadge,
             uiMode = UiMode.fromValue(settingRepo.uiMode),
         )
     }
@@ -64,6 +64,7 @@ class MainActivityViewModel(
             "enable_blur",
             "enable_floating_bottom_bar",
             "enable_floating_bottom_bar_blur",
+            "enable_navigation_badge",
             "ui_mode",
         )
     }

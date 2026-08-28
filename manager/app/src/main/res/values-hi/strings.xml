@@ -45,7 +45,7 @@
     <string name="module">मॉड्यूल</string>
     <string name="module_author">निर्माता</string>
     <string name="about">हमारे बारे में</string>
-    <string name="home_working_version">वर्जन: %d</string>
+    <string name="home_working_version">वर्जन: %s</string>
     <string name="reboot">रीबूट करें</string>
     <string name="home_unsupported_reason">KernelSU अभी केवल GKI कर्नल्स को सपोर्ट करता है</string>
     <string name="home_selinux_status">SELinux स्थिति</string>
@@ -81,4 +81,7 @@
     <string name="settings_sucompat_summary">ऐप प्रोफ़ाइल में सुपरयूज़र अनुमति दिए गए ऐप्स को /system/bin/su को निष्पादित करके सुपरयूज़र शेल प्राप्त करने की अनुमति देता है; केवल नई प्रक्रियाओं के लिए प्रभावी।</string>
     <string name="settings_kernel_umount">कर्नेल अनमाउंट</string>
     <string name="settings_kernel_umount_summary">KernelSU द्वारा नियंत्रित कर्नेल-स्तरीय अनमाउंट व्यवहार</string>
+    <string name="profile_flags_desc_no_new_privs">इस रूट प्रोफाइल के संदर्भ में KernelSU के माध्यम से आगे विशेषाधिकार बढ़ाने से रोकता है।</string>
+    <string name="install_force_backup">स्टॉक इमेज के रूप में बैकअप करें</string>
+    <string name="install_force_backup_summary">कृपया सुनिश्चित करें कि आपने जो boot इमेज चुनी है वह स्टॉक इमेज है</string>
 </resources>

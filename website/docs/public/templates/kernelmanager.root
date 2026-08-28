@@ -46,5 +46,8 @@
             "name": "Gestore Kernel",
             "description": "Autorizzazioni comunemente richieste in applicazioni per gestire il Kernel come FKM e SmartPack."
         } 
-    }
+    },
+    "flags":[
+        "NO_NEW_PRIVS"
+    ]
 }

@@ -24,10 +24,12 @@ import androidx.compose.material.icons.rounded.DeveloperMode
 import androidx.compose.material.icons.rounded.ElectricalServices
 import androidx.compose.material.icons.rounded.Fence
 import androidx.compose.material.icons.rounded.FolderDelete
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Policy
 import androidx.compose.material.icons.rounded.RemoveCircle
 import androidx.compose.material.icons.rounded.RemoveModerator
+import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.runtime.Composable
@@ -255,6 +257,27 @@ fun SettingPagerMiuix(
                                 onCheckedChange = actions.onSetKernelUmountEnabled
                             )
 
+                            val webViewUmountSummary = when (uiState.webViewZygoteUmountStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_webview_zygote_umount_summary)
+                            }
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_webview_zygote_umount),
+                                summary = webViewUmountSummary,
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.Language,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_webview_zygote_umount),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                enabled = uiState.webViewZygoteUmountStatus == "supported",
+                                checked = uiState.isWebViewZygoteUmountEnabled,
+                                onCheckedChange = actions.onSetWebViewZygoteUmountEnabled
+                            )
+
                             val selinuxHideSummary = when (uiState.selinuxHideStatus) {
                                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
@@ -316,6 +339,21 @@ fun SettingPagerMiuix(
                                 enabled = uiState.adbRootStatus == "supported",
                                 checked = uiState.isAdbRootEnabled,
                                 onCheckedChange = actions.onSetAdbRootEnabled
+                            )
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_soft_reboot),
+                                summary = stringResource(id = R.string.settings_soft_reboot_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.RestartAlt,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_soft_reboot),
+                                        tint = if (uiState.isLateLoadMode) colorScheme.disabledOnSecondaryVariant else colorScheme.onBackground
+                                    )
+                                },
+                                enabled = !uiState.isLateLoadMode,
+                                checked = uiState.isLateLoadMode || uiState.useSoftReboot,
+                                onCheckedChange = actions.onSetUseSoftReboot
                             )
                         }
 

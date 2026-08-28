@@ -12,15 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
-import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
+import me.weishu.kernelsu.ui.util.shouldShowSplitPane
+import top.yukonga.miuix.kmp.shader.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.floor
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BgEffectBackground(
@@ -57,7 +56,7 @@ fun BgEffectBackground(
 
             var targetStage = floor(colorStage.value) + 1f
             while (isActive) {
-                delay((preset.colorInterpPeriod * 500).toLong())
+                delay((preset.colorInterpPeriod * 500).toLong().milliseconds)
                 colorStage.animateTo(
                     targetValue = targetStage,
                     animationSpec = spring(dampingRatio = 0.9f, stiffness = 35f),
@@ -84,17 +83,5 @@ fun BgEffectBackground(
                 ),
         )
         content()
-    }
-}
-
-@Composable
-private fun shouldShowSplitPane(): Boolean {
-    val windowInfo = LocalWindowInfo.current
-    val density = LocalDensity.current
-    return with(density) {
-        val widthDp = windowInfo.containerSize.width.toDp()
-        val heightDp = windowInfo.containerSize.height.toDp()
-        val ratio = heightDp / widthDp
-        widthDp >= 840.dp || (widthDp >= 600.dp && ratio < 1.2f)
     }
 }

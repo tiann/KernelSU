@@ -1,9 +1,7 @@
 package me.weishu.kernelsu.ui.viewmodel
 
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +14,20 @@ import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.ModuleRepoRepository
 import me.weishu.kernelsu.data.repository.ModuleRepoRepositoryImpl
+import me.weishu.kernelsu.data.repository.SettingsRepository
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.screen.modulerepo.ModuleRepoUiState
+import me.weishu.kernelsu.ui.screen.modulerepo.RepoSort
+import me.weishu.kernelsu.ui.util.PinyinUtil
 import me.weishu.kernelsu.ui.util.isNetworkAvailable
+import java.text.Collator
+import java.util.Locale
 
 class ModuleRepoViewModel(
-    private val repo: ModuleRepoRepository = ModuleRepoRepositoryImpl()
+    private val repo: ModuleRepoRepository = ModuleRepoRepositoryImpl(),
+    private val settingsRepo: SettingsRepository = SettingsRepositoryImpl()
 ) : ViewModel() {
 
     companion object {
@@ -34,18 +39,33 @@ class ModuleRepoViewModel(
     private val _uiState = MutableStateFlow(ModuleRepoUiState())
     val uiState: StateFlow<ModuleRepoUiState> = _uiState.asStateFlow()
 
-    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)
     private val searchQuery = MutableStateFlow("")
 
     init {
+        val ordinal = settingsRepo.moduleRepoSortOrder
+        val initial = RepoSort.entries.getOrElse(ordinal) { RepoSort.UPDATED }
         _uiState.update {
             it.copy(
-                sortByName = prefs.getBoolean("module_repo_sort_name", false),
+                sortOrder = initial,
                 offline = !isNetworkAvailable(ksuApp)
             )
         }
 
         viewModelScope.launchSearchQueryCollector(searchQuery, ::applySearchText)
+    }
+
+    private fun sortModules(list: List<RepoModule>, order: RepoSort): List<RepoModule> {
+        if (list.isEmpty()) return list
+        return when (order) {
+            RepoSort.UPDATED -> list.sortedByDescending { it.latestReleaseTime }
+            RepoSort.CREATED -> list.sortedByDescending { it.createdAt }
+            RepoSort.NAME -> {
+                val collator = Collator.getInstance(Locale.getDefault())
+                list.sortedWith(compareBy(collator) { it.moduleName })
+            }
+
+            RepoSort.STARS -> list.sortedByDescending { it.stargazerCount }
+        }
     }
 
     private fun filterModules(modules: List<RepoModule>, text: String): List<RepoModule> {
@@ -56,8 +76,7 @@ class ModuleRepoViewModel(
                     it.moduleName.contains(text, true) ||
                     it.authors.contains(text, true) ||
                     it.summary.contains(text, true) ||
-                    me.weishu.kernelsu.ui.util.HanziToPinyin.getInstance().toPinyinString(it.moduleName)
-                        .contains(text, true)
+                    PinyinUtil.toPinyin(it.moduleName).contains(text, true)
         }
     }
 
@@ -81,7 +100,7 @@ class ModuleRepoViewModel(
         }
 
         val result = withContext(Dispatchers.IO) {
-            filterModules(_uiState.value.modules, text)
+            sortModules(filterModules(_uiState.value.modules, text), _uiState.value.sortOrder)
         }
 
         _uiState.update {
@@ -95,7 +114,7 @@ class ModuleRepoViewModel(
     private fun refreshSearchResults() {
         val state = _uiState.value
         val text = state.searchStatus.searchText
-        val results = filterModules(state.modules, text)
+        val results = sortModules(filterModules(state.modules, text), state.sortOrder)
         _uiState.update {
             it.copy(
                 searchResults = results,
@@ -105,6 +124,7 @@ class ModuleRepoViewModel(
     }
 
     fun refresh() {
+        if (_uiState.value.isRefreshing) return
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
@@ -117,14 +137,16 @@ class ModuleRepoViewModel(
 
             withContext(Dispatchers.Main) {
                 result.onSuccess { modules ->
+                    val order = _uiState.value.sortOrder
+                    val sorted = withContext(Dispatchers.Default) { sortModules(modules, order) }
                     _uiState.update {
                         it.copy(
-                            modules = modules,
-                            isRefreshing = false,
+                            modules = sorted,
                             offline = !isNetworkAvailable(ksuApp)
                         )
                     }
                     refreshSearchResults()
+                    _uiState.update { it.copy(isRefreshing = false) }
                 }.onFailure { e ->
                     Log.e(TAG, "fetch modules failed", e)
                     Toast.makeText(
@@ -143,10 +165,22 @@ class ModuleRepoViewModel(
         }
     }
 
-    fun toggleSortByName() {
-        val newValue = !_uiState.value.sortByName
-        prefs.edit { putBoolean("module_repo_sort_name", newValue) }
-        _uiState.update { it.copy(sortByName = newValue) }
+    fun setSortOrder(order: RepoSort) {
+        if (_uiState.value.sortOrder == order) return
+        settingsRepo.moduleRepoSortOrder = order.ordinal
+        viewModelScope.launch {
+            val state = _uiState.value
+            val (sortedModules, sortedSearch) = withContext(Dispatchers.Default) {
+                sortModules(state.modules, order) to sortModules(state.searchResults, order)
+            }
+            _uiState.update {
+                it.copy(
+                    sortOrder = order,
+                    modules = sortedModules,
+                    searchResults = sortedSearch,
+                )
+            }
+        }
     }
 
     fun updateSearchStatus(status: SearchStatus) {

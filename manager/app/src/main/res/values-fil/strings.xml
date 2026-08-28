@@ -8,7 +8,7 @@
     <string name="home">Panimula</string>
     <string name="home_click_to_install">I-click para i-install</string>
     <string name="home_working">Gumagana</string>
-    <string name="home_working_version">Bersyon: %d</string>
+    <string name="home_working_version">Bersyon: %s</string>
     <string name="selinux_status_unknown">Hindi matukoy</string>
     <string name="home_unsupported">Hindi Suportado</string>
     <string name="home_unsupported_reason">Sinusuportahan lamang ng KernelSU ang mga GKI na kernel.</string>
@@ -108,7 +108,12 @@
     <string name="enable_web_debugging">I-enable ang pag-debug ng WebView</string>
     <string name="enable_web_debugging_summary">Maaaring gamitin para i-debug ang WebUI. Mangyaring paganahin kung kinakailangan lang.</string>
     <string name="direct_install">Direktang pag-install (Inirerekomenda)</string>
-    <string name="select_file">Pumili ng file</string>
+    <string name="select_file">Pumili ng file at i-patch</string>
+    <string name="download_file">I-download ang file at i-patch</string>
+    <string name="download_dialog_title">Ilagay ang URL ng imahe</string>
+    <string name="download_dialog_msg">Buong OTA na imahe o factory na imahe</string>
+    <string name="download_no_boot_partition">Walang nakitang boot, init_boot, o vendor_boot na partition sa imahe</string>
+    <string name="download_probe_failed">Nabigong i-probe ang imahe: %1$s</string>
     <string name="install_inactive_slot">I-install sa hindi aktibong slot (Pagkatapos ng OTA)</string>
     <string name="install_inactive_slot_warning">Ang iyong device ay **PIPILITIN** na i-boot sa kasalukuyang hindi aktibong slot pagkatapos ng reboot!\nGamitin lamang ang opsyon na ito kung tapos na ang OTA.\nMagpatuloy?</string>
     <string name="install_next">Susunod</string>
@@ -133,4 +138,7 @@
     <string name="module_repos_source_code">Source code</string>
     <string name="metamodule_uninstall_confirm">Sigurado ka ba gusto mong i-uninstall ang module na %s? Aapektuhan ng aksyon na ito ang lahat ng mga module, at hindi na gagana ang mga feature na ibinigay ng metamodule (tulad ng pag-mount).</string>
     <string name="safe_mode_module_disabled">Naka-disable sa safe mode ang pag-install ng mga module</string>
+    <string name="profile_flags_desc_no_new_privs">Pinipigilan ang karagdagang pagtaas ng pribilehiyo sa pamamagitan ng KernelSU mula sa loob ng konteksto ng root profile na ito.</string>
+    <string name="install_force_backup">I-backup bilang stock image</string>
+    <string name="install_force_backup_summary">Pakisigurado na stock image ang napili mong boot image</string>
 </resources>

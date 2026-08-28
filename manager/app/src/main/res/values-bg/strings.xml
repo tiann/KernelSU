@@ -4,7 +4,7 @@
     <string name="home_not_installed">Не е инсталирано</string>
     <string name="home_click_to_install">Натиснете да инсталирате</string>
     <string name="home_working">Работи</string>
-    <string name="home_working_version">Версия: %d</string>
+    <string name="home_working_version">Версия: %s</string>
     <string name="home_unsupported">Неподдържано</string>
     <string name="home_unsupported_reason">KernelSU само поддържа GKI кернели за сега.</string>
     <string name="home_kernel">Версия на кернела</string>
@@ -110,7 +110,12 @@
     <string name="enable_web_debugging">Отстраняване на грешки на WebView</string>
     <string name="enable_web_debugging_summary">Може да се използва за отстраняване на грешки в WebUI. Моля активирайте само когато е необходимо.</string>
     <string name="direct_install">Директно изтегляне (Препоръчано)</string>
-    <string name="select_file">Изберете файл</string>
+    <string name="select_file">Избор и закърпване на файл</string>
+    <string name="download_file">Изтегляне и закърпване на файл</string>
+    <string name="download_dialog_title">Въведете URL на изображението</string>
+    <string name="download_dialog_msg">Пълен OTA образ или фабричен образ</string>
+    <string name="download_no_boot_partition">В изображението не е намерен дял boot, init_boot или vendor_boot</string>
+    <string name="download_probe_failed">Неуспешно сканиране на изображението: %1$s</string>
     <string name="install_inactive_slot">Изтеглете в неактивния слот (След софтуерна актуализация)</string>
     <string name="install_inactive_slot_warning">Устройството ви ще бъде **ПРИНУДЕНО** да се стартира от неактивния слот след рестартиране!\nИзползвайте тази опция само след като софтуерната актуализация приключи.\nИскате ли да продължите?</string>
     <string name="install_next">Следваш</string>
@@ -171,4 +176,7 @@
     <string name="tab_readme">ПРОЧЕТИ МЕ</string>
     <string name="tab_releases">Версии</string>
     <string name="tab_info">Информация</string>
+    <string name="profile_flags_desc_no_new_privs">Предотвратява по-нататъшно повишаване на привилегиите чрез KernelSU в контекста на този root профил.</string>
+    <string name="install_force_backup">Архивирай като оригинален образ</string>
+    <string name="install_force_backup_summary">Моля, уверете се, че избраният от вас boot образ е оригиналният образ</string>
 </resources>

@@ -4,7 +4,7 @@
     <string name="home_not_installed">Не установлен</string>
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
-    <string name="home_working_version">Версия: %d</string>
+    <string name="home_working_version">Версия: %s</string>
     <!--Don't translate this string!-->
     <string name="home_unsupported">Не поддерживается</string>
     <string name="home_unsupported_reason">Теперь KernelSU поддерживает только ядра GKI, однако вы всё ещё можете пропатчить образ для GKI-устройств.</string>
@@ -107,7 +107,12 @@
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
     <string name="install_next">Далее</string>
-    <string name="select_file">Выбрать файл</string>
+    <string name="select_file">Выбрать файл и пропатчить</string>
+    <string name="download_file">Скачать файл и пропатчить</string>
+    <string name="download_dialog_title">Введите URL образа</string>
+    <string name="download_dialog_msg">Полный OTA-образ или заводской образ</string>
+    <string name="download_no_boot_partition">В образе не найдены разделы boot, init_boot или vendor_boot</string>
+    <string name="download_probe_failed">Не удалось проверить образ: %1$s</string>
     <string name="install_inactive_slot_warning">Ваше устройство будет **ПРИНУДИТЕЛЬНО** загружено в текущий неактивный слот после перезагрузки!
 \n Используйте эту опцию только после завершения OTA.
 \n Продолжить?</string>
@@ -204,4 +209,7 @@
     <string name="color_amber">Янтарный</string>
     <string name="color_blue_grey">Серо-голубой</string>
     <string name="color_sakura">Сакура</string>
+    <string name="profile_flags_desc_no_new_privs">Предотвращает дальнейшее повышение привилегий через KernelSU в контексте этого root-профиля.</string>
+    <string name="install_force_backup">Сохранить резервную копию как оригинальный образ</string>
+    <string name="install_force_backup_summary">Пожалуйста, убедитесь, что выбранный образ boot является оригинальным образом</string>
 </resources>

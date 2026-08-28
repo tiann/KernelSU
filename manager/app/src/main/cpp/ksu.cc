@@ -79,9 +79,21 @@ static struct ksu_get_info_cmd g_version {};
 
 struct ksu_get_info_cmd get_info() {
     if (!g_version.version) {
-        ksuctl(KSU_IOCTL_GET_INFO, &g_version);
+        if (ksuctl(KSU_IOCTL_GET_INFO, &g_version) < 0) {
+            ksuctl(KSU_IOCTL_GET_INFO_LEGACY, &g_version);
+            g_version.uapi_version = 0;
+        }
     }
     return g_version;
+}
+
+uint32_t get_kernel_uapi_version() {
+    auto info = get_info();
+    return info.uapi_version;
+}
+
+uint32_t get_manager_uapi_version() {
+    return KERNEL_SU_UAPI_VERSION;
 }
 
 uint32_t get_version() {
@@ -196,6 +208,22 @@ bool is_kernel_umount_enabled() {
     uint64_t value = 0;
     bool supported = false;
     if (!get_feature(KSU_FEATURE_KERNEL_UMOUNT, &value, &supported)) {
+        return false;
+    }
+    if (!supported) {
+        return false;
+    }
+    return value != 0;
+}
+
+bool set_webview_zygote_umount_enabled(bool enabled) {
+    return set_feature(KSU_FEATURE_WEBVIEW_ZYGOTE_UMOUNT, enabled ? 1 : 0);
+}
+
+bool is_webview_zygote_umount_enabled() {
+    uint64_t value = 0;
+    bool supported = false;
+    if (!get_feature(KSU_FEATURE_WEBVIEW_ZYGOTE_UMOUNT, &value, &supported)) {
         return false;
     }
     if (!supported) {

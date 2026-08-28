@@ -12,7 +12,7 @@
     <string name="home_not_installed">Nav uzstādīts</string>
     <string name="home_click_to_install">Noklikšķiniet, lai uzstādītu</string>
     <string name="home_working">Darbojas</string>
-    <string name="home_working_version">Versija: %d</string>
+    <string name="home_working_version">Versija: %s</string>
     <string name="home_unsupported">Neatbalstīts</string>
     <string name="home_unsupported_reason">KernelSU pagaidām atbalsta tikai GKI kodolus</string>
     <string name="home_kernel">Kodols</string>
@@ -97,7 +97,12 @@
     <string name="select_file_tip">Ieteicams %1$s nodalījuma attēls</string>
     <string name="install_next">Nākamais</string>
     <string name="profile_namespace_inherited">Mantots</string>
-    <string name="select_file">Izvēlieties failu</string>
+    <string name="select_file">Izvēlieties failu un ielāpiet to</string>
+    <string name="download_file">Lejupielādējiet failu un ielāpiet to</string>
+    <string name="download_dialog_title">Ievadiet attēla URL</string>
+    <string name="download_dialog_msg">Pilns OTA attēls vai rūpnīcas attēls</string>
+    <string name="download_no_boot_partition">Attēlā nav atrasts boot, init_boot vai vendor_boot nodalījums</string>
+    <string name="download_probe_failed">Neizdevās pārbaudīt attēlu: %1$s</string>
     <string name="install_inactive_slot">Instalēt neaktīvajā slotā (pēc OTA)</string>
     <string name="install_inactive_slot_warning">Pēc restartēšanas jūsu ierīce tiks **PIESPIESTI** palaista pašreizējā neaktīvajā slotā!
 \nIzmantojiet šo opciju tikai pēc OTA pabeigšanas
@@ -128,4 +133,7 @@
     <string name="settings_sucompat_summary">Pārvirzīt /system/bin/su uz ksud lietotnēm, kurām piešķirta Superuser atļauja lietotnes profilā; efektīva tikai jauniem procesiem.</string>
     <string name="settings_kernel_umount">Kodola atvienošana</string>
     <string name="settings_kernel_umount_summary">Kodola līmeņa atvienošanas uzvedība, ko kontrolē KernelSU</string>
+    <string name="profile_flags_desc_no_new_privs">Novērš turpmāku privilēģiju paaugstināšanu, izmantojot KernelSU, šī root profila kontekstā.</string>
+    <string name="install_force_backup">Dublēt kā sākotnējo attēlu</string>
+    <string name="install_force_backup_summary">Lūdzu, pārliecinieties, ka izvēlētais boot attēls ir sākotnējais attēls</string>
 </resources>

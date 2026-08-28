@@ -2,10 +2,17 @@ package me.weishu.kernelsu.ui.screen.templateeditor
 
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.data.model.TemplateInfo
+import me.weishu.kernelsu.toRawFlags
 import me.weishu.kernelsu.ui.util.getAppProfileTemplate
 import me.weishu.kernelsu.ui.util.setAppProfileTemplate
 
 fun toNativeProfile(templateInfo: TemplateInfo): Natives.Profile {
+    val allFlags = Natives.Profile.RootProfileFlag.entries
+
+    val mappedFlags = templateInfo.flags.mapNotNull { ordinal ->
+        if (ordinal in allFlags.indices) allFlags[ordinal] else null
+    }
+
     return Natives.Profile().copy(
         rootTemplate = templateInfo.id,
         uid = templateInfo.uid,
@@ -14,7 +21,8 @@ fun toNativeProfile(templateInfo: TemplateInfo): Natives.Profile {
         capabilities = templateInfo.capabilities,
         context = templateInfo.context,
         namespace = templateInfo.namespace,
-        rules = templateInfo.rules.joinToString("\n").ifBlank { "" }
+        rules = templateInfo.rules.joinToString("\n").ifBlank { "" },
+        flags = mappedFlags.toRawFlags(),
     )
 }
 

@@ -2,20 +2,15 @@ package me.weishu.kernelsu.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
-import com.materialkolor.rememberDynamicColorScheme
 import me.weishu.kernelsu.ui.webui.MonetColorsProvider
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MaterialKernelSUTheme(
     appSettings: AppSettings,
@@ -26,33 +21,14 @@ fun MaterialKernelSUTheme(
     val darkTheme = appSettings.colorMode.isDark || (appSettings.colorMode.isSystem && systemDarkTheme)
     val amoledMode = appSettings.colorMode.isAmoled
     val dynamicColor = appSettings.keyColor == 0
-    val colorStyle = appSettings.paletteStyle
-    val colorSpec = appSettings.colorSpec
 
-    val colorScheme = if (dynamicColor) {
-        val baseScheme = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        rememberDynamicColorScheme(
-            seedColor = Color.Unspecified,
-            isDark = darkTheme,
-            isAmoled = amoledMode,
-            style = colorStyle,
-            specVersion = colorSpec,
-            primary = baseScheme.primary,
-            secondary = baseScheme.secondary,
-            tertiary = baseScheme.tertiary,
-            neutral = baseScheme.surface,
-            neutralVariant = baseScheme.surfaceVariant,
-            error = baseScheme.error
-        )
-    } else {
-        rememberDynamicColorScheme(
-            seedColor = Color(appSettings.keyColor),
-            isDark = darkTheme,
-            isAmoled = amoledMode,
-            style = colorStyle,
-            specVersion = colorSpec,
-        )
-    }
+    val colorScheme = rememberKernelSUColorScheme(
+        seedColor = if (dynamicColor) Color.Unspecified else Color(appSettings.keyColor),
+        isDark = darkTheme,
+        isAmoled = amoledMode,
+        paletteStyle = appSettings.paletteStyle,
+        colorSpec = appSettings.colorSpec,
+    )
 
     LaunchedEffect(darkTheme) {
         val window = (context as? Activity)?.window ?: return@LaunchedEffect
@@ -62,11 +38,14 @@ fun MaterialKernelSUTheme(
         }
     }
 
+    val animatedColorScheme = colorScheme.animateAsState()
+
     MaterialExpressiveTheme(
-        colorScheme = colorScheme,
+        colorScheme = animatedColorScheme,
         motionScheme = MotionScheme.expressive(),
+        typography = Typography,
         content = {
-            MonetColorsProvider.UpdateCss()
+            MonetColorsProvider.UpdateCss(colorScheme)
             content()
         }
     )

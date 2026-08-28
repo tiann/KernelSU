@@ -37,5 +37,8 @@
             "name": "Adb",
             "description": "Autorizzazioni minime richieste dalla maggior parte delle app che usano i privilegi di ADB."
         } 
-    }
+    },
+    "flags":[
+        "NO_NEW_PRIVS"
+    ]
 }
