@@ -86,7 +86,6 @@ jobs:
       env:
         EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
         EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
-      if: ${{ inputs.kmi != 'android17-6.18' }}
       run: |
         cd kernel
         make clean
@@ -108,20 +107,18 @@ jobs:
         sed -i -E 's/^([[:space:]]*)check_exports\(mod\);/\1\/\/ check_exports(mod);/' "$MODPOST"
         sed -i -E 's/^([[:space:]]*)s->module = exp->module;/\1\/\/ s->module = exp->module;/' "$MODPOST"
         sed -i 's/^static void check_exports(/static void __attribute__((unused)) check_exports(/' "$MODPOST"
-        sed -i '/__version_ext_names\\") =\\n/ s/ =\\n/ = \\"\\"\\n/' "$MODPOST"
+        sed -i 's/__version_ext_names\\") =\\n/__version_ext_names\\") = \\"\\"\\n/' "$MODPOST"
 
         make O=$KDIR gki_defconfig
         scripts/config --file $KDIR/.config -d LTO_CLANG -e LTO_NONE -d LTO_CLANG_THIN -d LTO_CLANG_FULL -d THINLTO
-        if [ "$kmi" == "android16-6.12" ]; then
+        if [ "$kmi" == "android16-6.12" ] || [ "$kmi" == "android17-6.18" ]; then
             scripts/config --file $KDIR/.config -e CONFIG_CFI_ICALL_NORMALIZE_INTEGERS
         fi
         make O=$KDIR modules_prepare
+        # Generate SELinux headers through Kbuild in this x86 output tree.
+        make O=$KDIR security/selinux/built-in.a
         popd
         
-        SELINUX_PATH=security/selinux
-        mkdir -p $KDIR/$SELINUX_PATH
-        cp /opt/ddk/kdir/$kmi/$SELINUX_PATH/*.h $KDIR/$SELINUX_PATH
-
         echo "=== Building x64 kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
@@ -139,7 +136,11 @@ jobs:
         
         MDIR=$(realpath .)
 
-        make -C $KDIR M=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        if [ "$kmi" == "android17-6.18" ]; then
+          make -C $KDIR M=$MDIR MO=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        else
+          make -C $KDIR M=$MDIR src=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        fi
         
         echo "=== Build completed ==="
 
@@ -159,7 +160,6 @@ jobs:
         
     - name: Upload x64 kernelsu.ko artifact
       uses: actions/upload-artifact@v7
-      if: ${{ inputs.kmi != 'android17-6.18' }}
       with:
         name: x86_64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/x86_64/${{ inputs.kmi }}_kernelsu.ko

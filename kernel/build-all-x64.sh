@@ -2,15 +2,15 @@
 set -e
 
 if [ -z "$1" ]; then
-    TARGETS="android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12"
+    TARGETS="android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12 android17-6.18"
     #KMIS="android16-6.12"
 else
     TARGETS=$1
 fi
 
-KMIS=(android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12)
-CLANGS=(clang-r416183b clang-r450784e clang-r450784e clang-r487747c clang-r487747c clang-r510928 clang-r536225)
-RUSTS=(none none none none none none rust-1.82.0)
+KMIS=(android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12 android17-6.18)
+CLANGS=(clang-r416183b clang-r450784e clang-r450784e clang-r487747c clang-r487747c clang-r510928 clang-r536225 clang-r584948c)
+RUSTS=(none none none none none none rust-1.82.0 rust-1.91.1.p3)
 
 # Some patch is required to use separate build dir when building for android16-6.12, see:
 # https://github.com/5ec1cff/ddk#local-%E6%A8%A1%E5%BC%8F%E6%9E%84%E5%BB%BA%E9%80%82%E7%94%A8%E4%BA%8E%E5%A4%9A%E4%B8%AA-target-%E7%89%88%E6%9C%AC%E7%9A%84%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97
@@ -54,7 +54,11 @@ for i in "${!KMIS[@]}"; do
     MDIR=$(realpath .)
     KDIR=/opt/ddk/kdir-x64/$kmi
 
-    make -C "$KDIR" "M=$ODIR" "src=$MDIR" compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y
+    if [ "$kmi" == "android17-6.18" ]; then
+        make -C "$KDIR" "M=$MDIR" "MO=$ODIR" compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y
+    else
+        make -C "$KDIR" "M=$ODIR" "src=$MDIR" compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y
+    fi
 
     export PATH="$ORIG_PATH"
     echo ""
