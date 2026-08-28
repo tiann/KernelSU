@@ -10,7 +10,7 @@ on:
       ddk_release:
         description: 'DDK release version'
         required: false
-        default: '20260313'
+        default: '20260828'
         type: string
       expected_size2:
         description: 'Second expected signature size (for PR builds)'
@@ -86,6 +86,7 @@ jobs:
       env:
         EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
         EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+      if: ${{ inputs.kmi != 'android17-6.18' && inputs.kmi != 'android16-6.12' }}
       run: |
         cd kernel
         make clean
@@ -148,6 +149,7 @@ jobs:
         
     - name: Upload x64 kernelsu.ko artifact
       uses: actions/upload-artifact@v7
+      if: ${{ inputs.kmi != 'android17-6.18' && inputs.kmi != 'android16-6.12' }}
       with:
         name: x86_64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/x86_64/${{ inputs.kmi }}_kernelsu.ko
