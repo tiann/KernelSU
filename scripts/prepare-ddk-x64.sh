@@ -38,6 +38,16 @@ for i in "${!KMIS[@]}"; do
     export PATH=$NEW_PATH
 
     pushd "$SRC"
+
+    # ddk-min source archives may predate the modpost fix used by the
+    # full kdir.  Apply all four edits before modules_prepare builds the
+    # host modpost binary.  Each edit is idempotent for updated archives.
+    MODPOST=scripts/mod/modpost.c
+    sed -i -E 's/^([[:space:]]*)check_exports\(mod\);/\1\/\/ check_exports(mod);/' "$MODPOST"
+    sed -i -E 's/^([[:space:]]*)s->module = exp->module;/\1\/\/ s->module = exp->module;/' "$MODPOST"
+    sed -i 's/^static void check_exports(/static void __attribute__((unused)) check_exports(/' "$MODPOST"
+    sed -i '/__version_ext_names\\") =\\n/ s/ =\\n/ = \\"\\"\\n/' "$MODPOST"
+
     make "O=$KDIR" gki_defconfig
     scripts/config --file "$KDIR/.config" -d LTO_CLANG -e LTO_NONE -d LTO_CLANG_THIN -d LTO_CLANG_FULL -d THINLTO
     if [ "$kmi" == "android16-6.12" ]; then

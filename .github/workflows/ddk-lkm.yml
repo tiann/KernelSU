@@ -86,7 +86,7 @@ jobs:
       env:
         EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
         EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
-      if: ${{ inputs.kmi != 'android17-6.18' && inputs.kmi != 'android16-6.12' }}
+      if: ${{ inputs.kmi != 'android17-6.18' }}
       run: |
         cd kernel
         make clean
@@ -100,6 +100,16 @@ jobs:
         kmi=${{ inputs.kmi }}
         pushd /opt/ddk/src/$kmi
         export KDIR=/opt/ddk/kdir-x64/$kmi
+
+        # ddk-min images contain the source tarball, whose modpost patch is
+        # not applied to the fresh x86 kdir.  Keep the patch idempotent so
+        # this also works when the image already contains one or more fixes.
+        MODPOST=scripts/mod/modpost.c
+        sed -i -E 's/^([[:space:]]*)check_exports\(mod\);/\1\/\/ check_exports(mod);/' "$MODPOST"
+        sed -i -E 's/^([[:space:]]*)s->module = exp->module;/\1\/\/ s->module = exp->module;/' "$MODPOST"
+        sed -i 's/^static void check_exports(/static void __attribute__((unused)) check_exports(/' "$MODPOST"
+        sed -i '/__version_ext_names\\") =\\n/ s/ =\\n/ = \\"\\"\\n/' "$MODPOST"
+
         make O=$KDIR gki_defconfig
         scripts/config --file $KDIR/.config -d LTO_CLANG -e LTO_NONE -d LTO_CLANG_THIN -d LTO_CLANG_FULL -d THINLTO
         if [ "$kmi" == "android16-6.12" ]; then
@@ -149,7 +159,7 @@ jobs:
         
     - name: Upload x64 kernelsu.ko artifact
       uses: actions/upload-artifact@v7
-      if: ${{ inputs.kmi != 'android17-6.18' && inputs.kmi != 'android16-6.12' }}
+      if: ${{ inputs.kmi != 'android17-6.18' }}
       with:
         name: x86_64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/x86_64/${{ inputs.kmi }}_kernelsu.ko
