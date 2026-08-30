@@ -80,9 +80,6 @@ object Natives {
     external fun isKernelUmountEnabled(): Boolean
     external fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
-    external fun isWebViewZygoteUmountEnabled(): Boolean
-    external fun setWebViewZygoteUmountEnabled(enabled: Boolean): Boolean
-
     /**
      * SELinux hide can be disabled temporarily.
      *  0: disabled
