@@ -208,6 +208,7 @@ class WebViewInterface(private val state: WebUIState) {
     fun listPackages(type: String): String {
         val packageNames = SuperUserViewModel.apps
             .filter { appInfo ->
+                if (appInfo.special) return@filter false
                 val flags = appInfo.packageInfo.applicationInfo?.flags ?: 0
                 when (type.lowercase()) {
                     "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
@@ -229,7 +230,7 @@ class WebViewInterface(private val state: WebUIState) {
     fun getPackagesInfo(packageNamesJson: String): String {
         val packageNames = JSONArray(packageNamesJson)
         val jsonArray = JSONArray()
-        val appMap = SuperUserViewModel.apps.associateBy { it.packageName }
+        val appMap = SuperUserViewModel.apps.filterNot { it.special }.associateBy { it.packageName }
         for (i in 0 until packageNames.length()) {
             val pkgName = packageNames.getString(i)
             val appInfo = appMap[pkgName]

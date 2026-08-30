@@ -19,7 +19,6 @@
 
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "feature/kernel_umount.h"
 #include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
 #include "policy/allowlist.h"
@@ -298,9 +297,6 @@ bool ksu_uid_should_umount(uid_t uid)
     if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == uid % PER_USER_RANGE)) {
         // we should not umount on manager!
         return false;
-    }
-    if (unlikely(uid == WEBVIEW_ZYGOTE_UID)) {
-        return ksu_webview_zygote_umount_enabled;
     }
 #ifdef CONFIG_KSU_DISABLE_POLICY
     return !__ksu_is_allow_uid(uid);
@@ -594,7 +590,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
         uid_t uid = np->profile.curr_uid;
         char *package = np->profile.key;
         // we use this uid for special cases, don't prune it!
-        bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
+        bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID || uid == WEBVIEW_ZYGOTE_UID;
         if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
             modified = true;
             pr_info("prune uid: %d, package: %s\n", uid, package);

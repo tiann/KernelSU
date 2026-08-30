@@ -380,7 +380,7 @@ fun SuperUserPagerMiuix(
                                         group.apps.forEach { app ->
                                             SimpleAppItem(
                                                 app = app,
-                                                matched = group.matchedPackageNames.contains(app.packageName),
+                                                matched = group.matchedIdentifiers.contains(app.displayIdentifier),
                                             )
                                         }
                                         Spacer(Modifier.height(6.dp))
@@ -508,7 +508,7 @@ private fun SimpleAppItem(
         ) {
             BasicComponent(
                 title = app.label,
-                summary = app.packageName,
+                summary = app.displayIdentifier,
                 startAction = {
                     AppIconImage(
                         packageInfo = app.packageInfo,
@@ -582,7 +582,7 @@ private fun GroupItem(
                     text = if (group.apps.size > 1) {
                         stringResource(R.string.group_contains_apps, group.apps.size)
                     } else {
-                        group.primary.packageName
+                        group.primary.displayIdentifier
                     },
                     modifier = Modifier
                         .basicMarquee(),
