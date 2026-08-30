@@ -9,6 +9,7 @@
 #include "../patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
 #include <linux/cpumask.h>
+#include <linux/err.h>
 #include <linux/gfp.h> // IWYU pragma: keep
 #include <linux/uaccess.h>
 #include <linux/stop_machine.h>
@@ -18,6 +19,10 @@
 #include <asm/pgtable.h>
 #include <asm/page.h>
 #include <asm/fixmap.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#include <asm/insn.h>
+#include "infra/symbol_resolver.h"
+#endif
 
 // --- Architecture-specific Page Table to Physical Address translation ---
 #define KSU_P4D_TO_PHYS(p4d) ((unsigned long)p4d_pfn(p4d) << PAGE_SHIFT)
@@ -193,10 +198,49 @@ int ksu_patch_text(void *dst, void *src, size_t len, int flags)
     return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
 }
 
-// TODO:
 void *scan_call_to(void *start, size_t size, void *target)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    typedef int (*insn_decode_fn_t)(struct insn *, const void *, int, enum insn_mode);
+    static insn_decode_fn_t decode;
+    const u8 *code = start;
+    size_t offset = 0;
+
+    if (!start || !target)
+        return ERR_PTR(-EINVAL);
+    if (size < 5)
+        return NULL;
+
+    if (!decode)
+        decode = (insn_decode_fn_t)find_kernel_symbol_exact("insn_decode");
+    if (!decode)
+        return ERR_PTR(-EOPNOTSUPP);
+
+    while (offset < size) {
+        struct insn insn;
+        size_t remaining = size - offset;
+        int decode_len = remaining > MAX_INSN_SIZE ? MAX_INSN_SIZE : (int)remaining;
+        int ret;
+
+        ret = decode(&insn, &code[offset], decode_len, INSN_MODE_KERN);
+        if (ret || !insn.length || insn.length > remaining)
+            return ERR_PTR(ret ? ret : -EINVAL);
+
+        if (insn.opcode.nbytes == 1 && insn.opcode.bytes[0] == 0xe8 && insn.immediate.nbytes == sizeof(s32)) {
+            s32 disp = (s32)insn.immediate.value;
+            void *branch_target = (void *)((unsigned long)&code[offset + insn.length] + (long)disp);
+
+            if (branch_target == target)
+                return (void *)&code[offset];
+        }
+
+        offset += insn.length;
+    }
+
     return NULL;
+#else
+    return ERR_PTR(-EOPNOTSUPP);
+#endif
 }
 
 #endif /* __x86_64__ */

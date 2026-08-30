@@ -17,6 +17,7 @@
 #include "selinux/selinux.h"
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
+#include "hook/syscall_hook_manager.h"
 #include "policy/app_profile.h"
 #include "sulog/event.h"
 #include "sulog/fd.h"
@@ -101,37 +102,26 @@ static int do_report_event(void __user *arg)
     }
 
     switch (cmd.event) {
-    case EVENT_POST_FS_DATA: {
-        static bool post_fs_data_lock = false;
-        if (!post_fs_data_lock) {
-            post_fs_data_lock = true;
-            if (ksu_late_loaded) {
-                pr_info("post-fs-data skipped (late load)\n");
-            } else {
-                pr_info("post-fs-data triggered\n");
-                on_post_fs_data();
-            }
+    case EVENT_POST_FS_DATA:
+        if (ksu_late_loaded) {
+            pr_info("post-fs-data skipped (late load)\n");
+        } else {
+            pr_info("post-fs-data triggered\n");
+            on_post_fs_data();
         }
         break;
-    }
-    case EVENT_BOOT_COMPLETED: {
-        static bool boot_complete_lock = false;
-        if (!boot_complete_lock) {
-            boot_complete_lock = true;
-            if (ksu_late_loaded) {
-                pr_info("boot_complete skipped (late load)\n");
-            } else {
-                pr_info("boot_complete triggered\n");
-                on_boot_completed();
-            }
+    case EVENT_BOOT_COMPLETED:
+        if (ksu_late_loaded) {
+            pr_info("boot_complete skipped (late load)\n");
+        } else {
+            pr_info("boot_complete triggered\n");
+            on_boot_completed();
         }
         break;
-    }
-    case EVENT_MODULE_MOUNTED: {
+    case EVENT_MODULE_MOUNTED:
         pr_info("module mounted!\n");
         on_module_mounted();
         break;
-    }
     default:
         break;
     }
@@ -468,12 +458,20 @@ static int do_manage_mark(void __user *arg)
         break;
     }
     case KSU_MARK_UNMARK: {
+        /*
+         * SYSCALL_TRACEPOINT is shared by all sys_enter consumers. Preserve
+         * the existing tooling API when KernelSU is the proven sole consumer,
+         * but refuse to clear shared marks while perf/ftrace/eBPF also owns it.
+         */
+        if (!ksu_syscall_tracepoint_allows_selective_marks())
+            return -EBUSY;
+
         if (cmd.pid == 0) {
             ksu_unmark_all_process();
         } else {
             ret = ksu_set_task_mark(cmd.pid, false);
             if (ret < 0) {
-                pr_err("manage_mark: set_unmark failed for pid %d: %d\n", cmd.pid, ret);
+                pr_err("manage_mark: unset_mark failed for pid %d: %d\n", cmd.pid, ret);
                 return ret;
             }
         }
@@ -527,44 +525,95 @@ static int do_nuke_ext4_sysfs(void __user *arg)
     return nuke_ext4_sysfs(mnt);
 }
 
+#define KSU_MAX_UMOUNT_ENTRIES 512U
+#define KSU_MAX_UMOUNT_LAYERS 512U
+
 struct list_head mount_list = LIST_HEAD_INIT(mount_list);
 DECLARE_RWSEM(mount_list_lock);
+static unsigned int mount_list_count;
+
+static int copy_umount_path(char *buf, size_t size, const char __user *path)
+{
+    long len;
+
+    if (!path)
+        return -EINVAL;
+
+    len = strncpy_from_user(buf, path, size);
+    if (len < 0)
+        return -EFAULT;
+    if (len == 0)
+        return -EINVAL;
+    if (len >= size)
+        return -ENAMETOOLONG;
+
+    return 0;
+}
+
+static void free_mount_entry(struct mount_entry *entry)
+{
+    list_del(&entry->list);
+    kfree(entry->umountable);
+    kfree(entry);
+    if (mount_list_count)
+        --mount_list_count;
+}
+
+static void update_mount_entry_layers(struct mount_entry *entry)
+{
+    unsigned int layers = entry->unmanaged ? 1U : 0U;
+
+    if (entry->managed && entry->managed_layers > layers)
+        layers = entry->managed_layers;
+    entry->layers = layers;
+}
 
 static int add_try_umount(void __user *arg)
 {
     struct mount_entry *new_entry, *entry, *tmp;
     struct ksu_add_try_umount_cmd cmd;
     char buf[256] = { 0 };
+    int ret;
 
     if (copy_from_user(&cmd, arg, sizeof cmd))
         return -EFAULT;
 
     switch (cmd.mode) {
-    case KSU_UMOUNT_WIPE: {
-        struct mount_entry *entry, *tmp;
+    case KSU_UMOUNT_WIPE:
         down_write(&mount_list_lock);
         list_for_each_entry_safe (entry, tmp, &mount_list, list) {
             pr_info("wipe_umount_list: removing entry: %s\n", entry->umountable);
-            list_del(&entry->list);
-            kfree(entry->umountable);
-            kfree(entry);
+            free_mount_entry(entry);
+        }
+        mount_list_count = 0;
+        up_write(&mount_list_lock);
+        return 0;
+
+    case KSU_UMOUNT_MANAGED_WIPE:
+        down_write(&mount_list_lock);
+        list_for_each_entry_safe (entry, tmp, &mount_list, list) {
+            if (!entry->managed)
+                continue;
+            if (entry->unmanaged) {
+                entry->managed = false;
+                entry->managed_layers = 0;
+                update_mount_entry_layers(entry);
+                continue;
+            }
+            pr_info("wipe_managed_umount_list: removing entry: %s\n", entry->umountable);
+            free_mount_entry(entry);
         }
         up_write(&mount_list_lock);
-
         return 0;
-    }
 
-    case KSU_UMOUNT_ADD: {
-        long len = strncpy_from_user(buf, (const char __user *)cmd.arg, 256);
-        if (len <= 0)
-            return -EFAULT;
-
-        buf[sizeof(buf) - 1] = '\0';
+    case KSU_UMOUNT_ADD:
+        ret = copy_umount_path(buf, sizeof(buf), (const char __user *)cmd.arg);
+        if (ret)
+            return ret;
 
         new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
         if (!new_entry)
             return -ENOMEM;
-
         new_entry->umountable = kstrdup(buf, GFP_KERNEL);
         if (!new_entry->umountable) {
             kfree(new_entry);
@@ -572,64 +621,138 @@ static int add_try_umount(void __user *arg)
         }
 
         down_write(&mount_list_lock);
-
-        // disallow dupes
-        // if this gets too many, we can consider moving this whole task to a kthread
         list_for_each_entry (entry, &mount_list, list) {
-            if (!strcmp(entry->umountable, buf)) {
+            if (strcmp(entry->umountable, buf))
+                continue;
+            if (entry->unmanaged) {
                 pr_info("cmd_add_try_umount: %s is already here!\n", buf);
                 up_write(&mount_list_lock);
                 kfree(new_entry->umountable);
                 kfree(new_entry);
                 return -EEXIST;
             }
+            entry->unmanaged = true;
+            entry->flags = cmd.flags;
+            update_mount_entry_layers(entry);
+            up_write(&mount_list_lock);
+            kfree(new_entry->umountable);
+            kfree(new_entry);
+            pr_info("cmd_add_try_umount: %s merged with managed entry!\n", buf);
+            return 0;
         }
-
-        // now check flags and add
-        // this also serves as a null check
-        if (cmd.flags)
-            new_entry->flags = cmd.flags;
-        else
-            new_entry->flags = 0;
-
-        // debug
+        if (mount_list_count >= KSU_MAX_UMOUNT_ENTRIES) {
+            up_write(&mount_list_lock);
+            kfree(new_entry->umountable);
+            kfree(new_entry);
+            return -E2BIG;
+        }
+        new_entry->flags = cmd.flags;
+        new_entry->layers = 1;
+        new_entry->managed_layers = 0;
+        new_entry->managed = false;
+        new_entry->unmanaged = true;
         list_add(&new_entry->list, &mount_list);
+        ++mount_list_count;
         up_write(&mount_list_lock);
         pr_info("cmd_add_try_umount: %s added!\n", buf);
-
         return 0;
-    }
 
-    // this is just strcmp'd wipe anyway
-    case KSU_UMOUNT_DEL: {
-        long len = strncpy_from_user(buf, (const char __user *)cmd.arg, sizeof(buf) - 1);
-        if (len <= 0)
-            return -EFAULT;
+    case KSU_UMOUNT_MANAGED_SET:
+        if (!cmd.flags || cmd.flags > KSU_MAX_UMOUNT_LAYERS)
+            return -EINVAL;
+        ret = copy_umount_path(buf, sizeof(buf), (const char __user *)cmd.arg);
+        if (ret)
+            return ret;
 
-        buf[sizeof(buf) - 1] = '\0';
+        down_write(&mount_list_lock);
+        list_for_each_entry (entry, &mount_list, list) {
+            if (strcmp(entry->umountable, buf))
+                continue;
+            entry->managed = true;
+            entry->managed_layers = cmd.flags;
+            if (!entry->unmanaged)
+                entry->flags = 0;
+            update_mount_entry_layers(entry);
+            up_write(&mount_list_lock);
+            pr_info("cmd_set_managed_umount: %s layers=%u\n", buf, cmd.flags);
+            return 0;
+        }
+        if (mount_list_count >= KSU_MAX_UMOUNT_ENTRIES) {
+            up_write(&mount_list_lock);
+            return -E2BIG;
+        }
+        up_write(&mount_list_lock);
+
+        new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
+        if (!new_entry)
+            return -ENOMEM;
+        new_entry->umountable = kstrdup(buf, GFP_KERNEL);
+        if (!new_entry->umountable) {
+            kfree(new_entry);
+            return -ENOMEM;
+        }
+        new_entry->flags = 0;
+        new_entry->layers = cmd.flags;
+        new_entry->managed_layers = cmd.flags;
+        new_entry->managed = true;
+        new_entry->unmanaged = false;
+
+        down_write(&mount_list_lock);
+        /* Another setter/add can race allocation; merge instead of duplicating. */
+        list_for_each_entry (entry, &mount_list, list) {
+            if (strcmp(entry->umountable, buf))
+                continue;
+            entry->managed = true;
+            entry->managed_layers = cmd.flags;
+            if (!entry->unmanaged)
+                entry->flags = 0;
+            update_mount_entry_layers(entry);
+            up_write(&mount_list_lock);
+            kfree(new_entry->umountable);
+            kfree(new_entry);
+            return 0;
+        }
+        if (mount_list_count >= KSU_MAX_UMOUNT_ENTRIES) {
+            up_write(&mount_list_lock);
+            kfree(new_entry->umountable);
+            kfree(new_entry);
+            return -E2BIG;
+        }
+        list_add(&new_entry->list, &mount_list);
+        ++mount_list_count;
+        up_write(&mount_list_lock);
+        pr_info("cmd_set_managed_umount: %s added layers=%u\n", buf, cmd.flags);
+        return 0;
+
+    case KSU_UMOUNT_DEL:
+        ret = copy_umount_path(buf, sizeof(buf), (const char __user *)cmd.arg);
+        if (ret)
+            return ret;
 
         down_write(&mount_list_lock);
         list_for_each_entry_safe (entry, tmp, &mount_list, list) {
-            if (!strcmp(entry->umountable, buf)) {
+            if (strcmp(entry->umountable, buf))
+                continue;
+            if (!entry->unmanaged)
+                break;
+            entry->unmanaged = false;
+            if (entry->managed) {
+                entry->flags = 0;
+                update_mount_entry_layers(entry);
+                pr_info("cmd_add_try_umount: manual ownership removed: %s\n", entry->umountable);
+            } else {
                 pr_info("cmd_add_try_umount: entry removed: %s\n", entry->umountable);
-                list_del(&entry->list);
-                kfree(entry->umountable);
-                kfree(entry);
+                free_mount_entry(entry);
             }
+            break;
         }
         up_write(&mount_list_lock);
-
         return 0;
-    }
 
-    default: {
+    default:
         pr_err("cmd_add_try_umount: invalid operation %u\n", cmd.mode);
         return -EINVAL;
     }
-
-    } // switch(cmd.mode)
-
-    return 0;
 }
 
 static int do_set_init_pgrp(void __user *arg)
@@ -888,5 +1011,6 @@ void ksu_supercall_cleanup_state(void)
         kfree(entry->umountable);
         kfree(entry);
     }
+    mount_list_count = 0;
     up_write(&mount_list_lock);
 }

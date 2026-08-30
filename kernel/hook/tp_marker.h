@@ -5,12 +5,12 @@
 #include <linux/sched.h>
 #include <linux/thread_info.h>
 
-// Process marking for tracepoint
 void ksu_mark_all_process(void);
 void ksu_unmark_all_process(void);
 void ksu_mark_running_process(void);
+void ksu_mark_running_process_selective(void);
+void ksu_clear_task_tracepoint_flag_if_needed(struct task_struct *t);
 
-// Per-task mark operations
 int ksu_get_task_mark(pid_t pid);
 int ksu_set_task_mark(pid_t pid, bool mark);
 
@@ -32,16 +32,6 @@ static inline void ksu_clear_task_tracepoint_flag(struct task_struct *t)
 #endif
 }
 
-void ksu_clear_task_tracepoint_flag_if_needed(struct task_struct *t);
-
-// Used by syscall_hook_manager kretprobe handlers
-void ksu_mark_running_process_locked(void);
-
-// Tracepoint registration count management (for kretprobe handlers)
-int ksu_tp_marker_reg_count(void);
-void ksu_tp_marker_lock(unsigned long *flags);
-void ksu_tp_marker_unlock(unsigned long *flags);
-void ksu_tp_marker_inc_reg_count(void);
-void ksu_tp_marker_dec_reg_count(void);
+bool ksu_current_task_needs_syscall_hook(void);
 
 #endif

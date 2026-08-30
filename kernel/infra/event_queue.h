@@ -47,8 +47,17 @@ struct ksu_event_queue {
     bool closed;
 };
 
+struct ksu_event_queue_entry;
+
 void ksu_event_queue_init(struct ksu_event_queue *queue, __u32 max_queued, __u32 max_payload_len);
 void ksu_event_queue_destroy(struct ksu_event_queue *queue);
+
+struct ksu_event_queue_entry *ksu_event_queue_entry_alloc(struct ksu_event_queue *queue, __u16 type, __u16 flags,
+                                                          __u32 capacity, gfp_t gfp);
+void *ksu_event_queue_entry_payload(struct ksu_event_queue_entry *entry);
+int ksu_event_queue_entry_set_len(struct ksu_event_queue_entry *entry, __u32 len);
+int ksu_event_queue_entry_push(struct ksu_event_queue *queue, struct ksu_event_queue_entry *entry);
+void ksu_event_queue_entry_free(struct ksu_event_queue_entry *entry);
 
 int ksu_event_queue_push(struct ksu_event_queue *queue, __u16 type, __u16 flags, const void *payload, __u32 len,
                          gfp_t gfp);

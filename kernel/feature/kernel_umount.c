@@ -9,6 +9,7 @@
 #include <linux/nsproxy.h>
 #include <linux/path.h>
 #include <linux/printk.h>
+#include <linux/string.h>
 #include <linux/types.h>
 
 #include "feature/kernel_umount.h"
@@ -24,14 +25,14 @@ bool ksu_webview_zygote_umount_enabled = false;
 
 static int kernel_umount_feature_get(u64 *value)
 {
-    *value = ksu_kernel_umount_enabled ? 1 : 0;
+    *value = READ_ONCE(ksu_kernel_umount_enabled) ? 1 : 0;
     return 0;
 }
 
 static int kernel_umount_feature_set(u64 value)
 {
     bool enable = value != 0;
-    ksu_kernel_umount_enabled = enable;
+    WRITE_ONCE(ksu_kernel_umount_enabled, enable);
     pr_info("kernel_umount: set to %d\n", enable);
     return 0;
 }
@@ -45,14 +46,14 @@ static const struct ksu_feature_handler kernel_umount_handler = {
 
 static int webview_zygote_umount_feature_get(u64 *value)
 {
-    *value = ksu_webview_zygote_umount_enabled ? 1 : 0;
+    *value = READ_ONCE(ksu_webview_zygote_umount_enabled) ? 1 : 0;
     return 0;
 }
 
 static int webview_zygote_umount_feature_set(u64 value)
 {
     bool enable = value != 0;
-    ksu_webview_zygote_umount_enabled = enable;
+    WRITE_ONCE(ksu_webview_zygote_umount_enabled, enable);
     pr_info("webview_zygote_umount: set to %d\n", enable);
     return 0;
 }
@@ -70,7 +71,7 @@ static void ksu_umount_mnt(const char *mnt, struct path *path, int flags)
 {
     int err = path_umount(path, flags);
     if (err) {
-        pr_info("umount %s failed: %d\n", mnt, err);
+        pr_debug("umount %s failed: %d\n", mnt, err);
     }
 }
 
@@ -98,11 +99,11 @@ struct umount_tw {
 int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
     // if there isn't any module mounted, just ignore it!
-    if (!ksu_module_mounted) {
+    if (!READ_ONCE(ksu_module_mounted)) {
         return 0;
     }
 
-    if (!ksu_kernel_umount_enabled) {
+    if (!READ_ONCE(ksu_kernel_umount_enabled)) {
         return 0;
     }
 
@@ -117,6 +118,12 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
         return 0;
     }
 
+    // WebView zygote is handled explicitly because it is not part of the
+    // normal app allowlist path; its child processes inherit this isolation.
+    if (new_uid == WEBVIEW_ZYGOTE_UID && !READ_ONCE(ksu_webview_zygote_umount_enabled)) {
+        return 0;
+    }
+
     if (!ksu_uid_should_umount(new_uid) && !is_isolated_process(new_uid)) {
         return 0;
     }
@@ -127,19 +134,51 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     // also handle case 4 and 5
     bool is_zygote_child = is_zygote(current_cred());
     if (!is_zygote_child) {
-        pr_info("handle umount ignore non zygote child: %d\n", current->pid);
+        pr_debug("handle umount ignore non zygote child: %d\n", current->pid);
         return 0;
     }
     // umount the target mnt
-    pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
+    pr_debug("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
 
     const struct cred *saved = override_creds(ksu_cred);
 
     struct mount_entry *entry;
     down_read(&mount_list_lock);
     list_for_each_entry (entry, &mount_list, list) {
-        pr_info("%s: unmounting: %s flags: 0x%x\n", __func__, entry->umountable, entry->flags);
-        try_umount(entry->umountable, entry->flags);
+        struct mount_entry *other;
+        unsigned int flags = 0;
+        unsigned int layers = 0;
+        unsigned int layer;
+        bool seen = false;
+
+        /*
+         * A path can have both an unmanaged/manual entry and an auto-managed
+         * entry. Treat them as one isolation target: summing layer counts
+         * could unmount through the KernelSU stack into the real system mount,
+         * while processing only one entry could leave a lower KSU layer visible.
+         */
+        list_for_each_entry (other, &mount_list, list) {
+            if (other == entry)
+                break;
+            if (!strcmp(other->umountable, entry->umountable)) {
+                seen = true;
+                break;
+            }
+        }
+        if (seen)
+            continue;
+
+        list_for_each_entry (other, &mount_list, list) {
+            if (strcmp(other->umountable, entry->umountable))
+                continue;
+            flags |= other->flags;
+            if (other->layers > layers)
+                layers = other->layers;
+        }
+
+        pr_debug("%s: unmounting: %s flags: 0x%x layers: %u\n", __func__, entry->umountable, flags, layers);
+        for (layer = 0; layer < layers; layer++)
+            try_umount(entry->umountable, flags);
     }
     up_read(&mount_list_lock);
 
@@ -158,7 +197,7 @@ void __init ksu_kernel_umount_init(void)
     }
 }
 
-void __exit ksu_kernel_umount_exit(void)
+void ksu_kernel_umount_exit(void)
 {
     ksu_unregister_feature_handler(KSU_FEATURE_WEBVIEW_ZYGOTE_UMOUNT);
     ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);

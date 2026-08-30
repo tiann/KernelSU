@@ -1,4 +1,5 @@
 #include "feature/selinux_hide.h"
+#include <linux/atomic.h>
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
@@ -13,19 +14,15 @@
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
+static atomic_t post_fs_data_done = ATOMIC_INIT(0);
+static atomic_t boot_completed_done = ATOMIC_INIT(0);
 
 void on_post_fs_data(void)
 {
-    static bool done = false;
-
-    if (done) {
-        pr_info("on_post_fs_data already done\n");
+    if (atomic_xchg(&post_fs_data_done, 1))
         return;
-    }
 
-    done = true;
     pr_info("on_post_fs_data!\n");
-
     ksu_load_allow_list();
     ksu_observer_init();
     // Sanity check for safe mode only needs early-boot input samples.
@@ -58,13 +55,16 @@ int nuke_ext4_sysfs(const char *mnt)
 
 void on_module_mounted(void)
 {
+    WRITE_ONCE(ksu_module_mounted, true);
     pr_info("on_module_mounted!\n");
-    ksu_module_mounted = true;
 }
 
 void on_boot_completed(void)
 {
-    ksu_boot_completed = true;
+    if (atomic_xchg(&boot_completed_done, 1))
+        return;
+
+    WRITE_ONCE(ksu_boot_completed, true);
     pr_info("on_boot_completed!\n");
     track_throne(true);
     ksu_selinux_hide_drop_backup_if_unused();

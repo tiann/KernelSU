@@ -25,6 +25,7 @@
 // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/scripts/syscalltbl.sh;l=57;drc=9142be9e6443fd641ca37f820efe00d9cd890eb1
 // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/scripts/syscall.tbl;l=104;drc=b36d4b6aa88ef039647228b98c59a875e92f8c8e
 #define SYS_FSTAT_SYMBOL "__arm64_sys_newfstat"
+#define KSU_USER_STACK_SCRATCH_GAP 0UL
 
 #elif defined(__x86_64__)
 
@@ -46,6 +47,7 @@
 #define SYS_READ_SYMBOL "__x64_sys_read"
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
 #define SYS_FSTAT_SYMBOL "__x64_sys_newfstat"
+#define KSU_USER_STACK_SCRATCH_GAP 128UL
 
 #else
 #error "Unsupported arch"
@@ -71,5 +73,10 @@
 #define PT_REGS_ORIG_SYSCALL(x) (__PT_REGS_CAST(x)->__PT_ORIG_SYSCALL_REG)
 
 #define PT_REAL_REGS(regs) ((struct pt_regs *)PT_REGS_PARM1(regs))
+
+static inline unsigned long ksu_user_stack_scratch_top(unsigned long sp)
+{
+    return sp - KSU_USER_STACK_SCRATCH_GAP;
+}
 
 #endif
