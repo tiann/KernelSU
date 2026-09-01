@@ -160,6 +160,8 @@ void apply_kernelsu_rules()
     ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
+
+    susfs_set_batch_sid();
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
 }

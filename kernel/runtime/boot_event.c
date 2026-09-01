@@ -13,6 +13,7 @@
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
+extern struct static_key_true ksu_is_input_hook_enabled;
 
 void on_post_fs_data(void)
 {
@@ -29,7 +30,10 @@ void on_post_fs_data(void)
     ksu_load_allow_list();
     ksu_observer_init();
     // Sanity check for safe mode only needs early-boot input samples.
-    ksu_stop_input_hook_runtime();
+    if (static_key_enabled(&ksu_is_input_hook_enabled)) {
+        static_branch_disable(&ksu_is_input_hook_enabled);
+        pr_info("ksu_input_hook is disabled\n");
+    }
     ksu_selinux_hide_handle_post_fs_data();
 }
 

@@ -77,53 +77,31 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int ksu_supercall_reboot_handler(void __user **arg)
 {
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    int magic1 = (int)PT_REGS_PARM1(real_regs);
-    int magic2 = (int)PT_REGS_PARM2(real_regs);
+    struct ksu_install_fd_tw *tw;
 
-    if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
-        struct ksu_install_fd_tw *tw;
-        unsigned long arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+    tw = kzalloc(sizeof(*tw), GFP_KERNEL);
+    if (!tw)
+        return 0;
 
-        tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-        if (!tw)
-            return 0;
+    tw->outp = (int __user *)(*arg);
+    tw->cb.func = ksu_install_fd_tw_func;
 
-        tw->outp = (int __user *)arg4;
-        tw->cb.func = ksu_install_fd_tw_func;
-
-        if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-            kfree(tw);
-            pr_warn("install fd add task_work failed\n");
-        }
+    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+        kfree(tw);
+        pr_warn("install fd add task_work failed\n");
     }
 
     return 0;
 }
 
-static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
-    .pre_handler = reboot_handler_pre,
-};
-
 void __init ksu_supercalls_init(void)
 {
-    int rc;
-
     ksu_supercall_dump_commands();
-
-    rc = register_kprobe(&reboot_kp);
-    if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
-    } else {
-        pr_info("reboot kprobe registered successfully\n");
-    }
 }
 
 void __exit ksu_supercalls_exit(void)
 {
-    unregister_kprobe(&reboot_kp);
     ksu_supercall_cleanup_state();
 }

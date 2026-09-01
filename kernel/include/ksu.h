@@ -8,7 +8,6 @@
 #define KERNEL_SU_VERSION KSU_VERSION
 
 extern struct cred *ksu_cred;
-extern bool ksu_late_loaded;
 extern bool allow_shell;
 extern struct selinux_policy *backup_sepolicy;
 extern bool ksu_no_custom_rc;

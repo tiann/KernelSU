@@ -2,7 +2,6 @@ menu "KernelSU"
 
 config KSU
 	tristate "KernelSU function support"
-	depends on KPROBES && EXT4_FS
 	default y
 	help
 	  Enable kernel-level root privileges on Android System.
@@ -35,12 +34,95 @@ config KSU_DISABLE_POLICY
 	  Escalation will always use the default full root profile, and
 	  non-root handling will follow the global umount policy only.
 
-config KSU_X86_PATCH_SYSCALL_DISPATCHER
-	bool "Dynamically patch x64's hardened syscall dispatcher to support syscall hooks"
-	depends on KSU && X86_64
-	default n
+menu "KernelSU - SUSFS"
+config KSU_SUSFS
+	bool "KernelSU addon - SUSFS"
+	depends on KSU
+	depends on THREAD_INFO_IN_TASK
+	default y
 	help
-	  Dynamically patch x64's hardened syscall dispatcher to support syscall hooks. This is a
-	  replacement for a kernel source code patch, and is useful for x86_64 LKM mode.
+	  Patch and Enable SUSFS to kernel with KernelSU.
+
+config KSU_SUSFS_SUS_PATH
+	bool "Enable to hide suspicious path"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow hiding the user-defined path and all its sub-paths from various system calls.
+	  - Use "add_sus_path_loop" instead of "add_sus_path" if the user-defined path is frequently modified.
+	  - Use with cautious as it may cause performance loss and will be vulnerable to side channel attacks,
+	  	just disable this feature if it doesn't work for you or you don't need it at all.
+	  - Effective only on zygote spawned user app process with uid >= 10000.
+
+config KSU_SUSFS_SUS_MOUNT
+	bool "Enable to hide suspicious mounts"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Automatically assign fake mnt_id and fake mnt_group_id for mounts mounted by ksu process until /sdcard is  decrypted, this is to evade from mnt_id/mnt_group_id gap detections.
+	  - Allow hiding all sus mounts from /proc/self/[mounts|mountinfo|mountstat] for non-su processes.
+
+config KSU_SUSFS_SUS_KSTAT
+	bool "Enable to spoof suspicious kstat"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow spoofing the kstat of user-defined file/directory.
+	  - Effective only on zygote spawned user app process with uid >= 10000.
+
+config KSU_SUSFS_SPOOF_UNAME
+	bool "Enable to spoof uname"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow spoofing the string returned by uname syscall to user-defined string.
+	  - Effective on all processes.
+
+config KSU_SUSFS_ENABLE_LOG
+	bool "Enable logging susfs log to kernel"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow logging susfs log to kernel, uncheck it to completely disable all susfs log.
+
+config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
+	bool "Enable to automatically hide ksu and susfs symbols from /proc/kallsyms"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Automatically hide ksu and susfs symbols from '/proc/kallsyms'.
+	  - Effective on all processes.
+
+config KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+	bool "Enable to spoof /proc/bootconfig (gki) or /proc/cmdline (non-gki)"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Spoof the output of /proc/bootconfig (gki) or /proc/cmdline (non-gki) with a user-defined file.
+	  - Effective on all processes.
+
+config KSU_SUSFS_OPEN_REDIRECT
+	bool "Enable to redirect a path to be opened with another path"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow redirecting a target path to be opened with another user-defined path.
+	  - Both target path and redirected path must be existed before they can be added to the kernel.
+	  - Users have to take care of the selinux permission of both target path and redirected path by themselves.
+	  - OPEN_REDIRECT does not bypass detections, but users may try other feature like SUS_KSTAT to bypass some of them.
+	  - Effective only on processes with pre-defined uid scheme.
+
+config KSU_SUSFS_SUS_MAP
+	bool "Enable to hide some mmapped real file from different proc maps interfaces"
+	depends on KSU_SUSFS
+	default y
+	help
+	  - Allow hiding mmapped real file from /proc/<pid>/[maps|smaps|smaps_rollup|map_files|mem|pagemap]
+	  - It does NOT support hiding for anon memory.
+	  - It does NOT hide any inline hooks or plt hooks cause by the injected library itself.
+	  - It may not be able to evade detections by apps that implement a good injection detection.
+	  - Effective only on zygote spawned umounted user app process >= 10000.
+
+endmenu
 
 endmenu

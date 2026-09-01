@@ -2,15 +2,12 @@
 #define __KSU_H_APP_PROFILE
 
 #include "uapi/app_profile.h"
-#include "linux/init.h"
 
 #define TIF_KSU_DISABLE_ESCAPE_WITH_ROOT 63
 
 // Escalate current process to root with the appropriate profile
 int escape_with_root_profile(void);
 
-void escape_to_root_for_init(void);
-
-void __init ksu_app_profile_init(void);
+int escape_to_root_for_init(void);
 
 #endif
