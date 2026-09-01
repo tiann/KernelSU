@@ -21,15 +21,41 @@ jobs:
         run: |
           mkdir -p ksud
           for dir in ./ksud-*; do
-              if [ -d "$dir" ]; then
-                 echo "----- Rename $dir -----"
-                 ksud_platform_name=$(basename "$dir")
-                 find "$dir" -type f -name "ksud" -path "*/release/*" | while read -r ksud_file; do
-                   if [ -f "$ksud_file" ]; then
-                     mv "$ksud_file" "ksud/$ksud_platform_name"
-                   fi
-                 done
-              fi
+            if [ -d "$dir" ]; then
+                echo "----- Rename $dir -----"
+                ksud_platform_name=$(basename "$dir")
+                if [ -f "$dir/ksud" ]; then
+                  mv "$dir/ksud" "ksud/$ksud_platform_name"
+                elif [ -f "$dir/ksud.exe" ]; then
+                  mv "$dir/ksud.exe" "ksud/$ksud_platform_name.exe"
+                fi
+            fi
+          done
+
+      - name: Rename ksuinit
+        run: |
+          mkdir -p ksuinit
+          for dir in ./ksuinit-*; do
+            if [ -d "$dir" ]; then
+                echo "----- Rename $dir -----"
+                ksuinit_platform_name=$(basename "$dir")
+                if [ -f "$dir/ksuinit" ]; then
+                  mv "$dir/ksuinit" "ksuinit/$ksuinit_platform_name"
+                fi
+            fi
+          done
+
+      - name: Rename lkm
+        run: |
+          mkdir -p lkm
+          for dir in ./*-android*-lkm; do
+            if [ -d "$dir" ]; then
+                echo "----- Rename $dir -----"
+                lkm_platform_name=$(basename "$dir")
+                lkm_platform_name="lkm-${lkm_platform_name%-lkm}_kernelsu.ko"
+                KO="$(ls $dir/*_kernelsu.ko)"
+                mv "$KO" "lkm/$lkm_platform_name"
+            fi
           done
 
       - name: Display structure of downloaded files
@@ -40,6 +66,6 @@ jobs:
         with:
           files: |
             manager/*.apk
-            android*-lkm/*_kernelsu.ko
+            lkm/lkm-*_kernelsu.ko
             ksud/ksud-*
-            ksuinit/**
+            ksuinit/*
