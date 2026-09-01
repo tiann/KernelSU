@@ -51,7 +51,6 @@ import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.miuix.WarningCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
-import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
@@ -72,7 +71,6 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
-import top.yukonga.miuix.kmp.theme.MiuixTheme.isDynamicColor
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
@@ -266,11 +264,7 @@ private fun StatusCard(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.defaultColors(
-                            color = when {
-                                isDynamicColor -> colorScheme.secondaryContainer
-                                isInDarkTheme() -> Color(0xFF1A3825)
-                                else -> Color(0xFFDFFAE4)
-                            }
+                            color = colorScheme.secondaryContainer
                         ),
                         onClick = {
                             if (!state.isLateLoadMode) {
@@ -290,11 +284,7 @@ private fun StatusCard(
                                 Icon(
                                     modifier = Modifier.size(110.dp),
                                     imageVector = Icons.Rounded.CheckCircleOutline,
-                                    tint = if (isDynamicColor) {
-                                        colorScheme.primary.copy(alpha = 0.8f)
-                                    } else {
-                                        Color(0xFF36D167)
-                                    },
+                                    tint = colorScheme.primary.copy(alpha = 0.8f),
                                     contentDescription = null
                                 )
                             }
@@ -440,7 +430,6 @@ private fun DonateCard(onOpenUrl: (String) -> Unit) {
                 )
             },
             onClick = { onOpenUrl("https://patreon.com/weishu") },
-            insideMargin = PaddingValues(18.dp)
         )
     }
 }
