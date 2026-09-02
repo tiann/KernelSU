@@ -108,7 +108,7 @@ Abra o gerenciador, clique no ícone de instalação no canto superior direito e
 Usar a opção "Instalação direta" do gerenciador pode fazer backup automaticamente da imagem boot original (ou init_boot), para restaurá-la temporariamente durante atualizações OTA incrementais. Observe que esse backup só é criado se o slot atual ainda não tiver sido corrigido pelo KernelSU.
 O valor SHA1 da imagem de backup é salvo na imagem boot corrigida, e o arquivo de backup é armazenado em `/data/adb/ksu/ksu_backup_$SHA1`.
 Ao usar a função "Desinstalar → Restaurar imagem de fábrica" do gerenciador, se existir um arquivo de backup correspondente ao SHA1 registrado na imagem atualmente corrigida, ele será restaurado diretamente.
-Desde a versão 3.2.6, se esta for a sua primeira instalação do KernelSU sem root, depois de corrigir a imagem boot por meio de "Selecione um arquivo", você poderá escolher "Fazer backup como imagem original". Nesse caso, a imagem de backup será armazenada no armazenamento interno do gerenciador; depois de fazer o flash e inicializar a imagem corrigida, ao abrir o gerenciador pela primeira vez esse backup será movido automaticamente para `/data/adb/ksu`.
+Desde a versão 3.3.0, se esta for a sua primeira instalação do KernelSU sem root, depois de corrigir a imagem boot por meio de "Selecione um arquivo", você poderá escolher "Fazer backup como imagem original". Nesse caso, a imagem de backup será armazenada no armazenamento interno do gerenciador; depois de fazer o flash e inicializar a imagem corrigida, ao abrir o gerenciador pela primeira vez esse backup será movido automaticamente para `/data/adb/ksu`.
 :::
 
 ### Use a linha de comando

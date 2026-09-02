@@ -4,7 +4,7 @@
 
 <img src="https://kernelsu.org/logo.png" style="width: 96px;" alt="logo">
 
-Solusi root berbasis Kernel untuk perangkat Android.
+Solusi root berbasis kernel untuk perangkat Android.
 
 [![Latest release](https://img.shields.io/github/v/release/tiann/KernelSU?label=Release&logo=github)](https://github.com/tiann/KernelSU/releases/latest)
 [![Weblate](https://img.shields.io/badge/Localization-Weblate-teal?logo=weblate)](https://hosted.weblate.org/engage/kernelsu)
@@ -14,43 +14,49 @@ Solusi root berbasis Kernel untuk perangkat Android.
 
 ## Fitur
 
-1. Manajemen akses root dan `su` berbasis kernel.
-2. Sistem modul berdasarkan [metamodules](https://kernelsu.org/id_ID/guide/metamodule.html): Infrastruktur pluggable untuk modifikasi systemless.
-3. [Profil Aplikasi](https://kernelsu.org/guide/app-profile.html): Kunci daya root di dalam sangkar.
+1. Akses `su` dan manajemen hak akses root berbasis kernel.
+2. Sistem modul berbasis [metamodules](https://kernelsu.org/id_ID/guide/metamodule.html): Infrastruktur yang dapat dicopot-pasang untuk modifikasi systemless.
+3. [Profil Aplikasi](https://kernelsu.org/guide/app-profile.html): Kendalikan hak akses root secara aman.
 
 ## Status Kompatibilitas
 
-KernelSU secara resmi mendukung perangkat Android GKI 2.0 (dengan kernel 5.10+), kernel lama (4.14+) juga kompatibel, tetapi Anda perlu membuat kernel sendiri.
+KernelSU secara resmi mendukung perangkat Android GKI 2.0 (dengan kernel 5.10+), kernel lama (4.14+) juga didukung, tetapi kernel perlu dikompilasi secara manual.
 
-WSA, ChromeOS, dan Android berbasis wadah juga dapat bekerja dengan KernelSU terintegrasi.
+Dengan dukungan ini WSA, ChromeOS, dan Android berbasis kontainer semuanya dapat dijalankan.
 
-Saat ini, arsitektur `arm64-v8a` dan `x86_64` didukung.
+Saat ini, arsitektur `arm64-v8a` dan `x86_64` sudah didukung.
 
 > [!CAUTION]
-> Versi kernel terbaru telah menerapkan perubahan yang merusak yang menyebabkan KernelSU gagal dan berpotensi memicu kernel panic pada `x86_64`! Cek situs web untuk info lebih lanjut!
+> Versi kernel terbaru menerapkan perubahan besar yang menyebabkan KernelSU gagal dan berpotensi memicu kernel panic pada `x86_64`! Cek situs web untuk informasi lebih lanjut!
 
 ## Penggunaan
 
-- [Petunjuk Instalasi](https://kernelsu.org/id_ID/guide/installation.html)
-- [Bagaimana cara membuat?](https://kernelsu.org/id_ID/guide/how-to-build.html)
+- [Pemasangan](https://kernelsu.org/id_ID/guide/installation.html)
+- [Cara Build](https://kernelsu.org/id_ID/guide/how-to-build.html)
 - [Situs Web Resmi](https://kernelsu.org/id_ID/)
 
 ## Terjemahan
 
-Untuk menerjemahkan KernelSU ke dalam bahasa Anda atau menyempurnakan terjemahan yang sudah ada, harap gunakan [Weblat](https://hosted.weblate.org/engage/kernelsu/).
+Untuk membantu penerjemahan KernelSU, kami tidak lagi menerima kontribusi terjemahan melalui Weblate. Semua terjemahan kini ditangani menggunakan LLM.
+
+Jika Anda ingin menambahkan dukungan untuk bahasa baru, silakan buat PR (Pull Request). Harap diperhatikan bahwa perubahan pada terjemahan bahasa Inggris dan Mandarin yang sudah ada tidak akan diterima.
 
 ## Diskusi
 
 - Telegram: [@KernelSU](https://t.me/KernelSU)
 
+## Keamanan
+
+Untuk informasi mengenai pelaporan kerentanan keamanan di KernelSU, lihat [SECURITY.md](/SECURITY.md).
+
 ## Lisensi
 
-- File di bawah direktori `kernel` adalah [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- Semua bagian lain kecuali direktori `kernel` adalah [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
+- Berkas di bawah direktori `kernel` berlisensi [GPL-2-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- Seluruh bagian lainnya kecuali direktori `kernel` berlisensi [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Kredit
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ide KernelSU.
-- [Magisk](https://github.com/topjohnwu/Magisk): alat root yang ampuh.
-- [genuine](https://github.com/brevent/genuine/): validasi tanda tangan apk v2.
-- [Diamorphine](https://github.com/m0nad/Diamorphine): beberapa keterampilan rootkit.
+- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): Gagasan utama KernelSU.
+- [Magisk](https://github.com/topjohnwu/Magisk): Alat root yang andal.
+- [genuine](https://github.com/brevent/genuine/): Validasi tanda tangan APK v2.
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Beberapa keahlian rootkit.

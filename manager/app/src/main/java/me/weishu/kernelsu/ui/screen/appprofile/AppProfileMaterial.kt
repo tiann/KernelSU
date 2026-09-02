@@ -93,6 +93,7 @@ fun AppProfileScreenMaterial(
                 onBack = actions.onBack,
                 scrollBehavior = scrollBehavior,
                 isUidGroup = state.isUidGroup,
+                showActions = !state.appGroup.primary.isWebViewZygote,
                 packageName = state.packageName,
                 userId = state.uid / 100000,
                 onLaunchApp = actions.onLaunchApp,
@@ -110,7 +111,11 @@ fun AppProfileScreenMaterial(
                 .imePadding()
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState()),
-            packageName = if (state.isUidGroup) "" else state.appGroup.primary.packageName,
+            packageName = if (state.isUidGroup) {
+                ""
+            } else {
+                state.appGroup.primary.displayIdentifier
+            },
             appLabel = if (state.isUidGroup) ownerNameForUid(state.appGroup.primary.uid) else state.appGroup.primary.label,
             appIcon = {
                 AppIconImage(
@@ -127,6 +132,7 @@ fun AppProfileScreenMaterial(
             appVersionCode = if (state.isUidGroup) 0L else state.appGroup.primary.packageInfo.longVersionCode,
             profile = state.profile,
             isUidGroup = state.isUidGroup,
+            isSpecialApp = state.appGroup.primary.special,
             affectedApps = state.appGroup.apps,
             onViewTemplate = actions.onViewTemplate,
             onManageTemplate = actions.onManageTemplate,
@@ -147,12 +153,13 @@ private fun AppProfileInner(
     appVersionCode: Long,
     profile: Natives.Profile,
     isUidGroup: Boolean = false,
+    isSpecialApp: Boolean = false,
     affectedApps: List<SuperUserViewModel.AppInfo> = emptyList(),
     onViewTemplate: (id: String) -> Unit = {},
     onManageTemplate: () -> Unit = {},
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
-    val isRootGranted = profile.allowSu
+    val isRootGranted = !isSpecialApp && profile.allowSu
     val userId = appUid / 100000
     val appId = appUid % 100000
 
@@ -174,13 +181,15 @@ private fun AppProfileInner(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            content = listOf(
-                {
+            content = buildList<@Composable () -> Unit> {
+                add {
                     SegmentedListItem(
                         headlineContent = { Text(appLabel) },
                         supportingContent = {
                             Column {
-                                if (!isUidGroup) {
+                                if (isSpecialApp) {
+                                    Text(packageName, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                } else if (!isUidGroup) {
                                     Text("$appVersionName ($appVersionCode)", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     Text(packageName, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 } else {
@@ -218,23 +227,23 @@ private fun AppProfileInner(
                             }
                         }
                     )
-                },
-                {
+                }
+                if (!isSpecialApp) add {
                     SegmentedSwitchItem(
                         icon = Icons.Filled.Security,
                         title = stringResource(id = R.string.superuser),
                         checked = isRootGranted,
                         onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
                     )
-                },
-                {
+                }
+                add {
                     SegmentedListItem(
                         headlineContent = { Text(stringResource(R.string.profile)) },
                         supportingContent = { Text(mode.text, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
                     )
                 }
-            )
+            }
         )
 
         Crossfade(targetState = isRootGranted, label = "") { current ->
@@ -300,7 +309,7 @@ private fun AppProfileInner(
                         {
                             SegmentedListItem(
                                 headlineContent = { Text(app.label) },
-                                supportingContent = { Text(app.packageName) },
+                                supportingContent = { Text(app.displayIdentifier) },
                                 leadingContent = {
                                     AppIconImage(
                                         packageInfo = app.packageInfo,
@@ -327,6 +336,7 @@ private fun TopBar(
     onBack: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     isUidGroup: Boolean = false,
+    showActions: Boolean = true,
     packageName: String = "",
     userId: Int = 0,
     onLaunchApp: (String, Int) -> Unit,
@@ -340,7 +350,7 @@ private fun TopBar(
             TopBarBackButton(onClick = onBack)
         },
         actions = {
-            if (!isUidGroup) {
+            if (!isUidGroup && showActions) {
                 var showDropdown by remember { mutableStateOf(false) }
 
                 IconButton(

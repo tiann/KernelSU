@@ -59,6 +59,18 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) -> Result<()> {
     Ok(())
 }
 
+fn resolve_uid(user: &str) -> Result<u32> {
+    let c_user = CString::new(user).with_context(|| format!("Invalid user: {user}"))?;
+    let pw = unsafe { libc::getpwnam(c_user.as_ptr()).as_ref() };
+
+    if let Some(pw) = pw {
+        return Ok(pw.pw_uid);
+    }
+
+    user.parse::<u32>()
+        .map_err(|_| anyhow::anyhow!("Unknown user: {user}"))
+}
+
 fn set_selinux_context(context: &str) -> Result<()> {
     std::fs::write("/proc/thread-self/attr/current", context)?;
     Ok(())
@@ -251,18 +263,14 @@ pub fn root_shell() -> Result<()> {
         free_idx += 1;
     }
 
-    // use current uid if no user specified, these has been done in kernel!
-    let mut uid = getuid().as_raw();
-    if free_idx < matches.free.len() {
-        let name = &matches.free[free_idx];
-        uid = unsafe {
-            let pw = CString::new(name.as_str())
-                .ok()
-                .and_then(|c_name| libc::getpwnam(c_name.as_ptr()).as_ref());
+    let identity_requested = free_idx < matches.free.len() || gid.is_some() || !groups.is_empty();
 
-            pw.map_or_else(|| name.parse::<u32>().unwrap_or(0), |pw| pw.pw_uid)
-        }
-    }
+    // use current uid if no user specified, these has been done in kernel!
+    let uid = if free_idx < matches.free.len() {
+        resolve_uid(&matches.free[free_idx])?
+    } else {
+        getuid().as_raw()
+    };
 
     // if there is no gid provided, use uid.
     let gid = gid.unwrap_or(uid);
@@ -324,7 +332,9 @@ pub fn root_shell() -> Result<()> {
         wrap_tty(2);
     }
 
-    set_identity(uid, gid, &groups)?;
+    if identity_requested {
+        set_identity(uid, gid, &groups)?;
+    }
     if let Some(context) = selinux_context.as_deref() {
         set_selinux_context(context).with_context(|| format!("setcontext {context}"))?;
     }
