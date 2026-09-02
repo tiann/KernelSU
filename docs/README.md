@@ -12,6 +12,8 @@ A kernel-based root solution for Android devices.
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/tiann/KernelSU?logo=gnu)](/LICENSE)
 
+- **[ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)** – The simplest way to manage SuSFS on KernelSU. Clean config files, toggle switches, and a built-in script editor for power users.
+
 ## Features
 
 1. Kernel-based `su` and root access management.
