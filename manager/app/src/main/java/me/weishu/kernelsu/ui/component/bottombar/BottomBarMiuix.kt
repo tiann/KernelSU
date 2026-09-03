@@ -85,10 +85,8 @@ fun BottomBarMiuix(
         FloatingBottomBar(
             modifier = modifier
                 .padding(
-                    start = 24.dp,
-                    end = 24.dp,
                     bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                        .let { inset -> if (inset != 0.dp) 8.dp + inset else 36.dp },
+                        .let { inset -> if (inset != 0.dp) 8.dp + inset else 28.dp },
                 ),
             selectedIndex = mainState.selectedPage,
             onSelected = { mainState.animateToPage(it) },
