@@ -189,6 +189,7 @@ base {
 
 dependencies {
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.splashscreen)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material.icons.extended)

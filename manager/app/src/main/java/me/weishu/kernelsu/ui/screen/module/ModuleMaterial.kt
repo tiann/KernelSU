@@ -66,8 +66,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CheckableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -307,7 +307,7 @@ fun ModulePagerMaterial(
                             onDismissRequest = { showDropdown = false }
                         ) {
                             DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.module_sort_action_first)) },
                                     checked = uiState.sortActionFirst,
                                     checkedLeadingIcon = {
@@ -323,7 +323,7 @@ fun ModulePagerMaterial(
                                     },
                                     shapes = MenuDefaults.itemShape(index = 0, count = 2),
                                 )
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.module_sort_enabled_first)) },
                                     checked = uiState.sortEnabledFirst,
                                     checkedLeadingIcon = {

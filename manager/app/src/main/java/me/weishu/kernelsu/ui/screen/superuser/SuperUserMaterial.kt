@@ -26,8 +26,8 @@ import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.CheckableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +35,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -138,7 +139,7 @@ fun SuperUserPagerMaterial(
 
                             DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 0, count = 2)) {
                                 sortEntries.onEachIndexed { index, (type, resId) ->
-                                    DropdownMenuItem(
+                                    SelectableDropdownMenuItem(
                                         text = { Text(stringResource(resId)) },
                                         selected = sortConfig.sortType == type,
                                         selectedLeadingIcon = {
@@ -164,7 +165,7 @@ fun SuperUserPagerMaterial(
                             Spacer(Modifier.height(MenuDefaults.GroupSpacing))
 
                             DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 1, count = 2)) {
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.sort_reverse)) },
                                     checked = sortConfig.reversed,
                                     checkedLeadingIcon = {
@@ -202,7 +203,7 @@ fun SuperUserPagerMaterial(
                         ) {
                             val filterCount = if (uiState.userIds.size > 1) 2 else 1
                             DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.show_system_apps)) },
                                     checked = uiState.showSystemApps,
                                     checkedLeadingIcon = {
@@ -220,7 +221,7 @@ fun SuperUserPagerMaterial(
                                     shapes = MenuDefaults.itemShape(index = 0, count = filterCount),
                                 )
                                 if (uiState.userIds.size > 1) {
-                                    DropdownMenuItem(
+                                    CheckableDropdownMenuItem(
                                         text = { Text(stringResource(R.string.show_only_primary_user_apps)) },
                                         checked = uiState.showOnlyPrimaryUserApps,
                                         checkedLeadingIcon = {
