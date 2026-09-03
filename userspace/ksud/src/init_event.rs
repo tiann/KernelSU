@@ -57,7 +57,7 @@ pub fn on_post_data_fs() -> Result<()> {
         },
         Ok(false) => {}
         Err(error) => {
-            error!("failed to check fastbootd rescue request, continue normal boot: {error:#}")
+            error!("failed to check fastbootd rescue request, continue normal boot: {error:#}");
         }
     }
 
