@@ -103,7 +103,7 @@ fn wrap_tty(fd: c_int) {
 
 #[allow(clippy::similar_names)]
 pub fn root_shell() -> Result<()> {
-    // we are root now, this was set in kernel!
+    // The kernel has already applied the selected root profile.
 
     // A su-session driver fd deliberately survives the exec into ksud. Claim
     // it before handling any arguments and restore FD_CLOEXEC so it cannot

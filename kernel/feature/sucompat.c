@@ -214,11 +214,6 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
 
     fd_install(tmp_fd, ksud_file);
 
-    su_fd = ksu_install_su_fd();
-    if (su_fd < 0) {
-        pr_warn("install su session fd failed: %d\n", su_fd);
-    }
-
     pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
     // execve(file, argv, environ)
     // execveat(fd, file, argv, environ, flags)
@@ -236,6 +231,12 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
     ret = escape_with_root_profile();
     if (ret) {
         pr_err("escape_with_root_profile failed: %ld\n", ret);
+    } else {
+        // Only grant the scoped driver capability after the selected root
+        // profile has been applied successfully.
+        su_fd = ksu_install_su_fd();
+        if (su_fd < 0)
+            pr_warn("install su session fd failed: %d\n", su_fd);
     }
     ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
 
