@@ -17,12 +17,24 @@ const DYNAMIC_PARTITIONS_PROP: &str = "ro.boot.dynamic_partitions";
 const POWERCTL_PROP: &str = "sys.powerctl";
 const FASTBOOTD_REBOOT_COMMAND: &str = "reboot,fastboot";
 
+fn property_value_is_true(value: Option<&str>) -> bool {
+    let Some(value) = value else {
+        return false;
+    };
+
+    value == "1"
+        || value.eq_ignore_ascii_case("true")
+        || value.eq_ignore_ascii_case("y")
+        || value.eq_ignore_ascii_case("yes")
+        || value.eq_ignore_ascii_case("on")
+}
+
 fn request_fastbootd_reboot() -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
 
     // Android init redirects reboot,fastboot to bootloader fastboot without dynamic partitions.
     anyhow::ensure!(
-        sys_prop::get(DYNAMIC_PARTITIONS_PROP).as_deref() == Some("true"),
+        property_value_is_true(sys_prop::get(DYNAMIC_PARTITIONS_PROP).as_deref()),
         "Fastbootd rescue requires dynamic partitions"
     );
 
@@ -38,9 +50,15 @@ pub fn on_post_data_fs() -> Result<()> {
         return Ok(());
     }
 
-    if ksucalls::check_kernel_fastbootd().context("Failed to check fastbootd rescue request")? {
-        request_fastbootd_reboot()?;
-        return Ok(());
+    match ksucalls::check_kernel_fastbootd() {
+        Ok(true) => match request_fastbootd_reboot() {
+            Ok(()) => return Ok(()),
+            Err(error) => error!("fastbootd rescue failed, continue normal boot: {error:#}"),
+        },
+        Ok(false) => {}
+        Err(error) => {
+            error!("failed to check fastbootd rescue request, continue normal boot: {error:#}")
+        }
     }
 
     ksucalls::report_post_fs_data();
