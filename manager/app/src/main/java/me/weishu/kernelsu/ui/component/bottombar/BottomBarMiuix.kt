@@ -95,12 +95,12 @@ fun BottomBarMiuix(
             backdrop = backdrop,
             tabsCount = items.size,
             isBlurEnabled = enableFloatingBottomBarBlur,
-        ) {
+        ) { activateTab ->
             items.forEachIndexed { index, item ->
                 FloatingBottomBarItem(
                     selected = mainState.selectedPage == index,
                     onClick = {
-                        mainState.animateToPage(index)
+                        activateTab(index)
                     },
                     modifier = Modifier.defaultMinSize(minWidth = 76.dp)
                 ) {

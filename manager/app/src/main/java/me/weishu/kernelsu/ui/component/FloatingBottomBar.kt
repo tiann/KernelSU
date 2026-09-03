@@ -61,7 +61,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
-import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.util.lerp
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.component.liquid.InnerShadow
@@ -183,7 +182,7 @@ fun RowScope.FloatingBottomBarItem(
             }
             .onKeyEvent { event ->
                 val activationKey = event.key == Key.Enter ||
-                    event.key == Key.NumPadEnter || event.key == Key.Spacebar
+                        event.key == Key.NumPadEnter || event.key == Key.Spacebar
                 if (activationKey) {
                     if (event.type == KeyEventType.KeyUp) onClick()
                     true
@@ -211,7 +210,7 @@ fun FloatingBottomBar(
     backdrop: Backdrop,
     tabsCount: Int,
     isBlurEnabled: Boolean = true,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable RowScope.((Int) -> Unit) -> Unit
 ) {
     val isInDark = isInDarkTheme()
     val pillShape = remember { CircleShape }
@@ -244,6 +243,15 @@ fun FloatingBottomBar(
     var currentIndex by remember { mutableIntStateOf(selectedIndex) }
     val onSelectedUpdated by rememberUpdatedState(onSelected)
 
+    fun indexAt(positionX: Float): Int {
+        if (tabWidthPx == 0f) return currentIndex
+        val horizontalPaddingPx = with(density) { 4.dp.toPx() }
+        val logicalX = if (isLtr) positionX else totalWidthPx - positionX
+        return ((logicalX - horizontalPaddingPx) / tabWidthPx)
+            .toInt()
+            .coerceIn(0, tabsCount - 1)
+    }
+
     val dampedDragAnimation = remember(animationScope, tabsCount, density, isLtr) {
         DampedDragAnimation(
             animationScope = animationScope,
@@ -252,41 +260,38 @@ fun FloatingBottomBar(
             visibilityThreshold = 0.001f,
             initialScale = 1f,
             pressedScale = 78f / 56f,
-            canDrag = { offset -> offset.x in 0f..totalWidthPx },
+            canDrag = { offset ->
+                offset.x in 0f..totalWidthPx
+            },
             onDragStarted = { position ->
-                if (tabWidthPx > 0f) {
-                    val logicalX = if (isLtr) position.x else totalWidthPx - position.x
-                    val horizontalPadding = with(density) { 4.dp.toPx() }
-                    updateValue(((logicalX - horizontalPadding - tabWidthPx / 2f) / tabWidthPx)
-                        .fastCoerceIn(0f, (tabsCount - 1).toFloat()))
-                }
+                updateValue(indexAt(position.x).toFloat())
             },
             onDragStopped = {
-                val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, tabsCount - 1)
+                val targetIndex = targetValue.roundToInt().coerceIn(0, tabsCount - 1)
                 if (currentIndex != targetIndex) {
                     currentIndex = targetIndex
                     onSelectedUpdated(targetIndex)
                 }
-                animateToValue(targetIndex.toFloat())
+                updateValue(targetIndex.toFloat())
                 animationScope.launch {
                     offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
-                }
-            },
-            onDrag = { _, dragAmount ->
-                if (tabWidthPx > 0) {
-                    updateValue(
-                        (targetValue + dragAmount.x / tabWidthPx * if (isLtr) 1f else -1f)
-                            .fastCoerceIn(0f, (tabsCount - 1).toFloat())
-                    )
-                    animationScope.launch {
-                        offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
-                    }
                 }
             },
             onDragCancelled = {
                 updateValue(currentIndex.toFloat())
                 animationScope.launch {
                     offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
+                }
+            },
+            onDrag = { _, dragAmount ->
+                if (tabWidthPx > 0f && dragAmount.x != 0f) {
+                    updateValue(
+                        (targetValue + dragAmount.x / tabWidthPx * if (isLtr) 1f else -1f)
+                            .coerceIn(0f, (tabsCount - 1).toFloat()),
+                    )
+                    animationScope.launch {
+                        offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
+                    }
                 }
             }
         )
@@ -297,6 +302,15 @@ fun FloatingBottomBar(
             currentIndex = selectedIndex
             dampedDragAnimation.animateToValue(selectedIndex.toFloat())
         }
+    }
+
+    fun activateTab(index: Int) {
+        if (index !in 0 until tabsCount) return
+        if (currentIndex != index) {
+            currentIndex = index
+            onSelectedUpdated(index)
+        }
+        dampedDragAnimation.animateToValue(index.toFloat())
     }
 
     val interactiveHighlight = remember(animationScope, tabWidthPx, dampedDragAnimation) {
@@ -376,7 +390,7 @@ fun FloatingBottomBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CompositionLocalProvider(LocalContentColor provides tabContentColor) {
-                content()
+                content(::activateTab)
             }
         }
 
@@ -410,7 +424,7 @@ fun FloatingBottomBar(
                         .height(56.dp)
                         .padding(horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    content = content
+                    content = { content(::activateTab) }
                 )
             }
         }
@@ -490,7 +504,7 @@ fun FloatingBottomBar(
                                     translationX = if (isLtr) -progressOffset else progressOffset
                                 },
                             verticalAlignment = Alignment.CenterVertically,
-                            content = content,
+                            content = { content(::activateTab) },
                         )
                     }
                 }
