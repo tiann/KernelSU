@@ -1,8 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -14,7 +12,6 @@ import androidx.compose.material.icons.rounded.Extension
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -87,13 +84,13 @@ fun BottomBarMiuix(
     } else {
         FloatingBottomBar(
             modifier = modifier
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = {},
-                )
-                .padding(bottom = 12.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()),
-            selectedIndex = { mainState.selectedPage },
+                .padding(
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                        .let { inset -> if (inset != 0.dp) 8.dp + inset else 36.dp },
+                ),
+            selectedIndex = mainState.selectedPage,
             onSelected = { mainState.animateToPage(it) },
             backdrop = backdrop,
             tabsCount = items.size,
@@ -101,6 +98,7 @@ fun BottomBarMiuix(
         ) {
             items.forEachIndexed { index, item ->
                 FloatingBottomBarItem(
+                    selected = mainState.selectedPage == index,
                     onClick = {
                         mainState.animateToPage(index)
                     },

@@ -154,7 +154,7 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Delete
 import top.yukonga.miuix.kmp.icon.extended.Download
-import top.yukonga.miuix.kmp.icon.extended.MoreCircle
+import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.Undo
 import top.yukonga.miuix.kmp.icon.extended.UploadCloud
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -316,7 +316,7 @@ fun ModulePagerMiuix(
                                     holdDownState = showTopPopup.value
                                 ) {
                                     Icon(
-                                        imageVector = MiuixIcons.MoreCircle,
+                                        imageVector = MiuixIcons.Sort,
                                         tint = colorScheme.onSurface,
                                         contentDescription = null
                                     )
