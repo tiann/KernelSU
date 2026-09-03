@@ -6,8 +6,8 @@
 
 #include "uapi/app_profile.h"
 
-// 2: allowlist v4 root profile flags
-static const __u32 KERNEL_SU_UAPI_VERSION = 2;
+// 3: scoped su-session driver fd
+static const __u32 KERNEL_SU_UAPI_VERSION = 3;
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;

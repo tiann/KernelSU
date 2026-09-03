@@ -2,7 +2,7 @@ use crate::{
     defs, ksucalls,
     utils::{self, umask},
 };
-use anyhow::{Context, Ok, Result, bail};
+use anyhow::{Context, Ok, Result, anyhow, bail};
 use getopts::Options;
 use libc::c_int;
 use log::error;
@@ -78,16 +78,21 @@ fn set_selinux_context(context: &str) -> Result<()> {
 
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
-        if unsafe { libc::isatty(fd) != 1 } {
+        // The root profile is already active here, so its SELinux domain may
+        // not be allowed to query the original terminal. Check the wrapped fd
+        // instead, since that is the descriptor intended to bypass this
+        // restriction.
+        let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
+        if unsafe { libc::isatty(new_fd) != 1 } {
+            unsafe { libc::close(new_fd) };
             return Ok(());
         }
-        let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
-        if unsafe { libc::dup2(new_fd, fd) } == -1 {
-            bail!("dup {new_fd} -> {fd} errno: {}", unsafe {
-                *libc::__errno()
-            });
-        }
+        let dup_result = unsafe { libc::dup2(new_fd, fd) };
+        let dup_errno = unsafe { *libc::__errno() };
         unsafe { libc::close(new_fd) };
+        if dup_result == -1 {
+            bail!("dup {new_fd} -> {fd} errno: {dup_errno}");
+        }
         Ok(())
     };
 
@@ -100,7 +105,11 @@ fn wrap_tty(fd: c_int) {
 pub fn root_shell() -> Result<()> {
     // we are root now, this was set in kernel!
 
-    use anyhow::anyhow;
+    // A su-session driver fd deliberately survives the exec into ksud. Claim
+    // it before handling any arguments and restore FD_CLOEXEC so it cannot
+    // leak into the target shell, including when fd wrapping is disabled.
+    ksucalls::claim_inherited_driver_fd().context("claim inherited KernelSU driver fd")?;
+
     let env_args: Vec<String> = env::args().collect();
     let program = env_args[0].clone();
     let mut executable: Option<String> = None;
