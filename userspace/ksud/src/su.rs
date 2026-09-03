@@ -9,7 +9,7 @@ use log::error;
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
-use std::{cmp::Ordering, env};
+use std::{cmp::Ordering, env, io};
 use std::{
     ffi::{CStr, CString},
     process::Command,
@@ -78,10 +78,16 @@ fn set_selinux_context(context: &str) -> Result<()> {
 
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
+        if unsafe { libc::isatty(fd) != 1 }
+            && io::Error::last_os_error().raw_os_error() != Some(libc::EACCES)
+        {
+            return Ok(());
+        }
+
         // The root profile is already active here, so its SELinux domain may
-        // not be allowed to query the original terminal. Check the wrapped fd
-        // instead, since that is the descriptor intended to bypass this
-        // restriction.
+        // return EACCES while querying the original terminal. In that case,
+        // check the wrapped fd instead, since that descriptor is intended to
+        // bypass this restriction.
         let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
         if unsafe { libc::isatty(new_fd) != 1 } {
             unsafe { libc::close(new_fd) };
