@@ -496,7 +496,7 @@ thread_local! {
 
 const SYS_SECCOMP: libc::c_int = 1;
 
-pub(crate) fn with_svc_call<F, R>(call: F) -> (R, bool)
+pub fn with_svc_call<F, R>(call: F) -> (R, bool)
 where
     F: FnOnce() -> R,
 {
@@ -543,7 +543,7 @@ fn setup_sigsys_handler() {
         libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
         if libc::sigaction(libc::SIGSYS, std::ptr::addr_of!(sa), std::ptr::null_mut()) != 0 {
             let error = std::io::Error::last_os_error();
-            log::warn!("Failed to set SIGSYS handler: {}", error);
+            log::warn!("Failed to set SIGSYS handler: {error}");
         }
     }
 }
