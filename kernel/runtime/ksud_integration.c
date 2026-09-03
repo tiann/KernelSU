@@ -4,11 +4,13 @@
 #include <linux/mm.h>
 #include <asm/current.h>
 #include <linux/compat.h>
+#include <linux/compiler.h>
 #include <linux/cred.h>
 #include <linux/dcache.h>
 #include <linux/err.h>
 #include <linux/file.h>
 #include <linux/fs.h>
+#include <linux/jiffies.h>
 #include <linux/version.h>
 #include <linux/input-event-codes.h>
 #include <linux/kprobes.h>
@@ -470,10 +472,35 @@ static void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *
 }
 
 static unsigned int volumedown_pressed_count = 0;
+static unsigned int volumeup_pressed_count = 0;
+static unsigned long volumeup_first_press;
+static bool fastbootd_requested;
+
+#define FASTBOOTD_PRESS_COUNT 3U
+#define FASTBOOTD_PRESS_WINDOW (5 * HZ)
 
 static bool is_volumedown_enough(unsigned int count)
 {
     return count >= 3;
+}
+
+static void handle_volumeup_press(void)
+{
+    unsigned long now = jiffies;
+
+    if (!volumeup_pressed_count || time_after(now, volumeup_first_press + FASTBOOTD_PRESS_WINDOW)) {
+        volumeup_pressed_count = 1;
+        volumeup_first_press = now;
+    } else {
+        volumeup_pressed_count += 1;
+    }
+
+    pr_info("KEY_VOLUMEUP pressed: %u/%u\n", volumeup_pressed_count, FASTBOOTD_PRESS_COUNT);
+    if (volumeup_pressed_count >= FASTBOOTD_PRESS_COUNT) {
+        WRITE_ONCE(fastbootd_requested, true);
+        pr_warn("KEY_VOLUMEUP pressed three times, fastbootd rescue requested!\n");
+        ksu_stop_input_hook_runtime();
+    }
 }
 
 int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *value)
@@ -490,7 +517,21 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *v
         }
     }
 
+    if (*type == EV_KEY && *code == KEY_VOLUMEUP && *value == 1 && !READ_ONCE(fastbootd_requested)) {
+        handle_volumeup_press();
+    }
+
     return 0;
+}
+
+bool ksu_is_fastbootd_requested(void)
+{
+    if (ksu_late_loaded) {
+        return false;
+    }
+
+    ksu_stop_input_hook_runtime();
+    return READ_ONCE(fastbootd_requested);
 }
 
 bool ksu_is_safe_mode()

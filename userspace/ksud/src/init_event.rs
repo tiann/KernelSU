@@ -13,9 +13,33 @@ use rustix::process::chdir;
 use std::path::Path;
 use std::process::Command;
 
+const DYNAMIC_PARTITIONS_PROP: &str = "ro.boot.dynamic_partitions";
+const POWERCTL_PROP: &str = "sys.powerctl";
+const FASTBOOTD_REBOOT_COMMAND: &str = "reboot,fastboot";
+
+fn request_fastbootd_reboot() -> Result<()> {
+    sys_prop::init().context("Failed to initialize system property API")?;
+
+    // Android init redirects reboot,fastboot to bootloader fastboot without dynamic partitions.
+    anyhow::ensure!(
+        sys_prop::get(DYNAMIC_PARTITIONS_PROP).as_deref() == Some("true"),
+        "Fastbootd rescue requires dynamic partitions"
+    );
+
+    warn!("fastbootd rescue requested, rebooting through Android init");
+    sys_prop::set(POWERCTL_PROP, FASTBOOTD_REBOOT_COMMAND, false)
+        .context("Failed to request fastbootd reboot")?;
+    Ok(())
+}
+
 pub fn on_post_data_fs() -> Result<()> {
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
         error!("{e:#}, skip on_post_fs_data");
+        return Ok(());
+    }
+
+    if ksucalls::check_kernel_fastbootd().context("Failed to check fastbootd rescue request")? {
+        request_fastbootd_reboot()?;
         return Ok(());
     }
 
