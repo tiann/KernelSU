@@ -1,6 +1,6 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
-use std::{cell::Cell, path::PathBuf, thread_local};
+use std::{cell::Cell, path::PathBuf};
 
 use android_logger::Config;
 use log::{LevelFilter, error, info};
@@ -489,7 +489,7 @@ enum Initrc {
     Refresh,
 }
 
-thread_local! {
+std::thread_local! {
     static SVC_IN_FLIGHT: Cell<bool> = const { Cell::new(false) };
     static SIGSYS_OCCURRED: Cell<bool> = const { Cell::new(false) };
 }
@@ -513,14 +513,12 @@ extern "C" fn sigsys_handler(
     ctx: *mut libc::c_void,
 ) {
     unsafe {
-        if info.is_null()
-            || ctx.is_null()
-            || (*info).si_code != SYS_SECCOMP
-            || !SVC_IN_FLIGHT.with(Cell::get)
-        {
+        if info.is_null() || ctx.is_null() || (*info).si_code != SYS_SECCOMP {
             return;
         }
-        SIGSYS_OCCURRED.with(|occurred| occurred.set(true));
+        if SVC_IN_FLIGHT.with(Cell::get) {
+            SIGSYS_OCCURRED.with(|occurred| occurred.set(true));
+        }
 
         let ucontext = ctx.cast::<libc::ucontext_t>();
         #[cfg(target_arch = "aarch64")]
