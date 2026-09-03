@@ -16,6 +16,7 @@
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
+#include "api/event_registry.h"
 
 struct ksu_install_fd_tw {
     struct callback_head cb;
@@ -99,6 +100,10 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
             pr_warn("install fd add task_work failed\n");
         }
     }
+
+    /* External reboot handlers are dispatched through the shared kprobe. */
+    if (magic1 != KSU_INSTALL_MAGIC1 || magic2 != KSU_INSTALL_MAGIC2)
+        ksu_reboot_dispatch((u32)magic1, (u32)magic2, (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs));
 
     return 0;
 }

@@ -9,6 +9,7 @@
 #include <linux/path.h>
 #include <linux/printk.h>
 #include <linux/types.h>
+#include <linux/string.h>
 
 #include "feature/kernel_umount.h"
 #include "klog.h" // IWYU pragma: keep
@@ -17,6 +18,7 @@
 #include "policy/feature.h"
 #include "runtime/ksud_boot.h"
 #include "ksu.h"
+#include "api/event_registry.h"
 
 static bool ksu_kernel_umount_enabled = true;
 
@@ -43,37 +45,53 @@ static const struct ksu_feature_handler kernel_umount_handler = {
 
 extern int path_umount(struct path *path, int flags);
 
-static void ksu_umount_mnt(const char *mnt, struct path *path, int flags)
+static int ksu_umount_mnt(const char *mnt, struct path *path, int flags)
 {
     int err = path_umount(path, flags);
     if (err) {
         pr_info("umount %s failed: %d\n", mnt, err);
     }
+    return err;
 }
 
-static void try_umount(const char *mnt, int flags)
+static int try_umount(const char *mnt, int flags)
 {
     struct path path;
     int err = kern_path(mnt, 0, &path);
     if (err) {
-        return;
+        return err;
     }
 
     if (path.dentry != path.mnt->mnt_root) {
         // it is not root mountpoint, maybe umounted by others already.
         path_put(&path);
-        return;
+        return -EINVAL;
     }
 
-    ksu_umount_mnt(mnt, &path, flags);
+    return ksu_umount_mnt(mnt, &path, flags);
 }
 
 struct umount_tw {
     struct callback_head cb;
 };
 
+struct ksu_umount_snapshot {
+    char target[128];
+    int result;
+    unsigned int flags;
+};
+
 int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 {
+    struct ksu_umount_event event = {
+        .size = sizeof(event),
+        .version = 1,
+        .reason = 0,
+        .old_uid = old_uid,
+        .new_uid = new_uid,
+        .pid = current->pid,
+        .tgid = current->tgid,
+    };
     // if there isn't any module mounted, just ignore it!
     if (!ksu_module_mounted) {
         return 0;
@@ -110,17 +128,55 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
     // umount the target mnt
     pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
 
+    ksu_event_emit(KSU_EVENT_KSU_UMOUNT_PRE, &event, 0);
+
     const struct cred *saved = override_creds(ksu_cred);
 
     struct mount_entry *entry;
+    struct ksu_umount_snapshot *snapshots = NULL;
+    size_t snapshot_count = 0;
+    size_t i = 0;
+
+    if (ksu_event_has_handlers(KSU_EVENT_KSU_UMOUNT_ITEM)) {
+        down_read(&mount_list_lock);
+        list_for_each_entry (entry, &mount_list, list)
+            snapshot_count++;
+        up_read(&mount_list_lock);
+    }
+
+    if (snapshot_count)
+        snapshots = kcalloc(snapshot_count, sizeof(*snapshots), GFP_KERNEL);
+
     down_read(&mount_list_lock);
     list_for_each_entry (entry, &mount_list, list) {
         pr_info("%s: unmounting: %s flags: 0x%x\n", __func__, entry->umountable, entry->flags);
-        try_umount(entry->umountable, entry->flags);
+        if (snapshots && i < snapshot_count) {
+            strscpy(snapshots[i].target, entry->umountable, sizeof(snapshots[i].target));
+            snapshots[i].flags = entry->flags;
+            snapshots[i].result = try_umount(entry->umountable, entry->flags);
+            i++;
+        } else {
+            try_umount(entry->umountable, entry->flags);
+        }
     }
     up_read(&mount_list_lock);
 
     revert_creds(saved);
+
+    if (snapshots) {
+        size_t filled_count = i;
+
+        for (i = 0; i < filled_count; i++) {
+            struct ksu_umount_event item = event;
+            item.flags = snapshots[i].flags;
+            item.result = snapshots[i].result;
+            item.target = snapshots[i].target;
+            ksu_event_emit(KSU_EVENT_KSU_UMOUNT_ITEM, &item, item.result);
+        }
+        kfree(snapshots);
+    }
+
+    ksu_event_emit(KSU_EVENT_KSU_UMOUNT_POST, &event, 0);
 
     return 0;
 }

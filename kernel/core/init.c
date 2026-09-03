@@ -26,6 +26,7 @@
 #include "feature/adb_root.h"
 #include "feature/selinux_hide.h"
 #include "infra/symbol_resolver.h"
+#include "api/event_registry.h"
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
@@ -85,6 +86,12 @@ module_param_named(norc, ksu_no_custom_rc, bool, 0);
 
 int __init kernelsu_init(void)
 {
+    int event_ret;
+
+    /* The registry must exist before any core path can emit an event. */
+    event_ret = ksu_event_registry_init();
+    if (event_ret)
+        return event_ret;
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -97,6 +104,7 @@ int __init kernelsu_init(void)
         pr_alert("**                                                         **");
         pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
         pr_alert("*************************************************************");
+        ksu_event_registry_exit();
         return -ENOSYS;
     }
 #endif
@@ -123,6 +131,7 @@ int __init kernelsu_init(void)
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
         pr_err("prepare cred failed!\n");
+        ksu_event_registry_exit();
         return -ENOSYS;
     }
 
@@ -152,6 +161,10 @@ int __init kernelsu_init(void)
 
         ksu_allowlist_init();
         ksu_load_allow_list();
+        /* post-fs-data has already happened before a late module load. */
+        ksu_event_set_state(KSU_EVENT_POST_FS_DATA);
+        if (READ_ONCE(ksu_module_mounted))
+            ksu_event_set_state(KSU_EVENT_MODULE_MOUNTED);
 
         ksu_syscall_hook_manager_init();
 
@@ -160,6 +173,7 @@ int __init kernelsu_init(void)
         ksu_file_wrapper_init();
 
         ksu_boot_completed = true;
+        ksu_event_set_state(KSU_EVENT_BOOT_COMPLETED);
         track_throne(false);
 
         if (!getenforce()) {
@@ -179,6 +193,8 @@ int __init kernelsu_init(void)
         ksu_file_wrapper_init();
     }
 
+    ksu_event_set_state(KSU_EVENT_CORE_READY);
+
 #ifdef MODULE
 #ifndef CONFIG_KSU_DEBUG
     kobject_del(&THIS_MODULE->mkobj.kobj);
@@ -189,10 +205,18 @@ int __init kernelsu_init(void)
 
 void __exit kernelsu_exit(void)
 {
+    /* Stop new registrations and notify observers before ingress is removed. */
+    ksu_event_set_state(KSU_EVENT_CORE_EXITING);
+
     // Phase 1: Stop all hooks first to prevent new callbacks
     ksu_syscall_hook_manager_exit();
 
     ksu_supercalls_exit();
+
+    ksu_allowlist_wait_for_persistence();
+
+    /* All event ingress is stopped; wait for callbacks before freeing registry entries. */
+    ksu_event_registry_exit();
 
     if (!ksu_late_loaded)
         ksu_ksud_exit();

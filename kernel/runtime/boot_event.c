@@ -10,6 +10,7 @@
 #include "runtime/ksud.h"
 #include "manager/manager_observer.h"
 #include "manager/throne_tracker.h"
+#include "api/event_registry.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -31,6 +32,7 @@ void on_post_fs_data(void)
     // Sanity check for safe mode only needs early-boot input samples.
     ksu_stop_input_hook_runtime();
     ksu_selinux_hide_handle_post_fs_data();
+    ksu_event_set_state(KSU_EVENT_POST_FS_DATA);
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
@@ -58,13 +60,17 @@ int nuke_ext4_sysfs(const char *mnt)
 
 void on_module_mounted(void)
 {
+    if (ksu_module_mounted)
+        return;
     pr_info("on_module_mounted!\n");
     ksu_module_mounted = true;
+    ksu_event_set_state(KSU_EVENT_MODULE_MOUNTED);
 }
 
 void on_boot_completed(void)
 {
     ksu_boot_completed = true;
+    ksu_event_set_state(KSU_EVENT_BOOT_COMPLETED);
     pr_info("on_boot_completed!\n");
     track_throne(true);
     ksu_selinux_hide_drop_backup_if_unused();

@@ -11,6 +11,7 @@
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
+#include <asm/unistd.h>
 
 #include "policy/allowlist.h"
 #include "hook/setuid_hook.h"
@@ -20,6 +21,9 @@
 #include "supercall/supercall.h"
 #include "hook/tp_marker.h"
 #include "feature/kernel_umount.h"
+#include "api/event_registry.h"
+#include "manager/throne_tracker.h"
+#include "selinux/selinux.h"
 
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {
@@ -34,7 +38,31 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
         spin_unlock_irq(&current->sighand->siglock);
 
         pr_info("install fd for manager: %d\n", new_uid);
-        ksu_install_fd();
+        {
+            int fd = ksu_install_fd();
+            struct ksu_policy_event event = {
+                .size = sizeof(event),
+                .version = 1,
+                .uid = new_uid,
+                .result = fd < 0 ? fd : 0,
+            };
+            ksu_event_emit(KSU_EVENT_MANAGER_READY, &event, event.result);
+        }
+        {
+            struct ksu_uid_event event = {
+                .size = sizeof(event),
+                .version = 1,
+                .syscall_nr = __NR_setresuid,
+                .old_uid = old_uid,
+                .new_uid = new_uid,
+                .pid = current->pid,
+                .tgid = current->tgid,
+                .old_allowlisted = __ksu_is_allow_uid(old_uid),
+                .new_allowlisted = __ksu_is_allow_uid(new_uid),
+                .is_zygote_child = is_zygote(current_cred()),
+            };
+            ksu_event_emit(KSU_EVENT_UID_COMMITTED, &event, 0);
+        }
         return 0;
     }
 
@@ -51,6 +79,22 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 
     // Handle kernel umount
     ksu_handle_umount(old_uid, new_uid);
+
+    {
+        struct ksu_uid_event event = {
+            .size = sizeof(event),
+            .version = 1,
+            .syscall_nr = __NR_setresuid,
+            .old_uid = old_uid,
+            .new_uid = new_uid,
+            .pid = current->pid,
+            .tgid = current->tgid,
+            .old_allowlisted = __ksu_is_allow_uid(old_uid),
+            .new_allowlisted = __ksu_is_allow_uid(new_uid),
+            .is_zygote_child = is_zygote(current_cred()),
+        };
+        ksu_event_emit(KSU_EVENT_UID_COMMITTED, &event, 0);
+    }
 
     return 0;
 }

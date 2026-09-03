@@ -6,6 +6,7 @@
 #include <asm/syscall.h>
 #include <linux/ptrace.h>
 #include <linux/static_key.h>
+#include <linux/string.h>
 
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -18,6 +19,25 @@
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
 #include "feature/adb_root.h"
+#include "api/event_registry.h"
+
+static void ksu_emit_exec_post(int syscall_nr, const char *path, long result)
+{
+    struct ksu_exec_event event = {
+        .size = sizeof(event),
+        .version = 1,
+        .syscall_nr = syscall_nr,
+        .result = result,
+        .pid = current->pid,
+        .tgid = current->tgid,
+    };
+
+    if (!ksu_event_has_handlers(KSU_EVENT_EXEC_POST))
+        return;
+    if (path)
+        strscpy(event.path, path, sizeof(event.path));
+    ksu_event_emit(KSU_EVENT_EXEC_POST, &event, result);
+}
 
 static int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
@@ -79,7 +99,13 @@ static long __nocfi ksu_hook_execve_common(int orig_nr, const struct pt_regs *re
                                                             (const char __user *const __user *)PT_REGS_PARM2(regs);
     bool current_is_init = is_init(current_cred());
     struct ksu_sulog_pending_event *pending_root_execve = NULL;
+    char exec_path[sizeof(((struct ksu_exec_event *)0)->path)] = { 0 };
     long ret;
+
+    /* Copy before exec replaces the caller's address space. */
+    if (ksu_event_has_handlers(KSU_EVENT_EXEC_POST) && filename_user && *filename_user)
+        strncpy_from_user(exec_path, (const char __user *)untagged_addr((unsigned long)*filename_user),
+                          sizeof(exec_path) - 1);
 
     if (static_branch_unlikely(&ksud_execve_key)) {
         if (execveat) {
@@ -103,11 +129,13 @@ static long __nocfi ksu_hook_execve_common(int orig_nr, const struct pt_regs *re
         ret = execveat ? ksu_handle_execveat_sucompat(filename_user, orig_nr, (struct pt_regs *)regs) :
                          ksu_handle_execve_sucompat(filename_user, orig_nr, (struct pt_regs *)regs);
         ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
+        ksu_emit_exec_post(orig_nr, exec_path, ret);
         return ret;
     }
 
     ret = ksu_syscall_table[orig_nr](regs);
     ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
+    ksu_emit_exec_post(orig_nr, exec_path, ret);
     return ret;
 }
 

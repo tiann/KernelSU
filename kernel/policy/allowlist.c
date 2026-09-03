@@ -16,12 +16,15 @@
 #include <linux/compiler_types.h>
 #include <linux/hashtable.h>
 #include <linux/kref.h>
+#include <linux/atomic.h>
+#include <linux/wait.h>
 
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
 #include "policy/allowlist.h"
+#include "api/event_registry.h"
 #include "manager/manager_identity.h"
 #include "infra/su_mount_ns.h"
 
@@ -32,6 +35,9 @@
 #define KSU_DEFAULT_SELINUX_DOMAIN "u:r:" KERNEL_SU_DOMAIN ":s0"
 
 static DEFINE_MUTEX(allowlist_mutex);
+static DEFINE_MUTEX(allowlist_persist_gate);
+static atomic_t allowlist_persist_pending = ATOMIC_INIT(0);
+static DECLARE_WAIT_QUEUE_HEAD(allowlist_persist_wait);
 
 // default profiles, these may be used frequently, so we cache it
 static struct root_profile default_root_profile;
@@ -415,22 +421,26 @@ static void do_persistent_allow_list(struct callback_head *_cb)
     struct perm_data *p = NULL;
     loff_t off = 0;
     int i;
+    int result = 0;
 
     const struct cred *saved = override_creds(ksu_cred);
     struct file *fp = filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
         pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
+        result = PTR_ERR(fp);
         goto out;
     }
 
     // store magic and version
     if (kernel_write(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
         pr_err("save_allow_list write magic failed.\n");
+        result = -EIO;
         goto close_file;
     }
 
     if (kernel_write(fp, &version, sizeof(version), &off) != sizeof(version)) {
         pr_err("save_allow_list write version failed.\n");
+        result = -EIO;
         goto close_file;
     }
 
@@ -439,7 +449,11 @@ static void do_persistent_allow_list(struct callback_head *_cb)
         pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.curr_uid,
                 p->profile.allow_su);
 
-        kernel_write(fp, &p->profile, sizeof(p->profile), &off);
+        if (kernel_write(fp, &p->profile, sizeof(p->profile), &off) != sizeof(p->profile)) {
+            pr_err("save_allow_list write profile failed\n");
+            result = -EIO;
+            break;
+        }
     }
     mutex_unlock(&allowlist_mutex);
 
@@ -447,6 +461,17 @@ close_file:
     filp_close(fp, 0);
 out:
     revert_creds(saved);
+    if (!result) {
+        struct ksu_policy_event event = {
+            .size = sizeof(event),
+            .version = 1,
+            .id = 0,
+            .result = result,
+        };
+        ksu_event_emit(KSU_EVENT_ALLOWLIST_CHANGED, &event, result);
+    }
+    if (atomic_dec_and_test(&allowlist_persist_pending))
+        wake_up_all(&allowlist_persist_wait);
     kfree(_cb);
 }
 
@@ -454,11 +479,21 @@ void ksu_persistent_allow_list()
 {
     struct task_struct *tsk;
 
+    mutex_lock(&allowlist_persist_gate);
+    if (ksu_event_is_stopping()) {
+        mutex_unlock(&allowlist_persist_gate);
+        return;
+    }
+    atomic_inc(&allowlist_persist_pending);
+    mutex_unlock(&allowlist_persist_gate);
+
     rcu_read_lock();
     tsk = get_pid_task(find_vpid(1), PIDTYPE_PID);
     if (!tsk) {
         rcu_read_unlock();
         pr_err("save_allow_list find init task err\n");
+        if (atomic_dec_and_test(&allowlist_persist_pending))
+            wake_up_all(&allowlist_persist_wait);
         return;
     }
     rcu_read_unlock();
@@ -466,16 +501,27 @@ void ksu_persistent_allow_list()
     struct callback_head *cb = kzalloc(sizeof(struct callback_head), GFP_KERNEL);
     if (!cb) {
         pr_err("save_allow_list alloc cb err\b");
+        if (atomic_dec_and_test(&allowlist_persist_pending))
+            wake_up_all(&allowlist_persist_wait);
         goto put_task;
     }
     cb->func = do_persistent_allow_list;
     if (task_work_add(tsk, cb, TWA_RESUME)) {
+        if (atomic_dec_and_test(&allowlist_persist_pending))
+            wake_up_all(&allowlist_persist_wait);
         kfree(cb);
         pr_warn("save_allow_list add task_work failed\n");
     }
 
 put_task:
     put_task_struct(tsk);
+}
+
+void ksu_allowlist_wait_for_persistence(void)
+{
+    mutex_lock(&allowlist_persist_gate);
+    wait_event(allowlist_persist_wait, atomic_read(&allowlist_persist_pending) == 0);
+    mutex_unlock(&allowlist_persist_gate);
 }
 
 static void migrate_profile(u32 version, struct app_profile *profile)

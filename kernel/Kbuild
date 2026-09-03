@@ -1,4 +1,6 @@
 kernelsu-objs := core/init.o
+kernelsu-objs += api/ksu_api.o
+kernelsu-objs += api/event_registry.o
 
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sulog.o
@@ -86,6 +88,12 @@ endif
 ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
 
 obj-$(CONFIG_KSU) += kernelsu.o
+
+# Out-of-tree smoke test for the kernel plugin API (api/README.md).
+ifeq ($(CONFIG_KSU_API_TEST),y)
+obj-m += ksu_api_test.o
+ksu_api_test-objs := api/test_module.o
+endif
 
 MDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 

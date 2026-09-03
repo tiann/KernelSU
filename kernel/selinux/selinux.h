@@ -30,6 +30,7 @@ bool is_zygote(const struct cred *cred);
 bool is_init(const struct cred *cred);
 
 void apply_kernelsu_rules();
+void ksu_selinux_ready_event(void);
 
 int handle_sepolicy(void __user *user_data, u64 data_len);
 

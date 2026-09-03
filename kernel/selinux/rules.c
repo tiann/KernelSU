@@ -6,6 +6,7 @@
 #include <linux/lockdep.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/atomic.h>
 
 #include "uapi/selinux.h"
 #include "klog.h" // IWYU pragma: keep
@@ -14,8 +15,10 @@
 #include "ss/services.h"
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "xfrm.h"
+#include "api/event_registry.h"
 
 struct selinux_policy *backup_sepolicy;
+static atomic_t selinux_ready_emitted = ATOMIC_INIT(0);
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
 
@@ -46,6 +49,7 @@ void apply_kernelsu_rules()
 {
     struct selinux_policy *pol, *old_pol = selinux_state.policy;
     struct policydb *db;
+    bool applied = false;
 
     if (!getenforce()) {
         pr_info("SELinux permissive or disabled, apply rules!\n");
@@ -160,8 +164,23 @@ void apply_kernelsu_rules()
     ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
+    applied = true;
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+    if (applied)
+        ksu_selinux_ready_event();
+}
+
+void ksu_selinux_ready_event(void)
+{
+    struct ksu_state_event event = {
+        .size = sizeof(event),
+        .version = 1,
+        .event = KSU_EVENT_SELINUX_READY,
+    };
+
+    if (atomic_cmpxchg(&selinux_ready_emitted, 0, 1) == 0)
+        ksu_event_emit(KSU_EVENT_SELINUX_READY, &event, 0);
 }
 
 #define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
