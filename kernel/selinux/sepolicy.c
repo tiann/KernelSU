@@ -908,7 +908,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     void *data;
     struct policy_file fp;
 
-    // Some MTK device policy db seems not marking type itself in type_attr_map_array
+    // Some device policy db seems not marking type itself in type_attr_map_array
     // policydb_read() adds each type to its own attribute map, so old_pol->policydb.len may be smaller
     // preserve one ebitmap entry for this condition to avoid trigger -EINVAL
     len = old_pol->policydb.len + (size_t)old_pol->policydb.p_types.nprim * (sizeof(u32) + sizeof(u64));
