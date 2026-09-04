@@ -544,6 +544,7 @@ fun ModuleRepoScreenMiuix(
 
 @Composable
 private fun ReadmePage(
+    contentReadyForWebView: Boolean,
     readmeHtml: String?,
     readmeLoaded: Boolean,
     innerPadding: PaddingValues, scrollBehavior: ScrollBehavior, backdrop: LayerBackdrop?
@@ -579,7 +580,7 @@ private fun ReadmePage(
                         label = "MiuixReadmePlaceholderAlpha",
                     )
                     Box {
-                        if (isReady) {
+                        if (isReady && contentReadyForWebView) {
                             Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
                                 Column {
                                     GithubMarkdown(
@@ -617,6 +618,7 @@ private fun ReadmePage(
 @SuppressLint("DefaultLocale")
 @Composable
 fun ReleasesPage(
+    contentReadyForWebView: Boolean,
     detailReleases: List<ReleaseArg>,
     innerPadding: PaddingValues,
     scrollBehavior: ScrollBehavior,
@@ -721,7 +723,7 @@ fun ReleasesPage(
                                                     .fillMaxWidth()
                                                     .animateContentSize(animationSpec = tween(durationMillis = 300)),
                                             ) {
-                                                if (descReady) {
+                                                if (descReady && contentReadyForWebView) {
                                                     Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
                                                         GithubMarkdown(
                                                             content = rel.descriptionHTML,
@@ -1123,6 +1125,7 @@ fun ModuleRepoDetailScreenMiuix(
 
             when (page) {
                 0 -> ReadmePage(
+                    contentReadyForWebView = pagerState.settledPage == page,
                     readmeHtml = state.readmeHtml,
                     readmeLoaded = state.readmeLoaded,
                     innerPadding = innerPadding,
@@ -1131,6 +1134,7 @@ fun ModuleRepoDetailScreenMiuix(
                 )
 
                 1 -> ReleasesPage(
+                    contentReadyForWebView = pagerState.settledPage == page,
                     detailReleases = state.detailReleases,
                     innerPadding = innerPadding,
                     scrollBehavior = scrollBehavior,
