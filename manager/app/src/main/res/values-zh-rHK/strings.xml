@@ -6,7 +6,7 @@
     <string name="home_working">運作中</string>
     <string name="home_working_version">KernelSU 版本：%s</string>
     <string name="home_unsupported">不支援</string>
-    <string name="home_unsupported_reason">KernelSU 現僅支援 GKI 核心，但仍可修補 GKI 裝置映像。</string>
+    <string name="home_unsupported_reason">KernelSU 現僅支援 GKI 核心，但仍可修補 GKI 裝置映像</string>
     <string name="home_version_mismatch">管理器版本 (%1$d) 與 KernelSU 版本 (%2$d) 不符</string>
     <string name="home_device_model">裝置型號</string>
     <string name="home_kernel">核心版本</string>
@@ -249,9 +249,9 @@
     <string name="module_shortcut_created">已在桌面建立捷徑</string>
     <string name="module_shortcut_updated">捷徑已更新</string>
     <string name="module_shortcut_delete">刪除捷徑</string>
-    <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為本程式啟用「建立桌面捷徑」權限。</string>
-    <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為本程式啟用「桌面捷徑」權限。</string>
-    <string name="module_shortcut_permission_tip_default">如未能建立捷徑，請在系統設定中為本程式開啟桌面捷徑權限。</string>
+    <string name="module_shortcut_permission_tip_xiaomi">請在 Xiaomi 設定中為本程式啟用「建立桌面捷徑」權限</string>
+    <string name="module_shortcut_permission_tip_oppo">請在 OPPO 設定中為本程式啟用「桌面捷徑」權限</string>
+    <string name="module_shortcut_permission_tip_default">如未能建立捷徑，請在系統設定中為本程式開啟桌面捷徑權限</string>
     <string name="no_such_module">模組 %s 不存在</string>
     <string name="module_unavailable">模組 %s 已停用、更新中或待移除</string>
     <string name="select_file_tip_nogki">請選擇需要修補的 GKI 裝置映像檔</string>
@@ -267,7 +267,7 @@
     <string name="settings_auto_jailbreak">自動越獄</string>
     <string name="settings_auto_jailbreak_summary">開機時若偵測到寬容模式 SELinux，將自動使用 Magica 提升權限（需授予本程式背景啟動權限）</string>
     <string name="settings_soft_reboot">以軟重啟替代重新啟動</string>
-    <string name="settings_soft_reboot_summary">安裝、更新或開關模組時以軟重啟替代完整重新啟動。</string>
+    <string name="settings_soft_reboot_summary">安裝、更新或開關模組時以軟重啟替代完整重新啟動</string>
     <string name="allow_shell">保持向 Shell 授予 Root 權限</string>
     <string name="allow_shell_summary">保持允許 adb shell 調用 su，非必要請勿啟用</string>
     <string name="enable_adb">開機時強制開啟 ADB 調試</string>
