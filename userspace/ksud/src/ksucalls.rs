@@ -3,34 +3,65 @@ use anyhow::bail;
 
 use crate::ksu_uapi;
 use std::fs;
+use std::io;
 use std::os::fd::RawFd;
 use std::sync::OnceLock;
+
+const DRIVER_FD_NAME: &str = "anon_inode:[ksu_driver]";
+const SU_DRIVER_FD_NAME: &str = "anon_inode:[ksu_driver_su]";
 
 // Global driver fd cache
 static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
 static INFO_CACHE: OnceLock<ksu_uapi::ksu_get_info_cmd> = OnceLock::new();
 
-fn scan_driver_fd() -> Option<RawFd> {
-    let fd_dir = fs::read_dir("/proc/self/fd").ok()?;
+fn set_cloexec(fd: RawFd) -> io::Result<()> {
+    let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
+    if flags == -1 {
+        return Err(io::Error::last_os_error());
+    }
+
+    if unsafe { libc::fcntl(fd, libc::F_SETFD, flags | libc::FD_CLOEXEC) } == -1 {
+        return Err(io::Error::last_os_error());
+    }
+
+    Ok(())
+}
+
+fn scan_driver_fd() -> io::Result<Option<RawFd>> {
+    let fd_dir = fs::read_dir("/proc/self/fd")?;
+    let mut driver_fd = None;
 
     for entry in fd_dir.flatten() {
         if let Ok(fd_num) = entry.file_name().to_string_lossy().parse::<i32>() {
             let link_path = format!("/proc/self/fd/{fd_num}");
             if let Ok(target) = fs::read_link(&link_path) {
                 let target_str = target.to_string_lossy();
-                if target_str.contains("[ksu_driver]") {
-                    return Some(fd_num);
+                if target_str == SU_DRIVER_FD_NAME {
+                    set_cloexec(fd_num)?;
+                    return Ok(Some(fd_num));
+                }
+                if target_str == DRIVER_FD_NAME {
+                    driver_fd = Some(fd_num);
                 }
             }
         }
     }
 
-    None
+    Ok(driver_fd)
+}
+
+pub fn claim_inherited_driver_fd() -> io::Result<()> {
+    if DRIVER_FD.get().is_none()
+        && let Some(fd) = scan_driver_fd()?
+    {
+        let _ = DRIVER_FD.set(fd);
+    }
+    Ok(())
 }
 
 // Get cached driver fd
 fn init_driver_fd() -> Option<RawFd> {
-    let fd = scan_driver_fd();
+    let fd = scan_driver_fd().ok().flatten();
     if fd.is_none() {
         let mut fd = -1;
         unsafe {
@@ -50,8 +81,6 @@ fn init_driver_fd() -> Option<RawFd> {
 
 // ioctl wrapper using libc
 fn ksuctl<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
-    use std::io;
-
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     unsafe {
         let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);

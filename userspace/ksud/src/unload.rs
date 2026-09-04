@@ -64,7 +64,7 @@ fn find_ksu_fd_holders() -> Vec<i32> {
             let link_path = fd_entry.path();
             if let Ok(target) = fs::read_link(&link_path) {
                 let target_str = target.to_string_lossy();
-                if target_str.contains("[ksu_driver]") || target_str.contains("[ksu_fdwrapper]") {
+                if target_str.contains("[ksu_driver") || target_str.contains("[ksu_fdwrapper]") {
                     pids.push(pid);
                     break;
                 }
@@ -95,7 +95,7 @@ fn close_ksu_fds() {
         };
         if let Ok(target) = fs::read_link(entry.path()) {
             let target_str = target.to_string_lossy();
-            if target_str.contains("[ksu_driver]") || target_str.contains("[ksu_fdwrapper]") {
+            if target_str.contains("[ksu_driver") || target_str.contains("[ksu_fdwrapper]") {
                 info!("unload: closing fd {fd} -> {target_str}");
                 unsafe {
                     libc::close(fd);
