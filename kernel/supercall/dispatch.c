@@ -168,6 +168,24 @@ static int do_check_safemode(void __user *arg)
     return 0;
 }
 
+static int do_check_fastbootd(void __user *arg)
+{
+    struct ksu_check_fastbootd_cmd cmd;
+
+    cmd.requested = ksu_is_fastbootd_requested();
+
+    if (cmd.requested) {
+        pr_warn("fastbootd rescue requested!\n");
+    }
+
+    if (copy_to_user(arg, &cmd, sizeof(cmd))) {
+        pr_err("check_fastbootd: copy_to_user failed\n");
+        return -EFAULT;
+    }
+
+    return 0;
+}
+
 static int do_new_get_allow_list_common(void __user *arg, bool allow)
 {
     struct ksu_new_get_allow_list_cmd cmd;
@@ -726,6 +744,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .name = "CHECK_SAFEMODE",
         .handler = do_check_safemode,
         .perm_check = always_allow
+    },
+    {
+        .cmd = KSU_IOCTL_CHECK_FASTBOOTD,
+        .name = "CHECK_FASTBOOTD",
+        .handler = do_check_fastbootd,
+        .perm_check = only_root
     },
     {
         .cmd = KSU_IOCTL_GET_ALLOW_LIST,

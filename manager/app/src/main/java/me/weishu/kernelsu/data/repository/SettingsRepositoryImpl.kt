@@ -202,6 +202,14 @@ class SettingsRepositoryImpl : SettingsRepository {
             false
         }
 
+    override suspend fun getFastbootdRescueStatus(): String = getFeatureStatus("fastbootd_rescue")
+
+    override suspend fun getFastbootdRescuePersistValue(): Long? =
+        getFeaturePersistValue("fastbootd_rescue")
+
+    override fun setFastbootdRescueEnabled(enabled: Boolean): Boolean =
+        execKsud("feature set fastbootd_rescue ${if (enabled) 1 else 0}", true)
+
     override fun isDefaultUmountModules(): Boolean = Natives.isDefaultUmountModules()
 
     override fun setDefaultUmountModules(enabled: Boolean): Boolean = Natives.setDefaultUmountModules(enabled)

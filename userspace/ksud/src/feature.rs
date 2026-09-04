@@ -21,6 +21,7 @@ pub enum FeatureId {
     Sulog = 2,
     AdbRoot = 3,
     SelinuxHide = 4,
+    FastbootdRescue = 5,
 }
 
 impl FeatureId {
@@ -31,6 +32,7 @@ impl FeatureId {
             2 => Some(Self::Sulog),
             3 => Some(Self::AdbRoot),
             4 => Some(Self::SelinuxHide),
+            5 => Some(Self::FastbootdRescue),
             _ => None,
         }
     }
@@ -42,6 +44,7 @@ impl FeatureId {
             Self::Sulog => "sulog",
             Self::AdbRoot => "adb_root",
             Self::SelinuxHide => "selinux_hide",
+            Self::FastbootdRescue => "fastbootd_rescue",
         }
     }
 
@@ -60,7 +63,14 @@ impl FeatureId {
             Self::SelinuxHide => {
                 "SELinux Hide - sanitize /sys/fs/selinux access results for app UIDs"
             }
+            Self::FastbootdRescue => {
+                "Fastbootd Rescue - enter fastbootd after three volume-up presses during boot"
+            }
         }
+    }
+
+    const fn is_module_manageable(self) -> bool {
+        !matches!(self, Self::FastbootdRescue)
     }
 }
 
@@ -71,6 +81,7 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "sulog" | "2" => Ok(FeatureId::Sulog),
         "adb_root" | "3" => Ok(FeatureId::AdbRoot),
         "selinux_hide" | "4" => Ok(FeatureId::SelinuxHide),
+        "fastbootd_rescue" | "5" => Ok(FeatureId::FastbootdRescue),
         _ => bail!("Unknown feature: {name}"),
     }
 }
@@ -142,6 +153,20 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
 
     log::info!("Loaded {} features from config", features.len());
     Ok(features)
+}
+
+pub fn is_fastbootd_rescue_enabled_in_config() -> bool {
+    let features = match load_binary_config() {
+        Ok(features) => features,
+        Err(error) => {
+            log::warn!("failed to read fastbootd rescue config, keep rescue enabled: {error:#}");
+            return true;
+        }
+    };
+
+    features
+        .get(&(FeatureId::FastbootdRescue as u32))
+        .is_none_or(|value| *value != 0)
 }
 
 pub fn save_binary_config(features: &HashMap<u32, u64>) -> Result<()> {
@@ -251,7 +276,9 @@ pub fn set_feature(id: &str, value: u64) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
 
     // Check if this feature is managed by any module
-    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+    if feature_id.is_module_manageable()
+        && let Ok(managed_features_map) = crate::module::get_managed_features()
+    {
         // Find which modules manage this feature
         let managing_modules: Vec<&String> = managed_features_map
             .iter()
@@ -317,6 +344,7 @@ pub fn list_features() {
         FeatureId::Sulog,
         FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
+        FeatureId::FastbootdRescue,
     ];
 
     for feature_id in &all_features {
@@ -331,7 +359,11 @@ pub fn list_features() {
             "DISABLED".to_string()
         };
 
-        let managed_by = feature_to_modules.get(feature_id.name());
+        let managed_by = if feature_id.is_module_manageable() {
+            feature_to_modules.get(feature_id.name())
+        } else {
+            None
+        };
         let managed_mark = if managed_by.is_some() {
             " [MODULE_MANAGED]"
         } else {
@@ -380,6 +412,7 @@ pub fn save_config() -> Result<()> {
         FeatureId::Sulog,
         FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
+        FeatureId::FastbootdRescue,
     ];
 
     for feature_id in &all_features {
@@ -405,9 +438,10 @@ pub fn check_feature(id: &str) -> Result<()> {
 
     // Check if this feature is managed by any module
     let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
-    let is_managed = managed_features_map
-        .values()
-        .any(|features| features.iter().any(|f| f == feature_id.name()));
+    let is_managed = feature_id.is_module_manageable()
+        && managed_features_map
+            .values()
+            .any(|features| features.iter().any(|f| f == feature_id.name()));
 
     if is_managed {
         println!("managed");
@@ -449,6 +483,13 @@ pub fn init_features() -> Result<()> {
 
                 for feature_name in feature_list {
                     if let Ok(feature_id) = parse_feature_id(feature_name) {
+                        if !feature_id.is_module_manageable() {
+                            log::warn!(
+                                "  - Feature '{feature_name}' does not support module management, ignoring module '{module_id}'",
+                            );
+                            continue;
+                        }
+
                         let feature_id_u32 = feature_id as u32;
                         // Remove managed features from config, let modules control them
                         if features.remove(&feature_id_u32).is_some() {
