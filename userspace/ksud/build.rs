@@ -219,13 +219,24 @@ fn assemble_bootstrap() {
 fn main() {
     assemble_bootstrap();
 
-    let (code, name) = match get_git_version() {
-        Ok((code, name)) => (code, name),
-        Err(_) => {
-            // show warning if git is not installed
-            println!("cargo:warning=Failed to get git version, using 0.0.0");
-            (0, "0.0.0".to_string())
-        }
+    // Allow pinning the version (e.g. to match an official manager release)
+    let (code, name) = match (
+        env::var("KSU_VERSION_CODE"),
+        env::var("KSU_VERSION_NAME"),
+    ) {
+        (Ok(code), Ok(name)) => (
+            code.parse()
+                .unwrap_or_else(|_| panic!("invalid KSU_VERSION_CODE: {code}")),
+            name,
+        ),
+        _ => match get_git_version() {
+            Ok((code, name)) => (code, name),
+            Err(_) => {
+                // show warning if git is not installed
+                println!("cargo:warning=Failed to get git version, using 0.0.0");
+                (0, "0.0.0".to_string())
+            }
+        },
     };
     if env::var("KSU_PACKAGE_NAME").is_err() {
         println!("cargo:rustc-env=KSU_PACKAGE_NAME=me.weishu.kernelsu");
