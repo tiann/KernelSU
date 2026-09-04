@@ -908,10 +908,14 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     void *data;
     struct policy_file fp;
 
-    len = old_pol->policydb.len;
+    // Some device policy db seems not marking type itself in type_attr_map_array
+    // policydb_read() adds each type to its own attribute map, so old_pol->policydb.len may be smaller
+    // preserve one ebitmap entry for this condition to avoid trigger -EINVAL
+    len = old_pol->policydb.len + (size_t)old_pol->policydb.p_types.nprim * (sizeof(u32) + sizeof(u64));
+
     data = vmalloc(len);
     if (!data) {
-        pr_err("alloc policy len %ld\n", len);
+        pr_err("alloc policy buffer len %zu\n", len);
         ret = -ENOMEM;
         goto out_free_data;
     }
@@ -924,6 +928,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
         pr_err("sepolicy: policydb_write: %d\n", ret);
         goto out_free_data;
     }
+    len -= fp.len;
     // https://android.googlesource.com/kernel/common/+/35a7845718734ae638b85b420534cb859498dab6%5E%21
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
     // https://android-review.googlesource.com/c/kernel/common/+/3009995/11/security/selinux/ss/policydb.c
@@ -961,7 +966,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
         pr_err("sepolicy: policydb_read: %d\n", ret);
         goto out_free_policydb;
     }
-    new_pol->policydb.len = old_pol->policydb.len;
+    new_pol->policydb.len = len;
     kvfree(data);
 
     return new_pol;
