@@ -10,6 +10,8 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol);
 
 int ksu_serialize_sepolicy(struct selinux_policy *pol, void **data, size_t *len);
 
+struct selinux_policy *ksu_get_backup_sepolicy(void);
+
 int ksu_export_backup_sepolicy(struct file *file);
 
 void ksu_drop_backup_sepolicy(void);

@@ -91,14 +91,16 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
     ssize_t length;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    struct selinux_policy *backup = ksu_get_backup_sepolicy();
+
     length = avc_has_perm(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__CHECK_CONTEXT, NULL);
     if (length)
         goto out;
-    length = security_context_to_sid_with_policy(backup_sepolicy, buf, size, &sid, SECSID_NULL, GFP_KERNEL);
+    length = security_context_to_sid_with_policy(backup, buf, size, &sid, SECSID_NULL, GFP_KERNEL);
     if (length)
         goto out;
 
-    length = security_sid_to_context_with_policy(backup_sepolicy, sid, &canon, &len);
+    length = security_sid_to_context_with_policy(backup, sid, &canon, &len);
     if (length)
         goto out;
 
@@ -144,6 +146,8 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
     ssize_t length;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    struct selinux_policy *backup = ksu_get_backup_sepolicy();
+
     length = avc_has_perm(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__COMPUTE_AV, NULL);
 #else
     length =
@@ -167,15 +171,15 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
         goto out;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-    length = security_context_to_sid_with_policy(backup_sepolicy, scon, strlen(scon), &ssid, SECSID_NULL, GFP_KERNEL);
+    length = security_context_to_sid_with_policy(backup, scon, strlen(scon), &ssid, SECSID_NULL, GFP_KERNEL);
     if (length)
         goto out;
 
-    length = security_context_to_sid_with_policy(backup_sepolicy, tcon, strlen(tcon), &tsid, SECSID_NULL, GFP_KERNEL);
+    length = security_context_to_sid_with_policy(backup, tcon, strlen(tcon), &tsid, SECSID_NULL, GFP_KERNEL);
     if (length)
         goto out;
 
-    security_compute_av_user_with_policy(backup_sepolicy, ssid, tsid, tclass, &avd);
+    security_compute_av_user_with_policy(backup, ssid, tsid, tclass, &avd);
 #else
     length = security_context_str_to_sid(&fake_state, scon, &ssid, GFP_KERNEL);
     if (length)
@@ -231,7 +235,9 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
             size--;
         }
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-        error = security_context_to_sid_with_policy(backup_sepolicy, str, size, &sid, SECSID_NULL, GFP_KERNEL);
+        struct selinux_policy *backup = ksu_get_backup_sepolicy();
+
+        error = security_context_to_sid_with_policy(backup, str, size, &sid, SECSID_NULL, GFP_KERNEL);
 #else
         error = security_context_to_sid(&fake_state, str, size, &sid, GFP_KERNEL);
 #endif
@@ -322,9 +328,11 @@ static void hook_selinux_status_open();
 static void ksu_selinux_hide_unhook();
 static int ksu_selinux_hide_enable()
 {
+    struct selinux_policy *backup = ksu_get_backup_sepolicy();
     int ret;
+
     pr_info("selinux_hide: init selinux hide\n");
-    if (!backup_sepolicy) {
+    if (!backup) {
         pr_err("no backup sepolicy available, please save feature and reboot to retry!\n");
         return -EAGAIN;
     }
@@ -346,7 +354,7 @@ static int ksu_selinux_hide_enable()
     }
 #else
     fake_state.initialized = true;
-    fake_state.policy = backup_sepolicy;
+    fake_state.policy = backup;
 #endif
 
     context_write = &selinux_write_op[SEL_CONTEXT];

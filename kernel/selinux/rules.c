@@ -1,5 +1,6 @@
 #include "linux/rcupdate.h"
 #include "security.h"
+#include <linux/atomic.h>
 #include <linux/uaccess.h>
 #include <linux/types.h>
 #include <linux/version.h>
@@ -17,8 +18,8 @@
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "xfrm.h"
 
-struct selinux_policy *backup_sepolicy;
-static DEFINE_MUTEX(backup_sepolicy_lock);
+/* Published once after initialization and cleared after all users have stopped. */
+static atomic_long_t backup_sepolicy = ATOMIC_LONG_INIT(0);
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
 
@@ -47,7 +48,7 @@ static void reset_avc_cache()
 
 void apply_kernelsu_rules()
 {
-    struct selinux_policy *pol, *old_pol = selinux_state.policy;
+    struct selinux_policy *backup, *pol, *old_pol = selinux_state.policy;
     struct policydb *db;
 
     if (!getenforce()) {
@@ -55,31 +56,26 @@ void apply_kernelsu_rules()
     }
 
     mutex_lock(&selinux_state.policy_mutex);
-    mutex_lock(&backup_sepolicy_lock);
-    backup_sepolicy =
-        ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
-    if (IS_ERR(backup_sepolicy)) {
-        pr_err("failed to create backup sepolicy: %ld\n", PTR_ERR(backup_sepolicy));
-        backup_sepolicy = NULL;
+    backup = ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
+    if (IS_ERR(backup)) {
+        pr_err("failed to create backup sepolicy: %ld\n", PTR_ERR(backup));
     } else {
-        backup_sepolicy->sidtab = kzalloc(sizeof(*backup_sepolicy->sidtab), GFP_KERNEL);
-        if (!backup_sepolicy->sidtab) {
+        backup->sidtab = kzalloc(sizeof(*backup->sidtab), GFP_KERNEL);
+        if (!backup->sidtab) {
             pr_err("failed to alloc backup sidtab\n");
-            ksu_destroy_sepolicy(backup_sepolicy);
-            backup_sepolicy = NULL;
+            ksu_destroy_sepolicy(backup);
         } else {
-            int ret = policydb_load_isids(&backup_sepolicy->policydb, backup_sepolicy->sidtab);
+            int ret = policydb_load_isids(&backup->policydb, backup->sidtab);
             if (ret) {
                 pr_err("failed to load isids for backup sepolicy: %d!\n", ret);
-                kfree(backup_sepolicy->sidtab);
-                ksu_destroy_sepolicy(backup_sepolicy);
-                backup_sepolicy = NULL;
+                kfree(backup->sidtab);
+                ksu_destroy_sepolicy(backup);
             } else {
-                pr_info("backup sepolicy success! latest_granting=%d\n", backup_sepolicy->latest_granting);
+                atomic_long_set_release(&backup_sepolicy, (long)backup);
+                pr_info("backup sepolicy success! latest_granting=%d\n", backup->latest_granting);
             }
         }
     }
-    mutex_unlock(&backup_sepolicy_lock);
     pol = ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (IS_ERR(pol)) {
         pr_err("failed to dup selinux_policy: %ld\n", PTR_ERR(pol));
@@ -169,22 +165,25 @@ out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
 }
 
+struct selinux_policy *ksu_get_backup_sepolicy(void)
+{
+    return (struct selinux_policy *)atomic_long_read_acquire(&backup_sepolicy);
+}
+
 int ksu_export_backup_sepolicy(struct file *file)
 {
+    struct selinux_policy *backup = ksu_get_backup_sepolicy();
     const char *cursor;
     void *data;
     size_t len;
     int ret;
 
-    mutex_lock(&backup_sepolicy_lock);
-    if (!backup_sepolicy) {
-        ret = -ENOENT;
-        goto out_unlock;
-    }
+    if (!backup)
+        return -ENOENT;
 
-    ret = ksu_serialize_sepolicy(backup_sepolicy, &data, &len);
+    ret = ksu_serialize_sepolicy(backup, &data, &len);
     if (ret)
-        goto out_unlock;
+        return ret;
 
     cursor = data;
     while (len) {
@@ -206,23 +205,20 @@ int ksu_export_backup_sepolicy(struct file *file)
 
 out_free:
     kvfree(data);
-
-out_unlock:
-    mutex_unlock(&backup_sepolicy_lock);
     return ret;
 }
 
 void ksu_drop_backup_sepolicy(void)
 {
-    mutex_lock(&backup_sepolicy_lock);
-    if (backup_sepolicy) {
-        pr_info("drop backup_sepolicy\n");
-        sidtab_destroy(backup_sepolicy->sidtab);
-        kfree(backup_sepolicy->sidtab);
-        ksu_destroy_sepolicy(backup_sepolicy);
-        backup_sepolicy = NULL;
-    }
-    mutex_unlock(&backup_sepolicy_lock);
+    struct selinux_policy *backup = (struct selinux_policy *)atomic_long_xchg(&backup_sepolicy, 0);
+
+    if (!backup)
+        return;
+
+    pr_info("drop backup_sepolicy\n");
+    sidtab_destroy(backup->sidtab);
+    kfree(backup->sidtab);
+    ksu_destroy_sepolicy(backup);
 }
 
 #define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
