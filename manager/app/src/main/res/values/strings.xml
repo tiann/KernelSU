@@ -275,7 +275,7 @@
     <string name="settings_soft_reboot">Soft restart instead of reboot</string>
     <string name="settings_soft_reboot_summary">Use soft restart instead of a full reboot when installing, updating, or toggling modules.</string>
     <string name="settings_fastbootd_rescue">Fastbootd rescue</string>
-    <string name="settings_fastbootd_rescue_summary">Enabled by default. During boot, press Volume Up three times within five seconds to enter Fastbootd.</string>
+    <string name="settings_fastbootd_rescue_summary">Enabled by default. During boot, press Volume Up three times to enter Fastbootd.</string>
     <string name="allow_shell">Always grant Root to Shell</string>
     <string name="allow_shell_summary">Always allow adb shell to call SU command. Do not enable this unless absolutely necessary.</string>
     <string name="enable_adb">Force enable adb on boot</string>

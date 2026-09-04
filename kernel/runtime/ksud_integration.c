@@ -10,7 +10,6 @@
 #include <linux/err.h>
 #include <linux/file.h>
 #include <linux/fs.h>
-#include <linux/jiffies.h>
 #include <linux/version.h>
 #include <linux/input-event-codes.h>
 #include <linux/kprobes.h>
@@ -473,11 +472,9 @@ static void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *
 
 static unsigned int volumedown_pressed_count = 0;
 static unsigned int volumeup_pressed_count = 0;
-static unsigned long volumeup_first_press;
 static bool fastbootd_requested;
 
 #define FASTBOOTD_PRESS_COUNT 3U
-#define FASTBOOTD_PRESS_WINDOW (5 * HZ)
 
 static bool is_volumedown_enough(unsigned int count)
 {
@@ -486,15 +483,7 @@ static bool is_volumedown_enough(unsigned int count)
 
 static void handle_volumeup_press(void)
 {
-    unsigned long now = jiffies;
-
-    if (!volumeup_pressed_count || time_after(now, volumeup_first_press + FASTBOOTD_PRESS_WINDOW)) {
-        volumeup_pressed_count = 1;
-        volumeup_first_press = now;
-    } else {
-        volumeup_pressed_count += 1;
-    }
-
+    volumeup_pressed_count += 1;
     pr_info("KEY_VOLUMEUP pressed: %u/%u\n", volumeup_pressed_count, FASTBOOTD_PRESS_COUNT);
     if (volumeup_pressed_count >= FASTBOOTD_PRESS_COUNT) {
         WRITE_ONCE(fastbootd_requested, true);
