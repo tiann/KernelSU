@@ -6,7 +6,7 @@
     </style>
 
     <style name="Theme.KernelSU.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/ic_splash_background</item>
+        <item name="windowSplashScreenBackground">@android:color/background_dark</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_splash</item>
         <item name="windowSplashScreenAnimationDuration">300</item>
         <item name="postSplashScreenTheme">@style/Theme.KernelSU</item>
