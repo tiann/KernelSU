@@ -67,27 +67,51 @@ object DownloadManager {
     internal fun updateProgress(id: Int, progress: Int) {
         _downloads.update { map ->
             val state = map[id] ?: return@update map
+            if (state.status == Status.COMPLETED || state.status == Status.FAILED) {
+                return@update map
+            }
             map + (id to state.copy(progress = progress, status = Status.DOWNLOADING))
         }
     }
 
-    internal fun markCompleted(id: Int, uri: Uri) {
-        _downloads.update { map ->
-            val state = map[id] ?: return@update map
-            map + (id to state.copy(status = Status.COMPLETED, progress = 100, resultUri = uri))
+    internal fun tryMarkCompleted(id: Int, uri: Uri): Boolean {
+        if (!tryTransitionToTerminal(id) { state ->
+                state.copy(status = Status.COMPLETED, progress = 100, resultUri = uri)
+            }) {
+            return false
         }
 
         val callback = completionCallbacks.remove(id)
         if (callback != null) {
             mainHandler.post { callback(uri) }
         }
+        return true
     }
 
-    internal fun markFailed(id: Int, error: String) {
-        _downloads.update { map ->
-            val state = map[id] ?: return@update map
-            map + (id to state.copy(status = Status.FAILED, error = error))
+    internal fun tryMarkFailed(id: Int, error: String): Boolean {
+        if (!tryTransitionToTerminal(id) { state ->
+                state.copy(status = Status.FAILED, error = error)
+            }) {
+            return false
         }
         completionCallbacks.remove(id)
+        return true
+    }
+
+    private inline fun tryTransitionToTerminal(
+        id: Int,
+        transform: (DownloadState) -> DownloadState,
+    ): Boolean {
+        while (true) {
+            val current = _downloads.value
+            val state = current[id] ?: return false
+            if (state.status == Status.COMPLETED || state.status == Status.FAILED) {
+                return false
+            }
+            val updated = current + (id to transform(state))
+            if (_downloads.compareAndSet(current, updated)) {
+                return true
+            }
+        }
     }
 }

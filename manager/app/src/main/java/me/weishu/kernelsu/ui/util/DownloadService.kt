@@ -17,11 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.MainActivity
+import okhttp3.Call
 import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
@@ -47,6 +49,7 @@ class DownloadService : Service() {
     }
 
     private val activeJobs = ConcurrentHashMap<Int, Job>()
+    private val activeCalls = ConcurrentHashMap<Int, Call>()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationManager: NotificationManager
 
@@ -83,9 +86,10 @@ class DownloadService : Service() {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
                 if (downloadId != -1) {
                     activeJobs[downloadId]?.cancel()
+                    activeCalls.remove(downloadId)?.cancel()
                     activeJobs.remove(downloadId)
                     notificationManager.cancel(downloadId)
-                    DownloadManager.markFailed(downloadId, "Cancelled")
+                    DownloadManager.tryMarkFailed(downloadId, "Cancelled")
                     stopForegroundIfIdle()
                 }
             }
@@ -106,66 +110,87 @@ class DownloadService : Service() {
 
     private fun startDownload(id: Int, url: String, fileName: String) {
         val job = serviceScope.launch {
-            val target = resolveAvailableTarget(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                fileName
-            )
+            var target: File? = null
             try {
-                ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
-                    .use { resp ->
-                        if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-                        val body = resp.body
-                        val total = body.contentLength()
+                val targetFile = reserveAvailableTarget(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    fileName
+                )
+                target = targetFile
+                ensureActive()
+                val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).build())
+                activeCalls[id] = call
+                ensureActive()
+                call.execute().use { resp ->
+                    if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                    val body = resp.body
+                    val total = body.contentLength()
 
-                        FileOutputStream(target).use { fos ->
-                            val buf = ByteArray(8 * 1024)
-                            var soFar = 0L
-                            var lastNotifiedProgress = -1
-                            val source = body.byteStream()
+                    FileOutputStream(targetFile).use { fos ->
+                        val buf = ByteArray(8 * 1024)
+                        var soFar = 0L
+                        var lastNotifiedProgress = -1
+                        val source = body.byteStream()
 
-                            while (true) {
-                                val read = source.read(buf)
-                                if (read == -1) break
-                                fos.write(buf, 0, read)
-                                soFar += read
+                        while (true) {
+                            ensureActive()
+                            val read = source.read(buf)
+                            ensureActive()
+                            if (read == -1) break
+                            fos.write(buf, 0, read)
+                            soFar += read
 
-                                if (total > 0) {
-                                    val percent =
-                                        ((soFar * 100L) / total).toInt().coerceIn(0, 100)
-                                    DownloadManager.updateProgress(id, percent)
+                            if (total > 0) {
+                                val percent =
+                                    ((soFar * 100L) / total).toInt().coerceIn(0, 100)
+                                DownloadManager.updateProgress(id, percent)
 
-                                    if (percent - lastNotifiedProgress >= 2 || percent == 100) {
-                                        notificationManager.notify(
-                                            id,
-                                            buildProgressNotification(id, target.name, percent)
-                                        )
-                                        lastNotifiedProgress = percent
-                                    }
+                                if (percent - lastNotifiedProgress >= 2 || percent == 100) {
+                                    notificationManager.notify(
+                                        id,
+                                        buildProgressNotification(id, targetFile.name, percent)
+                                    )
+                                    lastNotifiedProgress = percent
                                 }
                             }
-                            fos.flush()
                         }
+                        fos.flush()
                     }
+                }
 
-                val uri = Uri.fromFile(target)
-                DownloadManager.markCompleted(id, uri)
+                ensureActive()
+                val uri = Uri.fromFile(targetFile)
+                if (!DownloadManager.tryMarkCompleted(id, uri)) {
+                    targetFile.delete()
+                    return@launch
+                }
+                target = null
 
-                notificationManager.cancel(id)
-                notificationManager.notify(
-                    COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, target.name, uri)
-                )
+                try {
+                    notificationManager.cancel(id)
+                    notificationManager.notify(
+                        COMPLETION_NOTIFICATION_ID_BASE + id,
+                        buildCompletionNotification(id, targetFile.name, uri)
+                    )
+                } catch (_: Exception) {
+                    // The download is already complete. Notification failures must not delete it
+                    // or rewrite its terminal state.
+                }
             } catch (e: CancellationException) {
+                target?.delete()
                 throw e
             } catch (e: Exception) {
-                DownloadManager.markFailed(id, e.message ?: "Unknown error")
-
-                notificationManager.cancel(id)
-                notificationManager.notify(
-                    COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildFailureNotification(target.name)
-                )
+                target?.delete()
+                ensureActive()
+                if (DownloadManager.tryMarkFailed(id, e.message ?: "Unknown error")) {
+                    notificationManager.cancel(id)
+                    notificationManager.notify(
+                        COMPLETION_NOTIFICATION_ID_BASE + id,
+                        buildFailureNotification(target?.name ?: fileName)
+                    )
+                }
             } finally {
+                activeCalls.remove(id)
                 activeJobs.remove(id)
                 stopForegroundIfIdle()
             }
@@ -173,10 +198,14 @@ class DownloadService : Service() {
         activeJobs[id] = job
     }
 
-    private fun resolveAvailableTarget(
+    private fun reserveAvailableTarget(
         directory: File,
         fileName: String
     ): File {
+        if (!directory.isDirectory && !directory.mkdirs() && !directory.isDirectory) {
+            throw IOException("Unable to create download directory: $directory")
+        }
+
         val dotIndex = fileName.lastIndexOf('.')
         val baseName = if (dotIndex > 0) fileName.substring(0, dotIndex) else fileName
         val extension = if (dotIndex > 0) fileName.substring(dotIndex) else ""
@@ -189,7 +218,7 @@ class DownloadService : Service() {
                 "$baseName ($index)$extension"
             }
             val candidate = File(directory, candidateName)
-            if (!candidate.exists()) {
+            if (candidate.createNewFile()) {
                 return candidate
             }
             index++
