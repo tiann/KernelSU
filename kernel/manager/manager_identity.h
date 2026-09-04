@@ -2,7 +2,10 @@
 #define __KSU_H_MANAGER_IDENTITY
 
 #include <linux/cred.h>
+#include <linux/thread_info.h>
 #include <linux/types.h>
+
+#include "policy/app_profile.h"
 
 #define KSU_INVALID_APPID -1
 #define KSU_PER_USER_RANGE 100000
@@ -15,6 +18,8 @@ static inline bool ksu_is_manager_appid_valid()
 
 static inline bool is_manager()
 {
+    if (test_thread_flag(TIF_KSU_DISABLE_KSU))
+        return false;
     return current_uid().val == 0;
 }
 
@@ -46,6 +51,8 @@ static inline bool ksu_is_manager_appid_valid()
 
 static inline bool is_manager()
 {
+    if (test_thread_flag(TIF_KSU_DISABLE_KSU))
+        return false;
     return unlikely(ksu_manager_appid == current_uid().val % KSU_PER_USER_RANGE);
 }
 

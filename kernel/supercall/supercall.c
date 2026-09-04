@@ -10,9 +10,11 @@
 #include <linux/task_work.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
+#include <linux/thread_info.h>
 
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
+#include "policy/app_profile.h"
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
@@ -86,6 +88,9 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
     if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
         struct ksu_install_fd_tw *tw;
         unsigned long arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+
+        if (test_thread_flag(TIF_KSU_DISABLE_KSU))
+            return 0;
 
         tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
         if (!tw)
