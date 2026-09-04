@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
@@ -140,7 +141,16 @@ fun SearchStatus.SearchPager(
             .drawBehind { drawRect(surfaceColor.copy(alpha = surfaceAlpha)) }
             .semantics { onClick { false } }
             .then(
-                if (!searchStatus.isCollapsed()) Modifier.pointerInput(Unit) { } else Modifier
+                if (!searchStatus.isCollapsed()) {
+                    Modifier.pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Final)
+                                event.changes.forEach { it.consume() }
+                            }
+                        }
+                    }
+                } else Modifier
             )
     ) {
         Row(

@@ -398,8 +398,8 @@ fun SuperUserPagerMiuix(
         contentWindowInsets = WindowInsets.systemBars.add(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         val layoutDirection = LocalLayoutDirection.current
+        val lazyListState = rememberLazyListState()
         searchStatus.SearchBox {
-            val lazyListState = rememberLazyListState()
             val refreshTick = remember { mutableIntStateOf(0) }
             val latestGroupedApps = rememberUpdatedState(uiState.groupedApps)
             val latestRefreshing = rememberUpdatedState(uiState.isRefreshing)
