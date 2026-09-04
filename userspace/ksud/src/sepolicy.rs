@@ -7,7 +7,7 @@ use nom::{
     character::complete::{space0, space1},
     combinator::map,
 };
-use std::{path::Path, vec};
+use std::{fs::OpenOptions, os::fd::AsRawFd, path::Path, vec};
 
 type SeObject<'a> = Vec<&'a str>;
 
@@ -760,6 +760,19 @@ pub fn live_patch(policy: &str) -> Result<()> {
     }
     apply_rules_batch(&result, false)?;
     Ok(())
+}
+
+pub fn export<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path = path.as_ref();
+    let file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(path)
+        .with_context(|| format!("Failed to open sepolicy output {}", path.display()))?;
+
+    crate::ksucalls::export_sepolicy(file.as_raw_fd())
+        .with_context(|| format!("Failed to export sepolicy to {}", path.display()))
 }
 
 pub fn apply_file<P: AsRef<Path>>(path: P) -> Result<()> {
