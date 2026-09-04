@@ -19,9 +19,9 @@ KernelSU 的 `syscall_hook` 机制依赖对系统调用表的修改，从而把�
 
 ### 方案 1：启用 `KSU_X86_PATCH_SYSCALL_DISPATCHER`
 
-KernelSU 3.2.6 为 `x86_64` 新增了官方机制，即编译选项 `KSU_X86_PATCH_SYSCALL_DISPATCHER`。
+KernelSU 3.3.0 为 `x86_64` 新增了官方机制，即编译选项 `KSU_X86_PATCH_SYSCALL_DISPATCHER`。
 
-启用后，KernelSU 会在运行时动态 patch 已加固的 syscall dispatcher，使 syscall hook 可以正常工作，而不再依赖之前那组内核源码补丁。如果你使用的是 KernelSU 3.2.6 或更新版本，并且可以调整 KernelSU 的构建配置，建议优先采用这种方式。
+启用后，KernelSU 会在运行时动态 patch 已加固的 syscall dispatcher，使 syscall hook 可以正常工作，而不再依赖之前那组内核源码补丁。如果你使用的是 KernelSU 3.3.0 或更新版本，并且可以调整 KernelSU 的构建配置，建议优先采用这种方式。
 
 ### 方案 2：应用原有的内核源码补丁
 
@@ -53,5 +53,5 @@ https://github.com/android-generic/kernel-zenith/commit/f5813e10b7630e1ccd86fc2c
 
 ## 应该选择哪种方案？
 
-- 如果你使用的是 KernelSU 3.2.6 或更新版本，且可以修改 KernelSU 构建配置，建议启用 `KSU_X86_PATCH_SYSCALL_DISPATCHER`。
+- 如果你使用的是 KernelSU 3.3.0 或更新版本，且可以修改 KernelSU 构建配置，建议启用 `KSU_X86_PATCH_SYSCALL_DISPATCHER`。
 - 如果你希望继续保持现有的内核补丁工作流，则继续使用上面的源码补丁方案。

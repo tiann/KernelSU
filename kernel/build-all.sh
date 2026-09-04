@@ -2,7 +2,7 @@
 set -e
 
 if [ -z "$1" ]; then
-    KMIS="android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12"
+    KMIS="android12-5.10 android13-5.10 android13-5.15 android14-5.15 android14-6.1 android15-6.6 android16-6.12 android17-6.18"
 else
     KMIS=$1
 fi
