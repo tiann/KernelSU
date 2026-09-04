@@ -499,7 +499,6 @@ static void handle_volumeup_press(void)
     if (volumeup_pressed_count >= FASTBOOTD_PRESS_COUNT) {
         WRITE_ONCE(fastbootd_requested, true);
         pr_warn("KEY_VOLUMEUP pressed three times, fastbootd rescue requested!\n");
-        ksu_stop_input_hook_runtime();
     }
 }
 
