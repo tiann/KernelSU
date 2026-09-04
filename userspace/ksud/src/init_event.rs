@@ -51,16 +51,18 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     match ksucalls::check_kernel_fastbootd() {
-        Ok(true) => match crate::feature::is_fastbootd_rescue_enabled_in_config() {
-            Ok(true) => match request_fastbootd_reboot() {
-                Ok(()) => return Ok(()),
-                Err(error) => error!("fastbootd rescue failed, continue normal boot: {error:#}"),
-            },
-            Ok(false) => warn!("fastbootd rescue requested while disabled, continue normal boot"),
-            Err(error) => {
-                error!("failed to read fastbootd rescue config, continue normal boot: {error:#}");
+        Ok(true) => {
+            if crate::feature::is_fastbootd_rescue_enabled_in_config() {
+                match request_fastbootd_reboot() {
+                    Ok(()) => return Ok(()),
+                    Err(error) => {
+                        error!("fastbootd rescue failed, continue normal boot: {error:#}");
+                    }
+                }
+            } else {
+                warn!("fastbootd rescue requested while disabled, continue normal boot");
             }
-        },
+        }
         Ok(false) => {}
         Err(error) => {
             error!("failed to check fastbootd rescue request, continue normal boot: {error:#}");
