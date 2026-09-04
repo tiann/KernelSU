@@ -1,17 +1,18 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.0"
 kotlin = "2.4.10"
 compose-bom = "2026.08.00"
 lifecycle = "2.11.0"
 activity-compose = "1.13.0"
+core-splashscreen = "1.2.0"
 kotlinx-coroutines = "1.11.0"
-navigation3 = "1.1.6"
+navigation3 = "1.1.7"
 navigationevent = "1.1.2"
 commonmark = "0.30.0"
 webkit = "1.17.0"
 parcelablelist = "2.0.1"
-material3 = "1.5.0-alpha26"
-materialKolor = "5.0.0"
+material3 = "1.5.0-alpha27"
+materialKolor = "5.0.1"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
@@ -19,7 +20,7 @@ miuix = "0.9.3"
 okhttp = "5.5.0"
 hiddenapibypass = "6.1"
 appiconloader = "1.5.0"
-protobuf = "4.36.0"
+protobuf = "4.36.1"
 commons-compress = "1.28.0"
 xz = "1.12"
 
@@ -35,6 +36,7 @@ protobuf = { id = "com.google.protobuf", version = "0.10.0" }
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }

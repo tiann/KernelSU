@@ -13,11 +13,11 @@ data class AppInfo(
     val label: String,
     val packageInfo: PackageInfo,
     val profile: Natives.Profile?,
-    val profileKey: String = packageInfo.packageName ?: "",
+    val profileKey: String = packageInfo.packageName,
     val special: Boolean = false,
 ) : Parcelable {
     val packageName: String
-        get() = packageInfo.packageName ?: ""
+        get() = packageInfo.packageName
 
     val displayIdentifier: String
         get() = if (special) profileKey else packageName

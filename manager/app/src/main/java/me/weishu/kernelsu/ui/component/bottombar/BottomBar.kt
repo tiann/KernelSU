@@ -26,7 +26,8 @@ import kotlin.math.abs
 
 class MainPagerState(
     val pagerState: PagerState,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val animatePageChanges: Boolean,
 ) {
     var selectedPage by mutableIntStateOf(pagerState.currentPage)
         private set
@@ -47,7 +48,11 @@ class MainPagerState(
         navJob = coroutineScope.launch {
             val myJob = coroutineContext.job
             try {
-                pagerState.springAnimateToPage(targetIndex)
+                if (animatePageChanges) {
+                    pagerState.springAnimateToPage(targetIndex)
+                } else {
+                    pagerState.scrollToPage(targetIndex)
+                }
             } finally {
                 if (navJob == myJob) {
                     isNavigating = false
@@ -114,10 +119,11 @@ private suspend fun PagerState.springAnimateToPage(target: Int) {
 @Composable
 fun rememberMainPagerState(
     pagerState: PagerState,
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    animatePageChanges: Boolean = true,
 ): MainPagerState {
-    return remember(pagerState, coroutineScope) {
-        MainPagerState(pagerState, coroutineScope)
+    return remember(pagerState, coroutineScope, animatePageChanges) {
+        MainPagerState(pagerState, coroutineScope, animatePageChanges)
     }
 }
 

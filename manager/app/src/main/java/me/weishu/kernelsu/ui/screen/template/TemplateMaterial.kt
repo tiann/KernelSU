@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -294,7 +294,7 @@ private fun TopBar(
                     )
                     DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
                         menuItems.forEachIndexed { index, (resId, action) ->
-                            DropdownMenuItem(
+                            SelectableDropdownMenuItem(
                                 selected = false,
                                 onClick = {
                                     haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)

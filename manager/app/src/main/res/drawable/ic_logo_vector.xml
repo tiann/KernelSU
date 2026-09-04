@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="500"
+    android:viewportHeight="500">
+    <group
+        android:name="splash_content"
+        android:pivotX="250"
+        android:pivotY="250"
+        android:scaleX="0.67"
+        android:scaleY="0.67">
+        <path
+            android:fillColor="@color/ic_splash_background"
+            android:pathData="M135,25h230a110,110 0 0 1 110,110v230a110,110 0 0 1 -110,110h-230a110,110 0 0 1 -110,-110v-230a110,110 0 0 1 110,-110z" />
+        <group
+            android:pivotX="250"
+            android:pivotY="250"
+            android:scaleX="0.78"
+            android:scaleY="0.78">
+            <group>
+                <clip-path android:pathData="M70,50 H450 V70 H70 L50,50 Z" />
+                <path
+                    android:name="outline_a_horizontal"
+                    android:fillColor="@android:color/transparent"
+                    android:pathData="M60,60 H440"
+                    android:strokeWidth="20"
+                    android:strokeColor="@color/ic_launcher_foreground"
+                    android:strokeLineCap="square"
+                    android:trimPathEnd="1" />
+            </group>
+            <group>
+                <clip-path android:pathData="M430,50 H450 V450 H430 L430,450 Z" />
+                <path
+                    android:name="outline_a_vertical"
+                    android:fillColor="@android:color/transparent"
+                    android:pathData="M440,60 V440"
+                    android:strokeWidth="20"
+                    android:strokeColor="@color/ic_launcher_foreground"
+                    android:strokeLineCap="square"
+                    android:trimPathEnd="1" />
+            </group>
+            <group>
+                <clip-path android:pathData="M50,430 H430 L450,450 H50 Z" />
+                <path
+                    android:name="outline_b_horizontal"
+                    android:fillColor="@android:color/transparent"
+                    android:pathData="M440,440 H60"
+                    android:strokeWidth="20"
+                    android:strokeColor="@color/ic_launcher_foreground"
+                    android:strokeLineCap="square"
+                    android:trimPathEnd="1" />
+            </group>
+            <group>
+                <clip-path android:pathData="M50,50 H70 V450 H50 Z" />
+                <path
+                    android:name="outline_b_vertical"
+                    android:fillColor="@android:color/transparent"
+                    android:pathData="M60,440 V60"
+                    android:strokeWidth="20"
+                    android:strokeColor="@color/ic_launcher_foreground"
+                    android:strokeLineCap="square"
+                    android:trimPathEnd="1" />
+            </group>
+            <group
+                android:name="square_a"
+                android:translateX="240"
+                android:translateY="240">
+                <path
+                    android:fillColor="@color/ic_launcher_foreground"
+                    android:pathData="M0,0h210v210h-210z" />
+            </group>
+            <group
+                android:name="square_b"
+                android:translateX="50"
+                android:translateY="50">
+                <path
+                    android:fillColor="@color/ic_launcher_foreground"
+                    android:pathData="M0,0h210v210h-210z" />
+            </group>
+        </group>
+    </group>
+</vector>
