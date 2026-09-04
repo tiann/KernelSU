@@ -49,7 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -161,7 +161,7 @@ fun ModuleRepoScreenMaterial(
                             )
                             DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
                                 sortOptions.forEachIndexed { index, (order, resId) ->
-                                    DropdownMenuItem(
+                                    SelectableDropdownMenuItem(
                                         text = { Text(stringResource(resId)) },
                                         selected = state.sortOrder == order,
                                         onClick = {

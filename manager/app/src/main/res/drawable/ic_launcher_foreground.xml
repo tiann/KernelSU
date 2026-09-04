@@ -11,12 +11,12 @@
         <path
             android:pathData="M 259 259 H 541 V 541 H 259 V 259 Z"
             android:strokeWidth="18"
-            android:strokeColor="#1e110d" />
+            android:strokeColor="@color/ic_launcher_foreground" />
         <path
-            android:fillColor="#1e110d"
+            android:fillColor="@color/ic_launcher_foreground"
             android:pathData="M 257 257 H 407 V 407 H 257 V 257 Z" />
         <path
-            android:fillColor="#1e110d"
+            android:fillColor="@color/ic_launcher_foreground"
             android:pathData="M 393 393 H 543 V 543 H 393 V 393 Z" />
     </group>
 </vector>

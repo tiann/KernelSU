@@ -5,6 +5,13 @@
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 
+    <style name="Theme.KernelSU.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/background_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_splash</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/Theme.KernelSU</item>
+    </style>
+
     <style name="Theme.KernelSU.WebUI" parent="Theme.KernelSU" />
 
 </resources>

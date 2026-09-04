@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -102,10 +105,21 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 class MainActivity : ComponentActivity() {
 
     private val intentChannel = Channel<Intent>(capacity = Channel.BUFFERED)
+    private var contentReady = false
+    private var splashStartedAt = 0L
+
+    private companion object {
+        const val SplashAnimationDurationMs = 200L
+    }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+        splashStartedAt = SystemClock.uptimeMillis()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition {
+            !contentReady || SystemClock.uptimeMillis() - splashStartedAt < SplashAnimationDurationMs
+        }
 
         if (Natives.isManager && !Natives.requireNewKernel()) install()
 
@@ -151,6 +165,7 @@ class MainActivity : ComponentActivity() {
                 LocalUiMode provides uiMode,
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
+                    SideEffect { contentReady = true }
                     IntentDispatcher(intentChannel = intentChannel)
                     val mainScreenEntry = @Composable {
                         MainScreen(
@@ -231,8 +246,12 @@ fun MainScreen(
     val enableBlur = LocalEnableBlur.current
     val enableFloatingBottomBar = LocalEnableFloatingBottomBar.current
     val enableFloatingBottomBarBlur = LocalEnableFloatingBottomBarBlur.current
+    val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { MainPagerConfig.PAGE_COUNT })
-    val mainPagerState = rememberMainPagerState(pagerState)
+    val mainPagerState = rememberMainPagerState(
+        pagerState = pagerState,
+        animatePageChanges = !useNavigationRail,
+    )
     val isManager = Natives.isManager
     val isFullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
@@ -295,8 +314,6 @@ fun MainScreen(
     }
 
     MainScreenBackHandler(mainPagerState, navController)
-
-    val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
 
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState

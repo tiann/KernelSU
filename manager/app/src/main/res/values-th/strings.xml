@@ -101,7 +101,12 @@
     <string name="enable_web_debugging">การแก้ไขข้อบกพร่อง WebView</string>
     <string name="select_kmi">เลือก KMI</string>
     <string name="install_next">ต่อไป</string>
-    <string name="select_file">เลือกไฟล์</string>
+    <string name="select_file">เลือกไฟล์และแพตช์</string>
+    <string name="download_file">ดาวน์โหลดไฟล์และแพตช์</string>
+    <string name="download_dialog_title">ป้อน URL ของอิมเมจ</string>
+    <string name="download_dialog_msg">อิมเมจ OTA เต็มรูปแบบหรืออิมเมจโรงงาน</string>
+    <string name="download_no_boot_partition">ไม่พบพาร์ติชัน boot, init_boot หรือ vendor_boot ในอิมเมจ</string>
+    <string name="download_probe_failed">ไม่สามารถตรวจสอบอิมเมจได้: %1$s</string>
     <string name="install_inactive_slot">ติดตั้งลงในสล็อตที่ไม่ใช้งาน (หลังจาก OTA)</string>
     <string name="direct_install">ติดตั้งโดยตรง (แนะนำ)</string>
     <string name="select_file_tip">แนะนำให้ใช้อิมเมจพาร์ติชัน %1$s</string>

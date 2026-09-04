@@ -66,8 +66,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CheckableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -131,10 +131,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
 import me.weishu.kernelsu.data.model.ModuleUpdateInfo
+import me.weishu.kernelsu.data.repository.isSoftRebootPreferred
 import me.weishu.kernelsu.ui.component.ObserveAsEvents
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -144,7 +144,6 @@ import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.material.TonalCard
-import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.reboot
 
@@ -257,8 +256,8 @@ fun ModulePagerMaterial(
                 // Cancel the previous reboot snackbar so a new one replaces it instead of queueing
                 snackbarJob.value?.cancel()
                 snackBarHost.currentSnackbarData?.dismiss()
-                // A full reboot drops the jailbreak, a soft reboot still applies module changes
-                val softReboot = Natives.isLateLoadMode
+                // Soft reboot keeps the jailbreak and still applies module changes
+                val softReboot = isSoftRebootPreferred()
                 snackbarJob.value = scope.launch {
                     val result = snackBarHost.showSnackbar(
                         message = event.message,
@@ -292,8 +291,6 @@ fun ModulePagerMaterial(
                     }
                 },
                 actions = {
-                    RebootListPopup()
-
                     var showDropdown by remember { mutableStateOf(false) }
                     IconButton(
                         onClick = { showDropdown = true }
@@ -307,7 +304,7 @@ fun ModulePagerMaterial(
                             onDismissRequest = { showDropdown = false }
                         ) {
                             DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.module_sort_action_first)) },
                                     checked = uiState.sortActionFirst,
                                     checkedLeadingIcon = {
@@ -323,7 +320,7 @@ fun ModulePagerMaterial(
                                     },
                                     shapes = MenuDefaults.itemShape(index = 0, count = 2),
                                 )
-                                DropdownMenuItem(
+                                CheckableDropdownMenuItem(
                                     text = { Text(stringResource(R.string.module_sort_enabled_first)) },
                                     checked = uiState.sortEnabledFirst,
                                     checkedLeadingIcon = {

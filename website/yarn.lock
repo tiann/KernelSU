@@ -2,15 +2,15 @@
 # yarn lockfile v1
 
 
-"@algolia/abtesting@1.22.0":
-  version "1.22.0"
-  resolved "https://registry.yarnpkg.com/@algolia/abtesting/-/abtesting-1.22.0.tgz#7537637f52d2fe00b3714fe2d5ce8cb856be35ff"
-  integrity sha512-BFR6zNowNKcY7Ou7TaJc9QWexES4YKPbmf/OTFofpdsdhz4x6q0lbxp3duO0EHnyrN7rE4ba/TSXuY+BDGu4+g==
+"@algolia/abtesting@1.23.0":
+  version "1.23.0"
+  resolved "https://registry.yarnpkg.com/@algolia/abtesting/-/abtesting-1.23.0.tgz#810a23366284c4d3f3496e3f8fa7f1a24ec47206"
+  integrity sha512-j45MBISstltys9QyQ4xf6quRiN1g7vMuwQL9VM4dx8YuRZvCQ173b9royZAx6iAbRX3IB1VnG1z//NuwyQ8jpQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
 "@algolia/autocomplete-core@1.17.7":
   version "1.17.7"
@@ -39,121 +39,121 @@
   resolved "https://registry.yarnpkg.com/@algolia/autocomplete-shared/-/autocomplete-shared-1.17.7.tgz#105e84ad9d1a31d3fb86ba20dc890eefe1a313a0"
   integrity sha512-o/1Vurr42U/qskRSuhBH+VKxMvkkUVTLU6WZQr+L5lGZZLYWyhdzWjW0iGXY7EkwRTjBqvN2EsR81yCTGV/kmg==
 
-"@algolia/client-abtesting@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-abtesting/-/client-abtesting-5.56.0.tgz#25be0db6f97ae91dfdbaffbe9eae99e963310891"
-  integrity sha512-7r4Z3NC7yU1oAQVWJNA2HX7tX481F3pJvCGyLIXiTdBcthz4Q/o21jwcMYDFkuI92UWTNBQQmHYgwHo1zS5dzg==
+"@algolia/client-abtesting@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-abtesting/-/client-abtesting-5.57.0.tgz#dbd3f01148bdf2648133563021671e3d3628e4d4"
+  integrity sha512-JVFFujiZUCguk5tz3LZr4fTQxqpIrj4/Jw3SI7kMljSqtfLxYn/s/TWH0J2s4iNfsDpxPhgFGMotCpmDI4kZ8w==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/client-analytics@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-analytics/-/client-analytics-5.56.0.tgz#bcace36358cda26ca285f3a100544db0ce29aabe"
-  integrity sha512-avmjXQSq+jadFO8Xl2em05/uQdQnEmHsJyOAdVbZkmVgpMfxL12aJwVVfGNwYr9nulcpuJN1X0lTaQ5wxuNGcA==
+"@algolia/client-analytics@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-analytics/-/client-analytics-5.57.0.tgz#e172c6ec3cdc7bfc5d305ba6190161cd9dfd3d1d"
+  integrity sha512-6KqECK4ED3JJQEoDrQWnGPQzElA828xAD4qK5ceawNNyP/LcSvzAoLHjFkoTPksZ/kxj6VUtCRH+IHZesLltng==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/client-common@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-common/-/client-common-5.56.0.tgz#6190221a7091dfa1a0e0a3b5964e92b1b59968ba"
-  integrity sha512-v2TPStUhY//ripPjIVclZ8AWc7DEGooXULZGFlFu37zNatgHjw34oZZ+OSbbc/YHO+xZwPl62I1k8xH1m4S2eg==
+"@algolia/client-common@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-common/-/client-common-5.57.0.tgz#e41ddfd7b2428c882077fb27e9bd44921fe8dc85"
+  integrity sha512-uqpGF3oXYsoCbQq5d7BzNrNTfIfuvJyGP1CKvSW27T9boUg7KOwyxsAw1AX0a3jSW2HrYEJ/NN+Z4MiGivbpeQ==
 
-"@algolia/client-insights@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-insights/-/client-insights-5.56.0.tgz#2ff179c8924ff188d4604e32aef645c709cc76be"
-  integrity sha512-P0ehROpM4Sem3Sqo5x2cKPgj67D3G3jy0rh1Amwkcvsfr6tkvIcdCmerieanqTF7NxUMPNFLkpIFeMO8Rpa50w==
+"@algolia/client-insights@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-insights/-/client-insights-5.57.0.tgz#8bd281560f2d2a0b09d2c22a3ff8522c6fcb0e80"
+  integrity sha512-u5NboJVJXDEFplvNnqqX4CxkXPYysjJRj47hOSh9329H8kG5gFLKJBIiS5utMQ+GZm8xQl3Te7NInDk6elEADQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/client-personalization@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-personalization/-/client-personalization-5.56.0.tgz#64f8197c46c60306a115bc4024f6ebce2d8140d8"
-  integrity sha512-SXK3Vn3WVxyzbm31oePZBJkp1wpOyuWdd4B/Pv7n0aXDxmeSWhC1R1FC1517mMrFAIaPH4Rt0x6RUe7ZNjz8FA==
+"@algolia/client-personalization@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-personalization/-/client-personalization-5.57.0.tgz#31b963e1aad90e270712618476ee1b288f12f8d8"
+  integrity sha512-uzc0b2LmHAK9/QID4xeo35OG84AkZl4YewkCqawqAOGLjT2eZpM/OZx45ESygMHG30Ws+ZTSdluPtMJcUnrbWQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/client-query-suggestions@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-query-suggestions/-/client-query-suggestions-5.56.0.tgz#e4a28bc249e9c69f0b5ef280b72a12e32e8c53c8"
-  integrity sha512-5+ZdX8garFnmycnZgKhtXHePEaLj5zqDxI/0lkhhluzCcvTn0/PvvTirTg8hHYetQHvn7GDyeAiqTAieMvMW4A==
+"@algolia/client-query-suggestions@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-query-suggestions/-/client-query-suggestions-5.57.0.tgz#16895dc10abf228bd5ed136463273ed262b151b0"
+  integrity sha512-dIAhnM6ue/ssa5PjgNfu4g8A4yTojl9ZOUzZU3wIaIKRerL2R/3Emuf9n/D6ICXXP167KC6XCeC7nliSw7cuSw==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/client-search@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/client-search/-/client-search-5.56.0.tgz#66b19d5382bf47a16105817b78e372f5e9039508"
-  integrity sha512-+mKUdYvqOi0BcvpAEyCEw49vSBptufIcfibtHz2bdr1pI789M46Yt0uQEk/sxtK3teh71OQvVFHaTDzShUWewQ==
+"@algolia/client-search@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/client-search/-/client-search-5.57.0.tgz#50363185ac641b5712ec5e3e81eba63a64d7e755"
+  integrity sha512-2TTPTTKSJmCptvhCm4Xf3bBYMqZni+Pgc2hVdqc4l9wsBpSJNVTVIKpnd10OubUgkGcmppVDj1XQqYaf6EnPSQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/ingestion@1.56.0":
-  version "1.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/ingestion/-/ingestion-1.56.0.tgz#1b3c41b8f1c5a2d309610683e3d1b99f962d92df"
-  integrity sha512-9g/zj+AZx5moFcdFIrYQoVrueXivjUcc3MQHtCYT8WhIuk1lUh1AyEhvJCS0XBZld09cLvd1AZ3BvDBpVpX2UA==
+"@algolia/ingestion@1.57.0":
+  version "1.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/ingestion/-/ingestion-1.57.0.tgz#0646edeaf3e63942301489fbd77ed9b55234558a"
+  integrity sha512-W4JseHKt+pzOxlFV+T3MWEG0h4Z2Se5zjoXUD0ewlw8aOWMG/yjRdopUdLQsXULepB/My2tDuZjkwk2sMfsUrQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/monitoring@1.56.0":
-  version "1.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/monitoring/-/monitoring-1.56.0.tgz#11cc9198e778466eafde5a12d02fd02cfcbd1710"
-  integrity sha512-Qf3Sr6f9A9uxCZUf3MXS0d2b877uYzEB5yxqpVGXAhcJnBCQjrRRon0KvefpGkxy+BshrIJs96OUoMtGqXTFDA==
+"@algolia/monitoring@1.57.0":
+  version "1.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/monitoring/-/monitoring-1.57.0.tgz#a4adacfcb699dcc1a7297942db6655e5a7509ee6"
+  integrity sha512-BrxJVE0/eLinEPICCD7BKN/2xnt0nkjge70u8zzE2ISP3fuB3tjLgcwpanUycvlHBFLI4gK0l5ol54p6IYuR/Q==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/recommend@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/recommend/-/recommend-5.56.0.tgz#6c96193cb91cf5c9f3c884fdf064e15dfe6cb742"
-  integrity sha512-GXWG1rWc5wu8hY4N33Y3b6ernY6sAdAvmKWN/zHAiACOx40WnpG0TVX5YazCAr/9gOYGInSiM2A0y2jy2xbiDA==
+"@algolia/recommend@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/recommend/-/recommend-5.57.0.tgz#d0714fd2dd20c5b90d1c5f7facc3c32136e48218"
+  integrity sha512-Gc29jkeiLKlVfHvyrIgyUHHE+aYTdXEeLfK42rjr5/1TTVsYwUJz0XkvoIBIqfMjcDg6gXeHb1jTUZ0H+SYIlQ==
   dependencies:
-    "@algolia/client-common" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
-"@algolia/requester-browser-xhr@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/requester-browser-xhr/-/requester-browser-xhr-5.56.0.tgz#b1f4705c53f1602ec14339999bfbf0e3e9a7bbc8"
-  integrity sha512-7t24cBxaInS3mZb7ddEaZT/tp6q+/aR4YttsQVyP1/i+LmwPR34atO35KjaLFCcRVrlP7sYOAqkCfg6lIRB+ew==
+"@algolia/requester-browser-xhr@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/requester-browser-xhr/-/requester-browser-xhr-5.57.0.tgz#4aee6fa45b792f0f57898bc556ff214a1c3457e3"
+  integrity sha512-PIPnPN7MP3fp2VAi01BVXhCWmD366ZB2Hkq5TlYKtThd4KxUtMmaaNDpFgVCTXtSIqWVZLJntOHRvxg/sIPd8Q==
   dependencies:
-    "@algolia/client-common" "5.56.0"
+    "@algolia/client-common" "5.57.0"
 
-"@algolia/requester-fetch@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/requester-fetch/-/requester-fetch-5.56.0.tgz#03f0aeea08efc991ab9f0663f1ea63df720fd9ba"
-  integrity sha512-R7ePHgVYmDFjZpvrsVAfbDz/d4RxKAYZ5/vgLfIsCVRZRryjWl/3INOxpOICzitehQ5FjNtNjcLQTrmHPTcHBQ==
+"@algolia/requester-fetch@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/requester-fetch/-/requester-fetch-5.57.0.tgz#7715e53e330990343dad20577ad83d22aa32e60a"
+  integrity sha512-AX3RlOudXMdTwtwUqdAf5hAVLvXfOZZH1FZh6ALDdrhVLT0TtAIe48N6nYcWcTnwoTxK/wDIQqZ19IMjK8zJAA==
   dependencies:
-    "@algolia/client-common" "5.56.0"
+    "@algolia/client-common" "5.57.0"
 
-"@algolia/requester-node-http@5.56.0":
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/@algolia/requester-node-http/-/requester-node-http-5.56.0.tgz#238bfa98ed145e261c1db7e133bee6390ba58c94"
-  integrity sha512-PIOUXlSnrqM0S+WOgDRb4RzotydJH7ZoT6tOyL7tAO7qJOfvX5wsEW8Pe+PMKMwvuI4/gIyK9cg2H7lJXqnc4Q==
+"@algolia/requester-node-http@5.57.0":
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/@algolia/requester-node-http/-/requester-node-http-5.57.0.tgz#fe979862e069f25fc99ddcdc8c5646abb5dba642"
+  integrity sha512-cWZc1dKb7wy9/wPpwMtL1y89gK2G7y2A47Coa7zwf1ydtIeJm4+S+XxoQ2b/ZRiQnrC1YHavLjYUPDCdnT7Khg==
   dependencies:
-    "@algolia/client-common" "5.56.0"
+    "@algolia/client-common" "5.57.0"
 
 "@babel/helper-string-parser@^7.29.7":
   version "7.29.7"
@@ -340,130 +340,130 @@
   resolved "https://registry.yarnpkg.com/@napi-rs/lzma-linux-x64-gnu/-/lzma-linux-x64-gnu-1.5.1.tgz#e57d4306966078662038094fb38eb9146dc3aea9"
   integrity sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==
 
-"@rollup/rollup-android-arm-eabi@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.62.4.tgz#2b86c8fff13a065845ddb65f64d814499ace020f"
-  integrity sha512-RrPokAb7dmbxFoeO3TloqHyOjgye8RkBhSqmp4aJMIex4c9r46ZstPnleDQOq1t46VOVjwIuwNogIqbodV1Vvg==
+"@rollup/rollup-android-arm-eabi@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.63.0.tgz#a85e4755658a6ab0ec48b41fdbc99375079755e1"
+  integrity sha512-70TeIFezKKy65LgAVyQh+w94/gjWhvPWaLaGGeMEgVrPkQhuj/M5bAYYZzIFUj9Y69oHyTm5Um/R6gcLh4A8JA==
 
-"@rollup/rollup-android-arm64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.62.4.tgz#af217357ecc06ae5e4f54ef34ee72b1e37f8dbc3"
-  integrity sha512-JKuJc+pnpks2pjy7L/N3v/cAkZxYlnmuZoD840ldbMI5KDbC4iO9NKwPKYdjYFCMAIIlBzYSFHxIJVYzRo2/8A==
+"@rollup/rollup-android-arm64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.63.0.tgz#b386ce4a3e6ea13c584e80eda2d8b6ae37006a5d"
+  integrity sha512-YC86tYIHK6M1IV+wbzO+Bxk8RCBr6ZyWYgWxUCzaZD8mc8rrFoIJDNzDrkHBYRc/wKdrsIXmm6/F7NzrAO+OrA==
 
-"@rollup/rollup-darwin-arm64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.62.4.tgz#e9d0adba06e39b632fc8e880100ff06547eda80b"
-  integrity sha512-krw5uS2STmvJ02x0uTXHbqQNuz+9eZ1iw+qXk9dmW2gvV4jV7O2hEoOnuhFrpOPiel1mBFtqbxYZZtC46hXLOw==
+"@rollup/rollup-darwin-arm64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.63.0.tgz#7da6d7ff7a21d38dca15c28507a0120e508a42d0"
+  integrity sha512-oI+ECtUcli0y0fi4xpW82GdPIXdTkI8G8DSjG2LRuw09fPAGykaWYH/hXxiKuTxiAjiPSTIIuYUqof5Z2hShWw==
 
-"@rollup/rollup-darwin-x64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.62.4.tgz#eff983a29db7d8ea7f733f1ce430fc64e159a5e6"
-  integrity sha512-wsTxtgApb4PrOsNJIm0FZ1h3WvCC+k9uxLJ4ad75hgoS4NiRes2SoJFlDAyMwiUY8IssDqGcHbXuN0sx1tfF1A==
+"@rollup/rollup-darwin-x64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.63.0.tgz#00986c8203efeada43f44801f4a6c7e646e560e4"
+  integrity sha512-NwV+1s7TiKrMe4owHyKB/dTLD7ZJD0YEBEhIz+hvav1Cu1GReJjF+rsdNwjzENQeIAbE/CoNiaAc5Vz2h5DPAA==
 
-"@rollup/rollup-freebsd-arm64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.62.4.tgz#abe1399a70e819034f492d05dbcc97964310bb57"
-  integrity sha512-GUOnQlyZe3yAXhWOtOMsn5Qkrv5E5mZXa0thbARWi5Ei2szlVXJFQhddZ4HbAzh8q92w5twp+CQvs/eFanz9YQ==
+"@rollup/rollup-freebsd-arm64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-freebsd-arm64/-/rollup-freebsd-arm64-4.63.0.tgz#25d2a948024bd551ed4ad1faa8e4e25b89ada7bb"
+  integrity sha512-tWtHBTu5gOPK4u4Urtk4qAHW3zZ9rQAmbssO8gp7ELvGTGI3aCiq6NqyTQ0PCIg7KbHJF2UkGDDs77YZGxfjCA==
 
-"@rollup/rollup-freebsd-x64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.62.4.tgz#b2e0f8c24a362ac7112be3d5549c6940597e0168"
-  integrity sha512-/Y7f3QuxjzPKsjA/rfEDa3+0vXqyjmJ50Ln8dPpCmWkKTrUoWHG1cWhTqaAMLob2m2nESWuC7yGrREz019Ztqg==
+"@rollup/rollup-freebsd-x64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-freebsd-x64/-/rollup-freebsd-x64-4.63.0.tgz#a7448db8a4d07097f5b727e2359632a2041a514b"
+  integrity sha512-2qPoJiwTvtHQ27NnYvTnsgk8laXWYuVmNESG8WFZBcEPKLfZ3I27qBJarjVRQtwGeYyRfq5ZowHXih9lm2BItw==
 
-"@rollup/rollup-linux-arm-gnueabihf@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.62.4.tgz#a5f2a7e7eb719254a6800db18e9f369d3c623439"
-  integrity sha512-81wiiX3v7aqy+T+bT61TJ78yJjRquqFFTTbAPt08imfQQzkPIW8t6aJbkTagtCCrXMNc9D66+geqlK7ydLPNqA==
+"@rollup/rollup-linux-arm-gnueabihf@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.63.0.tgz#850cf21fc8ea7ceb22d9781049ea066bb2cad0d1"
+  integrity sha512-FQwsTRvLNuHoTdICABJQfbPUSEueISGmnpT06tXTMpfprf5NiKLSXKA0A+w45wJnCmZAnzgqBwbt6ARFuyOi5w==
 
-"@rollup/rollup-linux-arm-musleabihf@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.62.4.tgz#390c86c797695af87c38d6f005222d920b5bfa22"
-  integrity sha512-9kmDIvNZqdoHOBZgNtpTBeLWYO/LVipM3H/j62P8848/l/VPEQL6N3uxU9pvP1oZAsXyC2MEnFP3ovRjo7WYNQ==
+"@rollup/rollup-linux-arm-musleabihf@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm-musleabihf/-/rollup-linux-arm-musleabihf-4.63.0.tgz#48275b693ad399b9321fcc11884436c3eecb735c"
+  integrity sha512-BBVTXziw8mY1a4ZbWME9tZyfzqXCDPqaC7Z3heQ29p5dkvXzwL0NwelO8zLa8c3RBKvl3YTuSnBgsBhYBtwjIw==
 
-"@rollup/rollup-linux-arm64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.62.4.tgz#1fea78609a15813cda98d93fe8d987c87017f572"
-  integrity sha512-CcnXHWnXg69g+DX5VWL3FHts3qMRN2uVEHX+BZvGLdd07/gXkn3ePjYtO1LDJvxkGKVHMclKBRa1QUTH+6toYQ==
+"@rollup/rollup-linux-arm64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.63.0.tgz#2614ef8601b783d2a1a985afb98e96386908b6a1"
+  integrity sha512-w2Iyy9+RqKwx3d9qWMKsJg0FfRBsY0/pXNv0mCQ3ueRvJI6+QAScfD4nrMlzFLs2HNVW6Ew+mtZfDl9b7Ew5/Q==
 
-"@rollup/rollup-linux-arm64-musl@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.62.4.tgz#3b50031c9916517576098f6e11b38a13147dc463"
-  integrity sha512-iFOibiHnTRuhrWLlRsOQFdZJJIa7S8OwkneJr4ocALP16u5yk6lWLINFwhHaEqBFMsKDUZofLkGos7+CPzGB3g==
+"@rollup/rollup-linux-arm64-musl@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.63.0.tgz#a1b95051d08bb14140bd235969405b4fc6be4603"
+  integrity sha512-YK++KtrFRHYE0P6/RtYEAy9t8F37znP+K03RrIuLPYOL6SVlObRumf/0OE4V/h63xL9DwkWbNssZfmA9hawuDA==
 
-"@rollup/rollup-linux-loong64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.62.4.tgz#b403255546099a4300b17d976ee1776224c090e5"
-  integrity sha512-XnWYMI7euHlb5a871xPja+Gm7DRCFU+FGRrtS2sMq9N8FvqtpagUy6gD4YOemC5MRk9xbh8+jYMEJbigFQwsgA==
+"@rollup/rollup-linux-loong64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-loong64-gnu/-/rollup-linux-loong64-gnu-4.63.0.tgz#0214c140ddef6e6bb8aa77695e9fc5dce23be59f"
+  integrity sha512-aBfOG6fP7YkkPmTqPwufRJeFyz7WPpECv9XNbnsk9+vg7rxdih0lbtEel7jcRng4LZrrmU3FfitCFyEj4BWDWg==
 
-"@rollup/rollup-linux-loong64-musl@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.62.4.tgz#5900610e59c66ee594539c6590566dbfda7082b1"
-  integrity sha512-qGDAlO0U8xedCcsdRm9oaoQY8DAx/QT7uIxJWhCdx0ceIWX783UC9QSYkdpzAe29wNiVfp24+bZdQmn49o45SQ==
+"@rollup/rollup-linux-loong64-musl@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-loong64-musl/-/rollup-linux-loong64-musl-4.63.0.tgz#d7a86499ce332a6e6c0383a65c43268bfae1cd7a"
+  integrity sha512-LGaHEOeHNAag9VuS1Crs5DFg4RrU9MPi2nVnNJk9DTePx/B6RRYKVmrIXt2h7YOJlwjaFJ6lwtFDliZxScTLrQ==
 
-"@rollup/rollup-linux-ppc64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.62.4.tgz#a892cc8b8414bc8ae0b267816b5e384e5d321ff2"
-  integrity sha512-ru4H6ezD7ysA5EiEK6qkkaEb4modH8CTej6kUy/gQi20u3kB3G7Zn8snXXkeJSCOFKG/rbPPtM/+9Wgas1961w==
+"@rollup/rollup-linux-ppc64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-ppc64-gnu/-/rollup-linux-ppc64-gnu-4.63.0.tgz#1f8a5d547b939116992b95b6add8bf58cfe10044"
+  integrity sha512-jClvk+J0FC3b7Udvegiw5/4hErbHtmsNsQgENnKXDWtNCJXsJYZH5WURvu7imDOO38xYml24eeh5x3A04ppwCw==
 
-"@rollup/rollup-linux-ppc64-musl@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.62.4.tgz#d9e60d568b7db4df2196fb2411b0c6918b2360cc"
-  integrity sha512-2W4MO5WQVJnbJaZdvDb9rhBDuFU1nKIepPFpJUBsTh2k1YY2g+ODViaWuyOAjQ5cOP7NvrvLzt3wvHOoiAvc7w==
+"@rollup/rollup-linux-ppc64-musl@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-ppc64-musl/-/rollup-linux-ppc64-musl-4.63.0.tgz#1da3aabff9c28f904feda2fa5de2df3c8cbb0d63"
+  integrity sha512-0OJlaGK+8+B777Ql5okIpD7ua5Ro9+VB9Ve0OKa28OQJZ1RbuUBVNHK/e3pr4BROqsyPl1JrPO1ZxJseCNffcA==
 
-"@rollup/rollup-linux-riscv64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.62.4.tgz#5b3141ab43afbd9e50f639e562e94ed256d201cf"
-  integrity sha512-+fxjfuoAmVMCYV5QyjoIpu0cp5DOiOTeqYFk1AVaxGr+/ravWLX89XfQmptsoWcaVy/TGf2hexzbUOrCQIL1CQ==
+"@rollup/rollup-linux-riscv64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-riscv64-gnu/-/rollup-linux-riscv64-gnu-4.63.0.tgz#9d72f4b78fc8207b9e6992fa9709c5811864887d"
+  integrity sha512-Ygsx+HoNH7afwi1bTIXbnTvVnsO+zurPLSYxybV1hHFVU72OWOCl6v05ql/z0hkpAPx+DK7Kn9Bi7MayCcjLTA==
 
-"@rollup/rollup-linux-riscv64-musl@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.62.4.tgz#b0fe751015bc3822f9004884eaba5e5cdfde7aa6"
-  integrity sha512-jTn8JfHGL4djjFxPuM06LmNUJDsst2jeVlsd9OmIH6zc5sC9K6rIuO4YajXatLUpBmBKl6b35ro1QZocLi+tcA==
+"@rollup/rollup-linux-riscv64-musl@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-riscv64-musl/-/rollup-linux-riscv64-musl-4.63.0.tgz#8c46c680896832a4bff3b6f8fcc29608c1198bac"
+  integrity sha512-pDQxtMGb+OvG3fLwR2OkZlSd47hW+kWg4BYMG/++sR6RqorQccwPTDsxda5hPwiIeIErAnCF9ma3SAU06bdQtQ==
 
-"@rollup/rollup-linux-s390x-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.62.4.tgz#0cb323e850509e1b9bf6d241328a98b0e12e2916"
-  integrity sha512-oCJCJL4pXsoDcP2QZ+JVlPTIRc6266zsIaeJJsWImmF7HO0W8nb6HuSgZlMWxJwaPf8ehbSw8yo0EUw925hKsA==
+"@rollup/rollup-linux-s390x-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-s390x-gnu/-/rollup-linux-s390x-gnu-4.63.0.tgz#aedd6de425fd7f985719a89f4505d279115fc322"
+  integrity sha512-0BnUG9mS8I4SSHr3XsxVhuCMEiu+rX61xxZF5vujso4LaiAGFZFxvDjg6Xn6tLPNTUAfuCvQYas4LMQMVsKRSQ==
 
-"@rollup/rollup-linux-x64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.62.4.tgz#1e7470123e7a8ba8c160a7a043447472d5549542"
-  integrity sha512-W69hukhZ3KKNRCaMIEzKvcFye42hh0FE1+YoYaf5+Ikacuftoco6yO/xouz0hc5d5W/s3yBro5jRiuEE/Q5vUw==
+"@rollup/rollup-linux-x64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.63.0.tgz#395bdd1c0573a9df6adea131fd8946d5c2ba2e1a"
+  integrity sha512-Adu/VttB1dpPNW+FEacrZ+xVm9tFty84+RrFzsqlFaPxoJB+9XXyDGtp5dCOoBwGBIEVH0To7lExFXEx0BIF4A==
 
-"@rollup/rollup-linux-x64-musl@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.62.4.tgz#19df9a17d20ff3c17bd8e9cc2553563ae0aa0580"
-  integrity sha512-qiXbGG2jkjXhzXpsFZSR2Xpb8DN/UaxYsbb/STbuR/6fpaDgRmmaq1B/LmtF2wQFOFOSsK2jdE0RZ3a0zHn4QA==
+"@rollup/rollup-linux-x64-musl@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.63.0.tgz#3350c151d4035083ccd224348c0bdcc389725f73"
+  integrity sha512-NQ3bDvjUbFKmP23671xUlXtKmqVsUBd6M4PQCvbmNtOy06hnQIdKHy8oG/6S3R/S6He1JgPk6A5VT+prAJMYEw==
 
-"@rollup/rollup-openbsd-x64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.62.4.tgz#31c3ca1bd00e80f309a1d0cb8da4bdf59cb2dfa3"
-  integrity sha512-nWeM//hxv8mIo6jD7Hu4o48DVmV9pbV6gsKaWU+4NFyqHoPKwrkRiZGLKUhOBk8qNmDmpwFtPKg80Bo/Tn4xiQ==
+"@rollup/rollup-openbsd-x64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-openbsd-x64/-/rollup-openbsd-x64-4.63.0.tgz#5b477381b7d012c35f0aa5e4c7e9417b53e55e27"
+  integrity sha512-u2eDAl4+0aFvA13GxlGBtTI3SS3sdgwgtV0HyjZ0QaQVCgNE+jqNGey+GtxWiq+wxr/UycAx/OnfJzApCFamvA==
 
-"@rollup/rollup-openharmony-arm64@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.62.4.tgz#84561a14381caecb7652e158d10551a5edc0a6fc"
-  integrity sha512-s62SQ/vgsRSvMwDkOEfTqfgASF0f26ZNaQuTA6Aok5lrikf89yI2W0gFHvZb2Jpgc6N8JnOKZgCK2iciO3CsxQ==
+"@rollup/rollup-openharmony-arm64@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-openharmony-arm64/-/rollup-openharmony-arm64-4.63.0.tgz#5df574fd964511133c700f0e4525fb50866a4bce"
+  integrity sha512-XvRb5vfW3wAZQ+ZUG21AnHHDKtNcw99eigzEhjr//NZ3u7SoBaPP0seSc7FgP7p1epAEdAoZckMW9WY/+4w70w==
 
-"@rollup/rollup-win32-arm64-msvc@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.62.4.tgz#bc532edb20cd39c0b53eee2dfae43b52c2e3be1e"
-  integrity sha512-J6wGf8TVGbXJq+HH+ttTvrcfNKPbuZecV6KT1B8I18BC5IURUh5kl4Yl5OEP5eFIUoI5BWxCsyYMhFsDx8kekw==
+"@rollup/rollup-win32-arm64-msvc@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.63.0.tgz#e47eb3cdf12a7b1b380083031d90325469d022f3"
+  integrity sha512-iZPmniy4kNBf5yo2RezbkYNNK5HPbXE9+g+twnbqSng7dtLEJy1SKoxiE/ni4FDacjyuZpEeb9U054N4EoKHYw==
 
-"@rollup/rollup-win32-ia32-msvc@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.62.4.tgz#a6f51492976c9fc19801be298df2f76a3cbebf7a"
-  integrity sha512-zmfrQd/0wu6oJs8Vq8KwY/YtsKSsLtKe/HwAP4Wqy8LhWjeT55fHRAkOhYQ12wI3ayS4Tt12d5CDRD7N96SAYQ==
+"@rollup/rollup-win32-ia32-msvc@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.63.0.tgz#ea3b85d79b84ea5d07277e5abb4f48842fe41837"
+  integrity sha512-mFBBd+LF37fnE8JnYUOH+imj0aPFPK30vpar4ehJkgnLj9sZn8ZxiRENmLtgIwxK7TC8klF6N57fxdNBwQoqOA==
 
-"@rollup/rollup-win32-x64-gnu@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.62.4.tgz#ae60710b0868b2fe731d9f7c341fa49cbf8e8629"
-  integrity sha512-qPzHqdj9rfUD+w79dtE07zi/kFwKyCJqplp5K5ygeLTp7jLpAoc16OAH39HSmRC9UpozaecsleI8uAdEj6v2yw==
+"@rollup/rollup-win32-x64-gnu@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.63.0.tgz#19e613c75237f09bdd744955549e785ef767836a"
+  integrity sha512-ujeqEY3B+zbGn3Z4Q03cUBG/LGWnBJncVT36WER31LcOsQk9+1dmINKKtvmmfChUvRbK1G0R8OhMWFgHgaZtAw==
 
-"@rollup/rollup-win32-x64-msvc@4.62.4":
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.62.4.tgz#c3a265fe0f9af4fb63bad86d3829386bc5da0026"
-  integrity sha512-zD6NdeWEByGE9QF9vCrlJ5YQB4oq9q91kPZS37Jwj5hOkvR1lTBSpsKhKDw4IJtbQ35LsTS1HD9DZYGKIshU1Q==
+"@rollup/rollup-win32-x64-msvc@4.63.0":
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.63.0.tgz#2cfd1741b6693f78debdde1a5d4faa05bb75a349"
+  integrity sha512-hncn90N4sOky0L2LKE5oESKLbxCPeVo4eLA2LSMoDzM+879ml4WSr+Rr4DWknNIVVvS1Hirkc9hx02W6YxS8rQ==
 
 "@shikijs/core@2.5.0", "@shikijs/core@^2.1.0":
   version "2.5.0"
@@ -547,9 +547,9 @@
   integrity sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==
 
 "@types/markdown-it@^14.1.2":
-  version "14.1.2"
-  resolved "https://registry.yarnpkg.com/@types/markdown-it/-/markdown-it-14.1.2.tgz#57f2532a0800067d9b934f3521429a2e8bfb4c61"
-  integrity sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==
+  version "14.2.0"
+  resolved "https://registry.yarnpkg.com/@types/markdown-it/-/markdown-it-14.2.0.tgz#4074873f98fbc791131e31d7446b12dfa3a31df9"
+  integrity sha512-NoQ2yGlLWj4wpxMs+TYmRKk3thDrQ97agr7sFqfLsAlvoS8SNQuTrlObhFqG9iugdTtgOE9jpJ6FNM4ZGsa5xQ==
   dependencies:
     "@types/linkify-it" "^5"
     "@types/mdurl" "^2"
@@ -726,24 +726,24 @@
     vue "^3.5.13"
 
 algoliasearch@^5.14.2:
-  version "5.56.0"
-  resolved "https://registry.yarnpkg.com/algoliasearch/-/algoliasearch-5.56.0.tgz#042f1a39dfa951356206f43dece1c8d1ea1721bd"
-  integrity sha512-PrqppUmhT4ENdas2pH9caE7efUcxy6EcSFhWzosiVuQBzu2tQ5yLTI6jwomT/1cuBnivzGfxiJCqDNN9FRRh+Q==
+  version "5.57.0"
+  resolved "https://registry.yarnpkg.com/algoliasearch/-/algoliasearch-5.57.0.tgz#79b103088c1addccb707bafcd8623827dd62c0cf"
+  integrity sha512-HpND7MBGctOAkd1GoQoDZCGoCpqNTS5NG1LuhElFet3RdLJkwnyTYZXZhXwtpAQPrI36fqQ3eT6KQrdKDTKu3A==
   dependencies:
-    "@algolia/abtesting" "1.22.0"
-    "@algolia/client-abtesting" "5.56.0"
-    "@algolia/client-analytics" "5.56.0"
-    "@algolia/client-common" "5.56.0"
-    "@algolia/client-insights" "5.56.0"
-    "@algolia/client-personalization" "5.56.0"
-    "@algolia/client-query-suggestions" "5.56.0"
-    "@algolia/client-search" "5.56.0"
-    "@algolia/ingestion" "1.56.0"
-    "@algolia/monitoring" "1.56.0"
-    "@algolia/recommend" "5.56.0"
-    "@algolia/requester-browser-xhr" "5.56.0"
-    "@algolia/requester-fetch" "5.56.0"
-    "@algolia/requester-node-http" "5.56.0"
+    "@algolia/abtesting" "1.23.0"
+    "@algolia/client-abtesting" "5.57.0"
+    "@algolia/client-analytics" "5.57.0"
+    "@algolia/client-common" "5.57.0"
+    "@algolia/client-insights" "5.57.0"
+    "@algolia/client-personalization" "5.57.0"
+    "@algolia/client-query-suggestions" "5.57.0"
+    "@algolia/client-search" "5.57.0"
+    "@algolia/ingestion" "1.57.0"
+    "@algolia/monitoring" "1.57.0"
+    "@algolia/recommend" "5.57.0"
+    "@algolia/requester-browser-xhr" "5.57.0"
+    "@algolia/requester-fetch" "5.57.0"
+    "@algolia/requester-node-http" "5.57.0"
 
 birpc@^2.3.0:
   version "2.9.0"
@@ -771,11 +771,9 @@ comma-separated-tokens@^2.0.0:
   integrity sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==
 
 copy-anything@^4:
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/copy-anything/-/copy-anything-4.0.5.tgz#16cabafd1ea4bb327a540b750f2b4df522825aea"
-  integrity sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==
-  dependencies:
-    is-what "^5.2.0"
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/copy-anything/-/copy-anything-4.1.0.tgz#d3f8b248e0e48197d01bedee91ab6e57221dbd8a"
+  integrity sha512-ufbM3smX/Jbnpk5wcQjzd1MgBpzmqfNETUAyZNrGwU9foRlyHoGzMMBBCRzEhQLBjZfFDE1W2ufPXX2vdWkV8Q==
 
 csstype@^3.2.3:
   version "3.2.3"
@@ -883,11 +881,6 @@ html-void-elements@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/html-void-elements/-/html-void-elements-3.0.0.tgz#fc9dbd84af9e747249034d4d62602def6517f1d7"
   integrity sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==
-
-is-what@^5.2.0:
-  version "5.5.0"
-  resolved "https://registry.yarnpkg.com/is-what/-/is-what-5.5.0.tgz#a3031815757cfe1f03fed990bf6355a2d3f628c4"
-  integrity sha512-oG7cgbmg5kLYae2N5IVd3jm2s+vldjxJzK1pcu9LfpGuQ93MQSzo0okvRna+7y5ifrD+20FE8FvjusyGaz14fw==
 
 magic-string@^0.30.21:
   version "0.30.21"
@@ -1026,38 +1019,38 @@ rfdc@^1.4.1:
   integrity sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==
 
 rollup@^4.20.0:
-  version "4.62.4"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-4.62.4.tgz#96d2e62070f0b0ac63424edd0c93a7fb864ef069"
-  integrity sha512-RXOqwaPsBGjMNMa4sQjDjHieHEZDFoj/Rdr46l2MU5DfEs16wHJPC2RPTPHWhNl+M3aI472LLqFkFKut4SblOg==
+  version "4.63.0"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-4.63.0.tgz#55798a9834a55957544a971acc0f8365ca265b87"
+  integrity sha512-T5vnZ2y4QqC3/4P+w2+JO+Q/OVdnPsv4XcSYJYMEn0R9/jjl5AgLwO9LAZMzP2lN71O6pypn91rB7lDstUkfrQ==
   dependencies:
     "@types/estree" "1.0.9"
   optionalDependencies:
     "@napi-rs/lzma-linux-x64-gnu" "1.5.1"
-    "@rollup/rollup-android-arm-eabi" "4.62.4"
-    "@rollup/rollup-android-arm64" "4.62.4"
-    "@rollup/rollup-darwin-arm64" "4.62.4"
-    "@rollup/rollup-darwin-x64" "4.62.4"
-    "@rollup/rollup-freebsd-arm64" "4.62.4"
-    "@rollup/rollup-freebsd-x64" "4.62.4"
-    "@rollup/rollup-linux-arm-gnueabihf" "4.62.4"
-    "@rollup/rollup-linux-arm-musleabihf" "4.62.4"
-    "@rollup/rollup-linux-arm64-gnu" "4.62.4"
-    "@rollup/rollup-linux-arm64-musl" "4.62.4"
-    "@rollup/rollup-linux-loong64-gnu" "4.62.4"
-    "@rollup/rollup-linux-loong64-musl" "4.62.4"
-    "@rollup/rollup-linux-ppc64-gnu" "4.62.4"
-    "@rollup/rollup-linux-ppc64-musl" "4.62.4"
-    "@rollup/rollup-linux-riscv64-gnu" "4.62.4"
-    "@rollup/rollup-linux-riscv64-musl" "4.62.4"
-    "@rollup/rollup-linux-s390x-gnu" "4.62.4"
-    "@rollup/rollup-linux-x64-gnu" "4.62.4"
-    "@rollup/rollup-linux-x64-musl" "4.62.4"
-    "@rollup/rollup-openbsd-x64" "4.62.4"
-    "@rollup/rollup-openharmony-arm64" "4.62.4"
-    "@rollup/rollup-win32-arm64-msvc" "4.62.4"
-    "@rollup/rollup-win32-ia32-msvc" "4.62.4"
-    "@rollup/rollup-win32-x64-gnu" "4.62.4"
-    "@rollup/rollup-win32-x64-msvc" "4.62.4"
+    "@rollup/rollup-android-arm-eabi" "4.63.0"
+    "@rollup/rollup-android-arm64" "4.63.0"
+    "@rollup/rollup-darwin-arm64" "4.63.0"
+    "@rollup/rollup-darwin-x64" "4.63.0"
+    "@rollup/rollup-freebsd-arm64" "4.63.0"
+    "@rollup/rollup-freebsd-x64" "4.63.0"
+    "@rollup/rollup-linux-arm-gnueabihf" "4.63.0"
+    "@rollup/rollup-linux-arm-musleabihf" "4.63.0"
+    "@rollup/rollup-linux-arm64-gnu" "4.63.0"
+    "@rollup/rollup-linux-arm64-musl" "4.63.0"
+    "@rollup/rollup-linux-loong64-gnu" "4.63.0"
+    "@rollup/rollup-linux-loong64-musl" "4.63.0"
+    "@rollup/rollup-linux-ppc64-gnu" "4.63.0"
+    "@rollup/rollup-linux-ppc64-musl" "4.63.0"
+    "@rollup/rollup-linux-riscv64-gnu" "4.63.0"
+    "@rollup/rollup-linux-riscv64-musl" "4.63.0"
+    "@rollup/rollup-linux-s390x-gnu" "4.63.0"
+    "@rollup/rollup-linux-x64-gnu" "4.63.0"
+    "@rollup/rollup-linux-x64-musl" "4.63.0"
+    "@rollup/rollup-openbsd-x64" "4.63.0"
+    "@rollup/rollup-openharmony-arm64" "4.63.0"
+    "@rollup/rollup-win32-arm64-msvc" "4.63.0"
+    "@rollup/rollup-win32-ia32-msvc" "4.63.0"
+    "@rollup/rollup-win32-x64-gnu" "4.63.0"
+    "@rollup/rollup-win32-x64-msvc" "4.63.0"
     fsevents "~2.3.2"
 
 shiki@^2.1.0:

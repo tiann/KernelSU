@@ -14,6 +14,7 @@ interface SettingsRepository {
     var enableFloatingBottomBar: Boolean
     var enableFloatingBottomBarBlur: Boolean
     var enableNavigationBadge: Boolean
+    var navigationRailExpanded: Boolean
     var pageScale: Float
     var enableWebDebugging: Boolean
     var moduleSortEnabledFirst: Boolean
@@ -24,6 +25,7 @@ interface SettingsRepository {
     var superuserSortOption: Int
     var suLogFilters: Set<String>?
     var autoJailbreak: Boolean
+    var useSoftReboot: Boolean
     val intentToken: String
 
     suspend fun getSuCompatStatus(): String

@@ -57,12 +57,6 @@ fn prepare_mount() -> AutoUmount {
         Err(e) => log::error!("Cannot mount procfs: {:?}", e),
     }
 
-    // mount sysfs
-    match mount_filesystem("sysfs", "/sys") {
-        Ok(_) => mountpoints.push("/sys".to_string()),
-        Err(e) => log::error!("Cannot mount sysfs: {:?}", e),
-    }
-
     AutoUmount { mountpoints }
 }
 
@@ -103,7 +97,7 @@ pub fn init() -> Result<()> {
 
     log::info!("Hello, KernelSU!");
 
-    // mount /proc and /sys to access kernel interface
+    // mount /proc to access kernel interface
     let _dontdrop = prepare_mount();
 
     // This relies on the fact that we have /proc mounted
