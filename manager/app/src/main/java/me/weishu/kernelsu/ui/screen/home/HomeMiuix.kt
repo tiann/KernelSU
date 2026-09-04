@@ -49,7 +49,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.WarningLevel
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.miuix.WarningCard
-import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
+import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootDialogButton
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
@@ -227,7 +227,7 @@ private fun TopBar(
             color = barColor,
             title = stringResource(R.string.app_name),
             actions = {
-                RebootListPopupMiuix()
+                RebootDialogButton()
             },
             scrollBehavior = scrollBehavior
         )

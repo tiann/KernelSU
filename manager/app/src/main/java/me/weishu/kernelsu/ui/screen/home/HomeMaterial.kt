@@ -56,7 +56,7 @@ import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
 import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
-import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
+import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootDialogButton
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 
 @Composable
@@ -181,7 +181,7 @@ private fun TopBar(
 ) {
     LargeFlexibleTopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
-        actions = { RebootListPopup() },
+        actions = { RebootDialogButton() },
         colors = expressiveTopAppBarColors(),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
