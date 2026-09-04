@@ -496,15 +496,18 @@ std::thread_local! {
 
 const SYS_SECCOMP: libc::c_int = 1;
 
-pub fn with_svc_call<F, R>(call: F) -> (R, bool)
+pub fn with_svc_call<F, R>(call: F) -> R
 where
     F: FnOnce() -> R,
 {
     SVC_IN_FLIGHT.with(|in_flight| in_flight.set(true));
     let result = call();
-    let occurred = SIGSYS_OCCURRED.with(|flag| flag.replace(false));
     SVC_IN_FLIGHT.with(|in_flight| in_flight.set(false));
-    (result, occurred)
+    result
+}
+
+fn take_sigsys_occurred() -> bool {
+    SIGSYS_OCCURRED.with(|occurred| occurred.replace(false))
 }
 
 extern "C" fn sigsys_handler(
@@ -864,6 +867,14 @@ pub fn run() -> Result<()> {
         Commands::Initrc { command } => match command {
             Initrc::Refresh => regenerate_preinit_rc(),
         },
+    };
+
+    let result = if take_sigsys_occurred() {
+        Err(anyhow::anyhow!(
+            "KernelSU driver install syscall was blocked by seccomp"
+        ))
+    } else {
+        result
     };
 
     if let Err(e) = &result {
