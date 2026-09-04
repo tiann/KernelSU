@@ -1,5 +1,7 @@
 #include <linux/capability.h>
 #include <linux/cred.h>
+#include <linux/file.h>
+#include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
@@ -15,6 +17,7 @@
 #include "feature/kernel_umount.h"
 #include "manager/manager_identity.h"
 #include "selinux/selinux.h"
+#include "selinux/sepolicy.h"
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
 #include "policy/app_profile.h"
@@ -682,6 +685,38 @@ static int do_get_sulog_fd(void __user *arg)
     return ksu_install_sulog_fd();
 }
 
+static int do_export_sepolicy(void __user *arg)
+{
+    struct ksu_export_sepolicy_cmd cmd;
+    struct file *file;
+    int ret;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("export_sepolicy: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    if (cmd.flags) {
+        pr_err("export_sepolicy: unsupported flags 0x%x\n", cmd.flags);
+        return -EINVAL;
+    }
+
+    file = fget(cmd.fd);
+    if (!file)
+        return -EBADF;
+
+    if (!(file->f_mode & FMODE_WRITE)) {
+        ret = -EBADF;
+        goto out_fput;
+    }
+
+    ret = ksu_export_backup_sepolicy(file);
+
+out_fput:
+    fput(file);
+    return ret;
+}
+
 static int do_disable_escape_to_root(void __user *arg)
 {
     set_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT);
@@ -827,6 +862,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .cmd = KSU_IOCTL_GET_SULOG_FD,
         .name = "GET_SULOG_FD",
         .handler = do_get_sulog_fd,
+        .perm_check = only_root
+    },
+    {
+        .cmd = KSU_IOCTL_EXPORT_SEPOLICY,
+        .name = "EXPORT_SEPOLICY",
+        .handler = do_export_sepolicy,
         .perm_check = only_root
     },
     { 

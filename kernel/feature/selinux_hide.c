@@ -522,19 +522,7 @@ void __exit ksu_selinux_hide_exit()
         __free_page(fake_status);
     fake_status = NULL;
     mutex_unlock(&selinux_state.status_lock);
-}
-
-void ksu_selinux_hide_drop_backup_if_unused()
-{
-    mutex_lock(&selinux_hide_mutex);
-    if (!ksu_selinux_hide_running && backup_sepolicy) {
-        pr_info("selinux_hide is not enabled - drop backup_sepolicy\n");
-        sidtab_destroy(backup_sepolicy->sidtab);
-        kfree(backup_sepolicy->sidtab);
-        ksu_destroy_sepolicy(backup_sepolicy);
-        backup_sepolicy = NULL;
-    }
-    mutex_unlock(&selinux_hide_mutex);
+    ksu_drop_backup_sepolicy();
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)

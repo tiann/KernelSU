@@ -153,6 +153,15 @@ pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> std::io::Result<i32
     ksuctl(ksu_uapi::KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
+pub fn export_sepolicy(fd: RawFd) -> std::io::Result<()> {
+    let mut cmd = ksu_uapi::ksu_export_sepolicy_cmd {
+        fd: fd as u32,
+        flags: 0,
+    };
+    ksuctl(ksu_uapi::KSU_IOCTL_EXPORT_SEPOLICY, &raw mut cmd)?;
+    Ok(())
+}
+
 /// Get feature value and support status from kernel
 /// Returns (value, supported)
 pub fn get_feature(feature_id: u32) -> std::io::Result<(u64, bool)> {

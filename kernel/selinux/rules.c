@@ -4,6 +4,8 @@
 #include <linux/types.h>
 #include <linux/version.h>
 #include <linux/lockdep.h>
+#include <linux/mutex.h>
+#include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 
@@ -16,6 +18,7 @@
 #include "xfrm.h"
 
 struct selinux_policy *backup_sepolicy;
+static DEFINE_MUTEX(backup_sepolicy_lock);
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
 
@@ -52,6 +55,7 @@ void apply_kernelsu_rules()
     }
 
     mutex_lock(&selinux_state.policy_mutex);
+    mutex_lock(&backup_sepolicy_lock);
     backup_sepolicy =
         ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (IS_ERR(backup_sepolicy)) {
@@ -75,6 +79,7 @@ void apply_kernelsu_rules()
             }
         }
     }
+    mutex_unlock(&backup_sepolicy_lock);
     pol = ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (IS_ERR(pol)) {
         pr_err("failed to dup selinux_policy: %ld\n", PTR_ERR(pol));
@@ -162,6 +167,62 @@ void apply_kernelsu_rules()
     reset_avc_cache();
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+}
+
+int ksu_export_backup_sepolicy(struct file *file)
+{
+    const char *cursor;
+    void *data;
+    size_t len;
+    int ret;
+
+    mutex_lock(&backup_sepolicy_lock);
+    if (!backup_sepolicy) {
+        ret = -ENOENT;
+        goto out_unlock;
+    }
+
+    ret = ksu_serialize_sepolicy(backup_sepolicy, &data, &len);
+    if (ret)
+        goto out_unlock;
+
+    cursor = data;
+    while (len) {
+        ssize_t written = kernel_write(file, cursor, len, &file->f_pos);
+
+        if (written < 0) {
+            ret = written;
+            goto out_free;
+        }
+        if (!written) {
+            ret = -EIO;
+            goto out_free;
+        }
+
+        cursor += written;
+        len -= written;
+    }
+    ret = 0;
+
+out_free:
+    kvfree(data);
+
+out_unlock:
+    mutex_unlock(&backup_sepolicy_lock);
+    return ret;
+}
+
+void ksu_drop_backup_sepolicy(void)
+{
+    mutex_lock(&backup_sepolicy_lock);
+    if (backup_sepolicy) {
+        pr_info("drop backup_sepolicy\n");
+        sidtab_destroy(backup_sepolicy->sidtab);
+        kfree(backup_sepolicy->sidtab);
+        ksu_destroy_sepolicy(backup_sepolicy);
+        backup_sepolicy = NULL;
+    }
+    mutex_unlock(&backup_sepolicy_lock);
 }
 
 #define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)

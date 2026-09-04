@@ -2,10 +2,17 @@
 #define __KSU_H_SEPOLICY
 
 #include <linux/types.h>
+#include <linux/fs.h>
 
 #include "ss/policydb.h"
 
 struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol);
+
+int ksu_serialize_sepolicy(struct selinux_policy *pol, void **data, size_t *len);
+
+int ksu_export_backup_sepolicy(struct file *file);
+
+void ksu_drop_backup_sepolicy(void);
 
 void ksu_destroy_sepolicy(struct selinux_policy *orig);
 
