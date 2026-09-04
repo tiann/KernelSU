@@ -115,7 +115,6 @@ import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
-import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
@@ -314,9 +313,6 @@ fun ModulePagerMiuix(
                                     }
                                 )
                             }
-                            RebootListPopupMiuix(
-                                alignment = PopupPositionProvider.Align.TopEnd,
-                            )
                         },
                         navigationIcon = {
                             IconButton(
