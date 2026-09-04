@@ -33,15 +33,15 @@ fn init_driver_fd() -> Option<RawFd> {
     let fd = scan_driver_fd();
     if fd.is_none() {
         let mut fd = -1;
-        unsafe {
+        crate::cli::with_svc_call(|| unsafe {
             libc::syscall(
                 libc::SYS_reboot,
                 ksu_uapi::KSU_INSTALL_MAGIC1,
                 ksu_uapi::KSU_INSTALL_MAGIC2,
                 0,
                 &mut fd,
-            );
-        };
+            )
+        });
         if fd >= 0 { Some(fd) } else { None }
     } else {
         fd
