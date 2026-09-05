@@ -5,8 +5,20 @@ KMI := $(notdir $(patsubst %/,%,$(KDIR)))
 
 ifeq ($(KMI),android17-6.18)
 KBUILD_ARGS := M=$(MDIR) MO=$(ODIR)
+else ifeq ($(KMI),android16-6.12)
+# 6.12 does not support KBUILD_EXTMOD_OUTPUT/MO. Build in the source
+# directory and copy the final module to ODIR after linking.
+KBUILD_ARGS := M=$(MDIR)
 else
 KBUILD_ARGS := M=$(ODIR) src=$(MDIR)
+endif
+
+ifeq ($(KMI),android16-6.12)
+KSU_MODULE_PATH := $(MDIR)/kernelsu.ko
+KSU_COPY_MODULE := mkdir -p $(ODIR); cp $(MDIR)/kernelsu.ko $(ODIR)/kernelsu.ko; rm -f $(MDIR)/modules.order
+else
+KSU_MODULE_PATH := $(ODIR)/kernelsu.ko
+KSU_COPY_MODULE :=
 endif
 
 $(info -- KDIR: $(KDIR))
@@ -19,7 +31,8 @@ $(info -- KBUILD_ARGS: $(KBUILD_ARGS))
 
 all: check_symbol
 	$(MAKE) -C $(KDIR) $(KBUILD_ARGS) modules compile_commands.json -j$(shell nproc)
-	./check_symbol $(ODIR)/kernelsu.ko $(KDIR)/vmlinux
+	$(KSU_COPY_MODULE)
+	./check_symbol $(KSU_MODULE_PATH) $(KDIR)/vmlinux
 
 compdb:
 	python3 $(MDIR)/.vscode/generate_compdb.py -O $(ODIR) $(MDIR)
