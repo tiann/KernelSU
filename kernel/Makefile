@@ -27,7 +27,7 @@ $(info -- OUTPUT DIR: $(ODIR))
 $(info -- KMI: $(KMI))
 $(info -- KBUILD_ARGS: $(KBUILD_ARGS))
 
-.PHONY: all compdb clean format check-format
+.PHONY: all compdb clean format check-format tests
 
 all: check_symbol
 	$(MAKE) -C $(KDIR) $(KBUILD_ARGS) modules compile_commands.json -j$(shell nproc)
@@ -36,6 +36,15 @@ all: check_symbol
 
 compdb:
 	python3 $(MDIR)/.vscode/generate_compdb.py -O $(ODIR) $(MDIR)
+# Plugin API smoke test; not part of the default build (see api/README.md).
+# The module is linked in tests/ and, when a separate ODIR is used, copied there.
+ifneq ($(ODIR),$(MDIR))
+KSU_TEST_OUT := $(ODIR)
+else
+KSU_TEST_OUT :=
+endif
+tests:
+	$(MAKE) -C $(MDIR)/tests KDIR=$(KDIR) KSU_SYMVERS=$(ODIR)/Module.symvers KSU_TEST_OUT=$(KSU_TEST_OUT)
 clean:
 	$(MAKE) -C $(KDIR) $(KBUILD_ARGS) clean
 	rm check_symbol

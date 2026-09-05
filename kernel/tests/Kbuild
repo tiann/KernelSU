@@ -1,0 +1,18 @@
+# Out-of-tree KernelSU plugin API smoke test. Built only via "make tests" in
+# kernel/; the main kernelsu.ko build never includes this directory.
+obj-m += ksu_api_test.o
+
+ifneq ($(KBUILD_EXTMOD),)
+ifneq ($(srcroot),)
+KSU_TEST_DIR := $(srcroot)
+endif
+endif
+ifndef KSU_TEST_DIR
+ifeq ($(filter /%,$(src)),)
+KSU_TEST_DIR := $(srctree)/$(src)
+else
+KSU_TEST_DIR := $(src)
+endif
+endif
+
+ccflags-y += -I$(KSU_TEST_DIR)/.. -I$(KSU_TEST_DIR)/../include
