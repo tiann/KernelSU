@@ -39,6 +39,34 @@ impl<I: Iterator> Iterator for KptrOwnedIter<I> {
     }
 }
 
+struct KallsymsEntry {
+    symbol: String,
+    addr: u64,
+    module: Option<String>,
+}
+
+fn parse_kallsyms_line(line: &str) -> Option<KallsymsEntry> {
+    let mut splits = line.split_whitespace();
+    let addr = u64::from_str_radix(splits.next()?, 16).ok()?;
+    let _type = splits.next()?;
+    let symbol = splits.next()?;
+    // Module symbols carry a trailing "[module]" field.
+    let module = splits
+        .next()
+        .map(|tag| tag.trim_start_matches('[').trim_end_matches(']').to_owned());
+    let symbol = symbol
+        .find("$")
+        .or_else(|| symbol.find(".llvm."))
+        .map(|pos| &symbol[0..pos])
+        .unwrap_or(symbol)
+        .to_owned();
+    Some(KallsymsEntry {
+        symbol,
+        addr,
+        module,
+    })
+}
+
 pub fn kernel_symbols_iter() -> Result<impl Iterator<Item = (String, u64)>> {
     let kptr = Kptr::new()?;
 
@@ -47,28 +75,26 @@ pub fn kernel_symbols_iter() -> Result<impl Iterator<Item = (String, u64)>> {
         // https://github.com/torvalds/linux/blob/7f87a5ea75f011d2c9bc8ac0167e5e2d1adb1594/kernel/kallsyms.c#L727
         // We can stop read as soon as we read all kernel symbols
         .map_while(|line| {
-            line.ok().and_then(|line| {
-                let mut splits = line.split_whitespace();
-                splits
-                    .next()
-                    .and_then(|addr| u64::from_str_radix(addr, 16).ok())
-                    .and_then(|addr| {
-                        splits
-                            .nth(1)
-                            .take_if(|_| splits.next().is_none()) // stop at module symbols
-                            .map(|symbol| {
-                                (
-                                    symbol
-                                        .find("$")
-                                        .or_else(|| symbol.find(".llvm."))
-                                        .map(|pos| &symbol[0..pos])
-                                        .unwrap_or(symbol)
-                                        .to_owned(),
-                                    addr,
-                                )
-                            })
-                    })
-            })
+            line.ok()
+                .and_then(|line| parse_kallsyms_line(&line))
+                .take_if(|entry| entry.module.is_none()) // stop at module symbols
+                .map(|entry| (entry.symbol, entry.addr))
+        });
+
+    Ok(KptrOwnedIter { _kptr: kptr, iter })
+}
+
+/// Symbols of already loaded modules, e.g. `ksu_get_api` exported by kernelsu.ko.
+/// Yields `(symbol, address, module)`.
+pub fn module_symbols_iter() -> Result<impl Iterator<Item = (String, u64, String)>> {
+    let kptr = Kptr::new()?;
+
+    let iter = BufReader::new(File::open("/proc/kallsyms")?)
+        .lines()
+        .filter_map(|line| {
+            let entry = parse_kallsyms_line(&line.ok()?)?;
+            let module = entry.module?;
+            Some((entry.symbol, entry.addr, module))
         });
 
     Ok(KptrOwnedIter { _kptr: kptr, iter })
@@ -348,6 +374,24 @@ pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
             Ok(!unresolved_symbols.is_empty())
         })
         .context("Cannot parse kallsyms")?;
+    }
+
+    // kernelsu.ko hides its sysfs kobject, so the kernel cannot create the
+    // "holders" link for a module that imports its exported symbols and
+    // init_module fails with ENOENT. Resolve module exports here instead so
+    // the kernel sees absolute symbols and records no module dependency.
+    if !unresolved_symbols.is_empty() {
+        for (symbol, addr, module) in module_symbols_iter().context("Cannot parse kallsyms")? {
+            if let Some((mut sym, offset)) = unresolved_symbols.remove(&symbol) {
+                log::info!("Resolved {symbol} from module {module}");
+                sym.st_shndx = section_header::SHN_ABS as usize;
+                sym.st_value = addr;
+                buffer.pwrite_with(sym, offset, ctx)?;
+            }
+            if unresolved_symbols.is_empty() {
+                break;
+            }
+        }
     }
 
     for name in unresolved_symbols.keys() {
