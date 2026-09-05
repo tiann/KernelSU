@@ -144,6 +144,15 @@ struct ksu_get_sulog_fd_cmd {
     __u32 flags; /* Input: reserved for future use, must be 0 */
 };
 
+#define KSU_PLUGIN_NAME_LEN 64
+#define KSU_MAX_PLUGINS 16
+
+struct ksu_prepare_unload_cmd {
+    __u32 flags; /* Input: reserved, must be 0 */
+    __u32 count; /* Output: number of loaded plugins (may exceed KSU_MAX_PLUGINS) */
+    char plugins[KSU_MAX_PLUGINS][KSU_PLUGIN_NAME_LEN]; /* Output: module names to unload first */
+};
+
 static const __u8 KSU_UMOUNT_WIPE = 0; /* ignore everything and wipe list */
 static const __u8 KSU_UMOUNT_ADD = 1; /* add entry (path + flags) */
 static const __u8 KSU_UMOUNT_DEL = 2; /* delete entry, strcmp */
@@ -176,5 +185,7 @@ static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
 static const __u32 KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT = _IO('K', 21);
+/* Notify kernel plugins that the core is about to be unloaded and list them. */
+static const __u32 KSU_IOCTL_PREPARE_UNLOAD = _IOWR('K', 22, struct ksu_prepare_unload_cmd);
 
 #endif

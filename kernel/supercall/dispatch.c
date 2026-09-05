@@ -7,6 +7,7 @@
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
 #include "api/event_registry.h"
+#include "api/ksu_api.h"
 #include "arch.h" // IWYU pragma: keep
 #include "policy/allowlist.h"
 #include "policy/feature.h"
@@ -701,6 +702,38 @@ static int do_disable_escape_to_root(void __user *arg)
 
 // IOCTL handlers mapping table
 // clang-format off
+static int do_prepare_unload(void __user *arg)
+{
+    struct ksu_prepare_unload_cmd *cmd;
+    size_t i, count;
+    int ret = 0;
+
+    cmd = kzalloc(sizeof(*cmd), GFP_KERNEL);
+    if (!cmd)
+        return -ENOMEM;
+    if (copy_from_user(&cmd->flags, arg, sizeof(cmd->flags))) {
+        ret = -EFAULT;
+        goto out;
+    }
+    if (cmd->flags) {
+        ret = -EINVAL;
+        goto out;
+    }
+
+    /* Plugins hear CORE_EXITING first; ksud then removes them in order. */
+    ksu_event_notify_core_exiting();
+
+    count = ksu_api_list_plugins(&cmd->plugins[0][0], KSU_PLUGIN_NAME_LEN, KSU_MAX_PLUGINS);
+    cmd->count = count;
+    for (i = 0; i < count && i < KSU_MAX_PLUGINS; i++)
+        pr_info("prepare_unload: plugin %s\n", cmd->plugins[i]);
+    if (copy_to_user(arg, cmd, sizeof(*cmd)))
+        ret = -EFAULT;
+out:
+    kfree(cmd);
+    return ret;
+}
+
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { 
         .cmd = KSU_IOCTL_GRANT_ROOT,
@@ -845,6 +878,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .name = "DISABLE_ESCAPE_TO_ROOT", 
         .handler = do_disable_escape_to_root, 
         .perm_check = only_root 
+    },
+    {
+        .cmd = KSU_IOCTL_PREPARE_UNLOAD,
+        .name = "PREPARE_UNLOAD",
+        .handler = do_prepare_unload,
+        .perm_check = only_root,
     },
     {
         .cmd = 0,

@@ -251,6 +251,34 @@ pub fn umount_list_wipe() -> std::io::Result<()> {
     Ok(())
 }
 
+/// Tell the kernel that KernelSU is about to be unloaded. Plugins receive
+/// CORE_EXITING and the kernel returns the names of the modules that still
+/// hold the plugin API; they must be removed before kernelsu itself.
+pub fn prepare_unload() -> anyhow::Result<Vec<String>> {
+    let mut cmd: ksu_uapi::ksu_prepare_unload_cmd = unsafe { std::mem::zeroed() };
+    ksuctl(ksu_uapi::KSU_IOCTL_PREPARE_UNLOAD, &raw mut cmd)?;
+    let count = cmd.count as usize;
+    if count > cmd.plugins.len() {
+        bail!(
+            "kernel reported {count} plugins but only {} names fit",
+            cmd.plugins.len()
+        );
+    }
+    Ok(cmd.plugins[..count]
+        .iter()
+        .map(|raw| {
+            // c_char is i8 on x86 and u8 on aarch64.
+            #[allow(clippy::unnecessary_cast)]
+            let bytes: Vec<u8> = raw
+                .iter()
+                .take_while(|&&c| c != 0)
+                .map(|&c| c as u8)
+                .collect();
+            String::from_utf8_lossy(&bytes).into_owned()
+        })
+        .collect())
+}
+
 /// Add mount point to umount list
 pub fn umount_list_add(path: &str, flags: u32) -> anyhow::Result<()> {
     let c_path = std::ffi::CString::new(path)?;

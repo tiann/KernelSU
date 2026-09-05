@@ -1,8 +1,10 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use log::{info, warn};
+use std::ffi::CString;
 use std::fs;
 use std::process::Command;
 
+use crate::ksucalls;
 use crate::utils;
 
 /// Find PIDs of processes running in the KernelSU su domain (u:r:ksu:s0).
@@ -105,8 +107,27 @@ fn close_ksu_fds() {
     }
 }
 
+/// Notify kernel plugins and remove them. They hold a reference on
+/// kernelsu.ko, so delete_module("kernelsu") cannot succeed while any of
+/// them is loaded. Fails before anything else is disturbed if a plugin
+/// refuses to go away.
+fn unload_plugins() -> Result<()> {
+    let plugins = ksucalls::prepare_unload().context("prepare unload")?;
+    for name in &plugins {
+        info!("unload: removing plugin {name}");
+        let cname = CString::new(name.as_str())?;
+        rustix::system::delete_module(&cname, 0)
+            .with_context(|| format!("plugin {name} refused to unload"))?;
+    }
+    Ok(())
+}
+
 pub fn unload() -> Result<()> {
     info!("unload: starting KernelSU unload sequence");
+
+    // 0. Plugins first: they pin the core, and CORE_EXITING must reach them
+    //    while everything is still running.
+    unload_plugins()?;
 
     // 0. Switch cgroups so we don't get killed along with our parent shell
     utils::switch_cgroups();
