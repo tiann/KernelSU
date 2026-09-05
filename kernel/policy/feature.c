@@ -3,6 +3,8 @@
 
 #include <linux/mutex.h>
 
+#include "api/event_registry.h"
+
 static const struct ksu_feature_handler *feature_handlers[KSU_FEATURE_MAX];
 
 static DEFINE_MUTEX(feature_mutex);
@@ -142,6 +144,16 @@ int ksu_set_feature(u32 feature_id, u64 value)
 
 out:
     mutex_unlock(&feature_mutex);
+    if (!ret) {
+        struct ksu_feature_event event = {
+            .size = sizeof(event),
+            .version = 1,
+            .feature_id = feature_id,
+            .value = value,
+            .result = ret,
+        };
+        ksu_event_emit(KSU_EVENT_FEATURE_CHANGED, &event, ret);
+    }
     return ret;
 }
 

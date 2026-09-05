@@ -11,6 +11,7 @@
 #include <linux/types.h>
 #include <linux/uaccess.h>
 #include <linux/uidgid.h>
+#include <asm/unistd.h>
 
 #include "policy/allowlist.h"
 #include "hook/setuid_hook.h"
@@ -20,6 +21,30 @@
 #include "supercall/supercall.h"
 #include "hook/tp_marker.h"
 #include "feature/kernel_umount.h"
+#include "api/event_registry.h"
+#include "selinux/selinux.h"
+
+static void ksu_emit_uid_committed(uid_t old_uid, uid_t new_uid)
+{
+    struct ksu_uid_event event = {
+        .size = sizeof(event),
+        .version = 1,
+        .syscall_nr = __NR_setresuid,
+        .old_uid = old_uid,
+        .new_uid = new_uid,
+        .pid = current->pid,
+        .tgid = current->tgid,
+    };
+
+    /* This runs on every setresuid; do not pay for the allowlist lookups
+     * unless somebody is listening. */
+    if (!ksu_event_has_handlers(KSU_EVENT_UID_COMMITTED))
+        return;
+    event.old_allowlisted = __ksu_is_allow_uid(old_uid);
+    event.new_allowlisted = __ksu_is_allow_uid(new_uid);
+    event.is_zygote_child = is_zygote(current_cred());
+    ksu_event_emit(KSU_EVENT_UID_COMMITTED, &event, 0);
+}
 
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {
@@ -34,7 +59,17 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
         spin_unlock_irq(&current->sighand->siglock);
 
         pr_info("install fd for manager: %d\n", new_uid);
-        ksu_install_fd();
+        {
+            int fd = ksu_install_fd();
+            struct ksu_policy_event event = {
+                .size = sizeof(event),
+                .version = 1,
+                .uid = new_uid,
+                .result = fd < 0 ? fd : 0,
+            };
+            ksu_event_emit(KSU_EVENT_MANAGER_READY, &event, event.result);
+        }
+        ksu_emit_uid_committed(old_uid, new_uid);
         return 0;
     }
 
@@ -52,6 +87,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
     // Handle kernel umount
     ksu_handle_umount(old_uid, new_uid);
 
+    ksu_emit_uid_committed(old_uid, new_uid);
     return 0;
 }
 

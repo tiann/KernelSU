@@ -6,6 +6,7 @@
 #include <linux/thread_info.h>
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
+#include "api/event_registry.h"
 #include "arch.h" // IWYU pragma: keep
 #include "policy/allowlist.h"
 #include "policy/feature.h"
@@ -369,6 +370,16 @@ static int do_set_app_profile(void __user *arg)
     if (!ret) {
         ksu_persistent_allow_list();
         ksu_mark_running_process();
+        {
+            struct ksu_policy_event event = {
+                .size = sizeof(event),
+                .version = 1,
+                .uid = cmd.profile.curr_uid,
+                .id = 0,
+                .result = 0,
+            };
+            ksu_event_emit(KSU_EVENT_PROFILE_CHANGED, &event, 0);
+        }
     }
     return ret;
 }
@@ -847,6 +858,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
 long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 {
     int i;
+    long ret;
 
 #ifdef CONFIG_KSU_DEBUG
     pr_info("ksu ioctl: cmd=0x%x from uid=%d\n", cmd, current_uid().val);
@@ -857,15 +869,30 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
             // Check permission first
             if (ksu_ioctl_handlers[i].perm_check && !ksu_ioctl_handlers[i].perm_check()) {
                 pr_warn("ksu ioctl: permission denied for cmd=0x%x uid=%d\n", cmd, current_uid().val);
-                return -EPERM;
+                ret = -EPERM;
+                goto post_event;
             }
             // Execute handler
-            return ksu_ioctl_handlers[i].handler(argp);
+            ret = ksu_ioctl_handlers[i].handler(argp);
+            goto post_event;
         }
     }
 
     pr_warn("ksu ioctl: unsupported command 0x%x\n", cmd);
-    return -ENOTTY;
+    ret = -ENOTTY;
+
+post_event:
+    /* Keep this audit event opt-in and limited to low-frequency commands. */
+    if (cmd == KSU_IOCTL_GET_INFO || cmd == KSU_IOCTL_GET_INFO_LEGACY || cmd == KSU_IOCTL_REPORT_EVENT) {
+        struct ksu_supercall_event event = {
+            .size = sizeof(event),
+            .version = 1,
+            .command = cmd,
+            .result = ret,
+        };
+        ksu_event_emit(KSU_EVENT_SUPERCALL_POST, &event, ret);
+    }
+    return ret;
 }
 
 void __init ksu_supercall_dump_commands(void)

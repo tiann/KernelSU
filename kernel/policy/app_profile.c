@@ -14,6 +14,7 @@
 
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
+#include "api/event_registry.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
@@ -212,6 +213,17 @@ int escape_with_root_profile(void)
 
     setup_mount_ns(profile->namespaces);
     ksu_put_root_profile(profile);
+    {
+        struct ksu_root_event event = {
+            .size = sizeof(event),
+            .version = 1,
+            .uid = current_uid().val,
+            .pid = current->pid,
+            .tgid = current->tgid,
+            .result = 0,
+        };
+        ksu_event_emit(KSU_EVENT_ROOT_GRANTED, &event, 0);
+    }
     return 0;
 
 out_abort_creds:
