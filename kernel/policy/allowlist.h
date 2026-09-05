@@ -32,6 +32,7 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
 
 void ksu_prune_allowlist(bool (*is_uid_exist)(uid_t, char *, void *), void *data);
 void ksu_persistent_allow_list();
+void ksu_allowlist_wait_for_persistence(void);
 
 // should be called with rcu read lock
 struct app_profile *ksu_get_app_profile(uid_t uid);

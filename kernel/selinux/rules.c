@@ -14,6 +14,7 @@
 #include "ss/services.h"
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "xfrm.h"
+#include "api/event_registry.h"
 
 struct selinux_policy *backup_sepolicy;
 
@@ -46,6 +47,7 @@ void apply_kernelsu_rules()
 {
     struct selinux_policy *pol, *old_pol = selinux_state.policy;
     struct policydb *db;
+    bool applied = false;
 
     if (!getenforce()) {
         pr_info("SELinux permissive or disabled, apply rules!\n");
@@ -160,8 +162,11 @@ void apply_kernelsu_rules()
     ksu_destroy_sepolicy(old_pol);
 
     reset_avc_cache();
+    applied = true;
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+    if (applied)
+        ksu_event_set_state(KSU_EVENT_SELINUX_READY);
 }
 
 #define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
