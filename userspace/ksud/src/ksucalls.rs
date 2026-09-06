@@ -76,19 +76,6 @@ const SU_DRIVER_FD_NAME: &str = "anon_inode:[ksu_driver_su]";
 static DRIVER_FD: OnceLock<RawFd> = OnceLock::new();
 static INFO_CACHE: OnceLock<ksu_uapi::ksu_get_info_cmd> = OnceLock::new();
 
-fn set_cloexec(fd: RawFd) -> io::Result<()> {
-    let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
-    if flags == -1 {
-        return Err(io::Error::last_os_error());
-    }
-
-    if unsafe { libc::fcntl(fd, libc::F_SETFD, flags | libc::FD_CLOEXEC) } == -1 {
-        return Err(io::Error::last_os_error());
-    }
-
-    Ok(())
-}
-
 fn scan_driver_fd() -> io::Result<Option<RawFd>> {
     let fd_dir = fs::read_dir("/proc/self/fd")?;
     let mut driver_fd = None;
@@ -99,7 +86,6 @@ fn scan_driver_fd() -> io::Result<Option<RawFd>> {
             if let Ok(target) = fs::read_link(&link_path) {
                 let target_str = target.to_string_lossy();
                 if target_str == SU_DRIVER_FD_NAME {
-                    set_cloexec(fd_num)?;
                     return Ok(Some(fd_num));
                 }
                 if target_str == DRIVER_FD_NAME {
