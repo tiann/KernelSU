@@ -54,7 +54,11 @@ data class SettingsUiState(
     val autoJailbreak: Boolean = false,
 
     // Soft Reboot
-    val useSoftReboot: Boolean = false
+    val useSoftReboot: Boolean = false,
+
+    // Fastbootd Rescue
+    val fastbootdRescueStatus: String = "",
+    val isFastbootdRescueEnabled: Boolean = false
 )
 
 @Immutable
@@ -73,5 +77,6 @@ data class SettingsScreenActions(
     val onSetEnableWebDebugging: (Boolean) -> Unit,
     val onSetAutoJailbreak: (Boolean) -> Unit,
     val onSetUseSoftReboot: (Boolean) -> Unit,
+    val onSetFastbootdRescueEnabled: (Boolean) -> Unit,
     val onOpenAbout: () -> Unit,
 )

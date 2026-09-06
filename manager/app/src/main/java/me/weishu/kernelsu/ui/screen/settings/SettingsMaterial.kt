@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Adb
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DeveloperMode
@@ -264,6 +265,21 @@ fun SettingPagerMaterial(
                                 enabled = !uiState.isLateLoadMode,
                                 checked = uiState.isLateLoadMode || uiState.useSoftReboot,
                                 onCheckedChange = actions.onSetUseSoftReboot
+                            )
+                        },
+                        {
+                            val fastbootdRescueSummary = when (uiState.fastbootdRescueStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_fastbootd_rescue_summary)
+                            }
+                            SegmentedSwitchItem(
+                                icon = Icons.Filled.Build,
+                                title = stringResource(id = R.string.settings_fastbootd_rescue),
+                                summary = fastbootdRescueSummary,
+                                enabled = uiState.fastbootdRescueStatus == "supported",
+                                checked = uiState.isFastbootdRescueEnabled,
+                                onCheckedChange = actions.onSetFastbootdRescueEnabled
                             )
                         },
                     )

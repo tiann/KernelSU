@@ -144,6 +144,21 @@ pub fn check_kernel_safemode() -> bool {
     cmd.in_safe_mode != 0
 }
 
+/// Checks whether the kernel requested a fastbootd rescue reboot.
+///
+/// # Errors
+///
+/// Returns an error when the KernelSU ioctl fails for reasons other than an
+/// older kernel not supporting this additive command.
+pub fn check_kernel_fastbootd() -> std::io::Result<bool> {
+    let mut cmd = ksu_uapi::ksu_check_fastbootd_cmd { requested: 0 };
+    match ksuctl(ksu_uapi::KSU_IOCTL_CHECK_FASTBOOTD, &raw mut cmd) {
+        Ok(_) => Ok(cmd.requested != 0),
+        Err(error) if error.raw_os_error() == Some(libc::ENOTTY) => Ok(false),
+        Err(error) => Err(error),
+    }
+}
+
 pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> std::io::Result<i32> {
     let mut ioctl_cmd = crate::ksu_uapi::ksu_set_sepolicy_cmd {
         data_len: payload_len,

@@ -51,6 +51,10 @@ interface SettingsRepository {
     suspend fun getAdbRootPersistValue(): Long?
     fun setAdbRootEnabled(enabled: Boolean): Boolean
 
+    suspend fun getFastbootdRescueStatus(): String
+    suspend fun getFastbootdRescuePersistValue(): Long?
+    fun setFastbootdRescueEnabled(enabled: Boolean): Boolean
+
     fun isDefaultUmountModules(): Boolean
     fun setDefaultUmountModules(enabled: Boolean): Boolean
 

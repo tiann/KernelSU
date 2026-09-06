@@ -13,10 +13,60 @@ use rustix::process::chdir;
 use std::path::Path;
 use std::process::Command;
 
+const DYNAMIC_PARTITIONS_PROP: &str = "ro.boot.dynamic_partitions";
+const POWERCTL_PROP: &str = "sys.powerctl";
+const FASTBOOTD_REBOOT_COMMAND: &str = "reboot,fastboot";
+
+fn property_value_is_true(value: Option<&str>) -> bool {
+    let Some(value) = value else {
+        return false;
+    };
+
+    value == "1"
+        || value.eq_ignore_ascii_case("true")
+        || value.eq_ignore_ascii_case("y")
+        || value.eq_ignore_ascii_case("yes")
+        || value.eq_ignore_ascii_case("on")
+}
+
+fn request_fastbootd_reboot() -> Result<()> {
+    sys_prop::init().context("Failed to initialize system property API")?;
+
+    // Android init redirects reboot,fastboot to bootloader fastboot without dynamic partitions.
+    anyhow::ensure!(
+        property_value_is_true(sys_prop::get(DYNAMIC_PARTITIONS_PROP).as_deref()),
+        "Fastbootd rescue requires dynamic partitions"
+    );
+
+    warn!("fastbootd rescue requested, rebooting through Android init");
+    sys_prop::set(POWERCTL_PROP, FASTBOOTD_REBOOT_COMMAND, false)
+        .context("Failed to request fastbootd reboot")?;
+    Ok(())
+}
+
 pub fn on_post_data_fs() -> Result<()> {
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
         error!("{e:#}, skip on_post_fs_data");
         return Ok(());
+    }
+
+    match ksucalls::check_kernel_fastbootd() {
+        Ok(true) => {
+            if crate::feature::is_fastbootd_rescue_enabled_in_config() {
+                match request_fastbootd_reboot() {
+                    Ok(()) => return Ok(()),
+                    Err(error) => {
+                        error!("fastbootd rescue failed, continue normal boot: {error:#}");
+                    }
+                }
+            } else {
+                warn!("fastbootd rescue requested while disabled, continue normal boot");
+            }
+        }
+        Ok(false) => {}
+        Err(error) => {
+            error!("failed to check fastbootd rescue request, continue normal boot: {error:#}");
+        }
     }
 
     ksucalls::report_post_fs_data();
