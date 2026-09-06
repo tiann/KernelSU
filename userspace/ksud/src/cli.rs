@@ -273,6 +273,12 @@ enum Sepolicy {
         file: String,
     },
 
+    /// Export the original sepolicy saved by the kernel
+    Export {
+        /// destination file path
+        file: String,
+    },
+
     /// Check if sepolicy statement is supported/valid
     Check {
         /// sepolicy statements
@@ -633,6 +639,7 @@ pub fn run() -> Result<()> {
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
+            Sepolicy::Export { file } => crate::sepolicy::export(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
         Commands::LateLoad {

@@ -7,7 +7,8 @@
 #include "uapi/app_profile.h"
 
 // 2: allowlist v4 root profile flags
-static const __u32 KERNEL_SU_UAPI_VERSION = 2;
+// 3: export the original sepolicy
+static const __u32 KERNEL_SU_UAPI_VERSION = 3;
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;
@@ -144,6 +145,11 @@ struct ksu_get_sulog_fd_cmd {
     __u32 flags; /* Input: reserved for future use, must be 0 */
 };
 
+struct ksu_export_sepolicy_cmd {
+    __u32 fd; /* Input: writable userspace fd to receive the policy */
+    __u32 flags; /* Input: reserved for future use, must be 0 */
+};
+
 static const __u8 KSU_UMOUNT_WIPE = 0; /* ignore everything and wipe list */
 static const __u8 KSU_UMOUNT_ADD = 1; /* add entry (path + flags) */
 static const __u8 KSU_UMOUNT_DEL = 2; /* delete entry, strcmp */
@@ -176,5 +182,6 @@ static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
 static const __u32 KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT = _IO('K', 21);
+static const __u32 KSU_IOCTL_EXPORT_SEPOLICY = _IOW('K', 22, struct ksu_export_sepolicy_cmd);
 
 #endif
