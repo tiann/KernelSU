@@ -571,6 +571,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             );
         }
 
+        // None means --no-install: preserve the marker for the existing LKM.
+        let bundled_lkm = (!no_install).then_some(kmod.is_none());
+
         let kmi = kmi.map_or_else(
             || -> Result<_> {
                 if kmod.is_some() {
@@ -748,6 +751,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         apply_config("no custom rc", "norc=1", no_custom_rc);
         apply_config("allow shell", "allow_shell=1", allow_shell);
+        if let Some(bundled) = bundled_lkm {
+            apply_config("bundled LKM", "bundled=1", bundled);
+        }
 
         if ksu_config.is_empty() {
             cpio.rm("ksu_config", false);

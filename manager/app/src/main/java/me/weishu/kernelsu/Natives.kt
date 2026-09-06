@@ -44,6 +44,9 @@ object Natives {
     val isLkmMode: Boolean
         external get
 
+    val isLkmBundled: Boolean
+        external get
+
     val isLateLoadMode: Boolean
         external get
 

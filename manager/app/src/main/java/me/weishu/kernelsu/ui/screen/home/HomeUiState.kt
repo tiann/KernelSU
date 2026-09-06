@@ -11,6 +11,7 @@ data class HomeUiState(
     val managerUAPIVersion: Int,
     val kernelUAPIVersion: Int?,
     val lkmMode: Boolean?,
+    val isLkmBundled: Boolean,
     val isManager: Boolean,
     val isManagerPrBuild: Boolean,
     val isKernelPrBuild: Boolean,
@@ -32,6 +33,17 @@ data class HomeUiState(
 
     val showGkiWarning: Boolean
         get() = ksuVersion != null && lkmMode == false
+
+    val showLkmUpdate: Boolean
+        get() = isManager &&
+            lkmMode == true &&
+            isLkmBundled &&
+            ksuVersion?.toLong() != currentManagerVersionCode &&
+            !requiresNewKernel &&
+            !requiresNewManager
+
+    val showCustomLkmBadge: Boolean
+        get() = lkmMode == true && !isLkmBundled
 
     val showRootWarning: Boolean
         get() = ksuVersion != null && !isRootAvailable

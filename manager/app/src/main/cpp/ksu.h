@@ -24,6 +24,8 @@ bool is_safe_mode();
 
 bool is_lkm_mode();
 
+bool is_lkm_bundled();
+
 bool is_late_load_mode();
 
 bool is_manager();

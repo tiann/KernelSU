@@ -10,7 +10,9 @@ use std::sync::OnceLock;
 
 // sigsys handler
 std::thread_local! {
+    #[allow(clippy::missing_const_for_thread_local)]
     static SVC_IN_FLIGHT: Cell<bool> = const { Cell::new(false) };
+    #[allow(clippy::missing_const_for_thread_local)]
     static SIGSYS_OCCURRED: Cell<bool> = const { Cell::new(false) };
 }
 

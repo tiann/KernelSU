@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -58,6 +59,7 @@ import me.weishu.kernelsu.ui.component.WarningLevel
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.miuix.WarningCard
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopupMiuix
+import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
@@ -147,6 +149,13 @@ fun HomePagerMiuix(
                                 stringResource(
                                     id = R.string.require_manager_version
                                 )
+                            )
+                        }
+                        if (state.showLkmUpdate) {
+                            WarningCard(
+                                message = stringResource(R.string.home_lkm_update_available),
+                                level = WarningLevel.Notice,
+                                onClick = actions.onInstallClick,
                             )
                         }
                         if (state.showRootWarning) {
@@ -315,13 +324,24 @@ private fun StatusCard(
                                         fontWeight = FontWeight.SemiBold,
                                     )
                                     Spacer(Modifier.height(1.dp))
-                                    Text(
-                                        text = stringResource(
-                                            R.string.home_working_version,
-                                            "${state.ksuVersion}-${state.kernelUAPIVersion}"
-                                        ),
-                                        fontSize = 15.sp,
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = stringResource(
+                                                R.string.home_working_version,
+                                                "${state.ksuVersion}-${state.kernelUAPIVersion}"
+                                            ),
+                                            modifier = Modifier.weight(1f, fill = false),
+                                            fontSize = 15.sp,
+                                        )
+                                        if (state.showCustomLkmBadge) {
+                                            Spacer(Modifier.width(8.dp))
+                                            StatusTag(
+                                                label = stringResource(R.string.home_lkm_custom),
+                                                contentColor = colorScheme.onTertiaryContainer,
+                                                backgroundColor = colorScheme.tertiaryContainer,
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -652,6 +672,7 @@ private fun previewHomeScreenState(
     kernelVersion = KernelVersion(6, 1, 0),
     ksuVersion = ksuVersion,
     lkmMode = lkmMode,
+    isLkmBundled = lkmMode == true,
     isManager = true,
     isManagerPrBuild = false,
     isKernelPrBuild = false,
