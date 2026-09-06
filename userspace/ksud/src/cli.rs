@@ -1,6 +1,6 @@
 use anyhow::{Context, Ok, Result};
 use clap::Parser;
-use std::{cell::Cell, path::PathBuf};
+use std::path::PathBuf;
 
 use android_logger::Config;
 use log::{LevelFilter, error, info};
@@ -489,66 +489,6 @@ enum Initrc {
     Refresh,
 }
 
-std::thread_local! {
-    static SVC_IN_FLIGHT: Cell<bool> = const { Cell::new(false) };
-    static SIGSYS_OCCURRED: Cell<bool> = const { Cell::new(false) };
-}
-
-const SYS_SECCOMP: libc::c_int = 1;
-
-pub fn with_svc_call<F, R>(call: F) -> R
-where
-    F: FnOnce() -> R,
-{
-    SVC_IN_FLIGHT.with(|in_flight| in_flight.set(true));
-    let result = call();
-    SVC_IN_FLIGHT.with(|in_flight| in_flight.set(false));
-    result
-}
-
-fn take_sigsys_occurred() -> bool {
-    SIGSYS_OCCURRED.with(|occurred| occurred.replace(false))
-}
-
-extern "C" fn sigsys_handler(
-    _sig: libc::c_int,
-    info: *mut libc::siginfo_t,
-    ctx: *mut libc::c_void,
-) {
-    unsafe {
-        if info.is_null() || ctx.is_null() || (*info).si_code != SYS_SECCOMP {
-            return;
-        }
-        if SVC_IN_FLIGHT.with(Cell::get) {
-            SIGSYS_OCCURRED.with(|occurred| occurred.set(true));
-        }
-
-        let ucontext = ctx.cast::<libc::ucontext_t>();
-        #[cfg(target_arch = "aarch64")]
-        {
-            (*ucontext).uc_mcontext.regs[0] = (-libc::EPERM) as u64;
-        }
-        #[cfg(target_arch = "x86_64")]
-        {
-            let rax = libc::REG_RAX as usize;
-            (*ucontext).uc_mcontext.gregs[rax] = i64::from(-libc::EPERM);
-        }
-    }
-}
-
-fn setup_sigsys_handler() {
-    unsafe {
-        let mut sa: libc::sigaction = std::mem::zeroed();
-        sa.sa_flags = libc::SA_SIGINFO;
-        sa.sa_sigaction = sigsys_handler as *const () as usize;
-        libc::sigemptyset(std::ptr::addr_of_mut!(sa.sa_mask));
-        if libc::sigaction(libc::SIGSYS, std::ptr::addr_of!(sa), std::ptr::null_mut()) != 0 {
-            let error = std::io::Error::last_os_error();
-            log::warn!("Failed to set SIGSYS handler: {error}");
-        }
-    }
-}
-
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
@@ -556,7 +496,7 @@ pub fn run() -> Result<()> {
             .with_tag("KernelSU"),
     );
 
-    setup_sigsys_handler();
+    ksucalls::setup_sigsys_handler();
 
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
@@ -857,7 +797,7 @@ pub fn run() -> Result<()> {
             Kernel::Umount { command } => match command {
                 UmountOp::Add { mnt, flags } => ksucalls::umount_list_add(&mnt, flags),
                 UmountOp::Del { mnt } => ksucalls::umount_list_del(&mnt),
-                UmountOp::Wipe => ksucalls::umount_list_wipe().map_err(Into::into),
+                UmountOp::Wipe => ksucalls::umount_list_wipe(),
             },
             Kernel::NotifyModuleMounted => {
                 ksucalls::report_module_mounted();
@@ -867,14 +807,6 @@ pub fn run() -> Result<()> {
         Commands::Initrc { command } => match command {
             Initrc::Refresh => regenerate_preinit_rc(),
         },
-    };
-
-    let result = if take_sigsys_occurred() {
-        Err(anyhow::anyhow!(
-            "KernelSU driver install syscall was blocked by seccomp"
-        ))
-    } else {
-        result
     };
 
     if let Err(e) = &result {
