@@ -31,12 +31,17 @@ struct ksu_lsm_hook {
     int offset;
 };
 
+// clang-format off
 #define KSU_LSM_HOOK_INIT(member, target_symbol, replacement_fn, off)                                                  \
     {                                                                                                                  \
-        .head_name = #member, .target_name = target_symbol, .head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, member),  \
-        .hook_offset = offsetof(struct security_hook_list, hook.member), .replacement = (void *)(replacement_fn),      \
+        .head_name = #member,                                                                                          \
+        .target_name = target_symbol,                                                                                  \
+        .head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, member),                                                      \
+        .hook_offset = offsetof(struct security_hook_list, hook.member),                                               \
+        .replacement = (void *)(replacement_fn),                                                                       \
         .offset = off,                                                                                                 \
     }
+// clang-format on
 
 // This API implements runtime patching of existing LSM hook slots. It is a
 // workaround for out-of-tree modules, not the normal LSM registration path via
