@@ -289,12 +289,6 @@
     <string name="sulog_enable_action">启用</string>
     <string name="sulog_filter_title">按类型筛选</string>
     <string name="sulog_clean_title">清空日志</string>
-    <string name="sulog_entry_unknown_event">未知事件</string>
-    <string name="sulog_entry_description_sucompat">拦截到 /system/bin/su 请求</string>
-    <string name="sulog_entry_title_root_grant_request">Root 授权请求</string>
-    <string name="sulog_entry_description_ioctl_grant_root">已通过 KernelSU ioctl 授予 Root 权限</string>
-    <string name="sulog_entry_title_daemon_restarted">守护进程已重启</string>
-    <string name="sulog_entry_title_dropped_events">丢弃的事件</string>
     <string name="nav_rail_expand">展开导航栏</string>
     <string name="nav_rail_collapse">收起导航栏</string>
     <string name="settings_navigation_badge">导航栏角标</string>

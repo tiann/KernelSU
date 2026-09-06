@@ -203,7 +203,6 @@
     <string name="color_blue_grey">Gris-bleu</string>
     <string name="color_sakura">Sakura</string>
     <string name="color_amber">Ambre</string>
-    <string name="home_version_mismatch">Incompatibilité entre la version du gestionnaire (%1$d) et la version du pilote KernelSU (%2$d).</string>
     <string name="reboot_soft">Redémarrage logiciel</string>
     <string name="jailbreak_mode">Mode Jailbreak</string>
     <string name="home_jailbreak">Jailbreak</string>

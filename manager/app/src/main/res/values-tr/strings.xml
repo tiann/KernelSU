@@ -143,7 +143,6 @@
     <string name="settings_sucompat_summary">Uygulama Profilinde Süper Kullanıcı izni verilen uygulamaların /system/bin/su yürütülerek süper kullanıcı kabuğu almasına izin verir; yalnızca yeni işlemler için etkilidir.</string>
     <string name="settings_kernel_umount">Kernel bağlantısını kes</string>
     <string name="settings_kernel_umount_summary">KernelSU tarafından kontrol edilen çekirdek seviyesinde bağlantı kesme davranışı.</string>
-    <string name="home_version_mismatch">Yönetici sürümü (%1$d) ile KernelSU sürücüsü sürümü (%2$d) uyuşmuyor.</string>
     <string name="reboot_soft">Soft restart</string>
     <string name="jailbreak_mode">Jailbreak modu</string>
     <string name="home_jailbreak">Jailbreak</string>
