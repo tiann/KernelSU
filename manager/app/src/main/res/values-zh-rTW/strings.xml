@@ -5,6 +5,8 @@
     <string name="home_click_to_install">點選開始安裝</string>
     <string name="home_working">已開始運作</string>
     <string name="home_working_version">版本：%s</string>
+    <string name="home_lkm_update_available">有可用的內建 LKM 更新，點選更新</string>
+    <string name="home_lkm_custom">自訂</string>
     <string name="home_unsupported">未受支援</string>
     <string name="home_unsupported_reason">KernelSU 目前僅支援 GKI 核心</string>
     <string name="home_device_model">裝置型號</string>
@@ -50,7 +52,9 @@
     <string name="about_source_code"><![CDATA[前往 %1$s 檢閱原始碼<br/>前往 %2$s 加入頻道]]></string>
     <string name="profile_umount_modules">解除掛載模組功能</string>
     <string name="failed_to_update_app_profile">無法更新「%s」App Profile</string>
-    <string name="require_kernel_version">管理工具無法以老舊的 KernelSU %1$d 版本正常運作。請升級至 %2$d 以上的版本！</string>
+    <string name="require_manager_version">需要更新管理工具</string>
+    <string name="require_kernel_version">需要更新核心，點選開始安裝</string>
+    <string name="require_kernel_version_gki">需要更新核心</string>
     <string name="settings_umount_modules_default">預設解除掛載模組功能</string>
     <string name="settings_umount_modules_default_summary">將 App Profile 的全域預設行為設作「解除掛載模組功能」。啟用後，將向未指派 Profile 的應用程式移除模組功能。</string>
     <string name="profile_umount_modules_summary">啟用選項後，KernelSU 會將應用程式內遭模組修改的檔案恢復原狀。</string>

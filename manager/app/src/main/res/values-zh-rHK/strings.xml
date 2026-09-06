@@ -5,6 +5,8 @@
     <string name="home_click_to_install">按一下開始安裝</string>
     <string name="home_working">運作中</string>
     <string name="home_working_version">KernelSU 版本：%s</string>
+    <string name="home_lkm_update_available">有可用的內嵌 LKM 更新，按一下更新</string>
+    <string name="home_lkm_custom">自訂</string>
     <string name="home_unsupported">不支援</string>
     <string name="home_unsupported_reason">KernelSU 現僅支援 GKI 核心，但仍可修補 GKI 裝置映像</string>
     <string name="home_device_model">裝置型號</string>
@@ -92,8 +94,9 @@
     <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸載模組（Umount）</string>
     <string name="failed_to_update_app_profile">無法為 %s 更新 App Profile</string>
-    <string name="require_manager_version">目前管理器版本 %1$d 過低，KernelSU 無法正常運作。請將管理器升級至 %2$d 或更高版本！</string>
-    <string name="require_kernel_version">目前 KernelSU 版本 %1$d 過低，管理器無法正常運作。請升級至 %2$d 或更高版本！</string>
+    <string name="require_manager_version">需要更新管理器</string>
+    <string name="require_kernel_version">需要更新核心，按一下安裝</string>
+    <string name="require_kernel_version_gki">需要更新核心</string>
     <string name="settings_umount_modules_default">預設卸載模組</string>
     <string name="settings_umount_modules_default_summary">控制 App Profile「卸載模組」的預設值，對未設定的 App 移除模組修改</string>
     <string name="profile_umount_modules_summary">啟用後 KernelSU 將為此 App 還原所有被模組修改過的檔案</string>

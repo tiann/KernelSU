@@ -7,4 +7,9 @@
     <string name="profile_flags_desc_no_new_privs">ဤ root profile ၏ context အတွင်း KernelSU မှတစ်ဆင့် privilege များကို ထပ်မံမြှင့်တင်ခြင်းကို တားဆီးသည်။</string>
     <string name="install_force_backup">မူရင်း image အဖြစ် အရန်သိမ်းပါ</string>
     <string name="install_force_backup_summary">ကျေးဇူးပြု၍ သင်ရွေးထားသော boot image သည် မူရင်း image ဖြစ်ကြောင်း သေချာပါစေ</string>
+    <string name="home_lkm_update_available">အသစ်ထွက်ရှိသော အတွင်းပါ LKM ဗားရှင်းကို ရနိုင်ပါပြီ။ အပ်ဒိတ်လုပ်ရန် တို့ပါ။</string>
+    <string name="home_lkm_custom">စိတ်ကြိုက်</string>
+    <string name="require_manager_version">မန်နေဂျာကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။</string>
+    <string name="require_kernel_version">Kernel ကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။ ထည့်သွင်းရန် တို့ပါ။</string>
+    <string name="require_kernel_version_gki">Kernel ကို အပ်ဒိတ်လုပ်ရန် လိုအပ်သည်။</string>
 </resources>

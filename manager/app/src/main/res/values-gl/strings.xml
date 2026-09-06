@@ -8,4 +8,9 @@
     <string name="profile_flags_desc_no_new_privs">Impide unha maior escalada de privilexios mediante KernelSU dentro do contexto deste perfil root.</string>
     <string name="install_force_backup">Facer copia de seguridade como imaxe orixinal</string>
     <string name="install_force_backup_summary">Asegúrate de que a imaxe de arranque seleccionada sexa a imaxe orixinal</string>
+    <string name="home_lkm_update_available">Hai unha versión máis recente do LKM integrado. Toca para actualizar.</string>
+    <string name="home_lkm_custom">Personalizado</string>
+    <string name="require_manager_version">É necesario actualizar o xestor.</string>
+    <string name="require_kernel_version">É necesario actualizar o núcleo. Toca para instalar.</string>
+    <string name="require_kernel_version_gki">É necesario actualizar o núcleo.</string>
 </resources>

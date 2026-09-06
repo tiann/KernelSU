@@ -3,4 +3,9 @@
 	<string name="profile_flags_desc_no_new_privs">Pinipigilan ang karagdagang pagtaas ng pribilehiyo sa pamamagitan ng KernelSU mula sa loob ng konteksto ng root profile na ito.</string>
 	<string name="install_force_backup">I-backup bilang stock image</string>
 	<string name="install_force_backup_summary">Pakisigurado na stock image ang napili mong boot image</string>
+    <string name="home_lkm_update_available">May available na mas bagong built-in na LKM. I-tap para mag-update.</string>
+    <string name="home_lkm_custom">Pasadya</string>
+    <string name="require_manager_version">Kailangang i-update ang manager.</string>
+    <string name="require_kernel_version">Kailangang i-update ang kernel. I-tap para i-install.</string>
+    <string name="require_kernel_version_gki">Kailangang i-update ang kernel.</string>
 </resources>
