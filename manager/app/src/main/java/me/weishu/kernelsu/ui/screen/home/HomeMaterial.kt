@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -133,7 +135,12 @@ fun HomePagerMaterial(
             )
             InfoCard(systemInfo = state.systemInfo)
             SupportLinks(onOpenUrl = actions.onOpenUrl)
-            Spacer(Modifier.height(bottomInnerPadding))
+            Spacer(
+                Modifier.height(
+                    bottomInnerPadding + if (!Natives.isFullFeatured())
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 0.dp
+                )
+            )
         }
     }
 }
@@ -280,6 +287,7 @@ private fun StatusCard(
                         }
                     }
                 },
+                verticalAlignment = Alignment.CenterVertically,
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
                     contentColor = contentColor,

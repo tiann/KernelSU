@@ -41,7 +41,6 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.LocalMainPagerState
-import me.weishu.kernelsu.ui.util.rootAvailable
 
 @Composable
 fun NavigationRailMaterial(
@@ -49,9 +48,9 @@ fun NavigationRailMaterial(
     modifier: Modifier = Modifier,
 ) {
     val fullFeatured = Natives.isFullFeatured()
-    val mainPagerState = LocalMainPagerState.current
-
     if (!fullFeatured) return
+
+    val mainPagerState = LocalMainPagerState.current
 
     val items = listOf(
         Triple(R.string.home, Icons.Filled.Home, Icons.Outlined.Home),

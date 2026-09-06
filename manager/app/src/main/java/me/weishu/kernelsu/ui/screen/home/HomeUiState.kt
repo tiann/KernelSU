@@ -28,19 +28,16 @@ data class HomeUiState(
     val isSELinuxPermissive: Boolean
         get() = systemInfo.selinuxStatus == "Permissive"
 
-    val isFullFeatured: Boolean
-        get() = isManager && !requiresNewKernel && isRootAvailable
-
     val showGkiWarning: Boolean
         get() = ksuVersion != null && lkmMode == false
 
     val showLkmUpdate: Boolean
         get() = isManager &&
-            lkmMode == true &&
-            isLkmBundled &&
-            ksuVersion?.toLong() != currentManagerVersionCode &&
-            !requiresNewKernel &&
-            !requiresNewManager
+                lkmMode == true &&
+                isLkmBundled &&
+                ksuVersion?.toLong() != currentManagerVersionCode &&
+                !requiresNewKernel &&
+                !requiresNewManager
 
     val showCustomLkmBadge: Boolean
         get() = lkmMode == true && !isLkmBundled

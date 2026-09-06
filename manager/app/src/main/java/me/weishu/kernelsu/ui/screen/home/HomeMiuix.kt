@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -173,7 +175,12 @@ fun HomePagerMiuix(
                             onOpenUrl = actions.onOpenUrl,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        Spacer(Modifier.height(bottomInnerPadding))
+                        Spacer(
+                            Modifier.height(
+                                bottomInnerPadding + if (!Natives.isFullFeatured())
+                                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() else 0.dp
+                            )
+                        )
                     }
                 }
             }
@@ -337,8 +344,20 @@ private fun StatusCard(
                                             Spacer(Modifier.width(8.dp))
                                             StatusTag(
                                                 label = stringResource(R.string.home_lkm_custom),
-                                                contentColor = colorScheme.onTertiaryContainer,
-                                                backgroundColor = colorScheme.tertiaryContainer,
+                                                contentColor = if (isDynamicColor) {
+                                                    colorScheme.onTertiaryContainer
+                                                } else if (isInDarkTheme()) {
+                                                    Color(0xFFB8E8C5)
+                                                } else {
+                                                    Color(0xFF164A29)
+                                                },
+                                                backgroundColor = if (isDynamicColor) {
+                                                    colorScheme.tertiaryContainer
+                                                } else if (isInDarkTheme()) {
+                                                    Color(0xFF315D3E)
+                                                } else {
+                                                    Color(0xFFB8E8C5)
+                                                },
                                             )
                                         }
                                     }
@@ -359,7 +378,7 @@ private fun StatusCard(
                             }
                         },
                         showIndication = !state.isLateLoadMode,
-                        pressFeedbackType = PressFeedbackType.Sink
+                        pressFeedbackType = PressFeedbackType.Tilt
                     ) {
                         BasicComponent(
                             title = stringResource(R.string.home_not_installed),
@@ -394,7 +413,7 @@ private fun StatusCard(
                         }
                     },
                     showIndication = !state.isLateLoadMode,
-                    pressFeedbackType = PressFeedbackType.Sink
+                    pressFeedbackType = PressFeedbackType.Tilt
                 ) {
                     BasicComponent(
                         title = stringResource(R.string.home_unsupported),
