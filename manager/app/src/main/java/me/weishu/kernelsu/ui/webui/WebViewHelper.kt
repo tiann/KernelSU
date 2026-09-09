@@ -27,6 +27,21 @@ import me.weishu.kernelsu.ui.util.withMainUserUid
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import java.io.File
 
+private fun isTrustedWebUiUrl(uri: Uri): Boolean =
+    isTrustedWebUiOrigin(uri.scheme, uri.host, uri.port)
+
+private fun isSupportedExternalUri(uri: Uri): Boolean =
+    isSupportedExternalScheme(uri.scheme)
+
+private fun openExternalUri(activity: Activity, uri: Uri) {
+    if (!isSupportedExternalUri(uri)) return
+    runCatching {
+        activity.startActivity(
+            Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    }
+}
+
 fun Activity.setTaskDescription(label: String) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         @Suppress("DEPRECATION")
@@ -85,12 +100,14 @@ internal suspend fun prepareWebView(
             webView.settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
+                mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 allowFileAccess = false
+                allowContentAccess = false
             }
 
             val webRoot = File("${webUIState.modDir}/webroot")
             val webViewAssetLoader = WebViewAssetLoader.Builder()
-                .setDomain("mui.kernelsu.org")
+                .setDomain(WEBUI_DOMAIN)
                 .addPathHandler(
                     "/",
                     SuFilePathHandler(
@@ -118,7 +135,7 @@ internal suspend fun prepareWebView(
                                 icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                                 return WebResourceResponse(
                                     "image/png", null, 200, "OK",
-                                    mapOf("Access-Control-Allow-Origin" to "*"),
+                                    mapOf("Access-Control-Allow-Origin" to WEBUI_ORIGIN),
                                     java.io.ByteArrayInputStream(stream.toByteArray())
                                 )
                             } else {
@@ -129,13 +146,42 @@ internal suspend fun prepareWebView(
                                     "utf-8",
                                     404,
                                     "Not Found",
-                                    mapOf("Access-Control-Allow-Origin" to "*"),
+                                    mapOf("Access-Control-Allow-Origin" to WEBUI_ORIGIN),
                                     errorStream
                                 )
                             }
                         }
                     }
+                    if (!isTrustedWebUiUrl(url)) {
+                        // The bridge can execute root commands, so do not allow any untrusted
+                        // network resource or frame to be loaded into this WebView. Returning a
+                        // response with a null body explicitly blocks the request; returning null
+                        // would fall back to WebView's normal network loader.
+                        return WebResourceResponse(null, null, null)
+                    }
                     return webViewAssetLoader.shouldInterceptRequest(url)
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    val url = request.url
+                    if (isTrustedWebUiUrl(url)) return false
+                    if (request.isForMainFrame) openExternalUri(activity, url)
+                    // Block subframes and unsupported schemes instead of forwarding arbitrary
+                    // intent://, file://, content://, javascript:, or custom-scheme URLs.
+                    return true
+                }
+
+                override fun onPageStarted(view: WebView, url: String, favicon: android.graphics.Bitmap?) {
+                    val uri = Uri.parse(url)
+                    if (!isTrustedWebUiUrl(uri)) {
+                        // shouldOverrideUrlLoading is not guaranteed for every navigation (for
+                        // example POST or some redirects). Stop those loads before untrusted HTML
+                        // can execute in a WebView that has a root-capable JavaScript bridge.
+                        view.stopLoading()
+                        openExternalUri(activity, uri)
+                        return
+                    }
+                    super.onPageStarted(view, url, favicon)
                 }
 
                 override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
