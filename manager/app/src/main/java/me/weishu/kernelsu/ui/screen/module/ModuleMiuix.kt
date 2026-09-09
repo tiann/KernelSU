@@ -901,7 +901,7 @@ fun ModuleItem(
 
         Row {
             AnimatedVisibility(
-                visible = module.enabled && !module.remove && !module.update,
+                visible = module.enabled && !module.remove,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
