@@ -221,6 +221,9 @@
     <string name="settings_ui_mode_summary">Choose the interface style.</string>
     <string name="settings_page_scale">Page Scale</string>
     <string name="settings_page_scale_summary">Adjust the global display scale.</string>
+    <string name="settings_module_description_max_lines">Module description max lines</string>
+    <string name="settings_module_description_max_lines_summary">Descriptions exceeding this line count will be folded automatically.</string>
+    <string name="unit_lines">Lines</string>
     <string name="settings_color_spec">Color Spec</string>
     <string name="settings_color_style">Color Style</string>
     <string name="color_blue">Blue</string>

@@ -116,6 +116,7 @@ import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.getFileName
@@ -777,6 +778,7 @@ fun ModuleItem(
     val hasUpdate = updateUrl.isNotEmpty()
     val textDecoration = if (module.remove) TextDecoration.LineThrough else null
     val hasDescription = module.description.isNotBlank()
+    val maxLinesLimit = LocalModuleDescriptionMaxLines.current
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
     Card(
@@ -784,9 +786,9 @@ fun ModuleItem(
             .padding(horizontal = 12.dp)
             .padding(bottom = 12.dp),
         insideMargin = PaddingValues(16.dp),
-        onClick = {
-            if (hasDescription) expanded = !expanded
-        }
+        onClick = if (hasDescription) {
+            { expanded = !expanded }
+        } else null
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -874,6 +876,7 @@ fun ModuleItem(
         if (hasDescription) {
             Box(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(top = 2.dp)
                     .animateContentSize(
                         animationSpec = tween(
@@ -887,7 +890,7 @@ fun ModuleItem(
                     fontSize = 14.sp,
                     color = colorScheme.onSurfaceVariantSummary,
                     overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                    maxLines = if (expanded) Int.MAX_VALUE else 4,
+                    maxLines = if (expanded) Int.MAX_VALUE else maxLinesLimit,
                     textDecoration = textDecoration
                 )
             }

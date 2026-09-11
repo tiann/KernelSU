@@ -12,5 +12,6 @@ data class MainActivityUiState(
     val enableFloatingBottomBar: Boolean,
     val enableFloatingBottomBarBlur: Boolean,
     val enableNavigationBadge: Boolean,
+    val moduleDescriptionMaxLines: Int = 4,
     val uiMode: UiMode,
 )
