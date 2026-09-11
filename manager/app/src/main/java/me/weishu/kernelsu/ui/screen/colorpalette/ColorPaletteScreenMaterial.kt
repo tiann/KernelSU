@@ -36,12 +36,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.filled.Brightness1
@@ -127,66 +126,63 @@ fun ColorPaletteScreenMaterial(
     ) { paddingValues ->
         val navBars = WindowInsets.navigationBars.asPaddingValues()
         val captionBar = WindowInsets.captionBar.asPaddingValues()
+        val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
+        val isAmoled = currentColorMode.isAmoled
 
-        Column(
+        LazyColumn(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            verticalArrangement = Arrangement.spacedBy(13.dp)
         ) {
-            val isDark = currentColorMode.isDark || currentColorMode.isSystem && isSystemInDarkTheme()
-            val isAmoled = currentColorMode.isAmoled
-            ThemePreviewCard(
-                keyColor = currentKeyColor,
-                isDark = isDark,
-                isAmoled = isAmoled,
-                paletteStyle = colorStyle,
-                colorSpec = colorSpec,
-            )
+            item {
+                ThemePreviewCard(
+                    keyColor = currentKeyColor,
+                    isDark = isDark,
+                    isAmoled = isAmoled,
+                    paletteStyle = colorStyle,
+                    colorSpec = colorSpec,
+                )
+            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            item {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    item {
+                        ColorButtonMaterial(
+                            color = Color.Unspecified,
+                            isSelected = currentKeyColor == 0,
+                            isDark = isDark,
+                            isAmoled = isAmoled,
+                            paletteStyle = colorStyle,
+                            colorSpec = colorSpec,
+                            onClick = {
+                                actions.onSetKeyColor(0)
+                            }
+                        )
+                    }
 
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                item {
-                    ColorButtonMaterial(
-                        color = Color.Unspecified,
-                        isSelected = currentKeyColor == 0,
-                        isDark = isDark,
-                        isAmoled = isAmoled,
-                        paletteStyle = colorStyle,
-                        colorSpec = colorSpec,
-                        onClick = {
-                            actions.onSetKeyColor(0)
-                        }
-                    )
-                }
-
-                items(keyColorOptions) { color ->
-                    ColorButtonMaterial(
-                        color = Color(color),
-                        isSelected = currentKeyColor == color,
-                        isDark = isDark,
-                        isAmoled = isAmoled,
-                        paletteStyle = colorStyle,
-                        colorSpec = colorSpec,
-                        onClick = {
-                            actions.onSetKeyColor(color)
-                        }
-                    )
+                    items(keyColorOptions) { color ->
+                        ColorButtonMaterial(
+                            color = Color(color),
+                            isSelected = currentKeyColor == color,
+                            isDark = isDark,
+                            isAmoled = isAmoled,
+                            paletteStyle = colorStyle,
+                            colorSpec = colorSpec,
+                            onClick = {
+                                actions.onSetKeyColor(color)
+                            }
+                        )
+                    }
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            item {
                 val options = listOf(
                     listOf(ColorMode.SYSTEM) to stringResource(R.string.settings_theme_mode_system),
                     listOf(ColorMode.LIGHT) to stringResource(R.string.settings_theme_mode_light),
@@ -194,46 +190,55 @@ fun ColorPaletteScreenMaterial(
                     listOf(ColorMode.DARK_AMOLED) to stringResource(R.string.settings_theme_mode_dark)
                 )
 
-                options.chunked(4).forEach { rowOptions ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
-                    ) {
-                        rowOptions.forEachIndexed { index, (modes, label) ->
-                            ExpressiveToggleButton(
-                                checked = currentColorMode in modes,
-                                onCheckedChange = {
-                                    if (it) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                        actions.onSetColorMode(modes.first())
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .semantics { role = Role.RadioButton },
-                                shapes = when (index) {
-                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                    rowOptions.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                },
-                            ) {
-                                Icon(
-                                    imageVector = when (modes.first()) {
-                                        ColorMode.SYSTEM -> Icons.Filled.Brightness4
-                                        ColorMode.LIGHT -> Icons.Filled.Brightness7
-                                        ColorMode.DARK -> Icons.Filled.Brightness3
-                                        ColorMode.DARK_AMOLED -> Icons.Filled.Brightness1
-                                        else -> Icons.Filled.Brightness4
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    options.chunked(4).forEach { rowOptions ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                        ) {
+                            rowOptions.forEachIndexed { index, (modes, label) ->
+                                ExpressiveToggleButton(
+                                    checked = currentColorMode in modes,
+                                    onCheckedChange = {
+                                        if (it) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                            actions.onSetColorMode(modes.first())
+                                        }
                                     },
-                                    contentDescription = label
-                                )
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .semantics { role = Role.RadioButton },
+                                    shapes = when (index) {
+                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                        rowOptions.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = when (modes.first()) {
+                                            ColorMode.SYSTEM -> Icons.Filled.Brightness4
+                                            ColorMode.LIGHT -> Icons.Filled.Brightness7
+                                            ColorMode.DARK -> Icons.Filled.Brightness3
+                                            ColorMode.DARK_AMOLED -> Icons.Filled.Brightness1
+                                            else -> Icons.Filled.Brightness4
+                                        },
+                                        contentDescription = label
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }
 
+            item {
                 SegmentedColumn(
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     content = listOf(
                         {
                             val styles = PaletteStyle.entries
@@ -261,9 +266,11 @@ fun ColorPaletteScreenMaterial(
                         }
                     )
                 )
+            }
 
+            item {
                 SegmentedColumn(
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     content = listOf(
                         {
                             SegmentedSwitchItem(
@@ -276,10 +283,12 @@ fun ColorPaletteScreenMaterial(
                         }
                     )
                 )
+            }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                item {
                     SegmentedColumn(
-                        modifier = Modifier.padding(top = 4.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         content = listOf(
                             {
                                 SegmentedSwitchItem(
@@ -293,8 +302,10 @@ fun ColorPaletteScreenMaterial(
                         )
                     )
                 }
+            }
 
-                TonalCard(modifier = Modifier.padding(top = 4.dp)) {
+            item {
+                TonalCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                     var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
 
                     Column(
@@ -343,7 +354,9 @@ fun ColorPaletteScreenMaterial(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp + navBars.calculateBottomPadding() + captionBar.calculateBottomPadding()))
+            item {
+                Spacer(modifier = Modifier.height(16.dp + navBars.calculateBottomPadding() + captionBar.calculateBottomPadding()))
+            }
         }
     }
 }
@@ -381,55 +394,55 @@ private fun ThemePreviewCard(
             border = BorderStroke(1.dp, color = colorScheme.outlineVariant)
         ) {
             val content: @Composable ColumnScope.() -> Unit = {
-                    // top bar
-                    Box(
+                // top bar
+                Box(
+                    modifier = Modifier
+                        .height(if (useRail) 36.dp else 48.dp)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    Row(
                         modifier = Modifier
-                            .height(if (useRail) 36.dp else 48.dp)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.TopStart
+                            .fillMaxSize()
+                            .padding(start = 12.dp, top = if (useRail) 8.dp else 16.dp, bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(start = 12.dp, top = if (useRail) 8.dp else 16.dp, bottom = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.app_name),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colorScheme.onSurface
-                            )
-                        }
+                        Text(
+                            text = stringResource(id = R.string.app_name),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colorScheme.onSurface
+                        )
                     }
+                }
 
-                    BoxWithConstraints(modifier = Modifier.weight(1f)) {
-                        val showInfoCard = maxHeight >= 72.dp
-                        Column(
+                BoxWithConstraints(modifier = Modifier.weight(1f)) {
+                    val showInfoCard = maxHeight >= 72.dp
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        TonalCard(
+                            containerColor = colorScheme.secondaryContainer,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
+                                .fillMaxWidth()
+                                .height(40.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            content = { }
+                        )
+                        if (showInfoCard) {
                             TonalCard(
-                                containerColor = colorScheme.secondaryContainer,
+                                containerColor = colorScheme.surfaceBright,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(40.dp),
+                                    .weight(1f),
                                 shape = RoundedCornerShape(8.dp),
                                 content = { }
                             )
-                            if (showInfoCard) {
-                                TonalCard(
-                                    containerColor = colorScheme.surfaceBright,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f),
-                                    shape = RoundedCornerShape(8.dp),
-                                    content = { }
-                                )
-                            }
                         }
                     }
+                }
             }
 
             if (useRail) {
