@@ -7,6 +7,14 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import okhttp3.Request
 
+private fun String.legalFilename() = replace(" ", "_")
+    .replace("'", "").replace("\"", "")
+    .replace("$", "").replace("`", "")
+    .replace("*", "").replace("/", "_")
+    .replace(Regex("[\\u0000-\\u001F\\u007F:<>?|]"), "_")
+    .replace("#", "").replace("@", "")
+    .replace("\\", "_")
+
 /**
  * @author weishu
  * @date 2023/6/22.
@@ -23,7 +31,7 @@ suspend fun download(
     val downloadId = DownloadManager.enqueue(
         context = ksuApp,
         url = url,
-        fileName = fileName,
+        fileName = fileName.legalFilename(),
         onCompleted = onDownloaded,
     )
 
