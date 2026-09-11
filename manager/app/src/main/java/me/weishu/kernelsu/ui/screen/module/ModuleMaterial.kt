@@ -24,7 +24,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +49,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -354,12 +352,6 @@ fun ModulePagerMaterial(
                         displayModules = uiState.searchResults,
                         updateInfoMap = uiState.updateInfo,
                         actions = actions,
-                        onClickModule = { module ->
-                            if (module.hasWebUi) {
-                                actions.onOpenWebUi(module)
-                                closeSearch()
-                            }
-                        },
                         onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
                         closeSearch = closeSearch,
                     )
@@ -465,11 +457,6 @@ fun ModulePagerMaterial(
                 displayModules = uiState.moduleList,
                 updateInfoMap = uiState.updateInfo,
                 actions = actions,
-                onClickModule = { module ->
-                    if (module.hasWebUi) {
-                        actions.onOpenWebUi(module)
-                    }
-                },
                 onModuleAddShortcut = { module, type -> onModuleAddShortcut(module, type) },
             )
         }
@@ -499,7 +486,6 @@ private fun ModuleList(
     displayModules: List<Module>,
     updateInfoMap: Map<String, ModuleUpdateInfo>,
     actions: ModuleActions,
-    onClickModule: (Module) -> Unit,
     onModuleAddShortcut: (Module, ShortcutType) -> Unit,
     closeSearch: () -> Unit? = {},
 ) {
@@ -539,7 +525,11 @@ private fun ModuleList(
                     }
                 },
                 onAddShortcut = { type -> onModuleAddShortcut(module, type) },
-                onClick = { onClickModule(module) },
+                onOpenWebUi = {
+                    if (module.hasWebUi) {
+                        actions.onOpenWebUi(module)
+                    }
+                },
                 onExecuteAction = { actions.onExecuteModuleAction(module) },
                 closeSearch = { closeSearch() }
             )
@@ -710,37 +700,24 @@ private fun ModuleItem(
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: () -> Unit,
     onAddShortcut: (ShortcutType) -> Unit,
-    onClick: () -> Unit,
+    onOpenWebUi: () -> Unit,
     onExecuteAction: () -> Unit,
     closeSearch: () -> Unit
 ) {
+    val hasDescription = module.description.isNotBlank()
+    var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
+
     TonalCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        onClick = if (hasDescription) {
+            { expanded = !expanded }
+        } else null
     ) {
         val haptic = LocalHapticFeedback.current
         val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
-        val interactionSource = remember { MutableInteractionSource() }
-        val indication = LocalIndication.current
-        var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
-        var isOverflowing by remember { mutableStateOf(false) }
 
         Column(
-            modifier = Modifier
-                .run {
-                    if (module.hasWebUi) {
-                        toggleable(
-                            value = module.enabled,
-                            enabled = !module.remove && module.enabled,
-                            interactionSource = interactionSource,
-                            role = Role.Button,
-                            indication = indication,
-                            onValueChange = { onClick() }
-                        )
-                    } else {
-                        this
-                    }
-                }
-                .padding(16.dp, 14.dp, 16.dp, 10.dp)
+            modifier = Modifier.padding(16.dp, 14.dp, 16.dp, 10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -787,46 +764,34 @@ private fun ModuleItem(
                         onCheckedChange = {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
                             onCheckChanged(it)
-                        },
-                        interactionSource = if (!module.hasWebUi) interactionSource else remember { MutableInteractionSource() }
+                        }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            if (hasDescription) {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                modifier = Modifier
-                    .animateContentSize(
-                        animationSpec = tween(
-                            durationMillis = 250,
-                            easing = FastOutSlowInEasing
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize(
+                            animationSpec = tween(
+                                durationMillis = 250,
+                                easing = FastOutSlowInEasing
+                            )
                         )
+                ) {
+                    Text(
+                        text = module.description,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                        textDecoration = textDecoration
                     )
-                    .then(
-                        if (isOverflowing || expanded) {
-                            Modifier.clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { expanded = !expanded }
-                        } else {
-                            Modifier
-                        }
-                    ),
-                text = module.description,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                maxLines = if (expanded) Int.MAX_VALUE else 4,
-                textDecoration = textDecoration,
-                onTextLayout = { textLayoutResult ->
-                    isOverflowing = if (expanded) {
-                        textLayoutResult.lineCount > 4
-                    } else {
-                        textLayoutResult.hasVisualOverflow
-                    }
                 }
-            )
+            }
 
             Row(modifier = Modifier.padding(vertical = 4.dp)) {
                 if (module.metamodule) {
@@ -890,7 +855,7 @@ private fun ModuleItem(
                         if (module.hasWebUi) {
                             CombinedClickableButton(
                                 onClick = {
-                                    onClick()
+                                    onOpenWebUi()
                                     closeSearch()
                                 },
                                 onLongClick = { onAddShortcut(ShortcutType.WebUI) },
