@@ -90,6 +90,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import me.weishu.kernelsu.ui.util.rememberContentReady
 import top.yukonga.miuix.kmp.basic.Card
@@ -781,6 +782,7 @@ fun ReleasesPage(
                                                             },
                                                             onDownloading = { isDownloading = true },
                                                             onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } })
+                                                        isDownloading = false
                                                     }
                                                 }
                                                 confirmDialog.showConfirm(title = confirmTitle, content = startText)
@@ -815,11 +817,12 @@ fun ReleasesPage(
                                                     minWidth = 35.dp,
                                                     onClick = {
                                                         val uri = downloadedUri ?: return@IconButton
-                                                        val file = uri.path?.let { java.io.File(it) }
-                                                        if (file != null && file.exists()) {
-                                                            onInstallModule(uri)
-                                                        } else {
-                                                            downloadedUri = null
+                                                        scope.launch {
+                                                            if (isDownloadAvailable(uri)) {
+                                                                onInstallModule(uri)
+                                                            } else {
+                                                                downloadedUri = null
+                                                            }
                                                         }
                                                     },
                                                 ) {
