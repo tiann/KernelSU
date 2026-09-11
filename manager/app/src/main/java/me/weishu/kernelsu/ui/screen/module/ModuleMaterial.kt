@@ -138,6 +138,7 @@ import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
@@ -705,6 +706,7 @@ private fun ModuleItem(
     closeSearch: () -> Unit
 ) {
     val hasDescription = module.description.isNotBlank()
+    val maxLinesLimit = LocalModuleDescriptionMaxLines.current
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
 
     TonalCard(
@@ -787,7 +789,7 @@ private fun ModuleItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,
                         overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                        maxLines = if (expanded) Int.MAX_VALUE else 1,
+                        maxLines = if (expanded) Int.MAX_VALUE else maxLinesLimit,
                         textDecoration = textDecoration
                     )
                 }
