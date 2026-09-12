@@ -13,7 +13,7 @@
     <string name="module_update">Cập nhật</string>
     <string name="module_downloading">Đang tải xuống module: %s</string>
     <string name="module_start_downloading">Bắt đầu tải xuống: %s</string>
-    <string name="new_version_available">Phiên bản mới %s đã có sẵn, nhấn để cập nhật!</string>
+    <string name="new_version_available">Phiên bản mới %s đã có sẵn, nhấp để cập nhật!</string>
     <string name="home_learn_kernelsu">Tìm hiểu về KernelSU</string>
     <string name="home_click_to_learn_kernelsu">Tìm hiểu cách cài đặt KernelSU và sử dụng các module.</string>
     <string name="home_support_title">Ủng hộ chúng tôi</string>
@@ -24,7 +24,7 @@
     <string name="send_log">Gửi nhật ký</string>
     <string name="home">Trang chủ</string>
     <string name="home_not_installed">Chưa cài đặt</string>
-    <string name="home_click_to_install">Nhấn để cài đặt</string>
+    <string name="home_click_to_install">Nhấp để cài đặt!</string>
     <string name="home_working">Đang hoạt động</string>
     <string name="home_working_version">Phiên bản: %s</string>
     <string name="home_unsupported">Không được hỗ trợ!</string>
@@ -83,11 +83,11 @@
     <string name="profile_namespace_individual">Riêng biệt</string>
     <string name="profile_selinux_context">Ngữ cảnh SELinux</string>
     <string name="profile_umount_modules">Umount modules</string>
-    <string name="home_lkm_update_available">Hiện có phiên bản LKM tích hợp mới hơn. Nhấn để cập nhật.</string>
+    <string name="home_lkm_update_available">Gói LKM mới đã có sẵn. Nhấp để cập nhật!</string>
     <string name="home_lkm_custom">Tuỳ chỉnh</string>
-    <string name="require_manager_version">Cần cập nhật Trình quản lý.</string>
-    <string name="require_kernel_version">Cần cập nhật Kernel. Nhấn để cài đặt.</string>
-    <string name="require_kernel_version_gki">Cần cập nhật Kernel.</string>
+    <string name="require_manager_version">Cần cập nhật Trình quản lý!</string>
+    <string name="require_kernel_version">Cần cập nhật Kernel. Nhấp để cài đặt!</string>
+    <string name="require_kernel_version_gki">Cần cập nhật Kernel!</string>
     <string name="app_profile_template_import_success">Đã nhập thành công</string>
     <string name="app_profile_export_to_clipboard">Xuất vào bộ nhớ tạm</string>
     <string name="app_profile_template_export_empty">Không tìm thấy mẫu cục bộ để xuất!</string>
