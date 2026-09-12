@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::lkm_image::BootPatchV2Args;
+use crate::lkm_image::{BootPatchV2Args, PatchKernelArgs};
 use crate::{apk_sign, defs};
 
 /// KernelSU cli for non-android
@@ -26,6 +26,12 @@ enum Commands {
     /// Always operates on a boot image; never selects init_boot or vendor_boot.
     BootPatchV2(BootPatchV2Args),
 
+    /// Patch raw kernel images
+    Patch {
+        #[command(subcommand)]
+        command: Patch,
+    },
+
     /// Get apk size and hash
     GetSign {
         /// apk path
@@ -34,6 +40,12 @@ enum Commands {
 
     /// show supported kmi versions
     SupportedKmis,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum Patch {
+    /// Check or patch sig_enforce in a raw kernel Image
+    Kernel(PatchKernelArgs),
 }
 
 pub fn run() -> Result<()> {
@@ -55,6 +67,10 @@ pub fn run() -> Result<()> {
         Commands::BootRestore(boot_restore) => crate::boot_patch::restore(boot_restore),
 
         Commands::BootPatchV2(patch) => crate::lkm_image::patch_boot(&patch),
+
+        Commands::Patch { command } => match command {
+            Patch::Kernel(kernel) => crate::lkm_image::patch_kernel(&kernel),
+        },
 
         Commands::SupportedKmis => {
             let kmi = crate::assets::list_supported_kmi();
