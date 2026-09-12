@@ -130,6 +130,15 @@ fun HomePagerMiuix(
                         if (state.checkUpdateEnabled) {
                             UpdateCard(state = state, actions = actions)
                         }
+                        if (state.showKsudWarning) {
+                            WarningCard(
+                                message = stringResource(
+                                    if (state.isLateLoadMode) R.string.home_late_load_warning
+                                    else R.string.home_ksud_not_loaded_warning
+                                ),
+                                onClick = actions.onKsudWarningClick,
+                            )
+                        }
                         if (state.showManagerPrBuildWarning) {
                             WarningCard(stringResource(id = R.string.home_pr_build_warning), level = WarningLevel.Notice)
                         } else if (state.showKernelPrBuildWarning) {

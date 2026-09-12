@@ -6,6 +6,8 @@
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本：%s</string>
     <string name="home_lkm_update_available">内嵌 LKM 有可用更新，点击更新</string>
+    <string name="home_ksud_not_loaded_warning">未正常加载，模块等可能未生效，点击重启</string>
+    <string name="home_late_load_warning">所有模块未生效，点击此处进行软重启</string>
     <string name="home_lkm_custom">自定义</string>
     <string name="home_unsupported">不支持</string>
     <string name="home_unsupported_reason">KernelSU 现在只支持 GKI 内核，但是你可以为 GKI 设备补丁镜像</string>
