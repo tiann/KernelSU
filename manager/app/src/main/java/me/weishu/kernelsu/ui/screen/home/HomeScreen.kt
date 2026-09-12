@@ -21,12 +21,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.isSoftRebootPreferred
 import me.weishu.kernelsu.magica.MagicaService
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
+import me.weishu.kernelsu.ui.util.reboot
 import me.weishu.kernelsu.ui.viewmodel.HomeViewModel
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -76,6 +78,9 @@ fun HomePager(
                     Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
                 }
             }
+        },
+        onKsudWarningClick = {
+            reboot(if (isSoftRebootPreferred()) "soft_reboot" else "")
         },
     )
 
