@@ -110,6 +110,7 @@ import me.weishu.kernelsu.ui.component.material.TopBarBackButton
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberContentReady
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -707,6 +708,7 @@ private fun ReleaseAssetSegmentedItem(
                         onDownloading = { isDownloading = true },
                         onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
                     )
+                    isDownloading = false
                 }
             }
             confirmDialog.showConfirm(title = confirmTitle, content = startText)
@@ -721,11 +723,12 @@ private fun ReleaseAssetSegmentedItem(
                 FilledTonalButton(
                     onClick = {
                         val uri = downloadedUri ?: return@FilledTonalButton
-                        val file = uri.path?.let { java.io.File(it) }
-                        if (file != null && file.exists()) {
-                            onInstallModule(uri)
-                        } else {
-                            downloadedUri = null
+                        scope.launch {
+                            if (isDownloadAvailable(uri)) {
+                                onInstallModule(uri)
+                            } else {
+                                downloadedUri = null
+                            }
                         }
                     },
                     contentPadding = ButtonDefaults.TextButtonContentPadding
