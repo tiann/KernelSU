@@ -24,7 +24,6 @@ import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.MainActivity
 import okhttp3.Request
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
@@ -106,18 +105,21 @@ class DownloadService : Service() {
 
     private fun startDownload(id: Int, url: String, fileName: String) {
         val job = serviceScope.launch {
-            val target = resolveAvailableTarget(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                fileName
-            )
+            val displayFileName = sanitizeDownloadFileName(fileName)
+            var target: File? = null
             try {
-                ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
-                    .use { resp ->
-                        if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
-                        val body = resp.body
-                        val total = body.contentLength()
+                val reservedTarget = reserveAvailableDownloadTarget(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    fileName
+                )
+                target = reservedTarget.file
+                reservedTarget.output.use { fos ->
+                    ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
+                        .use { resp ->
+                            if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                            val body = resp.body
+                            val total = body.contentLength()
 
-                        FileOutputStream(target).use { fos ->
                             val buf = ByteArray(8 * 1024)
                             var soFar = 0L
                             var lastNotifiedProgress = -1
@@ -137,7 +139,7 @@ class DownloadService : Service() {
                                     if (percent - lastNotifiedProgress >= 2 || percent == 100) {
                                         notificationManager.notify(
                                             id,
-                                            buildProgressNotification(id, target.name, percent)
+                                            buildProgressNotification(id, reservedTarget.file.name, percent)
                                         )
                                         lastNotifiedProgress = percent
                                     }
@@ -145,25 +147,28 @@ class DownloadService : Service() {
                             }
                             fos.flush()
                         }
-                    }
+                }
 
-                val uri = Uri.fromFile(target)
+                val completedTarget = target ?: error("Download target was not reserved")
+                val uri = Uri.fromFile(completedTarget)
                 DownloadManager.markCompleted(id, uri)
 
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, target.name, uri)
+                    buildCompletionNotification(id, completedTarget.name, uri)
                 )
             } catch (e: CancellationException) {
+                target?.delete()
                 throw e
             } catch (e: Exception) {
+                target?.delete()
                 DownloadManager.markFailed(id, e.message ?: "Unknown error")
 
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildFailureNotification(target.name)
+                    buildFailureNotification(displayFileName)
                 )
             } finally {
                 activeJobs.remove(id)
@@ -173,28 +178,6 @@ class DownloadService : Service() {
         activeJobs[id] = job
     }
 
-    private fun resolveAvailableTarget(
-        directory: File,
-        fileName: String
-    ): File {
-        val dotIndex = fileName.lastIndexOf('.')
-        val baseName = if (dotIndex > 0) fileName.substring(0, dotIndex) else fileName
-        val extension = if (dotIndex > 0) fileName.substring(dotIndex) else ""
-
-        var index = 0
-        while (true) {
-            val candidateName = if (index == 0) {
-                fileName
-            } else {
-                "$baseName ($index)$extension"
-            }
-            val candidate = File(directory, candidateName)
-            if (!candidate.exists()) {
-                return candidate
-            }
-            index++
-        }
-    }
 
     private fun buildProgressNotification(
         id: Int,
