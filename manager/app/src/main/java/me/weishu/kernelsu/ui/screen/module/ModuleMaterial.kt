@@ -11,9 +11,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,6 +21,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -123,7 +121,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -138,12 +135,12 @@ import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.component.dialog.rememberLoadingDialog
 import me.weishu.kernelsu.ui.component.material.ExpressiveScaffold
-import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.component.material.ExpressiveSwitch
 import me.weishu.kernelsu.ui.component.material.SearchAppBar
 import me.weishu.kernelsu.ui.component.material.SnackBarHost
 import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.util.reboot
 
 @SuppressLint("StringFormatInvalid")
@@ -708,10 +705,18 @@ private fun ModuleItem(
     val hasDescription = module.description.isNotBlank()
     val maxLinesLimit = LocalModuleDescriptionMaxLines.current
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
+    val canOpenWebUi = module.hasWebUi && !module.remove && module.enabled
+    val cardInteractionSource = remember { MutableInteractionSource() }
 
     TonalCard(
         modifier = Modifier.fillMaxWidth(),
-        onClick = if (hasDescription) {
+        interactionSource = cardInteractionSource,
+        onClick = if (canOpenWebUi) {
+            {
+                onOpenWebUi()
+                closeSearch()
+            }
+        } else if (hasDescription) {
             { expanded = !expanded }
         } else null
     ) {
@@ -774,25 +779,26 @@ private fun ModuleItem(
             if (hasDescription) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Box(
+                ExpandableDescriptionText(
+                    text = module.description,
+                    expanded = expanded,
+                    maxLinesLimit = maxLinesLimit,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .animateContentSize(
-                            animationSpec = tween(
-                                durationMillis = 250,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                ) {
-                    Text(
-                        text = module.description,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                        maxLines = if (expanded) Int.MAX_VALUE else maxLinesLimit,
-                        textDecoration = textDecoration
-                    )
-                }
+                        .then(
+                            if (canOpenWebUi) {
+                                Modifier.clickable(
+                                    interactionSource = cardInteractionSource,
+                                    indication = null
+                                ) { expanded = !expanded }
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textDecoration = textDecoration
+                )
             }
 
             Row(modifier = Modifier.padding(vertical = 4.dp)) {
