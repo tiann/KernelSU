@@ -13,6 +13,8 @@ import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
+import com.topjohnwu.superuser.io.SuFileInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -35,6 +37,20 @@ import java.util.concurrent.TimeUnit
  * @date 2023/1/1.
  */
 private const val TAG = "KsuCli"
+private const val BOOT_ID_PATH = "/proc/sys/kernel/random/boot_id"
+private const val BOOT_STAGE_LOG_DIR = "/data/adb/ksu/log"
+
+enum class BootStage(val displayName: String, val bootIdPath: String) {
+    PostFsData("post-fs-data", "$BOOT_STAGE_LOG_DIR/post-fs-data.boot_id"),
+    Service("service", "$BOOT_STAGE_LOG_DIR/service.boot_id"),
+    BootCompleted("boot-completed", "$BOOT_STAGE_LOG_DIR/boot-completed.boot_id"),
+}
+
+sealed interface BootStageStatus {
+    data object Successful : BootStageStatus
+    data object RecordsMissing : BootStageStatus
+    data class Incomplete(val stages: List<BootStage>) : BootStageStatus
+}
 
 private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
@@ -502,6 +518,31 @@ fun reboot(reason: String = "") {
 fun rootAvailable(): Boolean {
     val shell = getRootShell()
     return shell.isRoot
+}
+
+private fun readRootFile(path: String): String? {
+    val file = SuFile(path).apply { shell = getRootShell() }
+    return runCatching {
+        SuFileInputStream.open(file).use { input ->
+            input.bufferedReader().readText().trim()
+        }
+    }.getOrNull()
+}
+
+fun checkBootStages(): BootStageStatus {
+    val currentBootId = readRootFile(BOOT_ID_PATH)?.takeIf { it.isNotEmpty() }
+        ?: return BootStageStatus.RecordsMissing
+    val stageBootIds = BootStage.entries.associateWith { readRootFile(it.bootIdPath) }
+    if (stageBootIds.values.any { it == null }) {
+        return BootStageStatus.RecordsMissing
+    }
+
+    val incompleteStages = BootStage.entries.filter { stageBootIds[it] != currentBootId }
+    return if (incompleteStages.isEmpty()) {
+        BootStageStatus.Successful
+    } else {
+        BootStageStatus.Incomplete(incompleteStages)
+    }
 }
 
 suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {

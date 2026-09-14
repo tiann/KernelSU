@@ -66,6 +66,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
+import me.weishu.kernelsu.ui.util.BootStageStatus
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -129,6 +130,24 @@ fun HomePagerMiuix(
                     ) {
                         if (state.checkUpdateEnabled) {
                             UpdateCard(state = state, actions = actions)
+                        }
+                        when (val status = state.bootStageStatus) {
+                            BootStageStatus.RecordsMissing -> WarningCard(
+                                message = stringResource(R.string.home_boot_stage_records_missing),
+                                level = WarningLevel.Notice,
+                                onClick = actions.onKsudWarningClick,
+                            )
+
+                            is BootStageStatus.Incomplete -> WarningCard(
+                                message = stringResource(
+                                    R.string.home_boot_stages_incomplete,
+                                    status.stages.joinToString(", ") { it.displayName },
+                                ),
+                                level = WarningLevel.Error,
+                                onClick = actions.onKsudWarningClick,
+                            )
+
+                            BootStageStatus.Successful -> Unit
                         }
                         if (state.showManagerPrBuildWarning) {
                             WarningCard(stringResource(id = R.string.home_pr_build_warning), level = WarningLevel.Notice)
