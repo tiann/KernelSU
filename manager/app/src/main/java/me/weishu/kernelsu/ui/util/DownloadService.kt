@@ -4,27 +4,31 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.IBinder
+import android.provider.MediaStore
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.MainActivity
+import okhttp3.Call
 import okhttp3.Request
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
@@ -41,12 +45,12 @@ class DownloadService : Service() {
         const val EXTRA_FILE_NAME = "fileName"
         const val EXTRA_DOWNLOAD_ID = "downloadId"
         const val EXTRA_MODULE_URI = "moduleUri"
-        const val EXTRA_FILE_PATH = "filePath"
 
         private const val COMPLETION_NOTIFICATION_ID_BASE = 100000
     }
 
     private val activeJobs = ConcurrentHashMap<Int, Job>()
+    private val activeCalls = ConcurrentHashMap<Int, Call>()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var notificationManager: NotificationManager
 
@@ -83,21 +87,19 @@ class DownloadService : Service() {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
                 if (downloadId != -1) {
                     activeJobs[downloadId]?.cancel()
-                    activeJobs.remove(downloadId)
-                    notificationManager.cancel(downloadId)
-                    DownloadManager.markFailed(downloadId, "Cancelled")
-                    stopForegroundIfIdle()
+                    activeCalls[downloadId]?.cancel()
                 }
             }
 
             ACTION_DISMISS_DOWNLOAD -> {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
-                val filePath = intent.getStringExtra(EXTRA_FILE_PATH)
+                val uri = intent.getStringExtra(EXTRA_MODULE_URI)?.let(Uri::parse)
                 if (downloadId != -1) {
                     notificationManager.cancel(COMPLETION_NOTIFICATION_ID_BASE + downloadId)
                 }
-                if (!filePath.isNullOrEmpty()) {
-                    File(filePath).delete()
+                serviceScope.launch {
+                    if (uri != null) deleteDownload(uri)
+                    stopForegroundIfIdle()
                 }
             }
         }
@@ -105,25 +107,42 @@ class DownloadService : Service() {
     }
 
     private fun startDownload(id: Int, url: String, fileName: String) {
-        val job = serviceScope.launch {
-            val target = resolveAvailableTarget(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                fileName
-            )
+        val job = serviceScope.launch(start = CoroutineStart.LAZY) {
+            var pendingUri: Uri? = null
+            var displayName = fileName
             try {
-                ksuApp.okhttpClient.newCall(Request.Builder().url(url).build()).execute()
+                val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).build())
+                activeCalls[id] = call
+                ensureActive()
+                val uri = call.execute()
                     .use { resp ->
                         if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
                         val body = resp.body
                         val total = body.contentLength()
 
-                        FileOutputStream(target).use { fos ->
+                        ensureActive()
+                        val values = ContentValues().apply {
+                            put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                            put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                            put(MediaStore.Downloads.IS_PENDING, 1)
+                        }
+                        val downloadUri = contentResolver.insert(
+                            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY),
+                            values
+                        ) ?: throw IOException("Failed to create download")
+                        pendingUri = downloadUri
+                        displayName = downloadUri.getFileName(this@DownloadService) ?: fileName
+
+                        val output = contentResolver.openOutputStream(downloadUri)
+                            ?: throw IOException("Failed to open download")
+                        output.use { fos ->
                             val buf = ByteArray(8 * 1024)
                             var soFar = 0L
                             var lastNotifiedProgress = -1
                             val source = body.byteStream()
 
                             while (true) {
+                                ensureActive()
                                 val read = source.read(buf)
                                 if (read == -1) break
                                 fos.write(buf, 0, read)
@@ -137,7 +156,7 @@ class DownloadService : Service() {
                                     if (percent - lastNotifiedProgress >= 2 || percent == 100) {
                                         notificationManager.notify(
                                             id,
-                                            buildProgressNotification(id, target.name, percent)
+                                            buildProgressNotification(id, displayName, percent)
                                         )
                                         lastNotifiedProgress = percent
                                     }
@@ -145,54 +164,61 @@ class DownloadService : Service() {
                             }
                             fos.flush()
                         }
+                        downloadUri
                     }
 
-                val uri = Uri.fromFile(target)
+                ensureActive()
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.IS_PENDING, 0)
+                }
+                if (contentResolver.update(uri, values, null, null) != 1) {
+                    throw IOException("Failed to publish download")
+                }
+                displayName = uri.getFileName(this@DownloadService) ?: displayName
+                ensureActive()
+                pendingUri = null
                 DownloadManager.markCompleted(id, uri)
 
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, target.name, uri)
+                    buildCompletionNotification(id, displayName, uri)
                 )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                ensureActive()
                 DownloadManager.markFailed(id, e.message ?: "Unknown error")
 
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildFailureNotification(target.name)
+                    buildFailureNotification(displayName)
                 )
             } finally {
-                activeJobs.remove(id)
-                stopForegroundIfIdle()
+                pendingUri?.let { deleteDownload(it) }
             }
         }
         activeJobs[id] = job
+        job.invokeOnCompletion { cause ->
+            if (cause is CancellationException &&
+                DownloadManager.downloads.value[id]?.status != DownloadManager.Status.COMPLETED
+            ) {
+                DownloadManager.markFailed(id, "Cancelled")
+                notificationManager.cancel(id)
+            }
+            activeCalls.remove(id)?.cancel()
+            activeJobs.remove(id)
+            stopForegroundIfIdle()
+        }
+        job.start()
     }
 
-    private fun resolveAvailableTarget(
-        directory: File,
-        fileName: String
-    ): File {
-        val dotIndex = fileName.lastIndexOf('.')
-        val baseName = if (dotIndex > 0) fileName.substring(0, dotIndex) else fileName
-        val extension = if (dotIndex > 0) fileName.substring(dotIndex) else ""
-
-        var index = 0
-        while (true) {
-            val candidateName = if (index == 0) {
-                fileName
-            } else {
-                "$baseName ($index)$extension"
-            }
-            val candidate = File(directory, candidateName)
-            if (!candidate.exists()) {
-                return candidate
-            }
-            index++
+    private fun deleteDownload(uri: Uri) {
+        runCatching {
+            contentResolver.delete(uri, null, null)
+        }.onFailure {
+            Log.w("DownloadService", "Failed to delete download: $uri", it)
         }
     }
 
@@ -250,7 +276,7 @@ class DownloadService : Service() {
         val dismissIntent = Intent(this, DownloadService::class.java).apply {
             action = ACTION_DISMISS_DOWNLOAD
             putExtra(EXTRA_DOWNLOAD_ID, id)
-            putExtra(EXTRA_FILE_PATH, uri.path)
+            putExtra(EXTRA_MODULE_URI, uri.toString())
         }
         val dismissPendingIntent = PendingIntent.getService(
             this,
@@ -297,7 +323,7 @@ class DownloadService : Service() {
     }
 
     private fun stopForegroundIfIdle() {
-        if (activeJobs.isEmpty() || activeJobs.values.none { it.isActive }) {
+        if (activeJobs.isEmpty()) {
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
@@ -305,6 +331,7 @@ class DownloadService : Service() {
 
     override fun onDestroy() {
         serviceScope.cancel()
+        activeCalls.values.forEach { it.cancel() }
         super.onDestroy()
     }
 }

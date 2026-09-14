@@ -1,8 +1,10 @@
 package me.weishu.kernelsu.ui.util
 
 import android.net.Uri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import okhttp3.Request
@@ -34,6 +36,12 @@ suspend fun download(
             status == DownloadManager.Status.COMPLETED ||
                 status == DownloadManager.Status.FAILED
         }
+}
+
+internal suspend fun isDownloadAvailable(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+    runCatching {
+        ksuApp.contentResolver.openFileDescriptor(uri, "r").use { it != null }
+    }.getOrDefault(false)
 }
 
 fun checkNewVersion(): LatestVersionInfo {
