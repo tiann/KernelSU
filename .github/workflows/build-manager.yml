@@ -228,9 +228,6 @@ jobs:
             echo "UPLOAD=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-
       - name: Download gradle manager artifact
         uses: actions/download-artifact@v8
         with:
