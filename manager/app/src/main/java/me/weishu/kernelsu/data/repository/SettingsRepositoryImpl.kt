@@ -97,6 +97,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getFloat("page_scale", 1.0f)
         set(value) = prefs.edit { putFloat("page_scale", value) }
 
+    override var moduleDescriptionMaxLines: Int
+        get() = prefs.getInt("module_description_max_lines", 4)
+        set(value) = prefs.edit { putInt("module_description_max_lines", value) }
+
     override var enableWebDebugging: Boolean
         get() = prefs.getBoolean("enable_web_debugging", false)
         set(value) = prefs.edit { putBoolean("enable_web_debugging", value) }

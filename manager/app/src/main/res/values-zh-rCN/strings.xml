@@ -198,6 +198,9 @@
     <string name="settings_ui_mode_summary">选择应用的界面风格</string>
     <string name="settings_page_scale">界面缩放</string>
     <string name="settings_page_scale_summary">调整全局显示比例</string>
+    <string name="settings_module_description_max_lines">模块描述最大行数</string>
+    <string name="settings_module_description_max_lines_summary">超过此行数的模块介绍将自动折叠，点击卡片可展开全文</string>
+    <string name="unit_lines">行</string>
     <string name="settings_color_spec">色彩标准</string>
     <string name="settings_color_style">色彩风格</string>
     <string name="color_blue">蓝色</string>

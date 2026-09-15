@@ -215,6 +215,9 @@
     <string name="settings_ui_mode_summary">選擇介面顯示風格</string>
     <string name="settings_page_scale">介面縮放</string>
     <string name="settings_page_scale_summary">調整介面顯示比例</string>
+    <string name="settings_module_description_max_lines">模組描述最大行數</string>
+    <string name="settings_module_description_max_lines_summary">超過此行數的模組介紹將自動折疊，點擊卡片可展開全文</string>
+    <string name="unit_lines">行</string>
     <string name="settings_color_spec">色彩規範</string>
     <string name="settings_color_style">色彩風格</string>
     <string name="color_blue">藍色</string>
