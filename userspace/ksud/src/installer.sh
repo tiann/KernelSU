@@ -293,11 +293,11 @@ set_perm() {
 }
 
 set_perm_recursive() {
-  find $1 -type d 2>/dev/null | while read dir; do
-    set_perm $dir $2 $3 $4 $6
+  find "$1" -type d -print0 2>/dev/null | while IFS= read -r -d '' dir; do
+    set_perm "$dir" "$2" "$3" "$4" "$6"
   done
-  find $1 -type f -o -type l 2>/dev/null | while read file; do
-    set_perm $file $2 $3 $5 $6
+  find "$1" \( -type f -o -type l \) -print0 2>/dev/null | while IFS= read -r -d '' file; do
+    set_perm "$file" "$2" "$3" "$5" "$6"
   done
 }
 
