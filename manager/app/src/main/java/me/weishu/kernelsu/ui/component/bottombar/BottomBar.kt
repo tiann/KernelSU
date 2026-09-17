@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
 import androidx.compose.animation.core.animate
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -71,14 +72,14 @@ class MainPagerState(
 
 private suspend fun PagerState.springAnimateToPage(target: Int) {
     if (target !in 0 until pageCount) return
-    val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
-    if (pageSize <= 0) return
+    // A focus request must not interrupt tab navigation before the page settles.
+    scroll(MutatePriority.UserInput) {
+        val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
+        if (pageSize <= 0) return@scroll
+        val distance =
+            (target - currentPage - currentPageOffsetFraction) * pageSize.toFloat()
+        var previousValue = 0f
 
-    val distance =
-        (target - currentPage - currentPageOffsetFraction) * pageSize.toFloat()
-    var previousValue = 0f
-
-    scroll {
         updateTargetPage(target)
         animate(
             initialValue = 0f,
