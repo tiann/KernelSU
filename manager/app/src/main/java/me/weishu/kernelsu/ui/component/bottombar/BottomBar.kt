@@ -1,6 +1,6 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animate
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -22,7 +22,6 @@ import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.util.shouldShowSplitPane
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
-import kotlin.math.abs
 
 class MainPagerState(
     val pagerState: PagerState,
@@ -73,46 +72,22 @@ class MainPagerState(
 
 private suspend fun PagerState.springAnimateToPage(target: Int) {
     if (target !in 0 until pageCount) return
-    var shouldSnapToTarget = false
+    // A focus request must not interrupt tab navigation before the page settles.
     scroll(MutatePriority.UserInput) {
         val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
-        val distance = target - currentPage - currentPageOffsetFraction
-        val scrollPixels = distance * pageSize
-        if (abs(scrollPixels) <= 0.5f) return@scroll
+        if (pageSize <= 0) return@scroll
+        val distance =
+            (target - currentPage - currentPageOffsetFraction) * pageSize.toFloat()
+        var previousValue = 0f
 
-        var consumedScroll = 0f
-        var skipScroll = false
-        Animatable(0f).animateTo(
-            targetValue = scrollPixels,
+        updateTargetPage(target)
+        animate(
+            initialValue = 0f,
+            targetValue = distance,
             animationSpec = PagerNavigationSpringSpec,
-        ) {
-            if (skipScroll) return@animateTo
-
-            val delta = value - consumedScroll
-            if (abs(delta) > 0.5f) {
-                val consumed = scrollBy(delta)
-                consumedScroll += consumed
-                if (abs(delta - consumed) > 0.1f) {
-                    shouldSnapToTarget = true
-                    skipScroll = true
-                }
-            } else {
-                consumedScroll = value
-            }
-
-            if (abs(velocity) < 0.1f && abs(scrollPixels - consumedScroll) < 1.0f) {
-                skipScroll = true
-            }
+        ) { currentValue, _ ->
+            previousValue += scrollBy(currentValue - previousValue)
         }
-
-        val remaining = scrollPixels - consumedScroll
-        if (abs(remaining) > 0.5f) {
-            scrollBy(remaining)
-        }
-    }
-
-    if (shouldSnapToTarget || currentPage != target) {
-        scrollToPage(target)
     }
 }
 

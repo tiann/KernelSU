@@ -186,9 +186,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-
       - name: Build with Gradle
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -230,9 +227,6 @@ jobs:
           else
             echo "UPLOAD=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
 
       - name: Download gradle manager artifact
         uses: actions/download-artifact@v8
