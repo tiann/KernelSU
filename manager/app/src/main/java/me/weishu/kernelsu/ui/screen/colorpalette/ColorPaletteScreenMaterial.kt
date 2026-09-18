@@ -63,14 +63,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -100,6 +96,7 @@ import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.theme.rememberKernelSUColorScheme
+import kotlin.math.roundToInt
 
 @Composable
 fun ColorPaletteScreenMaterial(
@@ -297,8 +294,11 @@ fun ColorPaletteScreenMaterial(
                     )
                 }
 
-                TonalCard(modifier = Modifier.padding(top = 4.dp)) {
-                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+                TonalCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    val sliderState = rememberSliderState(
+                        value = uiState.pageScale,
+                        trackRange = 0.8f..1.1f
+                    )
 
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -329,24 +329,28 @@ fun ColorPaletteScreenMaterial(
                                 )
                             }
                             Text(
-                                text = "${(sliderValue * 100).toInt()}%",
+                                text = "${(sliderState.value * 100).toInt()}%",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
                         Slider(
-                            value = sliderValue,
-                            onValueChange = { sliderValue = it },
-                            onValueChangeFinished = { actions.onSetPageScale(sliderValue) },
-                            valueRange = 0.8f..1.1f,
+                            state = sliderState,
+                            onValueChangeFinished = { actions.onSetPageScale(sliderState.value) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
+            }
 
-                TonalCard(modifier = Modifier.padding(top = 4.dp)) {
-                    var linesValue by remember(uiState.moduleDescriptionMaxLines) { mutableIntStateOf(uiState.moduleDescriptionMaxLines) }
+            item {
+                TonalCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    val sliderState = rememberSliderState(
+                        value = uiState.moduleDescriptionMaxLines.toFloat(),
+                        steps = 3,
+                        trackRange = 1f..5f
+                    )
 
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -377,18 +381,17 @@ fun ColorPaletteScreenMaterial(
                                 )
                             }
                             Text(
-                                text = "$linesValue " + stringResource(R.string.unit_lines),
+                                text = "${sliderState.value.roundToInt()} " + stringResource(R.string.unit_lines),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
                         Slider(
-                            value = linesValue.toFloat(),
-                            onValueChange = { linesValue = it.roundToInt() },
-                            onValueChangeFinished = { actions.onSetModuleDescriptionMaxLines(linesValue) },
-                            valueRange = 1f..5f,
-                            steps = 3,
+                            state = sliderState,
+                            onValueChangeFinished = {
+                                actions.onSetModuleDescriptionMaxLines(sliderState.value.roundToInt())
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
