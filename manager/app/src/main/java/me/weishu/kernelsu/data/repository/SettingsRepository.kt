@@ -16,6 +16,7 @@ interface SettingsRepository {
     var enableNavigationBadge: Boolean
     var navigationRailExpanded: Boolean
     var pageScale: Float
+    var moduleDescriptionMaxLines: Int
     var enableWebDebugging: Boolean
     var moduleSortEnabledFirst: Boolean
     var moduleSortActionFirst: Boolean
