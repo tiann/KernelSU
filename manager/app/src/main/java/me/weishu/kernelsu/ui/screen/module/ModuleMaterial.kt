@@ -707,6 +707,7 @@ private fun ModuleItem(
     var expanded by rememberSaveable(module.id) { mutableStateOf(false) }
     val canOpenWebUi = module.hasWebUi && !module.remove && module.enabled
     val cardInteractionSource = remember { MutableInteractionSource() }
+    val descriptionInteractionSource = remember { MutableInteractionSource() }
 
     TonalCard(
         modifier = Modifier.fillMaxWidth(),
@@ -788,7 +789,7 @@ private fun ModuleItem(
                         .then(
                             if (canOpenWebUi) {
                                 Modifier.clickable(
-                                    interactionSource = cardInteractionSource,
+                                    interactionSource = descriptionInteractionSource,
                                     indication = null
                                 ) { expanded = !expanded }
                             } else {
