@@ -8,9 +8,9 @@
 #include <trace/events/syscalls.h>
 
 #include <linux/version.h>
+#include <linux/sched/task_stack.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
 #include <linux/compat.h>
-#include <linux/sched/task_stack.h>
 #endif
 
 #include "arch.h"
