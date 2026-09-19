@@ -2,12 +2,18 @@ package me.weishu.kernelsu.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -38,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -91,6 +98,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableNavigationBadge
 import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
+import me.weishu.kernelsu.ui.util.LocalScrollAnimation
 import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.install
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
@@ -165,6 +173,7 @@ class MainActivity : ComponentActivity() {
                 LocalEnableNavigationBadge provides uiState.enableNavigationBadge,
                 LocalModuleDescriptionMaxLines provides uiState.moduleDescriptionMaxLines,
                 LocalUiMode provides uiMode,
+                LocalScrollAnimation provides appSettings.scrollAnimation,
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
                     IntentDispatcher(intentChannel = intentChannel)
@@ -249,11 +258,19 @@ fun MainScreen(
     val enableFloatingBottomBar = LocalEnableFloatingBottomBar.current
     val enableFloatingBottomBarBlur = LocalEnableFloatingBottomBarBlur.current
     val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
+    val scrollAnimation = LocalScrollAnimation.current
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val usePager = !isLandscape && scrollAnimation
+
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { MainPagerConfig.PAGE_COUNT })
     val mainPagerState = rememberMainPagerState(
         pagerState = pagerState,
         animatePageChanges = !useNavigationRail,
+        initialPage = initialPage,
     )
+    mainPagerState.usePager = usePager
     val isFullFeatured = Natives.isFullFeatured()
     var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
 
@@ -333,6 +350,10 @@ fun MainScreen(
         mainPagerState.syncPage()
     }
 
+    LaunchedEffect(mainPagerState.selectedPage) {
+        onPageChanged(mainPagerState.selectedPage)
+    }
+
     MainScreenBackHandler(mainPagerState, navController)
 
     CompositionLocalProvider(
@@ -340,21 +361,42 @@ fun MainScreen(
     ) {
         val contentReady = rememberContentReady()
         val pagerContent = @Composable { bottomInnerPadding: Dp ->
+            val mainModifier = Modifier
+                .then(if (enableFloatingBottomBar && enableFloatingBottomBarBlur) Modifier.layerBackdrop(backdrop) else Modifier)
+
             Box(modifier = if (blurBackdrop != null) Modifier.layerBackdrop(blurBackdrop) else Modifier) {
-                HorizontalPager(
-                    modifier = Modifier
-                        .then(if (enableFloatingBottomBar && enableFloatingBottomBarBlur) Modifier.layerBackdrop(backdrop) else Modifier),
-                    state = mainPagerState.pagerState,
-                    beyondViewportPageCount = if (contentReady) 3 else 0,
-                    overscrollEffect = null,
-                    userScrollEnabled = userScrollEnabled,
-                ) { page ->
-                    val isCurrentPage = page == settledPage
-                    when (page) {
-                        0 -> if (contentReady || isCurrentPage) HomePager(navController, bottomInnerPadding, isCurrentPage)
-                        1 -> if (contentReady || isCurrentPage) SuperUserPager(navController, bottomInnerPadding, isCurrentPage)
-                        2 -> if (contentReady || isCurrentPage) ModulePager(bottomInnerPadding, isCurrentPage)
-                        3 -> if (contentReady || isCurrentPage) SettingPager(navController, bottomInnerPadding, isCurrentPage)
+                if (usePager) {
+                    HorizontalPager(
+                        modifier = mainModifier,
+                        state = mainPagerState.pagerState,
+                        beyondViewportPageCount = if (contentReady) 3 else 0,
+                        overscrollEffect = null,
+                        userScrollEnabled = userScrollEnabled,
+                    ) { page ->
+                        val isCurrentPage = page == settledPage
+                        MainPage(
+                            page = page,
+                            navigator = navController,
+                            bottomInnerPadding = bottomInnerPadding,
+                            isCurrentPage = isCurrentPage,
+                            contentReady = contentReady
+                        )
+                    }
+                } else {
+                    AnimatedContent(
+                        modifier = mainModifier,
+                        targetState = mainPagerState.selectedPage,
+                        transitionSpec = {
+                            fadeIn(tween(340)) togetherWith fadeOut(tween(340))
+                        },
+                        label = "MainScreenTransition"
+                    ) { page ->
+                        MainPage(
+                            page = page,
+                            navigator = navController,
+                            bottomInnerPadding = bottomInnerPadding,
+                            contentReady = contentReady
+                        )
                     }
                 }
             }
@@ -421,6 +463,25 @@ fun MainScreen(
                 }
             }
         }
+    }
+}
+
+
+@Composable
+fun MainPage(
+    page: Int,
+    navigator: Navigator,
+    bottomInnerPadding: Dp,
+    isCurrentPage: Boolean = true,
+    contentReady: Boolean = true,
+) {
+    if (!contentReady && !isCurrentPage) return
+
+    when (page) {
+        0 -> HomePager(navigator, bottomInnerPadding, isCurrentPage)
+        1 -> SuperUserPager(navigator, bottomInnerPadding, isCurrentPage)
+        2 -> ModulePager(bottomInnerPadding, isCurrentPage)
+        3 -> SettingPager(navigator, bottomInnerPadding, isCurrentPage)
     }
 }
 

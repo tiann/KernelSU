@@ -54,6 +54,7 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -279,6 +280,15 @@ fun ColorPaletteScreenMaterial(
                                 summary = stringResource(id = R.string.settings_navigation_badge_summary),
                                 checked = uiState.enableNavigationBadge,
                                 onCheckedChange = actions.onSetEnableNavigationBadge
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Rounded.ViewCarousel,
+                                title = stringResource(id = R.string.settings_scroll_animation),
+                                summary = stringResource(id = R.string.settings_scroll_animation_summary),
+                                checked = uiState.scrollAnimation,
+                                onCheckedChange = actions.onSetScrollAnimation
                             )
                         }
                     )

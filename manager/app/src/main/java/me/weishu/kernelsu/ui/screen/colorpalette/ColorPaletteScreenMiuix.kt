@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -42,6 +41,7 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
@@ -52,7 +52,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,6 +94,7 @@ import top.yukonga.miuix.kmp.preference.SwitchPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import kotlin.math.roundToInt
 
 @Composable
 fun ColorPaletteScreenMiuix(
@@ -354,6 +354,23 @@ fun ColorPaletteScreenMiuix(
                             checked = uiState.enableNavigationBadge,
                             onCheckedChange = {
                                 actions.onSetEnableNavigationBadge(it)
+                            }
+                        )
+
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_scroll_animation),
+                            summary = stringResource(id = R.string.settings_scroll_animation_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ViewCarousel,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_scroll_animation),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            checked = uiState.scrollAnimation,
+                            onCheckedChange = {
+                                actions.onSetScrollAnimation(it)
                             }
                         )
                     }

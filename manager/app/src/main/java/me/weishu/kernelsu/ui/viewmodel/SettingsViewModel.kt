@@ -47,6 +47,7 @@ class SettingsViewModel(
             val enableWebDebugging = repo.enableWebDebugging
             val colorStyle = repo.colorStyle
             val colorSpec = repo.colorSpec
+            val scrollAnimation = repo.scrollAnimation
             val isLkmMode = repo.isLkmMode()
 
             // Async loading for natives/features
@@ -88,6 +89,7 @@ class SettingsViewModel(
                     enableWebDebugging = enableWebDebugging,
                     colorStyle = colorStyle,
                     colorSpec = colorSpec,
+                    scrollAnimation = scrollAnimation,
                     suCompatStatus = suCompatStatus,
                     suCompatMode = suCompatMode,
                     isSuEnabled = isSuEnabled,
@@ -191,6 +193,11 @@ class SettingsViewModel(
     fun setColorSpec(spec: String) {
         repo.colorSpec = spec
         _uiState.update { it.copy(colorSpec = spec) }
+    }
+
+    fun setScrollAnimation(enabled: Boolean) {
+        repo.scrollAnimation = enabled
+        _uiState.update { it.copy(scrollAnimation = enabled) }
     }
 
     fun setEnablePredictiveBack(enabled: Boolean) {

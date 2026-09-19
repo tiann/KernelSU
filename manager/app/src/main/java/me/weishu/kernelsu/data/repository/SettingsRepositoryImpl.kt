@@ -69,6 +69,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getString("color_spec", ColorSpec.SpecVersion.SPEC_2025.name) ?: ColorSpec.SpecVersion.SPEC_2025.name
         set(value) = prefs.edit { putString("color_spec", value) }
 
+    override var scrollAnimation: Boolean
+        get() = prefs.getBoolean("scroll_animation", true)
+        set(value) = prefs.edit { putBoolean("scroll_animation", value) }
+
     override var enablePredictiveBack: Boolean
         get() = prefs.getBoolean("enable_predictive_back", false)
         set(value) = prefs.edit { putBoolean("enable_predictive_back", value) }
