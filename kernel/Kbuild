@@ -1,5 +1,8 @@
 kernelsu-objs := core/init.o
 
+kernelsu-objs += compat/samsung_kdp.o
+kernelsu-objs += compat/samsung_defex.o
+
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
@@ -64,9 +67,22 @@ endif
 ifeq ($(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER),y)
 ccflags-y += -DCONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=1
 endif
+ifeq ($(CONFIG_KSU_SAMSUNG_KDP),y)
+ccflags-y += -DCONFIG_KSU_SAMSUNG_KDP=1
+endif
+ifeq ($(CONFIG_KSU_SAMSUNG_RKP),y)
+ccflags-y += -DCONFIG_KSU_SAMSUNG_RKP=1
+endif
+ifeq ($(CONFIG_KSU_SAMSUNG_DEFEX),y)
+ccflags-y += -DCONFIG_KSU_SAMSUNG_DEFEX=1
+endif
+ifeq ($(CONFIG_KSU_SAMSUNG_NO_PATCH_TEXT),y)
+ccflags-y += -DCONFIG_KSU_SAMSUNG_NO_PATCH_TEXT=1
+endif
 endif
 
 ccflags-y += -I$(srctree)/security/selinux -I$(srctree)/security/selinux/include
+ccflags-y += -I$(objtree)/security/selinux -I$(objtree)/security/selinux/include
 ccflags-y += -I$(objtree)/security/selinux -include $(srctree)/include/uapi/asm-generic/errno.h
 
 ifneq ($(KBUILD_EXTMOD),)
@@ -83,7 +99,7 @@ KSU_KERNEL_DIR := $(src)
 endif
 endif
 
-ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
+ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include -I$(KSU_KERNEL_DIR)/..
 
 obj-$(CONFIG_KSU) += kernelsu.o
 
@@ -120,7 +136,9 @@ ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 else
 # If there is no .git directory, use default version
 $(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git repository!")
-ccflags-y += -DKSU_VERSION=16
+KSU_VERSION ?= 32525
+$(info -- KernelSU fallback version: $(KSU_VERSION))
+ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 endif
 
 KSU_NEW_DCACHE_FLUSH := $(shell grep -q __flush_dcache_area $(srctree)/arch/arm64/include/asm/cacheflush.h ; echo $$?)
