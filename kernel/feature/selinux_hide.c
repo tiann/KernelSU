@@ -336,11 +336,11 @@ static int ksu_selinux_hide_enable()
     hook_selinux_status_open();
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-    security_dump_masked_av_fn = find_kernel_symbol_exact("security_dump_masked_av");
+    security_dump_masked_av_fn = ksu_resolve_symbol_for_functable_hook("security_dump_masked_av");
     if (!security_dump_masked_av_fn) {
         pr_warn("security_dump_masked_av not found!\n");
     }
-    context_struct_compute_av_fn = find_kernel_symbol_exact("context_struct_compute_av");
+    context_struct_compute_av_fn = ksu_resolve_symbol_for_functable_hook("context_struct_compute_av");
     if (!context_struct_compute_av_fn) {
         pr_warn("context_struct_compute_av not found!\n");
     }
