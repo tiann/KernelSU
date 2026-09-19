@@ -137,7 +137,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     if (!scalls_addr) {
-        scalls_addr = find_kernel_symbol_exact("static_calls_table");
+        scalls_addr = (unsigned long)ksu_resolve_symbol_for_functable_hook("static_calls_table");
     }
     if (!scalls_addr) {
         pr_err("lsm_hook: failed to resolve static_calls_table\n");
@@ -151,7 +151,7 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         if (!kallsyms_lookup_size_offset(scalls_addr, &sym_size, NULL)) {
             pr_err("failed to get size\n");
         }
-        unsigned long addr = find_kernel_symbol_exact("lsm_active_cnt");
+        unsigned long addr = (unsigned long)ksu_resolve_symbol_for_functable_hook("lsm_active_cnt");
         if (!addr) {
             pr_err("failed to get lsm_active_cnt\n");
         } else {
