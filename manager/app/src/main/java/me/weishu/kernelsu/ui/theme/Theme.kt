@@ -49,6 +49,7 @@ data class AppSettings(
     val keyColor: Int,
     val paletteStyle: PaletteStyle,
     val colorSpec: ColorSpec.SpecVersion,
+    val scrollAnimation: Boolean,
 )
 
 val PaletteStyle.supportsSpec2025: Boolean
@@ -95,8 +96,9 @@ object ThemeController {
         } catch (_: Exception) {
             ColorSpec.SpecVersion.SPEC_2025
         }
+        val scrollAnimation = repo.scrollAnimation
 
-        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec)
+        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec, scrollAnimation)
     }
 }
 

@@ -9,6 +9,7 @@ interface SettingsRepository {
     var keyColor: Int
     var colorStyle: String
     var colorSpec: String
+    var scrollAnimation: Boolean
     var enablePredictiveBack: Boolean
     var enableBlur: Boolean
     var enableFloatingBottomBar: Boolean

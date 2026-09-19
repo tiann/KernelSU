@@ -61,6 +61,7 @@ class MainActivityViewModel(
             "key_color",
             "color_style",
             "color_spec",
+            "scroll_animation",
             "page_scale",
             "module_description_max_lines",
             "enable_blur",
