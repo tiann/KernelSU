@@ -69,11 +69,13 @@ fun getBugreportFile(context: Context): File {
         .exec()
 
     val selinux = ShellUtils.fastCmd(shell, "getenforce")
+    val bootId = ShellUtils.fastCmd(shell, "cat /proc/sys/kernel/random/boot_id").trim()
 
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
     PrintWriter(FileWriter(buildInfo)).use { pw ->
         pw.println("Kernel: ${System.getProperty("os.version")}")
+        pw.println("BootID: $bootId")
         pw.println("BRAND: " + Build.BRAND)
         pw.println("MODEL: " + Build.MODEL)
         pw.println("PRODUCT: " + Build.PRODUCT)
@@ -115,4 +117,3 @@ fun getBugreportFile(context: Context): File {
 
     return targetFile
 }
-

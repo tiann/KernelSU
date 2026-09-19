@@ -72,6 +72,7 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.rebootlistpopup.RebootListPopup
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
+import me.weishu.kernelsu.ui.util.BootStageStatus
 
 @Composable
 fun HomePagerMaterial(
@@ -95,6 +96,24 @@ fun HomePagerMaterial(
         ) {
             if (state.checkUpdateEnabled) {
                 UpdateCard(state = state, actions = actions)
+            }
+            when (val status = state.bootStageStatus) {
+                BootStageStatus.RecordsMissing -> WarningCard(
+                    message = stringResource(R.string.home_boot_stage_records_missing),
+                    level = WarningLevel.Notice,
+                    onClick = actions.onKsudWarningClick,
+                )
+
+                is BootStageStatus.Incomplete -> WarningCard(
+                    message = stringResource(
+                        R.string.home_boot_stages_incomplete,
+                        status.stages.joinToString(", ") { it.displayName },
+                    ),
+                    level = WarningLevel.Error,
+                    onClick = actions.onKsudWarningClick,
+                )
+
+                BootStageStatus.Successful -> Unit
             }
             if (state.showManagerPrBuildWarning) {
                 WarningCard(stringResource(id = R.string.home_pr_build_warning), level = WarningLevel.Notice)
