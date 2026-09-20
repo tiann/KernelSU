@@ -70,7 +70,8 @@
             android:documentLaunchMode="intoExisting"
             android:exported="false"
             android:taskAffinity="${applicationId}.webui"
-            android:theme="@style/Theme.KernelSU.WebUI" />
+            android:theme="@style/Theme.KernelSU.WebUI"
+            android:windowSoftInputMode="adjustNothing" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
