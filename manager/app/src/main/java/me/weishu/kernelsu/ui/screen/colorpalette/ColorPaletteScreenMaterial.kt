@@ -54,6 +54,8 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.Swipe
+import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -302,6 +304,36 @@ fun ColorPaletteScreenMaterial(
                         )
                     )
                 }
+            }
+
+            item {
+                SegmentedColumn(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    content = listOf(
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Rounded.Swipe,
+                                title = stringResource(id = R.string.settings_enable_swipe_dismiss),
+                                summary = stringResource(id = R.string.settings_enable_swipe_dismiss_summary),
+                                checked = uiState.enableSwipeDismiss,
+                                onCheckedChange = actions.onSetEnableSwipeDismiss,
+                            )
+                        },
+                        {
+                            SegmentedDropdownItem(
+                                icon = Icons.Rounded.ViewCarousel,
+                                title = stringResource(id = R.string.settings_pager_gesture_mode),
+                                items = listOf(
+                                    stringResource(id = R.string.settings_pager_gesture_native),
+                                    stringResource(id = R.string.settings_pager_gesture_cross_axis),
+                                    stringResource(id = R.string.settings_pager_gesture_ios_like),
+                                ),
+                                selectedIndex = uiState.pagerInterceptionMode.coerceIn(0, 2),
+                                onItemSelected = actions.onSetPagerInterceptionMode,
+                            )
+                        },
+                    ),
+                )
             }
 
             item {

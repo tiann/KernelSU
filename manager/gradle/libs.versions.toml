@@ -1,12 +1,11 @@
 [versions]
-agp = "9.4.0"
+agp = "9.4.1"
 kotlin = "2.4.20"
 compose-bom = "2026.09.00"
 lifecycle = "2.11.0"
 activity-compose = "1.13.0"
 core-splashscreen = "1.2.0"
 kotlinx-coroutines = "1.11.0"
-navigation3 = "1.1.7"
 navigationevent = "1.1.2"
 commonmark = "0.30.0"
 webkit = "1.17.0"
@@ -16,7 +15,7 @@ materialKolor = "5.0.1"
 ndk = "29.0.14206865"
 libsu = "6.0.0"
 apksign = "1.4"
-miuix = "0.9.3"
+miuix = "0.9.4"
 okhttp = "5.5.0"
 hiddenapibypass = "6.1"
 appiconloader = "1.5.0"
@@ -49,7 +48,6 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
 
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
@@ -61,7 +59,6 @@ dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:pa
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
-androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
@@ -74,7 +71,7 @@ lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
 miuix-ui = { module = "top.yukonga.miuix.kmp:miuix-ui-android", version.ref = "miuix" }
 miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
-miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version.ref = "miuix" }
+miuix-nav = { module = "top.yukonga.miuix.kmp:miuix-nav-android", version.ref = "miuix" }
 miuix-preference = { module = "top.yukonga.miuix.kmp:miuix-preference-android", version.ref = "miuix" }
 miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur-android", version.ref = "miuix" }
 

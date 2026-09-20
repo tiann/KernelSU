@@ -138,6 +138,12 @@
     <string name="settings_check_update_summary">開啟本程式時自動檢查更新</string>
     <string name="settings_enable_predictive_back">預測性返回手勢</string>
     <string name="settings_enable_predictive_back_summary">啟用預測性返回手勢支援</string>
+    <string name="settings_enable_swipe_dismiss">橫移返回手勢</string>
+    <string name="settings_enable_swipe_dismiss_summary">從螢幕邊緣橫移返回上一頁</string>
+    <string name="settings_pager_gesture_mode">頁面切換手勢</string>
+    <string name="settings_pager_gesture_native">預設</string>
+    <string name="settings_pager_gesture_cross_axis">跨軸攔截</string>
+    <string name="settings_pager_gesture_ios_like">iOS 風格</string>
     <string name="settings_module_check_update">檢查模組更新</string>
     <string name="grant_root_failed">授予 Root 權限失敗！</string>
     <string name="home_pr_build_warning">此為 PR 除錯版本，切勿於正式環境使用！</string>

@@ -129,6 +129,12 @@
     <string name="settings_check_update_summary">在应用启动后自动检查是否有最新版</string>
     <string name="settings_enable_predictive_back">预测性返回手势</string>
     <string name="settings_enable_predictive_back_summary">启用对预测性返回手势的支持</string>
+    <string name="settings_enable_swipe_dismiss">横移返回手势</string>
+    <string name="settings_enable_swipe_dismiss_summary">从屏幕边缘横移返回上一页</string>
+    <string name="settings_pager_gesture_mode">页面切换手势</string>
+    <string name="settings_pager_gesture_native">默认</string>
+    <string name="settings_pager_gesture_cross_axis">跨轴拦截</string>
+    <string name="settings_pager_gesture_ios_like">iOS 风格</string>
     <string name="settings_module_check_update">检查模块更新</string>
     <string name="grant_root_failed">获取 Root 失败！</string>
     <string name="home_pr_build_warning">当前为 PR 调试构建，请勿在生产环境中使用！</string>

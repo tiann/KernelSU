@@ -1,7 +1,5 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
-import androidx.compose.animation.core.animate
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -18,10 +16,10 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
-import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.util.shouldShowSplitPane
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.utils.springAnimateToPage
 
 class MainPagerState(
     val pagerState: PagerState,
@@ -66,27 +64,6 @@ class MainPagerState(
     fun syncPage() {
         if (!isNavigating && selectedPage != pagerState.currentPage) {
             selectedPage = pagerState.currentPage
-        }
-    }
-}
-
-private suspend fun PagerState.springAnimateToPage(target: Int) {
-    if (target !in 0 until pageCount) return
-    // A focus request must not interrupt tab navigation before the page settles.
-    scroll(MutatePriority.UserInput) {
-        val pageSize = layoutInfo.pageSize + layoutInfo.pageSpacing
-        if (pageSize <= 0) return@scroll
-        val distance =
-            (target - currentPage - currentPageOffsetFraction) * pageSize.toFloat()
-        var previousValue = 0f
-
-        updateTargetPage(target)
-        animate(
-            initialValue = 0f,
-            targetValue = distance,
-            animationSpec = PagerNavigationSpringSpec,
-        ) { currentValue, _ ->
-            previousValue += scrollBy(currentValue - previousValue)
         }
     }
 }

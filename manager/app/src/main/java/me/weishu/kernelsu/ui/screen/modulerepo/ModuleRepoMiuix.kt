@@ -76,7 +76,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
-import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle

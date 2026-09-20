@@ -144,6 +144,12 @@
     <string name="settings_check_update_summary">Automatically check for updates when opening the app.</string>
     <string name="settings_enable_predictive_back">Predictive back gesture</string>
     <string name="settings_enable_predictive_back_summary">Enable predictive back gesture support.</string>
+    <string name="settings_enable_swipe_dismiss">Swipe back gesture</string>
+    <string name="settings_enable_swipe_dismiss_summary">Swipe from the edge to return to the previous page.</string>
+    <string name="settings_pager_gesture_mode">Pager gesture mode</string>
+    <string name="settings_pager_gesture_native">Default</string>
+    <string name="settings_pager_gesture_cross_axis">Cross-axis</string>
+    <string name="settings_pager_gesture_ios_like">iOS-like</string>
     <string name="settings_module_check_update">Check for module updates</string>
     <string name="grant_root_failed">Failed to grant Root!</string>
     <string name="home_pr_build_warning">This is a PR debug build. Do NOT use it in production!</string>
