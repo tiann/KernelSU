@@ -25,7 +25,7 @@ static inline struct file *ksu_filp_open_nonotify(const char *path, int flags)
         return ERR_PTR(ret);
     }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
     f = dentry_open_nonotify(&p, flags, current_cred());
 #else
     f = dentry_open(&p, flags | __FMODE_NONOTIFY, current_cred());
