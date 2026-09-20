@@ -22,6 +22,11 @@ on:
         required: false
         default: ''
         type: string
+      manager_package:
+        description: 'LSU manager package name'
+        required: false
+        default: 'com.lund.kernsu'
+        type: string
 
 jobs:
   build-kernelsu-ko:
@@ -46,7 +51,7 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        EXTRA_ARGS=""
+        EXTRA_ARGS="KSU_MANAGER_PACKAGE=${{ inputs.manager_package }}"
         if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
           echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
           exit 1
@@ -56,7 +61,7 @@ jobs:
           exit 1
         fi
         if [ -n "$EXPECTED_SIZE2" ]; then
-          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
         fi
         CONFIG_KSU=m CC=clang make $EXTRA_ARGS
         
@@ -121,7 +126,7 @@ jobs:
         
         echo "=== Building x64 kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        EXTRA_ARGS=""
+        EXTRA_ARGS="KSU_MANAGER_PACKAGE=${{ inputs.manager_package }}"
         if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
           echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
           exit 1
@@ -131,7 +136,7 @@ jobs:
           exit 1
         fi
         if [ -n "$EXPECTED_SIZE2" ]; then
-          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
         fi
         
         MDIR=$(realpath .)

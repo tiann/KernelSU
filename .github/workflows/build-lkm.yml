@@ -12,6 +12,11 @@ on:
         required: false
         default: ''
         type: string
+      manager_package:
+        description: 'LSU manager package name'
+        required: false
+        default: 'com.lund.kernsu'
+        type: string
   workflow_dispatch:
 jobs:
   build-lkm:
@@ -31,3 +36,4 @@ jobs:
       kmi: ${{ matrix.kmi }}
       expected_size2: ${{ inputs.expected_size2 || '' }}
       expected_hash2: ${{ inputs.expected_hash2 || '' }}
+      manager_package: ${{ inputs.manager_package || 'com.lund.kernsu' }}

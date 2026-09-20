@@ -95,6 +95,7 @@ jobs:
     with:
       expected_size2: ${{ needs.generate-key.outputs.expected_size || '' }}
       expected_hash2: ${{ needs.generate-key.outputs.expected_hash || '' }}
+      manager_package: com.lund.kernsu
     secrets: inherit
 
   build-ksuinit:
