@@ -1,7 +1,6 @@
 package me.weishu.kernelsu.ui.screen.module
 
 import android.Manifest
-import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,9 +29,8 @@ import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.util.download
-import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
-import me.weishu.kernelsu.ui.webui.WebUIActivity
+import me.weishu.kernelsu.ui.webui.util.createWebuiIntent
 
 @Composable
 fun ModulePager(
@@ -47,10 +45,6 @@ fun ModulePager(
     val viewModel = viewModel<ModuleViewModel>()
     val scope = rememberCoroutineScope()
     val rawUiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    val webUILauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList(resort = false) }
 
     // Request notification permission for download progress notifications
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -145,12 +139,7 @@ fun ModulePager(
             viewModel.toggleSortEnabledFirst()
         },
         onOpenWebUi = { module ->
-            webUILauncher.launch(
-                Intent(context, WebUIActivity::class.java)
-                    .setData(
-                        Shortcut.buildShortcutUri(module.id, ShortcutType.WebUI)
-                    )
-            )
+            context.startActivity(createWebuiIntent(context, module.id))
         },
         onToggleModule = { module ->
             viewModel.toggleModule(module)
