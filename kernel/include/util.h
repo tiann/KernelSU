@@ -18,7 +18,7 @@ static inline struct file *ksu_filp_open_nonotify(const char *path, int flags)
     struct path p;
     struct file *f;
     int ret;
-    ret = kern_path(path, 0, &p);
+    ret = kern_path(path, (flags & O_NOFOLLOW) ? 0 : LOOKUP_FOLLOW, &p);
     if (ret) {
         return ERR_PTR(ret);
     }
