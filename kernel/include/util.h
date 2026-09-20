@@ -5,6 +5,8 @@
 #include <linux/version.h>
 #include <linux/syscalls.h>
 #include <linux/namei.h>
+#include <linux/fs.h>
+#include <linux/err.h>
 #include <linux/cred.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
