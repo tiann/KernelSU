@@ -308,4 +308,9 @@
     <string name="nav_rail_collapse">Collapse navigation rail</string>
     <string name="settings_navigation_badge">Navigation badge</string>
     <string name="settings_navigation_badge_summary">Show granted app and enabled module counts on the navigation bar</string>
+    <string name="webview_outdated_title">WebView outdated</string>
+    <string name="webview_outdated_message">Current Android System WebView version is %1$d (minimum required: %2$d). Insets are disabled. Please update WebView for the best experience.</string>
+    <string name="webui_failed_to_open_link">No app found to open link: %s</string>
+    <string name="webui_invalid_module_id">Invalid module id</string>
+    <string name="webui_render_process_crashed">WebView render process crashed</string>
 </resources>
