@@ -29,7 +29,6 @@ import me.weishu.kernelsu.ui.theme.ThemeController
 import me.weishu.kernelsu.ui.webui.model.WebUIEffect
 import me.weishu.kernelsu.ui.webui.ui.WebUIScreen
 import me.weishu.kernelsu.ui.webui.ui.rememberFileLauncher
-import me.weishu.kernelsu.ui.webui.util.setTaskDescription
 import me.weishu.kernelsu.ui.webui.viewmodel.WebUIViewModel
 import me.weishu.kernelsu.ui.webui.webview.prepareWebView
 
@@ -93,7 +92,6 @@ class WebUIActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        setTaskDescription(getString(R.string.app_name))
         val prefs = getSharedPreferences("settings", MODE_PRIVATE)
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
     }

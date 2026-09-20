@@ -14,6 +14,7 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.util.createRootShell
+import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.webui.WebUIDownloadInterface
 import me.weishu.kernelsu.ui.webui.WebUIRuntime
@@ -44,11 +45,14 @@ internal suspend fun prepareWebView(
         checkModule(viewModel, moduleId, activity)?.also(viewModel::onModuleValidated)?.name
     } ?: return
 
-    val label = activity.getString(R.string.app_name) + " - $moduleName"
-    activity.setTaskDescription(label)
-
     val moduleDir = "/data/adb/modules/${moduleId}"
     val shell = withContext(Dispatchers.IO) { createRootShell(true) }
+
+    val iconUri = viewModel.state.value.moduleInfo?.webUiIconPath?.takeIf { it.isNotBlank() }?.let { "su:$it" }
+    val iconBitmap = withContext(Dispatchers.IO) {
+        Shortcut.loadShortcutBitmap(activity, iconUri)
+    }
+    activity.setTaskDescription(moduleName, iconBitmap)
 
     val webView = createWebView(activity)
     val webViewAssetLoader = createAssetLoader(activity, moduleDir, shell, viewModel)
@@ -99,7 +103,7 @@ private suspend fun checkModule(
         moduleInfo
     } ?: return null
 
-    return ModuleInfo(moduleId, module.name)
+    return ModuleInfo(moduleId, module.name, module.webUiIconPath)
 }
 
 private fun createAssetLoader(

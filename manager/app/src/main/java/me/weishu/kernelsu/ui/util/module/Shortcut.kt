@@ -78,7 +78,7 @@ object Shortcut {
         val shortcutIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
             data = buildShortcutUri(moduleId, ShortcutType.WebUI)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         createModuleShortcut(
             context = context,
