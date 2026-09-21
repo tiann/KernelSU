@@ -4,7 +4,7 @@ use crate::{
     assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
 };
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use libc::_exit;
 use log::{error, info, warn};
 use prop_rs_android::resetprop::ResetProp;
@@ -172,9 +172,35 @@ pub fn on_boot_completed() {
     }
 
     ksucalls::report_boot_complete();
+    if let Err(e) = write_last_success_boot_id() {
+        warn!("failed to write last successful boot id: {e:#}");
+    }
     info!("on_boot_completed triggered!");
 
     run_stage("boot-completed", false);
+}
+
+fn write_last_success_boot_id() -> Result<()> {
+    let boot_id = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")
+        .with_context(|| format!("failed to read boot_id device node"))?
+        .trim()
+        .to_owned();
+    if boot_id.is_empty() {
+        bail!("boot_id device node is empty");
+    }
+
+    std::fs::write(
+        const_format::concatcp!(defs::WORKING_DIR, ".last_success_boot_id"),
+        boot_id.as_bytes(),
+    )
+    .with_context(|| {
+        format!(
+            "failed to write {}",
+            const_format::concatcp!(defs::WORKING_DIR, ".last_success_boot_id")
+        )
+    })?;
+
+    Ok(())
 }
 
 const fn resetprop() -> ResetProp {
