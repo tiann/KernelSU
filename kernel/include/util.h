@@ -8,6 +8,9 @@
 #include <linux/fs.h>
 #include <linux/err.h>
 #include <linux/cred.h>
+#include <linux/ptrace.h>
+
+#include "arch.h"
 
 #if defined(__aarch64__)
 #define KSU_SYS_PREFIX(name) __arm64_sys_##name
@@ -27,14 +30,14 @@ static_assert(1 == 0, "Unsupported architecture!");
 #define __ksyscall(name, a, b, c, d, e, f)                                                                             \
     ({                                                                                                                 \
         extern long KSU_SYS_PREFIX(name)(const struct pt_regs *);                                                      \
-        struct pt_regs regs = { 0 };                                                                                   \
-        PT_REGS_PARM1(&regs) = (unsigned long)(a);                                                                     \
-        PT_REGS_PARM2(&regs) = (unsigned long)(b);                                                                     \
-        PT_REGS_PARM3(&regs) = (unsigned long)(c);                                                                     \
-        PT_REGS_SYSCALL_PARM4(&regs) = (unsigned long)(d);                                                             \
-        PT_REGS_PARM5(&regs) = (unsigned long)(e);                                                                     \
-        PT_REGS_PARM6(&regs) = (unsigned long)(f);                                                                     \
-        (long)KSU_SYS_PREFIX(name)(&regs);                                                                             \
+        struct pt_regs __ksu_regs = { 0 };                                                                             \
+        PT_REGS_PARM1(&__ksu_regs) = (unsigned long)(a);                                                               \
+        PT_REGS_PARM2(&__ksu_regs) = (unsigned long)(b);                                                               \
+        PT_REGS_PARM3(&__ksu_regs) = (unsigned long)(c);                                                               \
+        PT_REGS_SYSCALL_PARM4(&__ksu_regs) = (unsigned long)(d);                                                       \
+        PT_REGS_PARM5(&__ksu_regs) = (unsigned long)(e);                                                               \
+        PT_REGS_PARM6(&__ksu_regs) = (unsigned long)(f);                                                               \
+        (long)KSU_SYS_PREFIX(name)(&__ksu_regs);                                                                       \
     })
 
 // https://elixir.bootlin.com/musl/v1.2.6/source/src/internal/syscall.h#L45
