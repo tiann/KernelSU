@@ -4,14 +4,27 @@ use crate::{
     assets, defs, ksucalls, metamodule, restorecon,
     utils::{self},
 };
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use libc::_exit;
 use log::{error, info, warn};
 use prop_rs_android::resetprop::ResetProp;
 use prop_rs_android::sys_prop;
 use rustix::process::chdir;
+use std::io::ErrorKind;
 use std::path::Path;
 use std::process::Command;
+
+const BOOT_ID_PATH: &str = "/proc/sys/kernel/random/boot_id";
+const POST_FS_DATA_BOOT_ID_PATH: &str =
+    const_format::concatcp!(defs::LOG_DIR, "post-fs-data.boot_id");
+const SERVICE_BOOT_ID_PATH: &str = const_format::concatcp!(defs::LOG_DIR, "service.boot_id");
+const BOOT_COMPLETED_BOOT_ID_PATH: &str =
+    const_format::concatcp!(defs::LOG_DIR, "boot-completed.boot_id");
+const BOOT_STAGE_ID_PATHS: [&str; 3] = [
+    POST_FS_DATA_BOOT_ID_PATH,
+    SERVICE_BOOT_ID_PATH,
+    BOOT_COMPLETED_BOOT_ID_PATH,
+];
 
 pub fn on_post_data_fs() -> Result<()> {
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
@@ -61,6 +74,7 @@ pub fn on_post_data_fs() -> Result<()> {
         if let Err(e) = crate::module::disable_all_modules() {
             warn!("disable all modules failed: {e}");
         }
+        record_boot_stage("post-fs-data", POST_FS_DATA_BOOT_ID_PATH);
         return Ok(());
     }
 
@@ -123,6 +137,7 @@ pub fn on_post_data_fs() -> Result<()> {
     run_stage("post-mount", true);
 
     std::env::set_current_dir("/").with_context(|| "failed to chdir to /")?;
+    record_boot_stage("post-fs-data", POST_FS_DATA_BOOT_ID_PATH);
 
     Ok(())
 }
@@ -163,6 +178,7 @@ pub fn on_services() {
 
     info!("on_services triggered!");
     run_stage("service", false);
+    record_boot_stage("service", SERVICE_BOOT_ID_PATH);
 }
 
 pub fn on_boot_completed() {
@@ -175,6 +191,40 @@ pub fn on_boot_completed() {
     info!("on_boot_completed triggered!");
 
     run_stage("boot-completed", false);
+    record_boot_stage("boot-completed", BOOT_COMPLETED_BOOT_ID_PATH);
+}
+
+fn record_boot_stage(stage: &str, path: &str) {
+    if let Err(e) = write_boot_id(path) {
+        warn!("failed to record {stage} boot id: {e:#}");
+    }
+}
+
+fn write_boot_id(path: &str) -> Result<()> {
+    let boot_id = std::fs::read_to_string(BOOT_ID_PATH)
+        .context("failed to read boot_id device node")?
+        .trim()
+        .to_owned();
+    if boot_id.is_empty() {
+        bail!("boot_id device node is empty");
+    }
+
+    utils::ensure_dir_exists(defs::LOG_DIR)?;
+    std::fs::write(path, boot_id.as_bytes()).with_context(|| format!("failed to write {path}"))?;
+
+    Ok(())
+}
+
+fn clear_boot_stage_ids() -> Result<()> {
+    for path in BOOT_STAGE_ID_PATHS {
+        match std::fs::remove_file(path) {
+            Ok(()) => {}
+            Err(e) if e.kind() == ErrorKind::NotFound => {}
+            Err(e) => return Err(e).with_context(|| format!("failed to remove {path}")),
+        }
+    }
+
+    Ok(())
 }
 
 const fn resetprop() -> ResetProp {
@@ -259,6 +309,7 @@ pub fn soft_reboot() -> Result<()> {
     })?;
 
     info!("emulating soft_reboot!");
+    clear_boot_stage_ids().context("failed to clear boot stage ids")?;
     if let Err(e) = reset_boot_completed() {
         warn!("reset boot completed failed: {e}");
     }
