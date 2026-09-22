@@ -240,7 +240,10 @@ pub fn soft_reboot() -> Result<()> {
     }
     run_stage("emulated-soft-reboot", true);
 
-    let system_server_services = collect_system_server_services()?;
+    let system_server_services = collect_system_server_services();
+    if let Err(ref e) = system_server_services {
+        warn!("could not collect services: {e:?}");
+    }
 
     info!("stop");
     let status = Command::new("stop").status().context("stop failed")?;
@@ -248,7 +251,9 @@ pub fn soft_reboot() -> Result<()> {
         warn!("stop exited with status: {status}");
     }
 
-    wait_for_system_server_services(&system_server_services);
+    if let Ok(system_server_services) = system_server_services {
+        wait_for_system_server_services(&system_server_services);
+    }
 
     info!("post-fs-data");
     on_post_data_fs()?;
