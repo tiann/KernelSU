@@ -752,24 +752,35 @@ static bool set_type_state(struct policydb *db, const char *type_name, bool perm
     return true;
 }
 
+static void update_constraint_typeattribute(struct constraint_node *constraint, struct type_datum *type,
+                                            struct type_datum *attr)
+{
+    struct constraint_expr *expr;
+
+    for (; constraint; constraint = constraint->next) {
+        for (expr = constraint->expr; expr; expr = expr->next) {
+            if (expr->expr_type != CEXPR_NAMES || !(expr->attr & CEXPR_TYPE) || !expr->type_names)
+                continue;
+
+            if (ebitmap_get_bit(&expr->type_names->types, attr->value - 1))
+                ebitmap_set_bit(&expr->names, type->value - 1, 1);
+        }
+    }
+}
+
 static void add_typeattribute_raw(struct policydb *db, struct type_datum *type, struct type_datum *attr)
 {
     struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
     ebitmap_set_bit(sattr, attr->value - 1, 1);
 
     struct hashtab_node *node;
-    struct constraint_node *n;
-    struct constraint_expr *e;
     ksu_hashtab_for_each(db->p_classes.table, node)
     {
         struct class_datum *cls = (struct class_datum *)(node->datum);
-        for (n = cls->constraints; n; n = n->next) {
-            for (e = n->expr; e; e = e->next) {
-                if (e->expr_type == CEXPR_NAMES && ebitmap_get_bit(&e->type_names->types, attr->value - 1)) {
-                    ebitmap_set_bit(&e->names, type->value - 1, 1);
-                }
-            }
-        }
+
+        // CEXPR_NAMES may refer to users or roles too, so only propagate type constraints.
+        update_constraint_typeattribute(cls->constraints, type, attr);
+        update_constraint_typeattribute(cls->validatetrans, type, attr);
     };
 }
 
