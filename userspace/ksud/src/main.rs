@@ -46,6 +46,9 @@ mod resetprop;
 mod restorecon;
 #[cfg(target_os = "android")]
 mod sepolicy;
+#[cfg(any(target_os = "android", test))]
+#[cfg_attr(test, allow(dead_code))]
+mod soft_reboot;
 #[cfg(target_os = "android")]
 mod su;
 #[cfg(target_os = "android")]
