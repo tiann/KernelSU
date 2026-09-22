@@ -90,6 +90,10 @@ module_param_named(bundled, ksu_bundled, bool, 0);
 
 int __init kernelsu_init(void)
 {
+#if defined(CONFIG_RISCV) && !defined(CONFIG_KALLSYMS_ALL)
+    pr_err("RISC-V KernelSU requires CONFIG_KALLSYMS_ALL for data symbols\n");
+    return -EOPNOTSUPP;
+#endif
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -133,6 +137,15 @@ int __init kernelsu_init(void)
 
     ksu_init_symbol_resolver();
     ksu_syscall_hook_init();
+
+#ifdef CONFIG_RISCV
+    if (ksu_dispatcher_nr < 0) {
+        pr_err("RISC-V syscall dispatcher initialization failed\n");
+        abort_creds(ksu_cred);
+        ksu_cred = NULL;
+        return -ENODEV;
+    }
+#endif
 
     ksu_feature_init();
     ksu_sulog_init();

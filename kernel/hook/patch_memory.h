@@ -17,7 +17,7 @@
 #else
 #include "asm/insn.h" // IWYU pragma: keep
 #endif
-#elif __x86_64__
+#elif defined(__x86_64__) || (defined(__riscv) && __riscv_xlen == 64)
 #include <asm/ptrace.h>
 #else
 #error "Unsupported arch"

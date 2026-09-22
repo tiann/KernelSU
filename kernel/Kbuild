@@ -15,6 +15,9 @@ kernelsu-objs += hook/arm64/syscall_hook.o
 else ifeq ($(CONFIG_X86_64),y)
 kernelsu-objs += hook/x86_64/patch_memory.o
 kernelsu-objs += hook/x86_64/syscall_hook.o
+else ifeq ($(CONFIG_RISCV),y)
+kernelsu-objs += hook/riscv64/patch_memory.o
+kernelsu-objs += hook/riscv64/syscall_hook.o
 endif
 
 kernelsu-objs += infra/file_wrapper.o

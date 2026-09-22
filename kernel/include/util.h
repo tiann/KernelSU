@@ -16,6 +16,8 @@
 #define KSU_SYS_PREFIX(name) __arm64_sys_##name
 #elif defined(__x86_64__)
 #define KSU_SYS_PREFIX(name) __x64_sys_##name
+#elif defined(__riscv) && __riscv_xlen == 64
+#define KSU_SYS_PREFIX(name) __riscv_sys_##name
 #else // wire up your arch here.
 static_assert(1 == 0, "Unsupported architecture!");
 #define KSU_SYS_PREFIX(name) sys_##name
@@ -31,7 +33,7 @@ static_assert(1 == 0, "Unsupported architecture!");
     ({                                                                                                                 \
         extern long KSU_SYS_PREFIX(name)(const struct pt_regs *);                                                      \
         struct pt_regs __ksu_regs = { 0 };                                                                             \
-        PT_REGS_PARM1(&__ksu_regs) = (unsigned long)(a);                                                               \
+        PT_REGS_SYSCALL_PARM1(&__ksu_regs) = (unsigned long)(a);                                                       \
         PT_REGS_PARM2(&__ksu_regs) = (unsigned long)(b);                                                               \
         PT_REGS_PARM3(&__ksu_regs) = (unsigned long)(c);                                                               \
         PT_REGS_SYSCALL_PARM4(&__ksu_regs) = (unsigned long)(d);                                                       \

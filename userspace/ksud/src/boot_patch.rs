@@ -506,7 +506,7 @@ pub struct BootPatchArgs {
     no_custom_rc: bool,
 
     #[cfg(not(target_os = "android"))]
-    #[arg(long, default_value = "aarch64")]
+    #[arg(long, default_value = "aarch64", value_parser = ["aarch64", "x86_64", "riscv64"])]
     arch: String,
 
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
@@ -542,6 +542,15 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             arch,
             ramdisk,
         } = args;
+
+        #[cfg(target_os = "android")]
+        let riscv64 = cfg!(target_arch = "riscv64");
+        #[cfg(not(target_os = "android"))]
+        let riscv64 = arch == "riscv64";
+        ensure!(
+            !riscv64 || no_install || kernel.is_some() || kmod.is_some(),
+            "riscv64 requires --module with a kernelsu.ko built for the target kernel; no universal RISC-V GKI module is bundled"
+        );
 
         println!(include_str!("banner"));
 

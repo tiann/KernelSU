@@ -74,7 +74,7 @@ void ksu_stop_ksud_execve_hook()
 static long __nocfi ksu_hook_execve_common(int orig_nr, const struct pt_regs *regs, bool execveat)
 {
     const char __user **filename_user =
-        execveat ? (const char __user **)&PT_REGS_PARM2(regs) : (const char __user **)&PT_REGS_PARM1(regs);
+        execveat ? (const char __user **)&PT_REGS_PARM2(regs) : (const char __user **)&PT_REGS_SYSCALL_PARM1(regs);
     const char __user *const __user *argv_user = execveat ? (const char __user *const __user *)PT_REGS_PARM3(regs) :
                                                             (const char __user *const __user *)PT_REGS_PARM2(regs);
     bool current_is_init = is_init(current_cred());

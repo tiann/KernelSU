@@ -13,6 +13,11 @@ mod android {
     pub const BOOTCTL_PATH: &str = concatcp!(BINARY_DIR, "bootctl");
 
     pub fn ensure_binaries(ignore_if_exist: bool) -> anyhow::Result<()> {
+        #[cfg(target_arch = "riscv64")]
+        anyhow::ensure!(
+            Asset::get("busybox").is_some(),
+            "riscv64 build is missing bin/riscv64/busybox; supply a target-compatible binary before building ksud"
+        );
         for file in Asset::iter() {
             if file == "ksuinit" || file.ends_with(".ko") {
                 // don't extract ksuinit and kernel modules
@@ -45,10 +50,17 @@ struct Asset;
 #[folder = "bin/aarch64"]
 struct Asset;
 
-// If not Android, ie. macos, linux, windows, include both
+#[cfg(all(target_arch = "riscv64", target_os = "android"))]
+#[derive(RustEmbed)]
+#[folder = "bin/riscv64"]
+#[exclude = ".gitkeep"]
+struct Asset;
+
+// If not Android, ie. macos, linux, windows, include all architectures.
 #[cfg(not(target_os = "android"))]
 #[derive(RustEmbed)]
 #[folder = "bin"]
+#[exclude = "**/.gitkeep"]
 struct Asset;
 
 #[allow(unused)]

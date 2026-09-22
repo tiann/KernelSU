@@ -1,5 +1,5 @@
-use anyhow::{Context, Result, bail};
-use goblin::elf::{Elf, section_header, sym::Sym};
+use anyhow::{Context, Result, bail, ensure};
+use goblin::elf::{Elf, header, section_header, sym::Sym};
 use rustix::system::init_module;
 use scroll::{Pwrite, ctx::SizeWith};
 use std::collections::HashMap;
@@ -312,11 +312,32 @@ fn replace_module_vermagic(buffer: &mut Vec<u8>, required_vermagic: &str) -> Res
     Ok(())
 }
 
-/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
+fn validate_module_elf(elf: &Elf<'_>, machine: u16) -> Result<()> {
+    ensure!(elf.is_64 && elf.little_endian, "Expected a little-endian ELF64 kernel module");
+    ensure!(elf.header.e_type == header::ET_REL, "Expected an ELF relocatable kernel module");
+    ensure!(elf.header.e_machine == machine, "Kernel module architecture does not match the loader");
+    Ok(())
+}
+
+fn native_elf_machine() -> Result<u16> {
+    match std::env::consts::ARCH {
+        "aarch64" => Ok(header::EM_AARCH64),
+        "x86_64" => Ok(header::EM_X86_64),
+        "riscv64" => Ok(header::EM_RISCV),
+        arch => bail!("Unsupported kernel module architecture: {arch}"),
+    }
+}
+
+/// Resolve undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
 /// then load it via init_module syscall.
+/// Architecture relocations (including RISC-V HI20/LO12 pairs and PLT entries)
+/// are left intact for the kernel's module loader.
 pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
     let mut buffer = data.to_vec();
     let elf = Elf::parse(&buffer)?;
+    // Reject wrong-architecture input before changing kptr_restrict or asking
+    // the kernel to load anything.
+    validate_module_elf(&elf, native_elf_machine()?)?;
     let ctx = *elf.syms.ctx();
 
     let mut unresolved_symbols: HashMap<String, (Sym, usize)> = HashMap::new();
@@ -339,6 +360,9 @@ pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
 
     if !unresolved_symbols.is_empty() {
         for_each_kernel_symbols(|(symbol, addr)| {
+            if *addr == 0 {
+                return Ok(true);
+            }
             if let Some((mut sym, offset)) = unresolved_symbols.remove(symbol) {
                 sym.st_shndx = section_header::SHN_ABS as usize;
                 sym.st_value = *addr;
@@ -482,4 +506,50 @@ fn has_kernelsu_v2() -> bool {
 
 pub fn has_kernelsu() -> bool {
     has_kernelsu_v2() || has_kernelsu_legacy()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn elf_header(machine: u16) -> Vec<u8> {
+        let mut bytes = vec![0; 64];
+        bytes[..7].copy_from_slice(b"\x7fELF\x02\x01\x01");
+        bytes[16..18].copy_from_slice(&header::ET_REL.to_le_bytes());
+        bytes[18..20].copy_from_slice(&machine.to_le_bytes());
+        bytes[20..24].copy_from_slice(&1u32.to_le_bytes());
+        bytes[52..54].copy_from_slice(&64u16.to_le_bytes());
+        bytes[54..56].copy_from_slice(&56u16.to_le_bytes());
+        bytes[58..60].copy_from_slice(&64u16.to_le_bytes());
+        bytes
+    }
+
+    #[test]
+    fn accepts_riscv_module_and_rejects_other_machines() {
+        for machine in [header::EM_RISCV, header::EM_AARCH64, header::EM_X86_64] {
+            let data = elf_header(machine);
+            let elf = Elf::parse(&data).unwrap();
+            assert!(validate_module_elf(&elf, machine).is_ok());
+            assert_eq!(validate_module_elf(&elf, header::EM_RISCV).is_ok(), machine == header::EM_RISCV);
+        }
+    }
+
+    #[test]
+    fn rejects_executable_before_module_loading() {
+        let mut data = elf_header(header::EM_RISCV);
+        data[16..18].copy_from_slice(&header::ET_EXEC.to_le_bytes());
+        let elf = Elf::parse(&data).unwrap();
+        assert!(validate_module_elf(&elf, header::EM_RISCV).is_err());
+    }
+
+    #[test]
+    fn rejects_wrong_architecture_without_kernel_access() {
+        let machine = if native_elf_machine().unwrap() == header::EM_RISCV {
+            header::EM_AARCH64
+        } else {
+            header::EM_RISCV
+        };
+        let error = load_module(&elf_header(machine), c"").unwrap_err();
+        assert!(error.to_string().contains("architecture does not match"));
+    }
 }
