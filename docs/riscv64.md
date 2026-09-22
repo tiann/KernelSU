@@ -68,10 +68,21 @@ Default ARM64/x86_64 builds are unchanged.
 
 ## Validation status
 
-This is not yet a production-qualified port. Kernel object/module cross builds,
-register/decoder tests and userspace compile/startup checks are distinct from
-loading the LKM, granting/denying root through the Manager, reboot persistence,
-and safe unload. Those integration tests must pass before shipping an image.
+This is not yet a production-qualified port. A TH1520 Android device running
+Linux 7.1 with CFI and SELinux Enforcing has passed manual LKM loading, signed
+Manager recognition, and an ordinary test application's deny / grant root /
+revoke sequence. The granted child ran as UID 0 in the `ksu` SELinux domain;
+the test was not performed by treating an already-root ADB shell as evidence.
+
+The initial unload test exposed two lifecycle bugs: deleting the module kobject
+before kernel sysfs teardown, and missing/deferred fsnotify mark cleanup.
+With those corrected, three repeated load/unload cycles and delayed checks
+completed without reboot. The module keeps its normal sysfs entry and drains
+notification callbacks before its code/data can be unloaded.
+
+This validates a manually loaded LKM, not an automatically installed release.
+Complete userspace assets, early-init loading, reboot persistence, other kernel
+versions/CPUs and broader stress testing remain separate acceptance gates.
 
 Run `sh tests/riscv64/run.sh` for the architecture-helper tests. The fake
 `pt_regs` is a field fixture, not a claim about the kernel's binary layout.
