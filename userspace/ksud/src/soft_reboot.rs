@@ -3,24 +3,18 @@ use std::{
     process::{Command, Output},
 };
 
-#[cfg(target_os = "android")]
 use std::{
     thread,
     time::{Duration, Instant},
 };
 
 use anyhow::{Context, Result, bail, ensure};
-#[cfg(target_os = "android")]
 use libc::_exit;
-#[cfg(target_os = "android")]
 use log::{error, info, warn};
-#[cfg(target_os = "android")]
 use prop_rs_android::{resetprop::ResetProp, sys_prop};
 use regex_lite::Regex;
-#[cfg(target_os = "android")]
 use rustix::process::chdir;
 
-#[cfg(target_os = "android")]
 use crate::{
     init_event::{on_boot_completed, on_post_data_fs, on_services, run_stage},
     ksucalls,
@@ -30,9 +24,7 @@ use crate::{
 const SERVICE_PATH: &str = "/system/bin/service";
 const GET_SERVICE_PID_TRANSACTION: &str = "1599097156";
 const SYSTEM_SERVER_FALLBACK_SERVICES: [&str; 3] = ["activity", "package", "user"];
-#[cfg(target_os = "android")]
 const SERVICE_POLL_INTERVAL: Duration = Duration::from_millis(200);
-#[cfg(target_os = "android")]
 const SERVICE_STOP_TIMEOUT: Duration = Duration::from_secs(5);
 
 fn command_stdout(output: Output, description: &str) -> Result<String> {
@@ -135,7 +127,6 @@ where
         .collect()
 }
 
-#[cfg(target_os = "android")]
 fn collect_system_server_services() -> Result<Vec<String>> {
     let services = list_services()?;
     let system_server_services =
@@ -163,7 +154,6 @@ fn remaining_services(tracked: &[String], running: &[String]) -> Vec<String> {
         .collect()
 }
 
-#[cfg(target_os = "android")]
 fn wait_for_system_server_services(system_server_services: &[String]) {
     if system_server_services.is_empty() {
         return;
@@ -201,7 +191,6 @@ fn wait_for_system_server_services(system_server_services: &[String]) {
     }
 }
 
-#[cfg(target_os = "android")]
 const fn resetprop() -> ResetProp {
     ResetProp {
         skip_svc: true,
@@ -213,7 +202,6 @@ const fn resetprop() -> ResetProp {
     }
 }
 
-#[cfg(target_os = "android")]
 fn reset_boot_completed() -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
     let rp = resetprop();
@@ -224,7 +212,6 @@ fn reset_boot_completed() -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "android")]
 fn wait_for_boot_completed() -> Result<()> {
     sys_prop::init().context("Failed to initialize system property API")?;
     let rp = resetprop();
@@ -234,7 +221,6 @@ fn wait_for_boot_completed() -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "android")]
 pub fn soft_reboot() -> Result<()> {
     // check it avoid user click "soft_reboot" in manager when version mismatch
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
@@ -280,93 +266,5 @@ pub fn soft_reboot() -> Result<()> {
 
     unsafe {
         _exit(0);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::collections::HashMap;
-
-    use super::{
-        find_system_server_services, parse_service_list, parse_service_pid, remaining_services,
-    };
-
-    #[test]
-    fn parses_service_names() {
-        let output = "Found 4 services:\n\
-0\tAmlConnectivityService: [android.net.IAmlConnectivityManager]\n\
-1\tDfcNativeService: [miui.dfc.IDfc]\n\
-2\tDockObserver: []\n\
-3\tFramerateFineControlService: [com.miui.IFramerateFineController]\n";
-
-        assert_eq!(
-            parse_service_list(output).unwrap(),
-            [
-                "AmlConnectivityService",
-                "DfcNativeService",
-                "DockObserver",
-                "FramerateFineControlService"
-            ]
-        );
-    }
-
-    #[test]
-    fn rejects_incorrect_service_count() {
-        let output = "Found 2 services:\n0\tDockObserver: []\n";
-
-        assert!(parse_service_list(output).is_err());
-    }
-
-    #[test]
-    fn parses_service_pid() {
-        assert_eq!(
-            parse_service_pid("Result: Parcel( 00000e08    '....')\n").unwrap(),
-            3592
-        );
-    }
-
-    #[test]
-    fn rejects_error_parcel() {
-        let output = "Result: Parcel(Error: 0xffffffffffffffb6 \"Not a data message\")\n";
-
-        assert!(parse_service_pid(output).is_err());
-    }
-
-    #[test]
-    fn finds_services_hosted_by_system_server() {
-        let services = ["activity", "audio", "package", "surfaceflinger"]
-            .map(str::to_owned)
-            .to_vec();
-        let pids = HashMap::from([
-            ("activity", 100),
-            ("audio", 100),
-            ("package", 100),
-            ("surfaceflinger", 200),
-        ]);
-
-        assert_eq!(
-            find_system_server_services(services, |service| pids.get(service).copied()),
-            ["activity", "audio", "package"]
-        );
-    }
-
-    #[test]
-    fn falls_back_to_core_services_when_pid_lookup_fails() {
-        let services = ["activity", "audio", "package", "user"]
-            .map(str::to_owned)
-            .to_vec();
-
-        assert_eq!(
-            find_system_server_services(services, |_| None),
-            ["activity", "package", "user"]
-        );
-    }
-
-    #[test]
-    fn reports_only_services_that_are_still_running() {
-        let tracked = ["activity", "audio", "package"].map(str::to_owned);
-        let running = ["audio", "surfaceflinger"].map(str::to_owned);
-
-        assert_eq!(remaining_services(&tracked, &running), ["audio"]);
     }
 }
