@@ -47,6 +47,8 @@ mod restorecon;
 #[cfg(target_os = "android")]
 mod sepolicy;
 #[cfg(target_os = "android")]
+mod soft_reboot;
+#[cfg(target_os = "android")]
 mod su;
 #[cfg(target_os = "android")]
 mod sulog;
