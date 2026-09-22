@@ -8,6 +8,12 @@ use std::process::Command;
 const BOOTSTRAP_SOURCE: &str = "src/lkm_image_bootstrap.S";
 const BOOTSTRAP_OBJECT: &str = "lkm_image_bootstrap.o";
 const PREPARED_BOOTSTRAP_OBJECT: &str = ".lkm_image_bootstrap.o";
+const BOOTSTRAP_X86_SOURCE: &str = "src/lkm_image_bootstrap_x86_64.S";
+const BOOTSTRAP_X86_OBJECT: &str = "lkm_image_bootstrap_x86_64.o";
+const PREPARED_BOOTSTRAP_X86_OBJECT: &str = ".lkm_image_bootstrap_x86_64.o";
+
+const EM_AARCH64: u16 = 183;
+const EM_X86_64: u16 = 62;
 
 fn get_git_version() -> Result<(u32, String), std::io::Error> {
     let output = Command::new("git")
@@ -59,25 +65,30 @@ fn configure_bindgen() {
         .expect("Couldn't write bindings!");
 }
 
-fn validate_bootstrap_object(path: &Path) -> io::Result<()> {
+fn validate_bootstrap_object(path: &Path, machine: u16) -> io::Result<()> {
     let object = fs::read(path)?;
     let valid = object.len() >= 64
         && object.starts_with(b"\x7fELF")
         && object[4] == 2
         && object[5] == 1
         && u16::from_le_bytes([object[16], object[17]]) == 1
-        && u16::from_le_bytes([object[18], object[19]]) == 183;
+        && u16::from_le_bytes([object[18], object[19]]) == machine;
     if valid {
         Ok(())
     } else {
-        Err(io::Error::other(
-            "bootstrap object must be a little-endian AArch64 ELF64 ET_REL",
-        ))
+        Err(io::Error::other(format!(
+            "bootstrap object must be a little-endian {} ELF64 ET_REL",
+            if machine == EM_X86_64 {
+                "x86-64"
+            } else {
+                "AArch64"
+            }
+        )))
     }
 }
 
-fn copy_bootstrap_object(source: &Path, output: &Path) -> io::Result<()> {
-    validate_bootstrap_object(source)?;
+fn copy_bootstrap_object(source: &Path, output: &Path, machine: u16) -> io::Result<()> {
+    validate_bootstrap_object(source, machine)?;
     fs::copy(source, output)?;
     Ok(())
 }
@@ -121,22 +132,60 @@ fn run_assembler(program: &Path, arguments: &[OsString]) -> Result<(), String> {
     ))
 }
 
-fn assemble_bootstrap() {
-    println!("cargo:rerun-if-changed={BOOTSTRAP_SOURCE}");
-    println!("cargo:rerun-if-env-changed=KSU_LKM_BOOTSTRAP_OBJECT");
+struct BootstrapSpec {
+    source: &'static str,
+    object: &'static str,
+    prepared: &'static str,
+    env_override: &'static str,
+    machine: u16,
+    /// Target triple passed to clang/llvm-mc, plus the fallback driver.
+    triple: &'static str,
+    /// GNU cross driver tried before clang.
+    gnu_driver: &'static str,
+    /// Human readable architecture name used in diagnostics.
+    label: &'static str,
+}
+
+const BOOTSTRAP_SPECS: [BootstrapSpec; 2] = [
+    BootstrapSpec {
+        source: BOOTSTRAP_SOURCE,
+        object: BOOTSTRAP_OBJECT,
+        prepared: PREPARED_BOOTSTRAP_OBJECT,
+        env_override: "KSU_LKM_BOOTSTRAP_OBJECT",
+        machine: EM_AARCH64,
+        triple: "aarch64-linux-gnu",
+        gnu_driver: "aarch64-linux-gnu-gcc",
+        label: "AArch64",
+    },
+    BootstrapSpec {
+        source: BOOTSTRAP_X86_SOURCE,
+        object: BOOTSTRAP_X86_OBJECT,
+        prepared: PREPARED_BOOTSTRAP_X86_OBJECT,
+        env_override: "KSU_LKM_BOOTSTRAP_X86_OBJECT",
+        machine: EM_X86_64,
+        triple: "x86_64-linux-gnu",
+        gnu_driver: "x86_64-linux-gnu-gcc",
+        label: "x86-64",
+    },
+];
+
+fn assemble_bootstrap(spec: &BootstrapSpec) {
+    println!("cargo:rerun-if-changed={}", spec.source);
+    println!("cargo:rerun-if-env-changed={}", spec.env_override);
     println!("cargo:rerun-if-env-changed=KSU_LKM_BOOTSTRAP_CC");
     println!("cargo:rerun-if-env-changed=ANDROID_NDK_HOME");
     println!("cargo:rerun-if-env-changed=ANDROID_NDK_ROOT");
 
     let manifest = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
-    let source = manifest.join(BOOTSTRAP_SOURCE);
-    let output = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join(BOOTSTRAP_OBJECT);
+    let source = manifest.join(spec.source);
+    let output = PathBuf::from(env::var_os("OUT_DIR").unwrap()).join(spec.object);
 
-    if let Some(prebuilt) = env::var_os("KSU_LKM_BOOTSTRAP_OBJECT") {
+    if let Some(prebuilt) = env::var_os(spec.env_override) {
         let prebuilt = PathBuf::from(prebuilt);
-        copy_bootstrap_object(&prebuilt, &output).unwrap_or_else(|error| {
+        copy_bootstrap_object(&prebuilt, &output, spec.machine).unwrap_or_else(|error| {
             panic!(
-                "cannot use KSU_LKM_BOOTSTRAP_OBJECT {}: {error}",
+                "cannot use {} {}: {error}",
+                spec.env_override,
                 prebuilt.display()
             )
         });
@@ -144,10 +193,10 @@ fn assemble_bootstrap() {
     }
 
     // cross builds prepare this file on the host before entering the container.
-    let prepared = manifest.join(PREPARED_BOOTSTRAP_OBJECT);
+    let prepared = manifest.join(spec.prepared);
     println!("cargo:rerun-if-changed={}", prepared.display());
     if prepared.is_file() {
-        copy_bootstrap_object(&prepared, &output).unwrap_or_else(|error| {
+        copy_bootstrap_object(&prepared, &output, spec.machine).unwrap_or_else(|error| {
             panic!(
                 "cannot use prepared bootstrap object {}: {error}",
                 prepared.display()
@@ -161,7 +210,7 @@ fn assemble_bootstrap() {
     if let Some(compiler) = env::var_os("KSU_LKM_BOOTSTRAP_CC") {
         drivers.push(PathBuf::from(compiler));
     }
-    drivers.push(PathBuf::from("aarch64-linux-gnu-gcc"));
+    drivers.push(PathBuf::from(spec.gnu_driver));
     if let Some(clang) = ndk_clang() {
         drivers.push(clang);
     }
@@ -174,7 +223,7 @@ fn assemble_bootstrap() {
             .and_then(|name| name.to_str())
             .is_some_and(|name| name.contains("clang"))
         {
-            arguments.push("--target=aarch64-linux-gnu".into());
+            arguments.push(format!("--target={}", spec.triple).into());
         }
         arguments.extend([
             "-c".into(),
@@ -185,7 +234,7 @@ fn assemble_bootstrap() {
         ]);
         match run_assembler(&driver, &arguments) {
             Ok(()) => {
-                validate_bootstrap_object(&output)
+                validate_bootstrap_object(&output, spec.machine)
                     .expect("assembler produced an invalid bootstrap object");
                 return;
             }
@@ -195,7 +244,7 @@ fn assemble_bootstrap() {
 
     let llvm_mc = PathBuf::from("llvm-mc");
     let llvm_arguments = [
-        "-triple=aarch64-linux-gnu".into(),
+        format!("-triple={}", spec.triple).into(),
         "-filetype=obj".into(),
         "-o".into(),
         output.as_os_str().to_owned(),
@@ -203,13 +252,16 @@ fn assemble_bootstrap() {
     ];
     match run_assembler(&llvm_mc, &llvm_arguments) {
         Ok(()) => {
-            validate_bootstrap_object(&output)
+            validate_bootstrap_object(&output, spec.machine)
                 .expect("llvm-mc produced an invalid bootstrap object");
         }
         Err(error) => {
             errors.push(error);
             panic!(
-                "cannot assemble the AArch64 LKM bootstrap; install an AArch64 GNU compiler, clang, or llvm-mc, or set KSU_LKM_BOOTSTRAP_OBJECT:\n{}",
+                "cannot assemble the {} LKM bootstrap; install a {} GNU compiler, clang, or llvm-mc, or set {}:\n{}",
+                spec.label,
+                spec.label,
+                spec.env_override,
                 errors.join("\n")
             );
         }
@@ -217,7 +269,9 @@ fn assemble_bootstrap() {
 }
 
 fn main() {
-    assemble_bootstrap();
+    for spec in &BOOTSTRAP_SPECS {
+        assemble_bootstrap(spec);
+    }
 
     let (code, name) = match get_git_version() {
         Ok((code, name)) => (code, name),

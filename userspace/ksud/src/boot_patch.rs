@@ -199,7 +199,9 @@ mod android {
         Ok(())
     }
 
-    pub(super) fn flash_partition(partition: &str, data: &[u8]) -> Result<()> {
+    /// Write `data` to the boot partition; also used by `boot-restore-v2`,
+    /// which is why this is crate visible rather than `boot_patch` local.
+    pub fn flash_partition(partition: &str, data: &[u8]) -> Result<()> {
         let mut blk = std::fs::OpenOptions::new()
             .write(true)
             .truncate(false)
@@ -266,7 +268,8 @@ mod android {
             .collect()
     }
 
-    pub(super) fn auto_boot_partition_path(
+    /// The `by-name` node of the boot partition, as `boot-restore-v2` needs it.
+    pub fn auto_boot_partition_path(
         kmi: &str,
         ota: bool,
         is_replace_kernel: bool,
