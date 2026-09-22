@@ -1,6 +1,5 @@
 #include <linux/export.h>
 #include <linux/fs.h>
-#include <linux/kobject.h>
 #include <linux/module.h>
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
@@ -197,11 +196,11 @@ int __init kernelsu_init(void)
         ksu_file_wrapper_init();
     }
 
-#ifdef MODULE
-#ifndef CONFIG_KSU_DEBUG
-    kobject_del(&THIS_MODULE->mkobj.kobj);
-#endif
-#endif
+    /* The module loader owns this kobject and its parameter/section groups.
+     * Deleting it here clears kobj.sd while those groups still exist in the
+     * module metadata; mod_sysfs_teardown then dereferences a NULL parent.
+     * Leave the object registered until normal module teardown.
+     */
     return 0;
 }
 

@@ -35,8 +35,14 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct i
     return 0;
 }
 
+static void ksu_free_mark(struct fsnotify_mark *mark)
+{
+    kfree(mark);
+}
+
 static const struct fsnotify_ops ksu_ops = {
     .handle_inode_event = ksu_handle_inode_event,
+    .free_mark = ksu_free_mark,
 };
 
 static int add_mark_on_inode(struct inode *inode, u32 mask, struct fsnotify_mark **out)
@@ -108,17 +114,31 @@ int ksu_observer_init(void)
 #else
     g = fsnotify_alloc_group(&ksu_ops);
 #endif
-    if (IS_ERR(g))
-        return PTR_ERR(g);
+    if (IS_ERR(g)) {
+        ret = PTR_ERR(g);
+        g = NULL;
+        return ret;
+    }
 
     ret = watch_one_dir(&g_watch);
+    if (ret) {
+        fsnotify_destroy_group(g);
+        g = NULL;
+        return ret;
+    }
     pr_info("observer init done\n");
     return 0;
 }
 
 void __exit ksu_observer_exit(void)
 {
+    if (!g)
+        return;
     unwatch_one_dir(&g_watch);
-    fsnotify_put_group(g);
+    /* Mark destruction runs on a delayed worker and calls our fsnotify_ops.
+     * Drain it before releasing the group and unloading module text/data.
+     */
+    fsnotify_destroy_group(g);
+    g = NULL;
     pr_info("observer exit done\n");
 }
