@@ -153,7 +153,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += "-DANDROID_STL=c++_static"
+                arguments += "-DANDROID_STL=none"
                 cFlags += baseCFlags + "-std=c2x"
                 cppFlags += baseCppFlags + "-std=c++2b"
             }
@@ -220,6 +220,8 @@ dependencies {
     implementation(libs.commonmark.ext.task.list.items)
 
     implementation(libs.androidx.webkit)
+
+    implementation(libs.lsposed.cxx)
 
     implementation(libs.hiddenapibypass)
 
