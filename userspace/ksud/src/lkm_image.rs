@@ -85,6 +85,27 @@ pub struct BootPatchV2Args {
     pub force: bool,
 }
 
+#[allow(clippy::struct_excessive_bools)]
+#[derive(clap::Args, Debug)]
+#[command(group(
+    clap::ArgGroup::new("operation")
+        .required(true)
+        .multiple(false)
+        .args(["check_sig_enforce", "patch_sig_enforce"])
+))]
+pub struct PatchKernelArgs {
+    /// Raw uncompressed ARM64 kernel Image
+    pub kernel: PathBuf,
+
+    /// Check the current sig_enforce value
+    #[arg(long = "check-sig-enforce", visible_alias = "check")]
+    pub check_sig_enforce: bool,
+
+    /// Patch sig_enforce to zero in place
+    #[arg(long = "patch-sig-enforce", visible_alias = "patch")]
+    pub patch_sig_enforce: bool,
+}
+
 #[derive(Clone, Debug)]
 struct MapSymbol {
     address: u64,
@@ -2351,6 +2372,64 @@ fn apply_bootstrap_relocation(
 
 // Raw ARM64 Image injection.
 
+fn sig_enforce_offset(image: &[u8], kallsyms: &RecoveredKallsyms) -> Result<usize> {
+    let image_base = kallsyms.symbols.resolve("_text")?.address;
+    let sig_enforce = kallsyms.symbols.resolve("sig_enforce")?;
+    let offset = sig_enforce
+        .address
+        .checked_sub(image_base)
+        .and_then(|value| usize::try_from(value).ok())
+        .ok_or_else(|| {
+            anyhow!(
+                "sig_enforce address 0x{:x} is below the ARM64 Image base 0x{:x}",
+                sig_enforce.address,
+                image_base
+            )
+        })?;
+    get_slice(image, offset, 1)?;
+    Ok(offset)
+}
+
+fn patch_sig_enforce(image: &mut [u8], kallsyms: &RecoveredKallsyms) -> Result<()> {
+    let offset = sig_enforce_offset(image, kallsyms)?;
+    get_slice_mut(image, offset, 1)?[0] = 0;
+    Ok(())
+}
+
+pub fn patch_kernel(args: &PatchKernelArgs) -> Result<()> {
+    ensure!(
+        args.kernel.is_file(),
+        "raw kernel image does not exist: {}",
+        args.kernel.display()
+    );
+    ensure!(
+        args.check_sig_enforce ^ args.patch_sig_enforce,
+        "exactly one of --check-sig-enforce or --patch-sig-enforce is required"
+    );
+
+    let mut image = fs::read(&args.kernel)
+        .with_context(|| format!("cannot read raw kernel image {}", args.kernel.display()))?;
+    let recovered = recover_arm64_kernel_metadata(&image)
+        .context("cannot recover kallsyms from raw kernel image")?;
+    let offset = sig_enforce_offset(&image, &recovered.kallsyms)?;
+    let original_value = image[offset];
+
+    if args.check_sig_enforce {
+        println!("sig_enforce: {original_value}");
+        return Ok(());
+    }
+
+    patch_sig_enforce(&mut image, &recovered.kallsyms)?;
+    fs::write(&args.kernel, &image).with_context(|| {
+        format!(
+            "cannot write patched raw kernel image {}",
+            args.kernel.display()
+        )
+    })?;
+    println!("sig_enforce: {original_value} -> {}", image[offset]);
+    Ok(())
+}
+
 fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageInjectionReport)> {
     let mut image = original_image.to_vec();
     let image_size = parse_arm64_image_size(&image)?;
@@ -2359,6 +2438,8 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
         "input has bytes beyond ARM64 image_size; appended DTB/metadata is unsupported"
     );
 
+    let recovered = recover_arm64_kernel_metadata(&image)?;
+    patch_sig_enforce(&mut image, &recovered.kallsyms)?;
     let RecoveredKernelMetadata {
         kallsyms:
             RecoveredKallsyms {
@@ -2367,7 +2448,7 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
                 count: kallsyms_count,
             },
         btf: kernel_btf,
-    } = recover_arm64_kernel_metadata(&image)?;
+    } = recovered;
     let required = RequiredSymbols::resolve(&symbols)?;
     required.validate_image_bounds(image_size)?;
     let image_base = required.image_base();
@@ -2940,6 +3021,37 @@ mod tests {
             &capsule.data[module_offset..module_offset + module.len()],
             module
         );
+    }
+
+    #[test]
+    fn patches_sig_enforce_bool_without_touching_neighbors() {
+        let base = 0xffff_ffc0_0800_0000;
+        let sig_enforce_offset = 0x40;
+        let mut image = vec![0u8; 0x100];
+        image[sig_enforce_offset - 1] = 0xaa;
+        image[sig_enforce_offset] = 1;
+        image[sig_enforce_offset + 1] = 0xbb;
+        let kallsyms = RecoveredKallsyms {
+            symbols: SymbolMap::new(vec![
+                MapSymbol {
+                    address: base,
+                    name: "_text".to_owned(),
+                },
+                MapSymbol {
+                    address: base + sig_enforce_offset as u64,
+                    name: "sig_enforce".to_owned(),
+                },
+            ])
+            .unwrap(),
+            layout: "test",
+            count: 2,
+        };
+
+        patch_sig_enforce(&mut image, &kallsyms).unwrap();
+
+        assert_eq!(image[sig_enforce_offset - 1], 0xaa);
+        assert_eq!(image[sig_enforce_offset], 0);
+        assert_eq!(image[sig_enforce_offset + 1], 0xbb);
     }
 
     #[test]
