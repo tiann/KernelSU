@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package me.weishu.kernelsu.ui.webui;
+package me.weishu.kernelsu.ui.webui.util;
 
 import java.net.URLConnection;
 
-class MimeUtil {
+public class MimeUtil {
 
     public static String getMimeFromFileName(String fileName) {
         if (fileName == null) {

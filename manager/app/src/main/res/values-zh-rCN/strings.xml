@@ -302,4 +302,9 @@
     <string name="nav_rail_collapse">收起导航栏</string>
     <string name="settings_navigation_badge">导航栏角标</string>
     <string name="settings_navigation_badge_summary">在导航栏显示已授权应用和已启用模块数量</string>
+    <string name="webview_outdated_title">WebView 版本过低</string>
+    <string name="webview_outdated_message">当前系统的 Android System WebView 版本为 %1$d（最低要求：%2$d），已禁用边到边功能。请更新 WebView 以获得最佳体验。</string>
+    <string name="webui_failed_to_open_link">未找到可打开此链接的应用：%s</string>
+    <string name="webui_invalid_module_id">模块 ID 无效</string>
+    <string name="webui_render_process_crashed">WebView 渲染进程已崩溃</string>
 </resources>
