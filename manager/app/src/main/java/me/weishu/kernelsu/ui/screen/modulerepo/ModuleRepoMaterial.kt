@@ -444,6 +444,7 @@ fun ModuleRepoDetailScreenMaterial(
                 )
                 when (page) {
                     0 -> ReadmePage(
+                        contentReadyForWebView = pagerState.settledPage == page,
                         readmeHtml = state.readmeHtml,
                         readmeLoaded = state.readmeLoaded,
                         innerPadding = paddedInnerPadding,
@@ -451,6 +452,7 @@ fun ModuleRepoDetailScreenMaterial(
                     )
 
                     1 -> ReleasesPage(
+                        contentReadyForWebView = pagerState.settledPage == page,
                         detailReleases = state.detailReleases,
                         innerPadding = paddedInnerPadding,
                         scrollBehavior = scrollBehavior,
@@ -490,6 +492,7 @@ fun ModuleRepoDetailScreenMaterial(
 
 @Composable
 private fun ReadmePage(
+    contentReadyForWebView: Boolean,
     readmeHtml: String?,
     readmeLoaded: Boolean,
     innerPadding: PaddingValues,
@@ -518,7 +521,7 @@ private fun ReadmePage(
                     label = "ReadmeAlpha",
                 )
                 Box {
-                    if (isReady) {
+                    if (isReady && contentReadyForWebView) {
                         Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
                             GithubMarkdown(
                                 content = readmeHtml,
@@ -555,6 +558,7 @@ private fun ReadmePage(
 @SuppressLint("DefaultLocale")
 @Composable
 fun ReleasesPage(
+    contentReadyForWebView: Boolean,
     detailReleases: List<ReleaseArg>,
     innerPadding: PaddingValues,
     scrollBehavior: TopAppBarScrollBehavior,
@@ -622,7 +626,7 @@ fun ReleasesPage(
                                             .padding(horizontal = 16.dp, vertical = 12.dp)
                                             .animateContentSize(animationSpec = tween(durationMillis = 300)),
                                     ) {
-                                        if (descReady) {
+                                        if (descReady && contentReadyForWebView) {
                                             Box(modifier = Modifier.graphicsLayer { this.alpha = descAlpha }) {
                                                 GithubMarkdown(
                                                     content = rel.descriptionHTML,
