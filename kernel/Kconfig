@@ -3,8 +3,6 @@ menu "KernelSU"
 config KSU
 	tristate "KernelSU function support"
 	depends on KPROBES && EXT4_FS
-	depends on ARM64 || X86_64 || (RISCV && 64BIT && MMU)
-	depends on !RISCV || KALLSYMS_ALL
 	default y
 	help
 	  Enable kernel-level root privileges on Android System.

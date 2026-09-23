@@ -13,7 +13,6 @@ log.workspace = true
 env_logger = { version = "0.11", default-features = false }
 rust-embed = { version = "8", features = [
     "debug-embed",
-    "include-exclude",
     "compression", # must clean build after updating binaries
 ] }
 which = "8"

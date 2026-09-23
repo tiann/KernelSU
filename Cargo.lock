@@ -1527,7 +1527,6 @@ version = "8.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ffa149f6aa81b58a5b3011d01a857c4ed12c7a732d2c51947a4c7c692185f0"
 dependencies = [
- "globset",
  "include-flate",
  "sha2 0.11.0",
  "walkdir",

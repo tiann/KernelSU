@@ -47,7 +47,7 @@
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
 #define SYS_FSTAT_SYMBOL "__x64_sys_newfstat"
 
-#elif defined(__riscv) && __riscv_xlen == 64
+#elif defined(__riscv)
 
 #define __PT_PARM1_REG a0
 #define __PT_SYSCALL_PARM1_REG orig_a0

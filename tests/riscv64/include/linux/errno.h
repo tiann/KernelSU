@@ -1,4 +1,0 @@
-#ifndef KSU_TEST_LINUX_ERRNO_H
-#define KSU_TEST_LINUX_ERRNO_H
-#define ENOSYS 38
-#endif

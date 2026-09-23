@@ -4,7 +4,7 @@
 
 #if defined(__x86_64__)
 typedef sys_call_ptr_t syscall_fn_t;
-#elif defined(__riscv) && __riscv_xlen == 64
+#elif defined(__riscv)
 typedef long (*syscall_fn_t)(const struct pt_regs *);
 #endif
 

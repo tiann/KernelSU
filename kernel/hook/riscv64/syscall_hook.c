@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#if defined(__riscv) && __riscv_xlen == 64
+#if defined(__riscv)
 
 #include "../syscall_hook.h"
 
@@ -66,7 +66,7 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
     if (old)
         *old = orig;
 
-    // Never install a hook which cannot be tracked for restoration.
+    // Record for later restoration
     int i;
     bool found = false;
     for (i = 0; i < hooked_count; i++) {
@@ -75,18 +75,18 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             break;
         }
     }
-    if (!found && hooked_count == ARRAY_SIZE(hooked_entries)) {
-        pr_err("hooked_entries full, refusing syscall %d\n", nr);
-        goto unlock;
-    }
-    if (!patch_syscall_table(nr, fn)) {
-        if (!found) {
+    if (!found) {
+        if (hooked_count < ARRAY_SIZE(hooked_entries)) {
             hooked_entries[hooked_count].nr = nr;
             hooked_entries[hooked_count].orig = orig;
             hooked_count++;
+        } else {
+            pr_warn("hooked_entries full, cannot track syscall %d for restoration\n", nr);
         }
     }
-unlock:
+
+    patch_syscall_table(nr, fn);
+
     mutex_unlock(&hooked_entries_lock);
 }
 
@@ -104,10 +104,7 @@ void ksu_syscall_table_unhook(int nr)
 
     for (i = 0; i < hooked_count; i++) {
         if (hooked_entries[i].nr == nr) {
-            if (patch_syscall_table(nr, hooked_entries[i].orig)) {
-                mutex_unlock(&hooked_entries_lock);
-                return;
-            }
+            patch_syscall_table(nr, hooked_entries[i].orig);
             // Remove entry by swapping with last
             hooked_entries[i] = hooked_entries[--hooked_count];
             mutex_unlock(&hooked_entries_lock);
@@ -217,12 +214,8 @@ void __init ksu_syscall_hook_init(void)
         return;
     }
 
-    ksu_syscall_table_hook(ni_slot, ksu_syscall_dispatcher, NULL);
-    if (READ_ONCE(ksu_syscall_table[ni_slot]) != ksu_syscall_dispatcher) {
-        pr_err("failed to install RISC-V syscall dispatcher\n");
-        return;
-    }
     ksu_dispatcher_nr = ni_slot;
+    ksu_syscall_table_hook(ksu_dispatcher_nr, ksu_syscall_dispatcher, NULL);
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
@@ -259,4 +252,4 @@ clear_state:
     pr_info("all syscall hooks restored\n");
 }
 
-#endif /* __riscv && __riscv_xlen == 64 */
+#endif /* __riscv */

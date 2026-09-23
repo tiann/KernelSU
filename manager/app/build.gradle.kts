@@ -27,14 +27,6 @@ val defaultManagerPackageName = if (isPrBuild) "me.weishu.kernelsu.pr" else "me.
 val defaultManagerName = if (isPrBuild) "KernelSU PR" else "KernelSU"
 val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
 val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
-val nativeAbis = providers.gradleProperty("KSU_ABIS").orElse("arm64-v8a,x86_64")
-    .get().split(',').map(String::trim).filter(String::isNotEmpty)
-require(nativeAbis.isNotEmpty() && nativeAbis.all { it in setOf("arm64-v8a", "x86_64", "riscv64") }) {
-    "KSU_ABIS must contain arm64-v8a, x86_64 and/or riscv64"
-}
-// The published libcxx prefab does not contain riscv64. Use the selected NDK's
-// STL for opt-in RISC-V builds; leave existing release builds unchanged.
-val useNdkStl = "riscv64" in nativeAbis
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -148,7 +140,6 @@ android {
     }
     buildToolsVersion = androidBuildToolsVersion
     ndkVersion = androidCompileNdkVersion
-    providers.gradleProperty("KSU_NDK_PATH").orNull?.let { ndkPath = it }
 
     defaultConfig {
         minSdk = androidMinSdkVersion
@@ -162,14 +153,14 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += if (useNdkStl) "-DANDROID_STL=c++_static" else "-DANDROID_STL=none"
+                arguments += "-DANDROID_STL=c++_static"
                 cFlags += baseCFlags + "-std=c2x"
                 cppFlags += baseCppFlags + "-std=c++2b"
             }
         }
 
         ndk {
-            abiFilters += nativeAbis
+            abiFilters += listOf("arm64-v8a", "x86_64", "riscv64")
         }
     }
 
@@ -229,10 +220,6 @@ dependencies {
     implementation(libs.commonmark.ext.task.list.items)
 
     implementation(libs.androidx.webkit)
-
-    if (!useNdkStl) {
-        implementation(libs.lsposed.cxx)
-    }
 
     implementation(libs.hiddenapibypass)
 
