@@ -80,9 +80,19 @@ With those corrected, three repeated load/unload cycles and delayed checks
 completed without reboot. The module keeps its normal sysfs entry and drains
 notification callbacks before its code/data can be unloaded.
 
-This validates a manually loaded LKM, not an automatically installed release.
-Complete userspace assets, early-init loading, reboot persistence, other kernel
-versions/CPUs and broader stress testing remain separate acceptance gates.
+The same module has also been loaded automatically by a static RV64 `ksuinit`
+from a patched boot ramdisk. After reboot, the Manager reports LKM mode without
+late loading; no post-boot insmod was needed. A target-compatible BusyBox build
+was then embedded in ksud and exercised through module installation,
+post-fs-data/service/action scripts, enable/disable and uninstall marking.
+
+These are device-test results, not bundled release artifacts. The generic
+repository still requires the assets listed above. The runtime tests used a
+device-compatible toolchain/sysroot and corrected Android RV64 libc open-flag
+bindings (see rust-lang/libc#5554), including the standard library build.
+Other kernel versions/CPUs, bootctl/OTA workflows and broad stress coverage
+remain unqualified. CFI, SELinux and Manager certificate validation stayed
+enabled; private test signing fixtures are not included in this port.
 
 Run `sh tests/riscv64/run.sh` for the architecture-helper tests. The fake
 `pt_regs` is a field fixture, not a claim about the kernel's binary layout.
