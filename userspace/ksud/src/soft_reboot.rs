@@ -1,10 +1,13 @@
 use std::{
-    collections::HashSet,
-    process::{Command, Output},
-};
-
-use std::{
-    thread,
+    ffi::CString,
+    fs::File,
+    io::Write,
+    os::{
+        fd::{AsRawFd, FromRawFd, OwnedFd},
+        unix::ffi::OsStrExt,
+    },
+    process::Command,
+    ptr,
     time::{Duration, Instant},
 };
 
@@ -12,182 +15,205 @@ use anyhow::{Context, Result, bail, ensure};
 use libc::_exit;
 use log::{error, info, warn};
 use prop_rs_android::{resetprop::ResetProp, sys_prop};
-use regex_lite::Regex;
 use rustix::process::chdir;
 
 use crate::{
+    assets,
     init_event::{on_boot_completed, on_post_data_fs, on_services, run_stage},
     ksucalls,
     utils::{self, switch_mnt_ns},
 };
 
-const SERVICE_PATH: &str = "/system/bin/service";
-const GET_SERVICE_PID_TRANSACTION: &str = "1599097156";
-const SYSTEM_SERVER_FALLBACK_SERVICES: [&str; 3] = ["activity", "package", "user"];
-const SERVICE_POLL_INTERVAL: Duration = Duration::from_millis(200);
-const SERVICE_STOP_TIMEOUT: Duration = Duration::from_secs(5);
+const WAITSYS_FD_ENV: &str = "KSU_WAITSYS_FD";
+const WAITSYS_READY_TIMEOUT: Duration = Duration::from_secs(2);
+const WAITSYS_STOP_TIMEOUT: Duration = Duration::from_secs(5);
 
-fn command_stdout(output: Output, description: &str) -> Result<String> {
-    ensure!(
-        output.status.success(),
-        "{description} failed with {}: {}",
-        output.status,
-        String::from_utf8_lossy(&output.stderr).trim()
-    );
-
-    String::from_utf8(output.stdout).with_context(|| format!("{description} output is not UTF-8"))
+struct Waitsys {
+    pid: libc::pid_t,
+    read_fd: OwnedFd,
 }
 
-fn parse_service_list(output: &str) -> Result<Vec<String>> {
-    let mut lines = output.lines();
-    let header = lines.next().context("service list output is empty")?;
-    let service_count = header
-        .strip_prefix("Found ")
-        .and_then(|header| header.strip_suffix(" services:"))
-        .context("invalid service list header")?
-        .parse::<usize>()
-        .context("invalid service count")?;
+impl Waitsys {
+    fn spawn() -> Result<Self> {
+        let waitsys = assets::get_asset_data("waitsys").context("waitsys is not embedded")?;
+        let name = CString::new("waitsys").expect("waitsys contains no NUL bytes");
+        let executable_fd = unsafe {
+            libc::syscall(libc::SYS_memfd_create, name.as_ptr(), libc::MFD_CLOEXEC) as libc::c_int
+        };
+        if executable_fd < 0 {
+            return Err(std::io::Error::last_os_error()).context("failed to create waitsys memfd");
+        }
+        let mut executable = unsafe { File::from_raw_fd(executable_fd) };
+        executable
+            .write_all(&waitsys)
+            .context("failed to write waitsys to memfd")?;
 
-    let service_pattern = Regex::new(r"^\d+\s+([^\s:]+):\s+\[[^\]]*\]$")?;
-    let services = lines
-        .filter(|line| !line.trim().is_empty())
-        .map(|line| {
-            service_pattern
-                .captures(line)
-                .and_then(|captures| captures.get(1))
-                .map(|service| service.as_str().to_owned())
-                .with_context(|| format!("invalid service list entry: {line}"))
-        })
-        .collect::<Result<Vec<_>>>()?;
+        let mut pipe_fds = [0; 2];
+        if unsafe { libc::pipe2(pipe_fds.as_mut_ptr(), libc::O_CLOEXEC) } < 0 {
+            return Err(std::io::Error::last_os_error()).context("failed to create waitsys pipe");
+        }
+        let read_fd = unsafe { OwnedFd::from_raw_fd(pipe_fds[0]) };
+        let write_fd = unsafe { OwnedFd::from_raw_fd(pipe_fds[1]) };
 
-    ensure!(
-        services.len() == service_count,
-        "service list declared {service_count} services but contained {}",
-        services.len()
-    );
-
-    Ok(services)
-}
-
-fn parse_service_pid(output: &str) -> Result<u32> {
-    let parcel_pattern =
-        Regex::new(r"^Result:\s+Parcel\(\s*([0-9A-Fa-f]{8})\s+'[^'\r\n]{4}'\s*\)\s*$")?;
-    let Some(pid) = parcel_pattern
-        .captures(output)
-        .and_then(|captures| captures.get(1))
-    else {
-        bail!("invalid service PID response: {}", output.trim());
-    };
-
-    u32::from_str_radix(pid.as_str(), 16).context("invalid PID in service response")
-}
-
-pub fn list_services() -> Result<Vec<String>> {
-    let output = Command::new(SERVICE_PATH)
-        .arg("list")
-        .output()
-        .context("failed to execute service list")?;
-    let stdout = command_stdout(output, "service list")?;
-    parse_service_list(&stdout)
-}
-
-pub fn get_service_pid(service: &str) -> Result<u32> {
-    let output = Command::new(SERVICE_PATH)
-        .args(["call", service, GET_SERVICE_PID_TRANSACTION])
-        .output()
-        .with_context(|| format!("failed to query service {service}"))?;
-    let stdout = command_stdout(output, "service PID query")?;
-    parse_service_pid(&stdout)
-}
-
-fn is_fallback_service(service: &str) -> bool {
-    SYSTEM_SERVER_FALLBACK_SERVICES.contains(&service)
-}
-
-fn find_system_server_services<F>(services: Vec<String>, mut get_pid: F) -> Vec<String>
-where
-    F: FnMut(&str) -> Option<u32>,
-{
-    let Some(activity_pid) = get_pid("activity") else {
-        return services
-            .into_iter()
-            .filter(|service| is_fallback_service(service))
-            .collect();
-    };
-
-    services
-        .into_iter()
-        .filter(|service| {
-            if service == "activity" {
-                return true;
+        let mut environment = Vec::new();
+        for (key, value) in std::env::vars_os() {
+            if key.as_bytes() == WAITSYS_FD_ENV.as_bytes() {
+                continue;
             }
+            let mut entry = key.as_bytes().to_vec();
+            entry.push(b'=');
+            entry.extend_from_slice(value.as_bytes());
+            environment.push(
+                CString::new(entry).context("environment variable contains an embedded NUL")?,
+            );
+        }
+        environment.push(
+            CString::new(format!("{WAITSYS_FD_ENV}={}", write_fd.as_raw_fd()))
+                .expect("waitsys fd environment variable contains no NUL bytes"),
+        );
+        let environment_pointers = environment
+            .iter()
+            .map(|entry| entry.as_ptr())
+            .chain(std::iter::once(ptr::null()))
+            .collect::<Vec<_>>();
+        let arguments = [name.as_ptr(), ptr::null()];
 
-            get_pid(service).map_or_else(|| is_fallback_service(service), |pid| pid == activity_pid)
-        })
-        .collect()
-}
-
-fn collect_system_server_services() -> Result<Vec<String>> {
-    let services = list_services()?;
-    let system_server_services =
-        find_system_server_services(services, |service| match get_service_pid(service) {
-            Ok(pid) => Some(pid),
-            Err(err) => {
-                log::debug!("failed to get PID for service {service}: {err:#}");
-                None
+        let pid = unsafe { libc::fork() };
+        if pid < 0 {
+            return Err(std::io::Error::last_os_error()).context("failed to fork waitsys");
+        }
+        if pid == 0 {
+            unsafe {
+                libc::close(read_fd.as_raw_fd());
+                let flags = libc::fcntl(write_fd.as_raw_fd(), libc::F_GETFD);
+                if flags < 0
+                    || libc::fcntl(
+                        write_fd.as_raw_fd(),
+                        libc::F_SETFD,
+                        flags & !libc::FD_CLOEXEC,
+                    ) < 0
+                {
+                    _exit(127);
+                }
+                libc::syscall(
+                    libc::SYS_execveat,
+                    executable.as_raw_fd(),
+                    c"".as_ptr(),
+                    arguments.as_ptr(),
+                    environment_pointers.as_ptr(),
+                    libc::AT_EMPTY_PATH,
+                );
+                _exit(127);
             }
-        });
+        }
 
-    info!(
-        "tracking {} system_server services",
-        system_server_services.len()
-    );
-    Ok(system_server_services)
-}
-
-fn remaining_services(tracked: &[String], running: &[String]) -> Vec<String> {
-    let running: HashSet<&str> = running.iter().map(String::as_str).collect();
-    tracked
-        .iter()
-        .filter(|service| running.contains(service.as_str()))
-        .cloned()
-        .collect()
-}
-
-fn wait_for_system_server_services(system_server_services: &[String]) {
-    if system_server_services.is_empty() {
-        return;
+        drop(write_fd);
+        drop(executable);
+        Ok(Self { pid, read_fd })
     }
 
-    let deadline = Instant::now() + SERVICE_STOP_TIMEOUT;
-    let mut remaining = system_server_services.to_vec();
-    let mut list_error_logged = false;
-
-    loop {
-        match list_services() {
-            Ok(running) => remaining = remaining_services(system_server_services, &running),
-            Err(err) if !list_error_logged => {
-                warn!("failed to list services while waiting for system_server: {err:#}");
-                list_error_logged = true;
+    fn wait_for_signal(&self, expected: u8, timeout: Duration) -> Result<()> {
+        let deadline = Instant::now() + timeout;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                bail!("timed out waiting for signal {expected}");
             }
-            Err(_) => {}
-        }
+            let timeout_ms = i32::try_from(remaining.as_millis().saturating_add(1))
+                .unwrap_or(i32::MAX)
+                .max(1);
+            let mut poll_fd = libc::pollfd {
+                fd: self.read_fd.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            };
+            let ready = unsafe { libc::poll(&raw mut poll_fd, 1, timeout_ms) };
+            if ready == 0 {
+                bail!("timed out waiting for signal {expected}");
+            }
+            if ready < 0 {
+                let error = std::io::Error::last_os_error();
+                if error.kind() == std::io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(error).context("failed to poll waitsys pipe");
+            }
 
-        if remaining.is_empty() {
-            info!("system_server services stopped");
-            return;
-        }
-
-        let remaining_time = deadline.saturating_duration_since(Instant::now());
-        if remaining_time.is_zero() {
-            warn!(
-                "timed out waiting for system_server services to stop: {}",
-                remaining.join(", ")
+            let mut signal = 0_u8;
+            let bytes_read = loop {
+                let result =
+                    unsafe { libc::read(self.read_fd.as_raw_fd(), (&raw mut signal).cast(), 1) };
+                if result < 0
+                    && std::io::Error::last_os_error().kind() == std::io::ErrorKind::Interrupted
+                {
+                    continue;
+                }
+                break result;
+            };
+            if bytes_read < 0 {
+                return Err(std::io::Error::last_os_error()).context("failed to read waitsys pipe");
+            }
+            ensure!(
+                bytes_read == 1,
+                "waitsys pipe closed before signal {expected}"
             );
-            return;
+            ensure!(
+                signal == expected,
+                "unexpected waitsys signal {signal}, expected {expected}"
+            );
+            return Ok(());
+        }
+    }
+
+    fn terminate(&mut self) -> Result<()> {
+        if self.pid <= 0 {
+            return Ok(());
         }
 
-        thread::sleep(SERVICE_POLL_INTERVAL.min(remaining_time));
+        let kill_error = if unsafe { libc::kill(self.pid, libc::SIGKILL) } < 0 {
+            let error = std::io::Error::last_os_error();
+            (error.raw_os_error() != Some(libc::ESRCH)).then_some(error)
+        } else {
+            None
+        };
+
+        let mut status = 0;
+        loop {
+            if unsafe { libc::waitpid(self.pid, &raw mut status, 0) } >= 0 {
+                break;
+            }
+            let error = std::io::Error::last_os_error();
+            if error.kind() == std::io::ErrorKind::Interrupted {
+                continue;
+            }
+            if error.raw_os_error() != Some(libc::ECHILD) {
+                self.pid = 0;
+                return Err(error).context("failed to wait for waitsys");
+            }
+            break;
+        }
+        self.pid = 0;
+
+        if let Some(error) = kill_error {
+            return Err(error).context("failed to kill waitsys");
+        }
+        Ok(())
+    }
+}
+
+impl Drop for Waitsys {
+    fn drop(&mut self) {
+        if let Err(error) = self.terminate() {
+            warn!("failed to clean up waitsys: {error:#}");
+        }
+    }
+}
+
+fn terminate_waitsys(waitsys: &mut Option<Waitsys>) {
+    if let Some(mut waitsys) = waitsys.take()
+        && let Err(error) = waitsys.terminate()
+    {
+        warn!("failed to clean up waitsys: {error:#}");
     }
 }
 
@@ -240,9 +266,23 @@ pub fn soft_reboot() -> Result<()> {
     }
     run_stage("emulated-soft-reboot", true);
 
-    let system_server_services = collect_system_server_services();
-    if let Err(ref e) = system_server_services {
-        warn!("could not collect services: {e:?}");
+    let mut waitsys = match Waitsys::spawn() {
+        Ok(waitsys) => Some(waitsys),
+        Err(error) => {
+            warn!("failed to start waitsys: {error:#}");
+            None
+        }
+    };
+    let wait_after_stop = waitsys.as_ref().is_some_and(|waitsys| {
+        if let Err(error) = waitsys.wait_for_signal(1, WAITSYS_READY_TIMEOUT) {
+            warn!("waitsys failed to collect services: {error:#}");
+            false
+        } else {
+            true
+        }
+    });
+    if !wait_after_stop {
+        terminate_waitsys(&mut waitsys);
     }
 
     info!("stop");
@@ -251,9 +291,12 @@ pub fn soft_reboot() -> Result<()> {
         warn!("stop exited with status: {status}");
     }
 
-    if let Ok(system_server_services) = system_server_services {
-        wait_for_system_server_services(&system_server_services);
+    if let Some(waitsys) = waitsys.as_ref()
+        && let Err(error) = waitsys.wait_for_signal(2, WAITSYS_STOP_TIMEOUT)
+    {
+        warn!("waitsys failed while waiting for services to stop: {error:#}");
     }
+    terminate_waitsys(&mut waitsys);
 
     info!("post-fs-data");
     on_post_data_fs()?;
