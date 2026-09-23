@@ -1058,8 +1058,7 @@ checksum = "34b357333733e8260735ba5894eb928c02ecc69c78715f01a8019e7fa7f2db4c"
 [[package]]
 name = "libc"
 version = "0.2.189"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
+source = "git+https://github.com/rust-lang/libc?rev=1a661633f11a261ff9c00b40875ef72f1cbec818#1a661633f11a261ff9c00b40875ef72f1cbec818"
 
 [[package]]
 name = "libflate"
