@@ -61,3 +61,38 @@ jobs:
       with:
         name: ksuinit-x86_64
         path: target/x86_64-linux-android/release/ksuinit
+
+  build-riscv64:
+    runs-on: ${{ inputs.os }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    - name: Setup Rust
+      run: rustup toolchain install nightly-2026-09-23 --profile minimal --component rust-src
+
+    - uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r29
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: . -> target
+        cache-targets: false
+
+    - name: Build RISC-V ksuinit
+      env:
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+      run: |
+        source .github/scripts/setup-rust-build.sh riscv64-linux-android 35
+        BUILTINS="$($CLANG_PATH --print-resource-dir)/lib/linux/libclang_rt.builtins-riscv64-android.a"
+        export RUSTFLAGS="-C target-feature=+crt-static -C link-arg=-Wl,-z,max-page-size=16384 -C link-arg=-Wno-unused-command-line-argument -C link-arg=$BUILTINS"
+        cargo +nightly-2026-09-23 build --config .github/riscv64-cargo.toml -Z build-std=std,panic_abort --package ksuinit --target=riscv64-linux-android --release
+
+    - name: Upload RISC-V ksuinit artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ksuinit-riscv64
+        path: target/riscv64-linux-android/release/ksuinit

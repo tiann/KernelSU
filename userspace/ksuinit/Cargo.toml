@@ -17,6 +17,7 @@ rustix = { git = "https://github.com/KernelSU2/rustix.git", rev = "4a53fbc", fea
 syscalls = { version = "0.8", default-features = false, features = [
     "aarch64",
     "x86_64",
+    "riscv64",
 ] }
 
 # for kmsg logging

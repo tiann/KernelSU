@@ -236,6 +236,10 @@ api_level_arch_detect() {
     ARCH=x64
     ABI32=x86
     IS64BIT=true
+  elif [ "$ABI" = "riscv64" ]; then
+    ARCH=riscv64
+    ABI32=
+    IS64BIT=true
   else
     ARCH=arm
     ABI=armeabi-v7a

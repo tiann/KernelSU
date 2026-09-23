@@ -45,6 +45,7 @@ extern "C" fn sigsys_handler(
             SIGSYS_OCCURRED.with(|occurred| occurred.set(true));
         }
 
+        #[cfg(not(target_arch = "riscv64"))]
         let ucontext = ctx.cast::<libc::ucontext_t>();
         #[cfg(target_arch = "aarch64")]
         {
@@ -54,6 +55,12 @@ extern "C" fn sigsys_handler(
         {
             let rax = libc::REG_RAX as usize;
             (*ucontext).uc_mcontext.gregs[rax] = i64::from(-libc::EPERM);
+        }
+        #[cfg(target_arch = "riscv64")]
+        {
+            let ucontext = ctx.cast::<ksu_uapi::ucontext_t>();
+            (*ucontext).uc_mcontext.__gregs[ksu_uapi::REG_A0 as usize] =
+                (-libc::EPERM) as libc::c_ulong;
         }
     }
 }
