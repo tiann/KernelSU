@@ -98,7 +98,7 @@ class SettingsRepositoryImpl : SettingsRepository {
         set(value) = prefs.edit { putBoolean("enable_navigation_badge", value) }
 
     override var navigationRailExpanded: Boolean
-        get() = prefs.getBoolean("nav_rail_expanded", false)
+        get() = prefs.getBoolean("nav_rail_expanded", true)
         set(value) = prefs.edit { putBoolean("nav_rail_expanded", value) }
 
     override var pageScale: Float
