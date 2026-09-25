@@ -29,7 +29,6 @@ mod ksucalls;
 #[cfg(target_os = "android")]
 mod late_load;
 mod lkm_image;
-mod lkm_image_btf;
 #[cfg(target_os = "android")]
 mod magica;
 #[cfg(target_os = "android")]

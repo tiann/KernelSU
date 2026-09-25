@@ -9,3 +9,4 @@ __pycache__
 /dist
 /repack-config.json
 /userspace/ksud/.lkm_image_bootstrap.o
+/userspace/ksud/.lkm_image_bootstrap_x86_64.o
