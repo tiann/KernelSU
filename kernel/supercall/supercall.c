@@ -16,6 +16,7 @@
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
+#include "infra/symbol_resolver.h"
 
 #define KSU_DRIVER_PERMISSION_SU_SESSION (1UL << 0)
 
@@ -140,21 +141,28 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 }
 
 static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
     .pre_handler = reboot_handler_pre,
 };
 
 void __init ksu_supercalls_init(void)
 {
     int rc;
+    void *addr;
 
     ksu_supercall_dump_commands();
+
+    addr = ksu_resolve_symbol_for_functable_hook(REBOOT_SYMBOL);
+    if (!addr) {
+        pr_err("reboot kprobe: symbol %s not found\n", REBOOT_SYMBOL);
+        return;
+    }
+    reboot_kp.addr = (kprobe_opcode_t *)addr;
 
     rc = register_kprobe(&reboot_kp);
     if (rc) {
         pr_err("reboot kprobe failed: %d\n", rc);
     } else {
-        pr_info("reboot kprobe registered successfully\n");
+        pr_info("reboot kprobe registered at %px\n", addr);
     }
 }
 

@@ -28,6 +28,7 @@
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
+#include "infra/symbol_resolver.h"
 
 // clang-format off
 static const char KERNEL_SU_RC[] =
@@ -619,13 +620,14 @@ static int input_handle_event_handler_pre(struct kprobe *p, struct pt_regs *regs
 }
 
 static struct kprobe input_event_kp = {
-    .symbol_name = "input_event",
     .pre_handler = input_handle_event_handler_pre,
 };
+static bool input_event_kp_registered;
 
 static void do_stop_input_hook(struct work_struct *work)
 {
-    unregister_kprobe(&input_event_kp);
+    if (input_event_kp_registered)
+        unregister_kprobe(&input_event_kp);
 }
 
 static void stop_init_rc_hook()
@@ -650,12 +652,20 @@ void ksu_stop_input_hook_runtime(void)
 void __init ksu_ksud_init()
 {
     int ret;
+    void *addr;
 
     ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
     ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
 
-    ret = register_kprobe(&input_event_kp);
-    pr_info("ksud: input_event_kp: %d\n", ret);
+    addr = ksu_resolve_symbol_for_functable_hook("input_event");
+    if (addr) {
+        input_event_kp.addr = (kprobe_opcode_t *)addr;
+        ret = register_kprobe(&input_event_kp);
+        pr_info("ksud: input_event_kp: %d\n", ret);
+        input_event_kp_registered = !ret;
+    } else {
+        pr_err("ksud: input_event symbol not found\n");
+    }
 
     INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
@@ -665,7 +675,8 @@ void __exit ksu_ksud_exit()
     // TODO:
     // this should be done before unregister vfs_read_kp
     // stop_init_rc_hook();
-    unregister_kprobe(&input_event_kp);
+    if (input_event_kp_registered)
+        unregister_kprobe(&input_event_kp);
 
     if (module_rc_buf) {
         free_module_rc();

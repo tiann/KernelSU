@@ -13,6 +13,7 @@
 
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
+#include "infra/symbol_resolver.h"
 #include "hook/syscall_hook_manager.h"
 #include "hook/tp_marker.h"
 #include "feature/sucompat.h"
@@ -27,15 +28,25 @@
 
 static struct kretprobe *init_kretprobe(const char *name, kretprobe_handler_t handler)
 {
-    struct kretprobe *rp = kzalloc(sizeof(struct kretprobe), GFP_KERNEL);
+    void *addr;
+    struct kretprobe *rp;
+    int ret;
+
+    addr = ksu_resolve_symbol_for_functable_hook(name);
+    if (!addr) {
+        pr_err("hook_manager: symbol %s not found\n", name);
+        return NULL;
+    }
+
+    rp = kzalloc(sizeof(struct kretprobe), GFP_KERNEL);
     if (!rp)
         return NULL;
-    rp->kp.symbol_name = name;
+    rp->kp.addr = (kprobe_opcode_t *)addr;
     rp->handler = handler;
     rp->data_size = 0;
     rp->maxactive = 0;
 
-    int ret = register_kretprobe(rp);
+    ret = register_kretprobe(rp);
     pr_info("hook_manager: register_%s kretprobe: %d\n", name, ret);
     if (ret) {
         kfree(rp);
