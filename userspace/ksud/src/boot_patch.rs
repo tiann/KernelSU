@@ -512,6 +512,10 @@ pub struct BootPatchArgs {
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
     #[arg(long, default_value = "false")]
     ramdisk: bool,
+
+    /// Allow unload KernelSU LKM at runtime
+    #[arg(long, default_value = "false")]
+    unloadable: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -541,6 +545,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
+            unloadable,
         } = args;
 
         println!(include_str!("banner"));
@@ -754,6 +759,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         if let Some(bundled) = bundled_lkm {
             apply_config("bundled LKM", "bundled=1", bundled);
         }
+        apply_config("unloadable", "unloadable=1", unloadable);
 
         if ksu_config.is_empty() {
             cpio.rm("ksu_config", false);

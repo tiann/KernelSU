@@ -1,3 +1,4 @@
+#include "infra/file_guard.h"
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/kobject.h>
@@ -88,6 +89,13 @@ bool ksu_bundled = false;
 module_param_named(bundled, ksu_bundled, bool, 0);
 #endif
 
+#ifndef CONFIG_KSU_DEBUG
+bool ksu_unloadable = false;
+module_param_named(unloadable, ksu_unloadable, bool, 0);
+#endif
+
+void __init remove_my_kobj(void);
+
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
@@ -130,6 +138,12 @@ int __init kernelsu_init(void)
         pr_err("prepare cred failed!\n");
         return -ENOSYS;
     }
+    int ret = ksu_app_profile_init();
+    if (ret) {
+        return ret;
+    }
+
+    ksu_file_guard_init();
 
     ksu_init_symbol_resolver();
     ksu_syscall_hook_init();
@@ -141,7 +155,6 @@ int __init kernelsu_init(void)
     ksu_selinux_hide_init();
 
     ksu_supercalls_init();
-    ksu_app_profile_init();
 
     if (ksu_late_loaded) {
         pr_info("late load mode, skipping kprobe hooks\n");
@@ -186,9 +199,17 @@ int __init kernelsu_init(void)
 
 #ifdef MODULE
 #ifndef CONFIG_KSU_DEBUG
-    kobject_del(&THIS_MODULE->mkobj.kobj);
+    if (ksu_unloadable) {
+        pr_info("KernelSU unloadable is enabled\n");
+        remove_my_kobj();
+    } else {
+        kobject_del(&THIS_MODULE->mkobj.kobj);
+        // add a reference to myself to prevent from unloading
+        try_module_get(THIS_MODULE);
+    }
 #endif
 #endif
+    pr_info("current refcnt: %d\n", atomic_read(&THIS_MODULE->refcnt));
     return 0;
 }
 
@@ -218,7 +239,12 @@ void __exit kernelsu_exit(void)
     ksu_sulog_exit();
     ksu_feature_exit();
 
+    ksu_file_guard_exit();
+    ksu_app_profile_exit();
+
     put_cred(ksu_cred);
+
+    // TODO: wait for safe exit point
 }
 
 #if NEED_OWN_STACKPROTECTOR

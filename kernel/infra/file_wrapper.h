@@ -7,4 +7,6 @@
 int ksu_install_file_wrapper(int fd);
 void ksu_file_wrapper_init(void);
 
+int is_wrapper_fd(int fd);
+
 #endif // KSU_FILE_WRAPPER_H

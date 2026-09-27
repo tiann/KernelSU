@@ -288,6 +288,7 @@ private fun bootPatchFlags(
     if (allowShell) append(" --allow-shell")
     if (enableAdb) append(" --enable-adbd")
     if (forceBackup) append(" --backup")
+    append(" --unloadable")
 }
 
 fun installBoot(

@@ -490,10 +490,12 @@ enum Initrc {
 }
 
 pub fn run() -> Result<()> {
-    android_logger::init_once(
+    let android_max_level = crate::debug_select!(LevelFilter::Trace, LevelFilter::Info);
+    crate::logger::init_once(
         Config::default()
-            .with_max_level(crate::debug_select!(LevelFilter::Trace, LevelFilter::Info))
+            .with_max_level(android_max_level)
             .with_tag("KernelSU"),
+        android_max_level,
     );
 
     ksucalls::setup_sigsys_handler();
@@ -737,6 +739,10 @@ pub fn run() -> Result<()> {
                 println!(
                     "pr_build: {}",
                     (info.flags & ksu_uapi::KSU_GET_INFO_FLAG_PR_BUILD) != 0
+                );
+                println!(
+                    "unloadable: {}",
+                    (info.flags & ksu_uapi::KSU_GET_INFO_FLAG_UNLOADABLE) != 0
                 );
                 Ok(())
             }

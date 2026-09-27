@@ -54,6 +54,9 @@ static int do_get_info(void __user *arg)
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
     }
+    if (ksu_unloadable) {
+        cmd.flags |= KSU_GET_INFO_FLAG_UNLOADABLE;
+    }
 #ifdef EXPECTED_SIZE2
     cmd.flags |= KSU_GET_INFO_FLAG_PR_BUILD;
 #endif
@@ -84,6 +87,9 @@ static int do_get_info_legacy(void __user *arg)
     }
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
+    }
+    if (ksu_unloadable) {
+        cmd.flags |= KSU_GET_INFO_FLAG_UNLOADABLE;
     }
 #ifdef EXPECTED_SIZE2
     cmd.flags |= KSU_GET_INFO_FLAG_PR_BUILD;
@@ -694,6 +700,18 @@ static int do_disable_escape_to_root(void __user *arg)
     return 0;
 }
 
+static int do_check_wrapper_fd(void __user *arg)
+{
+    struct ksu_check_wrapper_fd_cmd cmd;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_sulog_fd: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    return is_wrapper_fd(cmd.fd);
+}
+
 // IOCTL handlers mapping table
 // clang-format off
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
@@ -842,6 +860,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .handler = do_disable_escape_to_root, 
         .perm_check = only_root,
         .allow_su_session = true
+    },
+    {
+        .cmd = KSU_IOCTL_CHECK_WRAPPER_FD,
+        .name = "CHECK_WRAPPER_FD",
+        .handler = do_check_wrapper_fd,
+        .perm_check = manager_or_root
     },
     {
         .cmd = 0,

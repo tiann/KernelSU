@@ -13,6 +13,7 @@
 
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
+#include "infra/file_guard.h"
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
@@ -20,6 +21,7 @@
 #define KSU_DRIVER_PERMISSION_SU_SESSION (1UL << 0)
 
 struct ksu_driver_context {
+    struct ksu_file guard;
     unsigned long permissions;
 };
 
@@ -30,9 +32,19 @@ struct ksu_install_fd_tw {
 
 static int anon_ksu_release(struct inode *inode, struct file *filp)
 {
+    struct ksu_driver_context *ctx = filp->private_data;
+    if (!ctx)
+        return 0;
+    ksu_file_release(&ctx->guard);
     kfree(filp->private_data);
     pr_info("ksu fd released\n");
     return 0;
+}
+
+static void anon_ksu_cleanup(struct file *filp)
+{
+    kfree(filp->private_data);
+    pr_info("ksu fd cleanup\n");
 }
 
 static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -41,7 +53,6 @@ static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
 }
 
 static const struct file_operations anon_ksu_fops = {
-    .owner = THIS_MODULE,
     .unlocked_ioctl = anon_ksu_ioctl,
     .compat_ioctl = anon_ksu_ioctl,
     .release = anon_ksu_release,
@@ -59,6 +70,7 @@ static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long 
         return -ENOMEM;
 
     context->permissions = permissions;
+    context->guard.cleanup = anon_ksu_cleanup;
     name = permissions & KSU_DRIVER_PERMISSION_SU_SESSION ? "[ksu_driver_su]" : "[ksu_driver]";
 
     fd = get_unused_fd_flags(fd_flags);
@@ -74,6 +86,14 @@ static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long 
         put_unused_fd(fd);
         kfree(context);
         return PTR_ERR(filp);
+    }
+
+    int ret = ksu_file_add(filp, &context->guard);
+    if (ret) {
+        pr_err("ksu_install_fd: ksu_file_add failed\n");
+        put_unused_fd(fd);
+        kfree(context);
+        return ret;
     }
 
     fd_install(fd, filp);

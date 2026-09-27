@@ -1,4 +1,5 @@
 kernelsu-objs := core/init.o
+kernelsu-objs += core/unload.o
 
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sulog.o
@@ -25,6 +26,7 @@ kernelsu-objs += infra/event_queue.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += infra/symbol_resolver.o
+kernelsu-objs += infra/file_guard.o
 
 ifneq ($(CONFIG_KSU_DISABLE_MANAGER),y)
 kernelsu-objs += manager/apk_sign.o
@@ -160,6 +162,14 @@ $(info -- KernelSU Manager signature hash2: $(KSU_EXPECTED_HASH2))
 endif
 
 ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
+
+ifeq ($(KMI),android12-5.10)
+ccflags-y += -DKSU_HAS_MUSTTAIL=0
+$(info -- Disable musttail)
+else
+ccflags-y += -DKSU_HAS_MUSTTAIL=1
+$(info -- Enable musttail)
+endif
 
 ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function

@@ -18,7 +18,7 @@ $(info -- KBUILD_ARGS: $(KBUILD_ARGS))
 .PHONY: all compdb clean format check-format
 
 all: check_symbol
-	$(MAKE) -C $(KDIR) $(KBUILD_ARGS) modules compile_commands.json -j$(shell nproc)
+	$(MAKE) -C $(KDIR) $(KBUILD_ARGS) modules compile_commands.json -j$(shell nproc) KMI=$(KMI)
 	./check_symbol $(ODIR)/kernelsu.ko $(KDIR)/vmlinux
 
 compdb:

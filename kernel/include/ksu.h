@@ -13,6 +13,7 @@ extern bool allow_shell;
 #ifdef MODULE
 extern bool ksu_bundled;
 #endif
+extern bool ksu_unloadable;
 extern struct selinux_policy *backup_sepolicy;
 extern bool ksu_no_custom_rc;
 
