@@ -239,6 +239,8 @@ void __exit kernelsu_exit(void)
     ksu_file_guard_exit();
 
     put_cred(ksu_cred);
+
+    // TODO: wait for safe exit point
 }
 
 #if NEED_OWN_STACKPROTECTOR
