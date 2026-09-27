@@ -9,7 +9,7 @@
 // 2: allowlist v4 root profile flags
 // 3: scoped su-session driver fd
 // 4: add KSU_GET_INFO_FLAG_BUNDLED
-static const __u32 KERNEL_SU_UAPI_VERSION = 4;
+static const __u32 KERNEL_SU_UAPI_VERSION = 5;
 
 /* Magic numbers for reboot hook to install fd */
 static const __u32 KSU_INSTALL_MAGIC1 = 0xDEADBEEF;

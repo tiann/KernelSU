@@ -20,8 +20,10 @@
 #include "selinux/selinux.h"
 
 #include "infra/file_wrapper.h"
+#include "infra/file_guard.h"
 
 struct ksu_file_wrapper {
+    struct ksu_file guard;
     struct file *orig;
     struct file_operations ops;
 };
@@ -334,15 +336,24 @@ static int ksu_wrapper_fadvise(struct file *fp, loff_t off1, loff_t off2, int fl
 
 static void ksu_release_file_wrapper(struct ksu_file_wrapper *data);
 
+static void ksu_wrapper_d_release(struct dentry *dentry);
+
 static int ksu_wrapper_release(struct inode *inode, struct file *filp)
 {
-    // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/file_table.c;l=467-473;drc=3be0b283b562eabbc2b1f3bb534dc8903079bbaa
-    // f_op->release is called before fops_put(f_op), so we put it manually.
-    fops_put(filp->f_op);
-    // prevent it from being put again
-    filp->f_op = NULL;
+    struct ksu_file_wrapper *w = filp->private_data;
+    if (!w)
+        return 0;
+    ksu_file_release(&w->guard);
     ksu_release_file_wrapper(filp->private_data);
     return 0;
+}
+
+static void ksu_wrapper_cleanup(struct file *filp)
+{
+    filp->f_path.dentry->d_op = NULL;
+    filp->f_inode->i_fop = NULL;
+    ksu_wrapper_d_release(filp->f_path.dentry);
+    ksu_release_file_wrapper(filp->private_data);
 }
 
 static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
@@ -355,7 +366,6 @@ static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
     get_file(fp);
 
     p->orig = fp;
-    p->ops.owner = THIS_MODULE;
     p->ops.llseek = fp->f_op->llseek ? ksu_wrapper_llseek : NULL;
     p->ops.read = fp->f_op->read ? ksu_wrapper_read : NULL;
     p->ops.write = fp->f_op->write ? ksu_wrapper_write : NULL;
@@ -398,6 +408,8 @@ static struct ksu_file_wrapper *ksu_create_file_wrapper(struct file *fp)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
     p->ops.splice_eof = fp->f_op->splice_eof ? ksu_wrapper_splice_eof : NULL;
 #endif
+
+    p->guard.cleanup = ksu_wrapper_cleanup;
 
     return p;
 }
@@ -551,6 +563,10 @@ int ksu_install_file_wrapper(int fd)
     if (IS_ERR(wrapper_file)) {
         pr_err("ksu_fdwrapper: getfile failed: %ld\n", PTR_ERR(wrapper_file));
         ret = PTR_ERR(wrapper_file);
+        goto out_release_wrapper;
+    }
+    ret = ksu_file_add(wrapper_file, &file_wrapper_data->guard);
+    if (ret) {
         goto out_release_wrapper;
     }
 
