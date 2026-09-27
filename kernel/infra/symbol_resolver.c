@@ -32,7 +32,7 @@ static int (*kallsyms_on_each_symbol_fn)(int (*fn)(void *, const char *, struct 
                                          void *data) = NULL;
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && !defined(__x86_64__)
 #define HAVE_ON_EACH_MATCH_SYMBOL 1
 #else
 #define HAVE_ON_EACH_MATCH_SYMBOL 0
