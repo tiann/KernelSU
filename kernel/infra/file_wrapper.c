@@ -48,7 +48,7 @@ static int ksu_wrapper_open(struct inode *ino, struct file *fp)
     return 0;
 }
 
-static const struct file_operations ksu_file_wrapper_inode_fops = { .owner = THIS_MODULE, .open = ksu_wrapper_open };
+static const struct file_operations ksu_file_wrapper_inode_fops = { .open = ksu_wrapper_open };
 
 static loff_t ksu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 {

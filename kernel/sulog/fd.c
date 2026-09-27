@@ -35,7 +35,6 @@ static int ksu_sulog_release(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations ksu_sulog_fops = {
-    .owner = THIS_MODULE,
     .read = ksu_sulog_read,
     .poll = ksu_sulog_poll,
     .release = ksu_sulog_release,

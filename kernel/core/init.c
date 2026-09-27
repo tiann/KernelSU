@@ -1,3 +1,4 @@
+#include "infra/file_guard.h"
 #include <linux/export.h>
 #include <linux/fs.h>
 #include <linux/kobject.h>
@@ -138,6 +139,8 @@ int __init kernelsu_init(void)
         return -ENOSYS;
     }
 
+    ksu_file_guard_init();
+
     ksu_init_symbol_resolver();
     ksu_syscall_hook_init();
 
@@ -203,6 +206,7 @@ int __init kernelsu_init(void)
     }
 #endif
 #endif
+    pr_info("current refcnt: %d\n", atomic_read(&THIS_MODULE->refcnt));
     return 0;
 }
 
@@ -231,6 +235,8 @@ void __exit kernelsu_exit(void)
     ksu_adb_root_exit();
     ksu_sulog_exit();
     ksu_feature_exit();
+
+    ksu_file_guard_exit();
 
     put_cred(ksu_cred);
 }
