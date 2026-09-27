@@ -45,10 +45,24 @@ DECLARE_COMPLETION(free_group_completion);
 
 static void __naked my_free_group_priv(struct fsnotify_group *group)
 {
+#ifdef __aarch64__
     asm(".extern complete\n"
         ".extern free_group_completion\n"
-        "adr x0, free_group_completion\n"
+        "ldr x0, =free_group_completion\n"
         "b complete\n");
+#endif
+#ifdef __x86_64__
+    asm(".extern complete\n"
+        ".extern free_group_completion\n"
+        "leaq free_group_completion(%rip), %rdi\n"
+        "jmp complete\n");
+#endif
+#ifdef __riscv
+    asm(".extern complete\n"
+        ".extern free_group_completion\n"
+        "la a0, free_group_completion\n"
+        "tail complete\n");
+#endif
 }
 
 static const struct fsnotify_ops ksu_ops = {
