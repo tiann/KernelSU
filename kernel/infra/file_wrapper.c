@@ -22,6 +22,13 @@
 #include "infra/file_wrapper.h"
 #include "infra/file_guard.h"
 
+// TODO: fix android12-5.10
+#if KSU_HAS_MUSTTAIL
+#define KSU_MUSTTAIL __attribute__((musttail))
+#else
+#define KSU_MUSTTAIL
+#endif
+
 struct ksu_file_wrapper {
     struct ksu_file guard;
     struct file *orig;
@@ -54,21 +61,21 @@ static loff_t ksu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->llseek(data->orig, off, flags);
+    KSU_MUSTTAIL return orig->f_op->llseek(data->orig, off, flags);
 }
 
 static ssize_t ksu_wrapper_read(struct file *fp, char __user *ptr, size_t sz, loff_t *off)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->read(orig, ptr, sz, off);
+    KSU_MUSTTAIL return orig->f_op->read(orig, ptr, sz, off);
 }
 
 static ssize_t ksu_wrapper_write(struct file *fp, const char __user *ptr, size_t sz, loff_t *off)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->write(orig, ptr, sz, off);
+    KSU_MUSTTAIL return orig->f_op->write(orig, ptr, sz, off);
 }
 
 static ssize_t ksu_wrapper_read_iter(struct kiocb *iocb, struct iov_iter *iovi)
@@ -76,7 +83,7 @@ static ssize_t ksu_wrapper_read_iter(struct kiocb *iocb, struct iov_iter *iovi)
     struct ksu_file_wrapper *data = iocb->ki_filp->private_data;
     struct file *orig = data->orig;
     iocb->ki_filp = orig;
-    return orig->f_op->read_iter(iocb, iovi);
+    KSU_MUSTTAIL return orig->f_op->read_iter(iocb, iovi);
 }
 
 static ssize_t ksu_wrapper_write_iter(struct kiocb *iocb, struct iov_iter *iovi)
@@ -84,7 +91,7 @@ static ssize_t ksu_wrapper_write_iter(struct kiocb *iocb, struct iov_iter *iovi)
     struct ksu_file_wrapper *data = iocb->ki_filp->private_data;
     struct file *orig = data->orig;
     iocb->ki_filp = orig;
-    return orig->f_op->write_iter(iocb, iovi);
+    KSU_MUSTTAIL return orig->f_op->write_iter(iocb, iovi);
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
@@ -93,7 +100,7 @@ static int ksu_wrapper_iopoll(struct kiocb *kiocb, struct io_comp_batch *icb, un
     struct ksu_file_wrapper *data = kiocb->ki_filp->private_data;
     struct file *orig = data->orig;
     kiocb->ki_filp = orig;
-    return orig->f_op->iopoll(kiocb, icb, v);
+    KSU_MUSTTAIL return orig->f_op->iopoll(kiocb, icb, v);
 }
 #else
 static int ksu_wrapper_iopoll(struct kiocb *kiocb, bool spin)
@@ -101,7 +108,7 @@ static int ksu_wrapper_iopoll(struct kiocb *kiocb, bool spin)
     struct ksu_file_wrapper *data = kiocb->ki_filp->private_data;
     struct file *orig = data->orig;
     kiocb->ki_filp = orig;
-    return orig->f_op->iopoll(kiocb, spin);
+    KSU_MUSTTAIL return orig->f_op->iopoll(kiocb, spin);
 }
 #endif
 
@@ -110,7 +117,7 @@ static int ksu_wrapper_iterate(struct file *fp, struct dir_context *dc)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->iterate(orig, dc);
+    KSU_MUSTTAIL return orig->f_op->iterate(orig, dc);
 }
 #endif
 
@@ -118,63 +125,63 @@ static int ksu_wrapper_iterate_shared(struct file *fp, struct dir_context *dc)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->iterate_shared(orig, dc);
+    KSU_MUSTTAIL return orig->f_op->iterate_shared(orig, dc);
 }
 
 static __poll_t ksu_wrapper_poll(struct file *fp, struct poll_table_struct *pts)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->poll(orig, pts);
+    KSU_MUSTTAIL return orig->f_op->poll(orig, pts);
 }
 
 static long ksu_wrapper_unlocked_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->unlocked_ioctl(orig, cmd, arg);
+    KSU_MUSTTAIL return orig->f_op->unlocked_ioctl(orig, cmd, arg);
 }
 
 static long ksu_wrapper_compat_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->compat_ioctl(orig, cmd, arg);
+    KSU_MUSTTAIL return orig->f_op->compat_ioctl(orig, cmd, arg);
 }
 
 static int ksu_wrapper_mmap(struct file *fp, struct vm_area_struct *vma)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->mmap(orig, vma);
+    KSU_MUSTTAIL return orig->f_op->mmap(orig, vma);
 }
 
 static int ksu_wrapper_flush(struct file *fp, fl_owner_t id)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->flush(orig, id);
+    KSU_MUSTTAIL return orig->f_op->flush(orig, id);
 }
 
 static int ksu_wrapper_fsync(struct file *fp, loff_t off1, loff_t off2, int datasync)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->fsync(orig, off1, off2, datasync);
+    KSU_MUSTTAIL return orig->f_op->fsync(orig, off1, off2, datasync);
 }
 
 static int ksu_wrapper_fasync(int arg, struct file *fp, int arg2)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->fasync(arg, orig, arg2);
+    KSU_MUSTTAIL return orig->f_op->fasync(arg, orig, arg2);
 }
 
 static int ksu_wrapper_lock(struct file *fp, int arg1, struct file_lock *fl)
 {
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->lock(orig, arg1, fl);
+    KSU_MUSTTAIL return orig->f_op->lock(orig, arg1, fl);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 6, 0)
@@ -183,7 +190,7 @@ static ssize_t ksu_wrapper_sendpage(struct file *fp, struct page *pg, int arg1, 
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->sendpage) {
-        return orig->f_op->sendpage(orig, pg, arg1, sz, off, arg2);
+        KSU_MUSTTAIL return orig->f_op->sendpage(orig, pg, arg1, sz, off, arg2);
     }
     return -EINVAL;
 }
@@ -195,7 +202,7 @@ static unsigned long ksu_wrapper_get_unmapped_area(struct file *fp, unsigned lon
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->get_unmapped_area) {
-        return orig->f_op->get_unmapped_area(orig, arg1, arg2, arg3, arg4);
+        KSU_MUSTTAIL return orig->f_op->get_unmapped_area(orig, arg1, arg2, arg3, arg4);
     }
     return -EINVAL;
 }
@@ -207,7 +214,7 @@ static int ksu_wrapper_flock(struct file *fp, int arg1, struct file_lock *fl)
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->flock) {
-        return orig->f_op->flock(orig, arg1, fl);
+        KSU_MUSTTAIL return orig->f_op->flock(orig, arg1, fl);
     }
     return -EINVAL;
 }
@@ -218,7 +225,7 @@ static ssize_t ksu_wrapper_splice_write(struct pipe_inode_info *pii, struct file
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->splice_write) {
-        return orig->f_op->splice_write(pii, orig, off, sz, arg1);
+        KSU_MUSTTAIL return orig->f_op->splice_write(pii, orig, off, sz, arg1);
     }
     return -EINVAL;
 }
@@ -229,7 +236,7 @@ static ssize_t ksu_wrapper_splice_read(struct file *fp, loff_t *off, struct pipe
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->splice_read) {
-        return orig->f_op->splice_read(orig, off, pii, sz, arg1);
+        KSU_MUSTTAIL return orig->f_op->splice_read(orig, off, pii, sz, arg1);
     }
     return -EINVAL;
 }
@@ -240,7 +247,7 @@ void ksu_wrapper_splice_eof(struct file *fp)
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->splice_eof) {
-        return orig->f_op->splice_eof(orig);
+        KSU_MUSTTAIL return orig->f_op->splice_eof(orig);
     }
 }
 #endif
@@ -251,7 +258,7 @@ static int ksu_wrapper_setlease(struct file *fp, int arg1, struct file_lease **f
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->setlease) {
-        return orig->f_op->setlease(orig, arg1, fl, p);
+        KSU_MUSTTAIL return orig->f_op->setlease(orig, arg1, fl, p);
     }
     return -EINVAL;
 }
@@ -261,7 +268,7 @@ static int ksu_wrapper_setlease(struct file *fp, int arg1, struct file_lock **fl
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->setlease) {
-        return orig->f_op->setlease(orig, arg1, fl, p);
+        KSU_MUSTTAIL return orig->f_op->setlease(orig, arg1, fl, p);
     }
     return -EINVAL;
 }
@@ -271,7 +278,7 @@ static int ksu_wrapper_setlease(struct file *fp, long arg1, struct file_lock **f
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->setlease) {
-        return orig->f_op->setlease(orig, arg1, fl, p);
+        KSU_MUSTTAIL return orig->f_op->setlease(orig, arg1, fl, p);
     }
     return -EINVAL;
 }
@@ -282,7 +289,7 @@ static long ksu_wrapper_fallocate(struct file *fp, int mode, loff_t offset, loff
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->fallocate) {
-        return orig->f_op->fallocate(orig, mode, offset, len);
+        KSU_MUSTTAIL return orig->f_op->fallocate(orig, mode, offset, len);
     }
     return -EINVAL;
 }
@@ -292,7 +299,7 @@ static void ksu_wrapper_show_fdinfo(struct seq_file *m, struct file *f)
     struct ksu_file_wrapper *data = f->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->show_fdinfo) {
-        orig->f_op->show_fdinfo(m, orig);
+        KSU_MUSTTAIL return orig->f_op->show_fdinfo(m, orig);
     }
 }
 
@@ -302,7 +309,7 @@ static ssize_t ksu_wrapper_copy_file_range(struct file *file_in, loff_t pos_in, 
 {
     struct ksu_file_wrapper *data = file_out->private_data;
     struct file *orig = data->orig;
-    return orig->f_op->copy_file_range(file_in, pos_in, orig, pos_out, len, flags);
+    KSU_MUSTTAIL return orig->f_op->copy_file_range(file_in, pos_in, orig, pos_out, len, flags);
 }
 
 // no REMAP_FILE_DEDUP: use file_in
@@ -316,11 +323,12 @@ static loff_t ksu_wrapper_remap_file_range(struct file *file_in, loff_t pos_in, 
     if (remap_flags & REMAP_FILE_DEDUP) {
         struct ksu_file_wrapper *data = file_out->private_data;
         struct file *orig = data->orig;
-        return orig->f_op->remap_file_range(file_in, pos_in, orig, pos_out, len, remap_flags);
+        KSU_MUSTTAIL return orig->f_op->remap_file_range(file_in, pos_in, orig, pos_out, len, remap_flags);
     } else {
         struct ksu_file_wrapper *data = file_in->private_data;
         struct file *orig = data->orig;
-        return orig->f_op->remap_file_range(orig, pos_in, file_out, pos_out, len, remap_flags);
+        KSU_MUSTTAIL return orig->f_op->remap_file_range(orig, pos_in, file_out, pos_out, len,
+                                                                      remap_flags);
     }
 }
 
@@ -329,7 +337,7 @@ static int ksu_wrapper_fadvise(struct file *fp, loff_t off1, loff_t off2, int fl
     struct ksu_file_wrapper *data = fp->private_data;
     struct file *orig = data->orig;
     if (orig->f_op->fadvise) {
-        return orig->f_op->fadvise(orig, off1, off2, flags);
+        KSU_MUSTTAIL return orig->f_op->fadvise(orig, off1, off2, flags);
     }
     return -EINVAL;
 }

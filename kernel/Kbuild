@@ -163,6 +163,14 @@ endif
 
 ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 
+ifeq ($(KMI),android12-5.10)
+ccflags-y += -DKSU_HAS_MUSTTAIL=0
+$(info -- Disable musttail)
+else
+ccflags-y += -DKSU_HAS_MUSTTAIL=1
+$(info -- Enable musttail)
+endif
+
 ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function
 
