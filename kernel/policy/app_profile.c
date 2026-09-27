@@ -19,11 +19,7 @@
 #include "infra/su_mount_ns.h"
 #include "hook/tp_marker.h"
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
-static struct group_info root_groups = { .usage = REFCOUNT_INIT(2) };
-#else
-static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
-#endif
+static struct group_info *root_groups;
 
 void setup_groups(struct root_profile *profile, struct cred *cred)
 {
@@ -36,7 +32,7 @@ void setup_groups(struct root_profile *profile, struct cred *cred)
         // setgroup to root and return early.
         if (cred->group_info)
             put_group_info(cred->group_info);
-        cred->group_info = get_group_info(&root_groups);
+        cred->group_info = get_group_info(root_groups);
         return;
     }
 
@@ -237,8 +233,13 @@ void escape_to_root_for_init(void)
     commit_creds(cred);
 }
 
-void __init ksu_app_profile_init(void)
+int __init ksu_app_profile_init(void)
 {
+    root_groups = groups_alloc(0);
+    if (!root_groups) {
+        pr_err("alloc root_groups failed\n");
+        return -ENOMEM;
+    }
 #if NEED_BACKPORT_COMPAT
     unsigned long size = 0;
     int ret;
@@ -252,4 +253,10 @@ void __init ksu_app_profile_init(void)
     has_call_to_spin_lock = scan_call_to(seccomp_filter_release_sym, size, raw_spin_lock_irq_sym) != NULL;
     pr_info("seccomp_filter_release has_call_to_spin_lock = %d\n", has_call_to_spin_lock);
 #endif
+    return 0;
+}
+
+void ksu_app_profile_exit(void)
+{
+    groups_free(root_groups);
 }

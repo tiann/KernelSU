@@ -11,6 +11,7 @@ int escape_with_root_profile(void);
 
 void escape_to_root_for_init(void);
 
-void __init ksu_app_profile_init(void);
+int __init ksu_app_profile_init(void);
+void ksu_app_profile_exit(void);
 
 #endif

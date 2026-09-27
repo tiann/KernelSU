@@ -327,8 +327,7 @@ static loff_t ksu_wrapper_remap_file_range(struct file *file_in, loff_t pos_in, 
     } else {
         struct ksu_file_wrapper *data = file_in->private_data;
         struct file *orig = data->orig;
-        KSU_MUSTTAIL return orig->f_op->remap_file_range(orig, pos_in, file_out, pos_out, len,
-                                                                      remap_flags);
+        KSU_MUSTTAIL return orig->f_op->remap_file_range(orig, pos_in, file_out, pos_out, len, remap_flags);
     }
 }
 
