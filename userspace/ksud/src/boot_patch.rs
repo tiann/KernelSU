@@ -406,11 +406,15 @@ fn extract_ramdisk(ramdisk_image: &RamdiskImage) -> Result<(Cpio, Option<usize>)
     }
 }
 
-fn enforce_bootimage_version(boot: &BootImage<'_>) -> Result<()> {
+fn enforce_bootimage_version(boot: &BootImage<'_>, force: bool) -> Result<()> {
     if let BootImageVersion::Android(ver) = boot.get_header().get_version()
         && ver < 3
     {
-        bail!("bootimage version {ver} is not supported!")
+        if force {
+            println!("- WARNING: bootimage version {ver} is not supported, force patching");
+        } else {
+            bail!("bootimage version {ver} is not supported!")
+        }
     }
     Ok(())
 }
@@ -519,6 +523,10 @@ pub struct BootPatchArgs {
     /// Requires --kmi or --module to be specified.
     #[arg(long, default_value = None)]
     pub lkmloader: Option<PathBuf>,
+
+    /// Force patching regardless of the boot image version
+    #[arg(long, default_value = "false")]
+    pub force: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -549,6 +557,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             arch,
             ramdisk,
             lkmloader,
+            force,
         } = args;
 
         println!(include_str!("banner"));
@@ -658,7 +667,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         } else {
             BootImage::parse(&boot_image_data)?
         };
-        enforce_bootimage_version(&boot_image)?;
+        enforce_bootimage_version(&boot_image, force)?;
 
         let mut patcher = BootImagePatchOption::new(&boot_image);
 
@@ -940,7 +949,7 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     println!("- Unpacking boot image");
     let bootimage_data = map_file(&boot_image_file)?;
     let boot_image = BootImage::parse(&bootimage_data)?;
-    enforce_bootimage_version(&boot_image)?;
+    enforce_bootimage_version(&boot_image, false)?;
 
     let (mut cpio, vendor_ramdisk_idx) =
         if let Some(ramdisk_image) = boot_image.get_blocks().get_ramdisk() {
