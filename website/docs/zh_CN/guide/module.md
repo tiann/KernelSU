@@ -365,7 +365,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 - 模块脚本
   - 放置在模块自己的文件夹中。
   - 只有当模块被启用时才会执行。
-  - `post-fs-data.sh` 以 post-fs-data 模式运行，`post-mount.sh` 以 post-mount 模式运行，而 `service.sh` 则以 late_start 服务模式运行，`boot-completed` 在 Android 系统启动完毕后以服务模式运行。
+  - `post-fs-data.sh` 以 post-fs-data 模式运行，`post-mount.sh` 以 post-mount 模式运行，而 `service.sh` 则以 late_start 服务模式运行，`boot-completed.sh` 在 Android 系统启动完毕后以服务模式运行。
 
 所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。
 
