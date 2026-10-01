@@ -512,6 +512,13 @@ pub struct BootPatchArgs {
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
     #[arg(long, default_value = "false")]
     ramdisk: bool,
+
+    /// lkmloader.ko path to pack into the ramdisk. ksuinit will then load
+    /// kernelsu.ko via `insmod lkmloader.ko module_path=kernelsu.ko`.
+    /// The file is always renamed to lkmloader.ko in the ramdisk.
+    /// Requires --kmi or --module to be specified.
+    #[arg(long, default_value = None)]
+    pub lkmloader: Option<PathBuf>,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -541,6 +548,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
+            lkmloader,
         } = args;
 
         println!(include_str!("banner"));
@@ -569,6 +577,10 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 init.is_none() && kmod.is_none(),
                 "init and module must not be specified."
             );
+        }
+
+        if lkmloader.is_some() && kmi.is_none() && kmod.is_none() {
+            bail!("--lkmloader requires either --kmi or --module to be specified");
         }
 
         // None means --no-install: preserve the marker for the existing LKM.
@@ -719,6 +731,12 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
             cpio.add("init", CpioEntry::regular(0o755, ksu_init))?;
             cpio.add("kernelsu.ko", CpioEntry::regular(0o755, kernelsu_ko))?;
+
+            if let Some(lkmloader_path) = &lkmloader {
+                println!("- Adding lkmloader.ko");
+                let lkmloader_ko: Box<dyn AsRef<[u8]>> = Box::new(map_file(lkmloader_path)?);
+                cpio.add("lkmloader.ko", CpioEntry::regular(0o755, lkmloader_ko))?;
+            }
 
             #[cfg(target_os = "android")]
             if (backup || (!is_kernelsu_patched && flash))
