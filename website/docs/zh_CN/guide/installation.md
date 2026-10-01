@@ -86,15 +86,20 @@ GKI 模式会替换掉设备原有的内核，使用 KernelSU 提供的通用内
 
 ## LKM 安装
 
-### 获取官方固件
+要使用 LKM 模式，需要先获取官方固件中的 boot.img ，然后进行修补；如果你使用的是第三方内核，那么接下来你应该使用第三方内核的 boot.img 。
 
-使用 LKM 的模式，需要获取官方固件，然后在官方固件的基础上修补；如果你使用的是第三方内核，可以把第三方内核的 boot.img 作为官方固件。
+### 获取官方固件
 
 获取官方固件的方法有很多，如果你的设备支持 `fastboot boot`，那么我们最推荐以及最简单的方法是使用 `fastboot boot` 临时启动 KernelSU 提供的 GKI 内核，然后安装管理器，最后在管理器中直接安装；这种方法不需要你手动下载官方固件，也不需要你手动提取 boot。
 
 如果你的设备不支持 `fastboot boot`，那么你可能需要手动去下载官方固件包，然后从中提取 boot。
 
-与 GKI 模式不同，LKM 模式会修改 `ramdisk`，因此在出厂 Android 13 的设备上，它需要修补的是 `init_boot` 分区而非 `boot` 分区；而 GKI 模式则永远是操作 `boot` 分区。
+:::info
+与 GKI 模式不同，LKM 模式会修改 `ramdisk`，因此在出厂 Android 13 及以后的设备上，它需要修补的必须是 `init_boot` 分区而非 `boot` 分区；而 GKI 模式则永远是操作 `boot` 分区。
+:::
+:::warning 
+ `fastboot boot boot.img` 命令启动的永远是 `boot.img` ，也就是说在需要修改 `init_boot` 的设备上你无法通过 `fastboot boot init_boot.img` 来验证修补是否成功，而只能直接刷入patch后的 `init_boot` 并重启来验证。
+:::
 
 ### 使用管理器
 
