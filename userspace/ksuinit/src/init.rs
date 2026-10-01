@@ -145,8 +145,23 @@ fn load_module_via_lkmloader() -> Result<()> {
     anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
     let buffer = std::fs::read(LKMLOADER_PATH)
         .with_context(|| format!("Cannot read file {LKMLOADER_PATH}"))?;
-    let params = CString::new(KERNELSU_PARAMS).context("Invalid module params")?;
-    log::info!("insmod {LKMLOADER_PATH} {KERNELSU_PARAMS}");
+    // Forward the /ksu_config module params (allow_shell/norc/bundled) to
+    // kernelsu.ko through lkmloader's module_params passthrough. The legacy
+    // loading path passes them via init_module directly; without forwarding,
+    // the kernel module runs with defaults and the KSU module system
+    // cannot come up.
+    let mut insmod_params = String::from(KERNELSU_PARAMS);
+    if let Ok(ksu_config) = std::fs::read_to_string("/ksu_config") {
+        let ksu_config = ksu_config.trim_matches('\0').trim();
+        if !ksu_config.is_empty() {
+            insmod_params.push_str(&format!(" module_params=\"{ksu_config}\""));
+        }
+    }
+    let params = match CString::new(insmod_params) {
+        Ok(p) => p,
+        Err(_) => CString::new(KERNELSU_PARAMS).context("Invalid module params")?,
+    };
+    log::info!("insmod {LKMLOADER_PATH} {params:?}");
     rustix::system::init_module(&buffer, &params)
         .context("Cannot insmod lkmloader.ko")
         .context("Cannot load kernelsu.ko via lkmloader")?;
