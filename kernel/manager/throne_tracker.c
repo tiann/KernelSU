@@ -70,6 +70,7 @@ struct my_dir_context {
     void *private_data;
     int depth;
     int *stop;
+    unsigned long data_app_magic;
 };
 // https://docs.kernel.org/filesystems/porting.html
 // filldir_t (readdir callbacks) calling conventions have changed. Instead of returning 0 or -E... it returns bool now. false means "no more" (as -E... used to) and true - "keep going" (as 0 in old calling conventions). Rationale: callers never looked at specific -E... values anyway. -> iterate_shared() instances require no changes at all, all filldir_t ones in the tree converted.
@@ -83,6 +84,7 @@ struct my_dir_context {
 #define FILLDIR_ACTOR_STOP -EINVAL
 #endif
 extern bool is_manager_apk(char *path);
+
 FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int namelen, loff_t off, u64 ino,
                              unsigned int d_type)
 {
@@ -111,7 +113,10 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
         return FILLDIR_ACTOR_CONTINUE;
     }
 
-    if (d_type == DT_DIR && my_ctx->depth > 0 && (my_ctx->stop && !*my_ctx->stop)) {
+    if (d_type != DT_DIR)
+        return FILLDIR_ACTOR_CONTINUE;
+
+    if (my_ctx->depth > 1) {
         struct data_path *data = kzalloc(sizeof(struct data_path), GFP_KERNEL);
 
         if (!data) {
@@ -122,38 +127,57 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name, int name
         strscpy(data->dirpath, dirpath, DATA_PATH_LEN);
         data->depth = my_ctx->depth - 1;
         list_add_tail(&data->list, my_ctx->data_path_list);
-    } else {
-        if ((namelen == 8) && (strncmp(name, "base.apk", namelen) == 0)) {
-            struct apk_path_hash *pos, *n;
-            unsigned int hash = full_name_hash(NULL, dirpath, strlen(dirpath));
-            list_for_each_entry (pos, &apk_path_hash_list, list) {
-                if (hash == pos->hash) {
-                    pos->exists = true;
-                    return FILLDIR_ACTOR_CONTINUE;
-                }
-            }
+        return FILLDIR_ACTOR_CONTINUE;
+    }
 
-            bool is_manager = is_manager_apk(dirpath);
-            pr_info("Found new base.apk at path: %s, is_manager: %d\n", dirpath, is_manager);
-            if (is_manager) {
-                crown_manager(dirpath, my_ctx->private_data);
-                *my_ctx->stop = 1;
+    // Check base.apk directly without opening each package directory.
+    {
+        char apk_path[DATA_PATH_LEN];
+        struct apk_path_hash *pos, *n;
+        struct path path;
+        unsigned int hash;
+        bool is_manager;
 
-                // Manager found, clear APK cache list
-                list_for_each_entry_safe (pos, n, &apk_path_hash_list, list) {
-                    list_del(&pos->list);
-                    kfree(pos);
-                }
-            } else {
-                struct apk_path_hash *apk_data = kzalloc(sizeof(struct apk_path_hash), GFP_KERNEL);
-                if (!apk_data) {
-                    pr_err("Failed to allocate apk_path_hash for %s\n", dirpath);
-                    return FILLDIR_ACTOR_CONTINUE;
-                }
-                apk_data->hash = hash;
-                apk_data->exists = true;
-                list_add_tail(&apk_data->list, &apk_path_hash_list);
+        if (snprintf(apk_path, DATA_PATH_LEN, "%s/base.apk", dirpath) >= DATA_PATH_LEN)
+            return FILLDIR_ACTOR_CONTINUE;
+
+        if (kern_path(apk_path, LOOKUP_FOLLOW, &path))
+            return FILLDIR_ACTOR_CONTINUE;
+
+        if (path.dentry->d_sb->s_magic != my_ctx->data_app_magic) {
+            path_put(&path);
+            return FILLDIR_ACTOR_CONTINUE;
+        }
+        path_put(&path);
+
+        hash = full_name_hash(NULL, apk_path, strlen(apk_path));
+        list_for_each_entry (pos, &apk_path_hash_list, list) {
+            if (hash == pos->hash) {
+                pos->exists = true;
+                return FILLDIR_ACTOR_CONTINUE;
             }
+        }
+
+        is_manager = is_manager_apk(apk_path);
+        pr_info("Found new base.apk at path: %s, is_manager: %d\n", apk_path, is_manager);
+        if (is_manager) {
+            crown_manager(apk_path, my_ctx->private_data);
+            *my_ctx->stop = 1;
+
+            // Manager found, clear APK cache list
+            list_for_each_entry_safe (pos, n, &apk_path_hash_list, list) {
+                list_del(&pos->list);
+                kfree(pos);
+            }
+        } else {
+            struct apk_path_hash *apk_data = kzalloc(sizeof(struct apk_path_hash), GFP_KERNEL);
+            if (!apk_data) {
+                pr_err("Failed to allocate apk_path_hash for %s\n", apk_path);
+                return FILLDIR_ACTOR_CONTINUE;
+            }
+            apk_data->hash = hash;
+            apk_data->exists = true;
+            list_add_tail(&apk_data->list, &apk_path_hash_list);
         }
     }
 
@@ -216,6 +240,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
                     goto skip_iterate;
                 }
 
+                ctx.data_app_magic = data_app_magic;
                 iterate_dir(file, &ctx.ctx);
                 filp_close(file, NULL);
             }
