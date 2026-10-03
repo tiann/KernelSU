@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use log::{error, info, warn};
 use std::path::Path;
 
-pub fn on_post_data_fs() -> Result<()> {
+pub fn on_post_fs_data() -> Result<()> {
     if let Err(e) = ksucalls::ensure_uapi_version_matched() {
         error!("{e:#}, skip on_post_fs_data");
         return Ok(());

@@ -20,7 +20,7 @@ use rustix::{
 
 use crate::{
     assets,
-    init_event::{on_boot_completed, on_post_data_fs, on_services, run_stage},
+    init_event::{on_boot_completed, on_post_fs_data, on_services, run_stage},
     ksucalls,
     utils::{self, switch_mnt_ns},
 };
@@ -201,7 +201,7 @@ pub fn soft_reboot() -> Result<()> {
     terminate_waitsys(&mut waitsys);
 
     info!("post-fs-data");
-    on_post_data_fs()?;
+    on_post_fs_data()?;
     info!("start");
     let status = Command::new("start").status().context("start failed")?;
     if !status.success() {
