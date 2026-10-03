@@ -406,11 +406,15 @@ fn extract_ramdisk(ramdisk_image: &RamdiskImage) -> Result<(Cpio, Option<usize>)
     }
 }
 
-fn enforce_bootimage_version(boot: &BootImage<'_>) -> Result<()> {
+fn enforce_bootimage_version(boot: &BootImage<'_>, force: bool) -> Result<()> {
     if let BootImageVersion::Android(ver) = boot.get_header().get_version()
         && ver < 3
     {
-        bail!("bootimage version {ver} is not supported!")
+        if force {
+            println!("- WARNING: bootimage version {ver} is not supported, force patching");
+        } else {
+            bail!("bootimage version {ver} is not supported!")
+        }
     }
     Ok(())
 }
@@ -512,6 +516,17 @@ pub struct BootPatchArgs {
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
     #[arg(long, default_value = "false")]
     ramdisk: bool,
+
+    /// lkmloader.ko path to pack into the ramdisk. ksuinit will then load
+    /// kernelsu.ko via `insmod lkmloader.ko module_path=kernelsu.ko`.
+    /// The file is always renamed to lkmloader.ko in the ramdisk.
+    /// Requires --kmi or --module to be specified.
+    #[arg(long, default_value = None)]
+    pub lkmloader: Option<PathBuf>,
+
+    /// Force patching regardless of the boot image version
+    #[arg(long, default_value = "false")]
+    pub force: bool,
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -541,6 +556,8 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
+            lkmloader,
+            force,
         } = args;
 
         println!(include_str!("banner"));
@@ -569,6 +586,10 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
                 init.is_none() && kmod.is_none(),
                 "init and module must not be specified."
             );
+        }
+
+        if lkmloader.is_some() && kmi.is_none() && kmod.is_none() {
+            bail!("--lkmloader requires either --kmi or --module to be specified");
         }
 
         // None means --no-install: preserve the marker for the existing LKM.
@@ -646,7 +667,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         } else {
             BootImage::parse(&boot_image_data)?
         };
-        enforce_bootimage_version(&boot_image)?;
+        enforce_bootimage_version(&boot_image, force)?;
 
         let mut patcher = BootImagePatchOption::new(&boot_image);
 
@@ -719,6 +740,12 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
             cpio.add("init", CpioEntry::regular(0o755, ksu_init))?;
             cpio.add("kernelsu.ko", CpioEntry::regular(0o755, kernelsu_ko))?;
+
+            if let Some(lkmloader_path) = &lkmloader {
+                println!("- Adding lkmloader.ko");
+                let lkmloader_ko: Box<dyn AsRef<[u8]>> = Box::new(map_file(lkmloader_path)?);
+                cpio.add("lkmloader.ko", CpioEntry::regular(0o755, lkmloader_ko))?;
+            }
 
             #[cfg(target_os = "android")]
             if (backup || (!is_kernelsu_patched && flash))
@@ -922,7 +949,7 @@ pub fn restore(args: BootRestoreArgs) -> Result<()> {
     println!("- Unpacking boot image");
     let bootimage_data = map_file(&boot_image_file)?;
     let boot_image = BootImage::parse(&bootimage_data)?;
-    enforce_bootimage_version(&boot_image)?;
+    enforce_bootimage_version(&boot_image, false)?;
 
     let (mut cpio, vendor_ramdisk_idx) =
         if let Some(ramdisk_image) = boot_image.get_blocks().get_ramdisk() {
