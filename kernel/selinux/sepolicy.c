@@ -83,6 +83,19 @@ static bool add_typeattribute(struct policydb *db, const char *type, const char 
 
 #define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur)
 
+/* Match avtab_write_item(), not the in-memory key/datum layout. */
+static size_t avtab_serialized_size(const struct avtab_node *node)
+{
+    size_t size = sizeof(u16) * 4;
+
+    if (node->key.specified & AVTAB_XPERMS)
+        size += sizeof(u8) * 2 + sizeof(u32) * ARRAY_SIZE(node->datum.u.xperms->perms.p);
+    else
+        size += sizeof(u32);
+
+    return size;
+}
+
 static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *key,
                                          struct avtab_extended_perms *xperms)
 {
@@ -122,14 +135,7 @@ static struct avtab_node *get_avtab_node(struct policydb *db, struct avtab_key *
         if (!node)
             return NULL;
 
-        int grow_size = sizeof(struct avtab_key);
-        grow_size += sizeof(struct avtab_datum);
-        if (key->specified & AVTAB_XPERMS) {
-            grow_size += sizeof(u8);
-            grow_size += sizeof(u8);
-            grow_size += sizeof(u32) * ARRAY_SIZE(avdatum.u.xperms->perms.p);
-        }
-        db->len += grow_size;
+        db->len += avtab_serialized_size(node);
     }
 
     return node;
@@ -150,7 +156,7 @@ static bool remove_avtab_node(struct policydb *db, struct avtab_node *node)
 {
     int i;
     int ret;
-    int shrink_size = sizeof(struct avtab_key) + sizeof(struct avtab_datum);
+    size_t shrink_size;
     struct avtab removed = {};
     struct avtab_node *n;
     struct avtab_node *prev;
@@ -173,9 +179,7 @@ static bool remove_avtab_node(struct policydb *db, struct avtab_node *node)
             if (db->te_avtab.nel > 0)
                 db->te_avtab.nel--;
 
-            if ((n->key.specified & AVTAB_XPERMS) && n->datum.u.xperms) {
-                shrink_size += sizeof(u8) + sizeof(u8) + sizeof(u32) * ARRAY_SIZE(n->datum.u.xperms->perms.p);
-            }
+            shrink_size = avtab_serialized_size(n);
             n->next = NULL;
             removed.htable[0] = n;
             removed.nel = 1;
