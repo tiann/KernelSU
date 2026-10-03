@@ -3,7 +3,7 @@ mod android {
     use const_format::concatcp;
     use std::time::Duration;
 
-    pub const BOOT_STAGE_TIMEOUT: Duration = Duration::from_secs(40);
+    pub const BOOT_STAGE_TIMEOUT: Duration = Duration::from_secs(35);
     pub const EMULATED_SOFT_REBOOT_TIMEOUT: Duration = Duration::from_secs(5);
     pub const WAITSYS_READY_TIMEOUT: Duration = Duration::from_secs(2);
     pub const WAITSYS_STOP_TIMEOUT: Duration = Duration::from_secs(5);
