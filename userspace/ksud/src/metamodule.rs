@@ -144,7 +144,6 @@ pub fn ensure_symlink(module_path: &Path) -> Result<()> {
     }
 
     // Create symlink
-    #[cfg(unix)]
     std::os::unix::fs::symlink(module_path, symlink_path)
         .with_context(|| format!("Failed to create symlink to {}", module_path.display()))?;
 
