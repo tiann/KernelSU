@@ -12,7 +12,7 @@ use std::{
     process::Command,
 };
 
-use crate::module::ModuleType::All;
+use crate::module::{ModuleType::All, ScriptWait};
 use crate::{assets, defs};
 
 /// Determine whether the provided module properties mark it as a metamodule
@@ -276,13 +276,13 @@ pub fn exec_mount_script(module_dir: &str) -> Result<()> {
 }
 
 /// Execute metamodule script for a specific stage
-pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
+pub fn exec_stage_script(stage: &str, wait: ScriptWait) -> Result<()> {
     let Some(script_path) = check_metamodule_script(&format!("{stage}.sh")) else {
         return Ok(());
     };
 
     info!("Executing metamodule {stage}.sh");
-    crate::module::exec_script(&script_path, block)?;
+    crate::module::exec_script(&script_path, wait)?;
     info!("Metamodule {stage}.sh executed successfully");
     Ok(())
 }

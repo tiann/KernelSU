@@ -21,6 +21,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
     str::FromStr,
+    time::Instant,
 };
 use std::{
     fs::{copy, rename},
@@ -180,7 +181,96 @@ pub fn load_sepolicy_rule() -> Result<()> {
     Ok(())
 }
 
-pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
+#[derive(Clone, Copy)]
+pub enum ScriptWait {
+    NoWait,
+    Forever,
+    Until(Instant),
+}
+
+struct SigchldBlock {
+    set: libc::sigset_t,
+    previous: libc::sigset_t,
+}
+
+impl SigchldBlock {
+    fn block() -> std::io::Result<Self> {
+        // Initialize both sets before passing them to libc.
+        let mut set = unsafe { std::mem::zeroed() };
+        let mut previous = unsafe { std::mem::zeroed() };
+        unsafe {
+            libc::sigemptyset(&raw mut set);
+            libc::sigaddset(&raw mut set, libc::SIGCHLD);
+            if libc::sigprocmask(libc::SIG_BLOCK, &raw const set, &raw mut previous) != 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+        }
+        Ok(Self { set, previous })
+    }
+
+    fn wait_until(&self, pid: libc::pid_t, deadline: Instant) -> std::io::Result<bool> {
+        loop {
+            // Only reap the script being waited for. Other children can also send SIGCHLD.
+            let result = unsafe { libc::waitpid(pid, std::ptr::null_mut(), libc::WNOHANG) };
+            if result == pid {
+                return Ok(true);
+            }
+            if result < 0 {
+                let error = std::io::Error::last_os_error();
+                if error.raw_os_error() == Some(libc::EINTR) {
+                    continue;
+                }
+                return Err(error);
+            }
+
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                return Ok(false);
+            }
+            let timeout = libc::timespec {
+                tv_sec: remaining.as_secs() as libc::time_t,
+                tv_nsec: remaining.subsec_nanos().into(),
+            };
+            // SIGCHLD stays blocked between waitpid and sigtimedwait to avoid lost wakeups.
+            if unsafe {
+                libc::sigtimedwait(
+                    &raw const self.set,
+                    std::ptr::null_mut(),
+                    &raw const timeout,
+                )
+            } < 0
+            {
+                let error = std::io::Error::last_os_error();
+                match error.raw_os_error() {
+                    Some(libc::EAGAIN) => return Ok(false),
+                    Some(libc::EINTR) => {}
+                    _ => return Err(error),
+                }
+            }
+        }
+    }
+}
+
+impl Drop for SigchldBlock {
+    fn drop(&mut self) {
+        // Restore the parent's signal mask on success, timeout, and every error path.
+        if unsafe {
+            libc::sigprocmask(
+                libc::SIG_SETMASK,
+                &raw const self.previous,
+                std::ptr::null_mut(),
+            )
+        } != 0
+        {
+            warn!(
+                "Failed to restore signal mask: {}",
+                std::io::Error::last_os_error()
+            );
+        }
+    }
+}
+
+pub fn exec_script<T: AsRef<Path>>(path: T, wait: ScriptWait) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
     let is_module_script = path.as_ref().starts_with(defs::MODULE_DIR);
@@ -220,9 +310,19 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         );
     }
 
+    let sigchld = SigchldBlock::block().context("Failed to block SIGCHLD")?;
+    let original_sigmask = sigchld.previous;
     let mut command = Command::new(assets::BUSYBOX_PATH);
     unsafe {
-        command.pre_exec(|| {
+        command.pre_exec(move || {
+            if libc::sigprocmask(
+                libc::SIG_SETMASK,
+                &raw const original_sigmask,
+                std::ptr::null_mut(),
+            ) != 0
+            {
+                return Err(std::io::Error::last_os_error());
+            }
             detach_process_group(true);
             // ignore the error?
             switch_cgroups();
@@ -235,15 +335,23 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .arg(path.as_ref())
         .envs(get_common_script_envs(validated_module_id));
 
-    let result = if wait {
-        command.status().map(|_| ())
-    } else {
-        command.spawn().map(|_| ())
+    let result = match wait {
+        ScriptWait::NoWait => command.spawn().map(|_| ()),
+        ScriptWait::Forever => command.status().map(|_| ()),
+        ScriptWait::Until(deadline) => command.spawn().and_then(|child| {
+            // Once the shared deadline has passed, launch later scripts without waiting.
+            if deadline > Instant::now()
+                && !sigchld.wait_until(child.id() as libc::pid_t, deadline)?
+            {
+                warn!("Timed out waiting for script: {}", path.as_ref().display());
+            }
+            Ok(())
+        }),
     };
     result.map_err(|e| anyhow!("Failed to exec {}: {e}", path.as_ref().display()))
 }
 
-pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
+pub fn exec_stage_script(stage: &str, wait: ScriptWait) -> Result<()> {
     let metamodule_dir = metamodule::get_metamodule_path().and_then(|path| canonicalize(path).ok());
 
     foreach_active_module(|module| {
@@ -258,13 +366,13 @@ pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
             return Ok(());
         }
 
-        exec_script(&script_path, block)
+        exec_script(&script_path, wait)
     })?;
 
     Ok(())
 }
 
-pub fn exec_common_scripts(dir: &str, wait: bool) -> Result<()> {
+pub fn exec_common_scripts(dir: &str, wait: ScriptWait) -> Result<()> {
     let script_dir = Path::new(defs::ADB_DIR).join(dir);
     if !script_dir.exists() {
         info!("{} not exists, skip", script_dir.display());
@@ -329,7 +437,7 @@ pub fn prune_modules() -> Result<()> {
         // Then execute module's own uninstall.sh
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists()
-            && let Err(e) = exec_script(uninstaller, true)
+            && let Err(e) = exec_script(uninstaller, ScriptWait::Forever)
         {
             warn!("Failed to exec uninstaller: {e}");
         }
@@ -718,7 +826,7 @@ pub fn run_action(id: &str) -> Result<()> {
     ksucalls::ensure_uapi_version_matched()?;
 
     let action_script_path = format!("/data/adb/modules/{id}/action.sh");
-    exec_script(&action_script_path, true)
+    exec_script(&action_script_path, ScriptWait::Forever)
 }
 
 pub fn enable_module(id: &str) -> Result<()> {
