@@ -7,7 +7,8 @@
     clippy::cast_precision_loss,
     clippy::doc_markdown,
     clippy::too_many_lines,
-    clippy::cast_possible_wrap
+    clippy::cast_possible_wrap,
+    clippy::redundant_field_names
 )]
 
 mod apk_sign;
