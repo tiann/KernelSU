@@ -141,9 +141,9 @@ fun HomePagerMiuix(
                         if (state.requiresNewKernel) {
                             WarningCard(
                                 stringResource(
-                                    id = if (state.lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki
+                                    id = if (state.canInstallKernelUpdate) R.string.require_kernel_version else R.string.require_kernel_version_gki
                                 ),
-                                onClick = if (state.lkmMode == true) actions.onInstallClick else null
+                                onClick = if (state.canInstallKernelUpdate) actions.onInstallClick else null
                             )
                         }
                         if (state.requiresNewManager) {

@@ -39,6 +39,10 @@ data class HomeUiState(
                 !requiresNewKernel &&
                 !requiresNewManager
 
+    // Jailbreak mode runs on locked bootloaders, so flashing a boot image would brick the device.
+    val canInstallKernelUpdate: Boolean
+        get() = lkmMode == true && !isLateLoadMode
+
     val showCustomLkmBadge: Boolean
         get() = lkmMode == true && !isLkmBundled
 
