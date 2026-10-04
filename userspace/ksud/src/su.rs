@@ -6,7 +6,6 @@ use anyhow::{Context, Ok, Result, anyhow, bail};
 use getopts::Options;
 use libc::c_int;
 use log::error;
-#[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::{cmp::Ordering, env, io};

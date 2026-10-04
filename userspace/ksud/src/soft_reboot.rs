@@ -19,15 +19,14 @@ use rustix::{
 };
 
 use crate::{
-    assets,
-    init_event::{on_boot_completed, on_post_data_fs, on_services, run_stage},
+    assets, defs,
+    init_event::{on_boot_completed, on_post_fs_data, on_services, run_stage},
     ksucalls,
+    module::ScriptWait,
     utils::{self, switch_mnt_ns},
 };
 
 const WAITSYS_FD_ENV: &str = "KSU_WAITSYS_FD";
-const WAITSYS_READY_TIMEOUT: Duration = Duration::from_secs(2);
-const WAITSYS_STOP_TIMEOUT: Duration = Duration::from_secs(5);
 
 struct Waitsys {
     child: Child,
@@ -166,7 +165,10 @@ pub fn soft_reboot() -> Result<()> {
     if let Err(e) = reset_boot_completed() {
         warn!("reset boot completed failed: {e}");
     }
-    run_stage("emulated-soft-reboot", true);
+    run_stage(
+        "emulated-soft-reboot",
+        ScriptWait::Until(Instant::now() + defs::EMULATED_SOFT_REBOOT_TIMEOUT),
+    );
 
     let mut waitsys = match Waitsys::spawn() {
         Ok(waitsys) => Some(waitsys),
@@ -176,7 +178,7 @@ pub fn soft_reboot() -> Result<()> {
         }
     };
     let wait_after_stop = waitsys.as_ref().is_some_and(|waitsys| {
-        if let Err(error) = waitsys.wait_for_signal(1, WAITSYS_READY_TIMEOUT) {
+        if let Err(error) = waitsys.wait_for_signal(1, defs::WAITSYS_READY_TIMEOUT) {
             warn!("waitsys failed to collect services: {error:#}");
             false
         } else {
@@ -194,14 +196,14 @@ pub fn soft_reboot() -> Result<()> {
     }
 
     if let Some(waitsys) = waitsys.as_ref()
-        && let Err(error) = waitsys.wait_for_signal(2, WAITSYS_STOP_TIMEOUT)
+        && let Err(error) = waitsys.wait_for_signal(2, defs::WAITSYS_STOP_TIMEOUT)
     {
         warn!("waitsys failed while waiting for services to stop: {error:#}");
     }
     terminate_waitsys(&mut waitsys);
 
     info!("post-fs-data");
-    on_post_data_fs()?;
+    on_post_fs_data()?;
     info!("start");
     let status = Command::new("start").status().context("start failed")?;
     if !status.success() {
