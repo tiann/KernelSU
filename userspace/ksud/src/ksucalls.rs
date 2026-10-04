@@ -224,6 +224,13 @@ pub fn report_post_fs_data() {
     report_event(ksu_uapi::EVENT_POST_FS_DATA);
 }
 
+pub fn report_services() -> Result<bool> {
+    let mut cmd = ksu_uapi::ksu_report_event_cmd {
+        event: ksu_uapi::EVENT_SERVICES,
+    };
+    Ok(ksuctl(ksu_uapi::KSU_IOCTL_REPORT_EVENT, &raw mut cmd)? == 1)
+}
+
 pub fn report_boot_complete() {
     report_event(ksu_uapi::EVENT_BOOT_COMPLETED);
 }
