@@ -39,7 +39,7 @@ object DownloadManager {
 
     internal fun registerLocalSave(
         fileName: String,
-        targetPath: String,
+        targetPath: String? = null,
         mimeType: String? = null,
         completionAction: DownloadCompletionAction = DownloadCompletionAction.OPEN_FILE,
     ): Int {
@@ -47,7 +47,7 @@ object DownloadManager {
         val state = DownloadState(
             id = id,
             fileName = fileName,
-            url = targetPath,
+            url = targetPath ?: fileName,
             targetPath = targetPath,
             mimeType = mimeType,
             completionAction = completionAction,

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -313,52 +312,95 @@ class WebUIDownloadInterface(private val state: WebUIState) {
     @JavascriptInterface
     fun save(base64: String, fileName: String?) {
         val currentWebView = webView ?: return
-        val target = resolveDownloadTarget(fileName)
         val context = currentWebView.context
+        val displayName = sanitizeWebUIDownloadFileName(fileName)
+        val mimeType = resolveDownloadMimeType(displayName, null)
         val notificationManager = context.getSystemService(NotificationManager::class.java)
         val downloadId = DownloadManager.registerLocalSave(
-            fileName = target.name,
-            targetPath = target.absolutePath,
+            fileName = displayName,
+            mimeType = mimeType,
         )
 
         ensureNotificationChannel(notificationManager, context)
-        notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildProgressNotification(context, target.name, 0))
+        notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildProgressNotification(context, displayName, 0))
 
         scope.launch {
-            runCatching {
+            var pendingUri: Uri? = null
+            val savedUri = try {
                 val decoded = Base64.decode(base64, Base64.DEFAULT)
+                val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                val values = android.content.ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    put(MediaStore.MediaColumns.IS_PENDING, 1)
+                }
+                val uri = context.contentResolver.insert(collection, values)
+                    ?: error("Failed to create download")
+                pendingUri = uri
                 var lastProgress = -1
                 ByteArrayInputStream(decoded).use { input ->
-                    writeWebUIDownload(target, input) { written ->
-                        val progress = if (decoded.isEmpty()) 100 else ((written * 100L) / decoded.size.toLong()).toInt().coerceIn(0, 100)
-                        DownloadManager.updateProgress(downloadId, progress)
-                        if (progress - lastProgress >= 2 || progress == 100) {
-                            notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildProgressNotification(context, target.name, progress))
-                            lastProgress = progress
+                    val output = context.contentResolver.openOutputStream(uri)
+                        ?: error("Failed to open download")
+                    output.use { stream ->
+                        writeWebUIDownload(input, stream) { written ->
+                            val progress = if (decoded.isEmpty()) {
+                                100
+                            } else {
+                                ((written * 100L) / decoded.size.toLong()).toInt().coerceIn(0, 100)
+                            }
+                            DownloadManager.updateProgress(downloadId, progress)
+                            if (progress - lastProgress >= 2 || progress == 100) {
+                                notificationManager.notify(
+                                    WEBUI_NOTIFICATION_ID_BASE + downloadId,
+                                    buildProgressNotification(context, displayName, progress)
+                                )
+                                lastProgress = progress
+                            }
                         }
                     }
                 }
-            }.onSuccess {
-                val uri = Uri.fromFile(target)
-                DownloadManager.markCompleted(downloadId, uri)
+                val published = android.content.ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_PENDING, 0)
+                }
+                if (context.contentResolver.update(uri, published, null, null) != 1) {
+                    error("Failed to publish download")
+                }
+                uri
+            } catch (throwable: Throwable) {
+                pendingUri?.let { context.contentResolver.delete(it, null, null) }
+                Log.e("WebUIDownload", "Failed to save $displayName", throwable)
+                DownloadManager.markFailed(downloadId, throwable.message ?: "Unknown error")
+                notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildFailureNotification(context, displayName))
+                postToast(currentWebView.context.getString(R.string.download_failed_content, displayName))
+                null
+            }
+
+            if (savedUri != null) {
+                DownloadManager.markCompleted(downloadId, savedUri)
                 notificationManager.notify(
                     WEBUI_NOTIFICATION_ID_BASE + downloadId,
-                    buildCompletionNotification(context, downloadId, target)
+                    buildCompletionNotification(context, downloadId, displayName, savedUri, mimeType)
                 )
-                postToast(currentWebView.context.getString(R.string.download_complete_content, target.name))
-            }.onFailure { throwable ->
-                Log.e("WebUIDownload", "Failed to save ${target.absolutePath}", throwable)
-                DownloadManager.markFailed(downloadId, throwable.message ?: "Unknown error")
-                notificationManager.notify(WEBUI_NOTIFICATION_ID_BASE + downloadId, buildFailureNotification(context, target.name))
-                postToast(currentWebView.context.getString(R.string.download_failed_content, target.name))
+                postToast(currentWebView.context.getString(R.string.download_complete_content, displayName))
             }
         }
     }
 
     @JavascriptInterface
     fun startChunkedDownload(fileName: String?, mimeType: String?): String {
-        val sanitizedFileName = resolveDownloadTarget(fileName).name
-        return BlobDownloadHandler.registerBlobDownload(sanitizedFileName, mimeType)
+        val currentWebView = webView ?: return ""
+        val sanitizedFileName = sanitizeWebUIDownloadFileName(fileName)
+        return runCatching {
+            BlobDownloadHandler.registerBlobDownload(
+                sanitizedFileName,
+                mimeType,
+                currentWebView.context.cacheDir,
+            )
+        }.getOrElse {
+            Log.e("WebUIDownload", "Failed to start chunked download", it)
+            ""
+        }
     }
 
     @JavascriptInterface
@@ -389,11 +431,6 @@ class WebUIDownloadInterface(private val state: WebUIState) {
         }
     }
 
-    private fun resolveDownloadTarget(fileName: String?): File {
-        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        return resolveWebUIDownloadFile(downloadsDir, fileName)
-    }
-
     private fun ensureNotificationChannel(notificationManager: NotificationManager, context: Context) {
         notificationManager.createNotificationChannel(
             NotificationChannel(
@@ -420,12 +457,13 @@ class WebUIDownloadInterface(private val state: WebUIState) {
     private fun buildCompletionNotification(
         context: Context,
         downloadId: Int,
-        target: File,
+        fileName: String,
+        contentUri: Uri,
+        mimeType: String,
     ): android.app.Notification {
-        val contentUri = getMediaStoreUriForFile(context, target)
         val openIntent = Intent.createChooser(
             Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(contentUri, resolveDownloadMimeType(target.name, null))
+                setDataAndType(contentUri, mimeType)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
             },
             context.getString(R.string.open),
@@ -440,39 +478,12 @@ class WebUIDownloadInterface(private val state: WebUIState) {
         )
         return NotificationCompat.Builder(context, DownloadService.CHANNEL_ID)
             .setContentTitle(context.getString(R.string.download_complete_title))
-            .setContentText(context.getString(R.string.download_complete_content, target.name))
+            .setContentText(context.getString(R.string.download_complete_content, fileName))
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .addAction(android.R.drawable.ic_menu_view, context.getString(R.string.open), pendingIntent)
             .build()
-    }
-
-    private fun getMediaStoreUriForFile(context: Context, file: File): Uri {
-        val resolver = context.contentResolver
-        val collection =
-            MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-
-        val projection = arrayOf(MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DISPLAY_NAME)
-        val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ?"
-        val selectionArgs = arrayOf(file.name)
-
-        resolver.query(collection, projection, selection, selectionArgs, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
-                val id = cursor.getLong(idColumn)
-                return Uri.withAppendedPath(collection, id.toString())
-            }
-        }
-
-        val values = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
-            put(MediaStore.MediaColumns.MIME_TYPE, resolveDownloadMimeType(file.name, null))
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-            put(MediaStore.MediaColumns.IS_PENDING, 0)
-        }
-
-        return resolver.insert(collection, values) ?: Uri.fromFile(file)
     }
 
     private fun buildFailureNotification(

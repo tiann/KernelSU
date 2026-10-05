@@ -30,6 +30,11 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
+private const val WEB_DOMAIN = "mui.kernelsu.org"
+private const val KSU_SCHEME = "ksu"
+private const val ICON_HOST = "icon"
+private const val INTERNAL_BLOB_DOWNLOAD_HOST = "blob-download.kernelsu.internal"
+
 private fun loadDownloadJs(context: Context): String {
     return context.assets.open("webview/download.js").bufferedReader(Charsets.UTF_8).use { it.readText() }
 }
@@ -97,7 +102,7 @@ internal suspend fun prepareWebView(
 
             val webRoot = File("${webUIState.modDir}/webroot")
             val webViewAssetLoader = WebViewAssetLoader.Builder()
-                .setDomain("mui.kernelsu.org")
+                .setDomain(WEB_DOMAIN)
                 .addPathHandler(
                     "/",
                     SuFilePathHandler(
@@ -116,7 +121,7 @@ internal suspend fun prepareWebView(
 
                     BlobDownloadHandler.shouldInterceptRequest(request)?.let { return it }
 
-                    if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
+                    if (url.scheme.equals(KSU_SCHEME, ignoreCase = true) && url.host.equals(ICON_HOST, ignoreCase = true)) {
                         val packageName = url.path?.substring(1)
                         if (!packageName.isNullOrEmpty()) {
                             val appInfo = SuperUserViewModel.apps
@@ -206,7 +211,9 @@ internal suspend fun prepareWebView(
             webView.addJavascriptInterface(webviewInterface, "ksu")
             webView.addJavascriptInterface(downloadInterface, "ksu_download")
             webView.setDownloadListener { url, _, _, _, _ ->
-                downloadInterface.openExternal(url)
+                if (Uri.parse(url).host != INTERNAL_BLOB_DOWNLOAD_HOST) {
+                    downloadInterface.openExternal(url)
+                }
             }
             webView.evaluateJavascript(loadDownloadJs(activity), null)
             webUIState.uiEvent = WebUIEvent.WebViewReady
