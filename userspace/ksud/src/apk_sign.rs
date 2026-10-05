@@ -28,7 +28,7 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
             }
         }
 
-        ensure!(n != 0xffff, "not a zip file");
+        ensure!(i < 0xffff, "not a zip file");
 
         i += 1;
     }
@@ -112,4 +112,71 @@ fn calc_cert_sha256(
     *offset += cert_len;
 
     Ok((cert_len, sha256::digest(&cert)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::get_apk_signature;
+    use std::io::Write;
+
+    const CERTIFICATE: &[u8] = b"KernelSU test certificate";
+
+    fn length_prefixed(value: &[u8]) -> Vec<u8> {
+        let mut result = u32::try_from(value.len()).unwrap().to_le_bytes().to_vec();
+        result.extend_from_slice(value);
+        result
+    }
+
+    fn apk_with_comment(comment: &[u8]) -> tempfile::NamedTempFile {
+        let mut signed_data = length_prefixed(&[]);
+        signed_data.extend_from_slice(&length_prefixed(&length_prefixed(CERTIFICATE)));
+        signed_data.extend_from_slice(&length_prefixed(&[]));
+        let mut signer = length_prefixed(&signed_data);
+        signer.extend_from_slice(&length_prefixed(&[]));
+        signer.extend_from_slice(&length_prefixed(&[]));
+        let mut pair = 0x7109_871a_u32.to_le_bytes().to_vec();
+        pair.extend_from_slice(&length_prefixed(&length_prefixed(&signer)));
+        let block_size = u64::try_from(pair.len()).unwrap() + 32;
+        let mut apk = block_size.to_le_bytes().to_vec();
+        apk.extend_from_slice(&u64::try_from(pair.len()).unwrap().to_le_bytes());
+        apk.extend_from_slice(&pair);
+        apk.extend_from_slice(&block_size.to_le_bytes());
+        apk.extend_from_slice(b"APK Sig Block 42");
+        let central_directory = u32::try_from(apk.len()).unwrap();
+        apk.extend_from_slice(b"PK\x05\x06");
+        apk.extend_from_slice(&[0; 12]);
+        apk.extend_from_slice(&central_directory.to_le_bytes());
+        apk.extend_from_slice(&u16::try_from(comment.len()).unwrap().to_le_bytes());
+        apk.extend_from_slice(comment);
+        let mut file = tempfile::NamedTempFile::new().unwrap();
+        file.write_all(&apk).unwrap();
+        file
+    }
+
+    fn check_comment(comment: &[u8]) {
+        let apk = apk_with_comment(comment);
+        let signature = get_apk_signature(apk.path().to_str().unwrap()).unwrap();
+        assert_eq!(signature.0, u32::try_from(CERTIFICATE.len()).unwrap());
+        assert_eq!(signature.1, sha256::digest(CERTIFICATE));
+    }
+
+    #[test]
+    fn reads_certificate_without_zip_comment() {
+        check_comment(&[]);
+    }
+
+    #[test]
+    fn reads_certificate_with_zip_comment() {
+        check_comment(b"APK comment");
+    }
+
+    #[test]
+    fn reads_certificate_with_ffff_in_zip_comment() {
+        check_comment(b"APK\xff\xff comment\xff\xff");
+    }
+
+    #[test]
+    fn reads_certificate_with_maximum_zip_comment() {
+        check_comment(&vec![0xff; usize::from(u16::MAX)]);
+    }
 }
