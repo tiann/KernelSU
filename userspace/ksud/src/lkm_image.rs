@@ -53,7 +53,7 @@ const ELF64_RELA_SIZE: usize = 24;
 const KALLSYMS_ALIGNMENT: usize = 8;
 const KALLSYMS_TOKEN_COUNT: usize = 256;
 const KALLSYMS_TOKEN_INDEX_SIZE: usize = KALLSYMS_TOKEN_COUNT * 2;
-const KALLSYMS_MAX_TOKEN_LENGTH: usize = 256;
+const KALLSYMS_MAX_TOKEN_LENGTH: usize = 512;
 const KALLSYMS_MARKER_SEARCH_WINDOW: usize = 4 * 1024 * 1024;
 const KALLSYMS_NAME_TAIL_SEARCH: usize = 0x40000;
 const KALLSYMS_MIN_MARKERS: usize = 8;
@@ -525,9 +525,6 @@ fn parse_kallsyms_token_table_at(
             .get(position..search_end)?
             .iter()
             .position(|byte| *byte == 0)?;
-        if length == 0 {
-            return None;
-        }
         let end = position.checked_add(length)?;
         let token = image.get(position..end)?;
         if token.iter().any(|byte| !(0x20..=0x7e).contains(byte)) {
@@ -2770,6 +2767,14 @@ mod tests {
         layout: &str,
         btf_range: Option<(usize, usize)>,
     ) -> (Vec<u8>, u64) {
+        build_kallsyms_fixture_with_btf_and_token(layout, btf_range, None)
+    }
+
+    fn build_kallsyms_fixture_with_btf_and_token(
+        layout: &str,
+        btf_range: Option<(usize, usize)>,
+        first_token: Option<&[u8]>,
+    ) -> (Vec<u8>, u64) {
         let base = 0xffff_ffc0_0800_0000;
         let image_size = 0x20_0000usize;
         let count = 2049usize;
@@ -2798,11 +2803,17 @@ mod tests {
         let mut token_offsets = Vec::with_capacity(256);
         for value in 0u8..=u8::MAX {
             token_offsets.push(u16::try_from(token_table.len()).unwrap());
-            token_table.push(if (0x20..=0x7e).contains(&value) {
-                value
+            if value == 0
+                && let Some(token) = first_token
+            {
+                token_table.extend_from_slice(token);
             } else {
-                b'x'
-            });
+                token_table.push(if (0x20..=0x7e).contains(&value) {
+                    value
+                } else {
+                    b'x'
+                });
+            }
             token_table.push(0);
         }
         let mut token_index = Vec::with_capacity(KALLSYMS_TOKEN_INDEX_SIZE);
@@ -2875,6 +2886,55 @@ mod tests {
 
     fn build_kallsyms_fixture(layout: &str) -> (Vec<u8>, u64) {
         build_kallsyms_fixture_with_btf(layout, None)
+    }
+
+    #[test]
+    fn recovers_kallsyms_with_empty_tokens() {
+        for layout in ["pre-6.4", "6.4+"] {
+            let (image, base) = build_kallsyms_fixture_with_btf_and_token(layout, None, Some(&[]));
+            let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+            assert_eq!(
+                recovered.kallsyms.symbols.resolve("_text").unwrap().address,
+                base
+            );
+            assert_eq!(recovered.kallsyms.count, 2049);
+        }
+    }
+
+    #[test]
+    fn recovers_kallsyms_with_long_tokens() {
+        for length in [257, 512] {
+            let token = vec![b'a'; length];
+            let (image, base) =
+                build_kallsyms_fixture_with_btf_and_token("pre-6.4", None, Some(&token));
+            let recovered = recover_arm64_kernel_metadata(&image).unwrap();
+            assert_eq!(
+                recovered.kallsyms.symbols.resolve("_text").unwrap().address,
+                base
+            );
+            assert_eq!(recovered.kallsyms.count, 2049);
+        }
+    }
+
+    #[test]
+    fn rejects_kallsyms_with_oversized_tokens() {
+        let token = vec![b'a'; 513];
+        let (image, _) = build_kallsyms_fixture_with_btf_and_token("pre-6.4", None, Some(&token));
+        assert!(recover_arm64_kernel_metadata(&image).is_err());
+    }
+
+    #[test]
+    fn rejects_kallsyms_with_non_ascii_tokens() {
+        let (image, _) = build_kallsyms_fixture_with_btf_and_token("pre-6.4", None, Some(&[0x80]));
+        assert!(recover_arm64_kernel_metadata(&image).is_err());
+    }
+
+    #[test]
+    fn rejects_kallsyms_with_incorrect_token_index() {
+        let (mut image, _) = build_kallsyms_fixture_with_btf_and_token("pre-6.4", None, Some(&[]));
+        let token_index = find_kallsyms_token_tables(&image)[0].2;
+        image[token_index..token_index + 2].copy_from_slice(&1_u16.to_le_bytes());
+        assert!(recover_arm64_kernel_metadata(&image).is_err());
     }
 
     #[test]
