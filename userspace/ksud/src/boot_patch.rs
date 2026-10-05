@@ -576,7 +576,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
 
         let kmi = kmi.map_or_else(
             || -> Result<_> {
-                if kmod.is_some() {
+                if kmod.is_some() || (no_install && image.is_some()) {
                     return Ok(String::new());
                 }
                 #[cfg(target_os = "android")]
