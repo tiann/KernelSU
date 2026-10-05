@@ -33,6 +33,7 @@ class WebUIState {
 
     var uiEvent by mutableStateOf<WebUIEvent>(WebUIEvent.Loading)
     var isUrlLoaded = false
+    @Volatile
     var currentInsets: Insets = Insets(0, 0, 0, 0)
     var isInsetsEnabled by mutableStateOf(false)
     var webCanGoBack by mutableStateOf(false)
