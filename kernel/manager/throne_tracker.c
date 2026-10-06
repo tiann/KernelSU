@@ -296,28 +296,34 @@ void track_throne(bool prune_only)
         goto prune;
 
     // first, check if manager_uid exist!
-    bool manager_package_exist = false;
+    uid_t manager_package_uid = KSU_INVALID_APPID;
     bool need_rescan = false;
     list_for_each_entry (np, &uid_list, list) {
         if (strcmp(np->package, KSU_PACKAGE_NAME) == 0) {
-            manager_package_exist = true;
-            // this should happen in normal android system
-            if (unlikely(np->uid != ksu_get_manager_appid())) {
-                pr_info("manager uid changed, invalidate it!\n");
-                cached_manager_apk_path[0] = 0;
-                ksu_invalidate_manager_uid();
-            }
-            need_rescan = !ksu_is_manager_appid_valid() || np->uid != ksu_get_manager_appid();
+            manager_package_uid = np->uid;
             break;
         }
     }
 
-    if (!manager_package_exist) {
+    if (manager_package_uid == KSU_INVALID_APPID) {
         cached_manager_apk_path[0] = 0;
         if (ksu_is_manager_appid_valid()) {
             pr_info("manager is uninstalled, invalidate it!\n");
             ksu_invalidate_manager_uid();
             goto prune;
+        }
+    } else {
+        if (!ksu_is_manager_appid_valid()) {
+            need_rescan = true;
+        } else if (unlikely(np->uid != ksu_get_manager_appid())) {
+            // this should not happen in normal android system
+            pr_info("manager uid changed, invalidate it!\n");
+            cached_manager_apk_path[0] = 0;
+            ksu_invalidate_manager_uid();
+            need_rescan = true;
+        } else {
+            // uid unchanged, skip
+            pr_info("manager uid unchanged, skip search!\n");
         }
     }
 
@@ -328,6 +334,7 @@ void track_throne(bool prune_only)
             int ret = kern_path(cached_manager_apk_path, 0, &p);
             if (ret == 0) {
                 // skip search
+                pr_info("manager apk path unchanged, skip search!\n");
                 path_put(&p);
                 goto prune;
             } else if (ret != -ENOENT) {
