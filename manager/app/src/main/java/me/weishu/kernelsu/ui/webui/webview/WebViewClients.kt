@@ -62,6 +62,11 @@ internal class WebUiClient(
         return webViewAssetLoader.shouldInterceptRequest(url)
     }
 
+    override fun onPageCommitVisible(view: WebView?, url: String?) {
+        viewModel.onHomePageLoaded()
+        super.onPageCommitVisible(view, url)
+    }
+
     override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
         viewModel.onHistoryChanged(view?.canGoBack() ?: false)
         view?.evaluateJavascript(downloadJs, null)

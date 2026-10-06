@@ -46,13 +46,20 @@ internal suspend fun prepareWebView(
     } ?: return
 
     val moduleDir = "/data/adb/modules/${moduleId}"
-    val shell = withContext(Dispatchers.IO) { createRootShell(true) }
 
     val iconUri = viewModel.state.value.moduleInfo?.webUiIconPath?.takeIf { it.isNotBlank() }?.let { "su:$it" }
     val iconBitmap = withContext(Dispatchers.IO) {
         Shortcut.loadShortcutBitmap(activity, iconUri)
     }
     activity.setTaskDescription(moduleName, iconBitmap)
+
+    val shell = withContext(Dispatchers.IO) { createRootShell(true) }
+    try {
+        runtime.registerShell(shell)
+    } catch (t: Throwable) {
+        runCatching { shell.close() }
+        throw t
+    }
 
     val webView = createWebView(activity)
     val webViewAssetLoader = createAssetLoader(activity, moduleDir, shell, viewModel)
@@ -68,7 +75,6 @@ internal suspend fun prepareWebView(
             downloadInterface.openExternal(url)
         }
     }
-    runtime.registerShell(shell)
     runtime.registerInterfaces(webviewInterface, downloadInterface)
     runtime.attach(webView)
 
