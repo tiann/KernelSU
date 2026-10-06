@@ -301,7 +301,13 @@ void track_throne(bool prune_only)
     list_for_each_entry (np, &uid_list, list) {
         if (strcmp(np->package, KSU_PACKAGE_NAME) == 0) {
             manager_package_exist = true;
-            need_rescan = !ksu_is_manager_appid_valid() || np->uid != ksu_manager_appid;
+            // this should happen in normal android system
+            if (unlikely(np->uid != ksu_get_manager_appid())) {
+                pr_info("manager uid changed, invalidate it!\n");
+                cached_manager_apk_path[0] = 0;
+                ksu_invalidate_manager_uid();
+            }
+            need_rescan = !ksu_is_manager_appid_valid() || np->uid != ksu_get_manager_appid();
             break;
         }
     }
