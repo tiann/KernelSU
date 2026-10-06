@@ -197,7 +197,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
              * now we defer file opens after iterate_dir
              * this way we dont open apks while inside that
              */
-            if (!strstarts(candidate_path, "/data/ap"))
+            if (!candidate_path[0])
                 goto skip_iterate;
 
             bool is_manager = is_manager_apk(candidate_path);
