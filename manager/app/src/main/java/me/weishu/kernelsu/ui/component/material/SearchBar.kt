@@ -1,8 +1,6 @@
 package me.weishu.kernelsu.ui.component.material
 
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -137,14 +135,11 @@ fun SearchAppBar(
             }
     }
 
-    val navEventState = rememberNavigationEventState(NavigationEventInfo.None)
-    NavigationBackHandler(
-        state = navEventState,
-        isBackEnabled = isSearchExpanded,
-        onBackCompleted = {
+    BackHandler(isSearchExpanded) {
+        if (isSearchExpanded) {
             collapseAndClear()
         }
-    )
+    }
 
     val inputField: @Composable () -> Unit = {
         CompositionLocalProvider(LocalDensity provides scaledDensity) {
