@@ -60,13 +60,6 @@ static noinline uint64_t chibihash64_wrapper_apk(const char *input)
     return chibihash64((void *)input, (ptrdiff_t)strnlen(input, DATA_PATH_LEN), 0ULL);
 }
 
-static void destroy_apk_hash_list()
-{
-    kfree(apk_hash_list);
-    apk_hash_list = NULL;
-    apk_hash_count = 0;
-}
-
 struct data_path {
     char dirpath[DATA_PATH_LEN];
     int depth;
@@ -246,7 +239,6 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
             }
 
             crown_manager(candidate_path, uid_data);
-            destroy_apk_hash_list();
             stop = 1;
 
         skip_iterate:
@@ -385,5 +377,5 @@ void __init ksu_throne_tracker_init()
 
 void __exit ksu_throne_tracker_exit()
 {
-	destroy_apk_hash_list();
+    // nothing to do
 }
