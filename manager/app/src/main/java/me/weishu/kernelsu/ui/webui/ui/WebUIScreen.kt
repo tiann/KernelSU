@@ -45,8 +45,7 @@ fun WebUIScreen(
         Box(modifier = webViewModifier) {
             runtime.webView?.let {
                 WebViewContainer(
-                    webView = it,
-                    onUrlLoaded = viewModel::onHomePageLoaded
+                    webView = it
                 )
             }
         }

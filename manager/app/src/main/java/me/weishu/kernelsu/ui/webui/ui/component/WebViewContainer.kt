@@ -11,8 +11,7 @@ import me.weishu.kernelsu.ui.webui.webview.WEBUI_HOME_URL
 
 @Composable
 fun WebViewContainer(
-    webView: WebView,
-    onUrlLoaded: () -> Unit
+    webView: WebView
 ) {
     val listener = object : View.OnLayoutChangeListener {
         override fun onLayoutChange(
@@ -22,7 +21,6 @@ fun WebViewContainer(
             if (v.width > 0 && v.height > 0) {
                 v.removeOnLayoutChangeListener(this)
                 (v as WebView).loadUrl(WEBUI_HOME_URL)
-                onUrlLoaded()
             }
         }
     }
@@ -37,7 +35,6 @@ fun WebViewContainer(
                 )
                 if (width > 0 && height > 0) {
                     loadUrl(WEBUI_HOME_URL)
-                    onUrlLoaded()
                 } else {
                     addOnLayoutChangeListener(listener)
                 }
