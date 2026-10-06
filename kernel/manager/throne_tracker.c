@@ -219,8 +219,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
                 goto skip_iterate;
 
             uint64_t path_hash = chibihash64_wrapper_apk(candidate_path);
-            size_t h;
-            for (h = 0; h < apk_hash_count; h++) {
+            for (size_t h = 0; h < apk_hash_count; h++) {
                 if (apk_hash_list[h] == path_hash) {
                     if (IS_ENABLED(CONFIG_KSU_DEBUG))
                         pr_info("Found new base.apk at path: %s, already in list! skip!\n", candidate_path);
