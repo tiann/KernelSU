@@ -14,7 +14,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
 #include "manager/throne_tracker.h"
-#include "chibihash64.h"
 
 uid_t ksu_manager_appid = KSU_INVALID_APPID;
 
@@ -49,16 +48,6 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 }
 
 #define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk
-
-static DEFINE_MUTEX(throne_tracker_mutex);
-
-static size_t apk_hash_count = 0;
-static uint64_t *apk_hash_list = NULL;
-
-static noinline uint64_t chibihash64_wrapper_apk(const char *input)
-{
-    return chibihash64((void *)input, (ptrdiff_t)strnlen(input, DATA_PATH_LEN), 0ULL);
-}
 
 struct data_path {
     char dirpath[DATA_PATH_LEN];
@@ -211,32 +200,11 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
             if (!strstarts(candidate_path, "/data/ap"))
                 goto skip_iterate;
 
-            uint64_t path_hash = chibihash64_wrapper_apk(candidate_path);
-            for (size_t h = 0; h < apk_hash_count; h++) {
-                if (apk_hash_list[h] == path_hash) {
-                    if (IS_ENABLED(CONFIG_KSU_DEBUG))
-                        pr_info("Found new base.apk at path: %s, already in list! skip!\n", candidate_path);
-                    goto skip_iterate;
-                }
-            }
-
             bool is_manager = is_manager_apk(candidate_path);
             pr_info("Found new base.apk at path: %s, is_manager: %d\n", candidate_path, is_manager);
 
-            if (likely(!is_manager)) {
-                // TODO: rethink, should we amortize realloc slot allocations?
-                size_t new_count = apk_hash_count + 1;
-                uint64_t *new_list = krealloc(apk_hash_list, new_count * sizeof(uint64_t), GFP_KERNEL);
-                if (!new_list)
-                    goto skip_iterate;
-
-                apk_hash_list = new_list;
-                apk_hash_list[apk_hash_count] = path_hash;
-                apk_hash_count = new_count;
-                if (IS_ENABLED(CONFIG_KSU_DEBUG))
-                    pr_info("Found new base.apk at path: %s, not in list! added!\n", candidate_path);
+            if (likely(!is_manager))
                 goto skip_iterate;
-            }
 
             crown_manager(candidate_path, uid_data);
             stop = 1;
@@ -264,7 +232,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
     return exist;
 }
 
-static inline void do_track_throne(bool prune_only)
+void track_throne(bool prune_only)
 {
     const struct cred *old_cred = override_creds(ksu_cred);
     struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
@@ -361,13 +329,6 @@ out:
     }
 out_revert_cred:
     revert_creds(old_cred);
-}
-
-void track_throne(bool prune_only)
-{
-    mutex_lock(&throne_tracker_mutex);
-    do_track_throne(prune_only);
-    mutex_unlock(&throne_tracker_mutex);
 }
 
 void __init ksu_throne_tracker_init()
