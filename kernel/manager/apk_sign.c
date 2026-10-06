@@ -297,40 +297,35 @@ module_param_cb(ksu_debug_manager_appid, &expected_size_ops, &ksu_debug_manager_
 
 #endif
 
-int get_pkg_from_apk_path(char *pkg, const char *path)
+// /data/app/XXXXX/<PACKAGE_NAME>-YYY, which contains base.apk
+int get_pkg_from_apk_dir_path(char *pkg, const char *path)
 {
     int len = strlen(path);
     if (len >= KSU_MAX_PACKAGE_NAME || len < 1)
         return -1;
 
     const char *last_slash = NULL;
-    const char *second_last_slash = NULL;
-
     int i;
     for (i = len - 1; i >= 0; i--) {
         if (path[i] == '/') {
-            if (!last_slash) {
-                last_slash = &path[i];
-            } else {
-                second_last_slash = &path[i];
-                break;
-            }
+            last_slash = &path[i];
+            break;
         }
     }
 
-    if (!last_slash || !second_last_slash)
+    if (!last_slash)
         return -1;
 
-    const char *last_hyphen = strchr(second_last_slash, '-');
-    if (!last_hyphen || last_hyphen > last_slash)
+    const char *last_hyphen = strchr(last_slash, '-');
+    if (!last_hyphen)
         return -1;
 
-    int pkg_len = last_hyphen - second_last_slash - 1;
+    int pkg_len = last_hyphen - last_slash - 1;
     if (pkg_len >= KSU_MAX_PACKAGE_NAME || pkg_len <= 0)
         return -1;
 
     // Copying the package name
-    memcpy(pkg, second_last_slash + 1, pkg_len);
+    memcpy(pkg, last_slash + 1, pkg_len);
     pkg[pkg_len] = '\0';
 
     return 0;
@@ -338,24 +333,5 @@ int get_pkg_from_apk_path(char *pkg, const char *path)
 
 bool is_manager_apk(char *path)
 {
-#ifdef KSU_MANAGER_PACKAGE
-    char pkg[KSU_MAX_PACKAGE_NAME];
-    if (get_pkg_from_apk_path(pkg, path) < 0) {
-        pr_err("Failed to get package name from apk path: %s\n", path);
-        return false;
-    }
-
-    // pkg is `<real package>`
-    if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
-        return false;
-    }
-#endif
-    if (check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH)) {
-        return true;
-    }
-#ifdef EXPECTED_SIZE2
-    return check_v2_signature(path, EXPECTED_SIZE2, EXPECTED_HASH2);
-#else
-    return false;
-#endif
+    return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }
