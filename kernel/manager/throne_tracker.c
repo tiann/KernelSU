@@ -16,6 +16,8 @@
 #include "manager/manager_identity.h"
 #include "manager/throne_tracker.h"
 
+static DEFINE_MUTEX(throne_tracker_mutex);
+
 uid_t ksu_manager_appid = KSU_INVALID_APPID;
 
 #define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk
@@ -228,6 +230,7 @@ static bool is_uid_exist(uid_t uid, char *package, void *data)
 
 void track_throne(bool prune_only)
 {
+    mutex_lock(&throne_tracker_mutex);
     const struct cred *old_cred = override_creds(ksu_cred);
     struct file *fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
     if (IS_ERR(fp)) {
@@ -341,6 +344,7 @@ out:
     }
 out_revert_cred:
     revert_creds(old_cred);
+    mutex_unlock(&throne_tracker_mutex);
 }
 
 void __init ksu_throne_tracker_init()
