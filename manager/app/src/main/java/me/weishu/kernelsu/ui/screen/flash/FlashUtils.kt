@@ -2,8 +2,6 @@ package me.weishu.kernelsu.ui.screen.flash
 
 import android.net.Uri
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.os.Parcelable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Adb
@@ -22,13 +20,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.terminal.TerminalSession
 import me.weishu.kernelsu.ui.util.FlashResult
 import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.downloadBoot
@@ -36,11 +38,6 @@ import me.weishu.kernelsu.ui.util.flashModule
 import me.weishu.kernelsu.ui.util.installBoot
 import me.weishu.kernelsu.ui.util.restoreBoot
 import me.weishu.kernelsu.ui.util.uninstallPermanently
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import kotlin.time.Duration.Companion.milliseconds
 
 enum class FlashingStatus {
     FLASHING,
@@ -102,11 +99,10 @@ sealed class FlashIt : Parcelable {
 
 fun flashModulesSequentially(
     uris: List<Uri>,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
+    terminal: TerminalSession
 ): FlashResult {
     for (uri in uris) {
-        flashModule(uri, onStdout, onStderr).apply {
+        flashModule(uri, terminal).apply {
             if (code != 0) {
                 return FlashResult(code, err, showReboot)
             }
@@ -117,8 +113,7 @@ fun flashModulesSequentially(
 
 fun flashIt(
     flashIt: FlashIt,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
+    terminal: TerminalSession
 ): FlashResult {
     return when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
@@ -129,8 +124,7 @@ fun flashIt(
             flashIt.allowShell,
             flashIt.enableAdb,
             flashIt.backup,
-            onStdout,
-            onStderr
+            terminal
         )
 
         is FlashIt.DownloadBoot -> downloadBoot(
@@ -140,73 +134,20 @@ fun flashIt(
             flashIt.allowShell,
             flashIt.enableAdb,
             flashIt.backup,
-            onStdout,
-            onStderr
+            terminal
         )
 
         is FlashIt.FlashModules -> {
-            flashModulesSequentially(flashIt.uris, onStdout, onStderr)
+            flashModulesSequentially(flashIt.uris, terminal)
         }
 
-        FlashIt.FlashRestore -> restoreBoot(onStdout, onStderr)
-        FlashIt.FlashUninstall -> uninstallPermanently(onStdout, onStderr)
-    }
-}
-
-@Composable
-fun FlashEffect(
-    flashIt: FlashIt,
-    text: String,
-    logContent: StringBuilder,
-    onTextUpdate: (String) -> Unit,
-    onShowRebootChange: (Boolean) -> Unit,
-    onFlashingStatusChange: (FlashingStatus) -> Unit,
-    enabled: Boolean = true
-) {
-    LaunchedEffect(enabled) {
-        if (!enabled || text.isNotEmpty()) {
-            return@LaunchedEffect
-        }
-        var currentText = text
-        val mainHandler = Handler(Looper.getMainLooper())
-        withContext(Dispatchers.IO) {
-            flashIt(flashIt, onStdout = {
-                val tempText = "$it\n"
-                if (tempText.startsWith("[H[J")) { // clear command
-                    currentText = tempText.substring(6)
-                } else {
-                    currentText += tempText
-                }
-                mainHandler.post {
-                    onTextUpdate(currentText)
-                }
-                logContent.append(it).append("\n")
-            }, onStderr = {
-                logContent.append(it).append("\n")
-            }).apply {
-                if (code != 0) {
-                    currentText += "Error code: $code.\n $err Please save and check the log.\n"
-                    mainHandler.post {
-                        onTextUpdate(currentText)
-                    }
-                }
-                if (showReboot) {
-                    currentText += "\n\n\n"
-                    mainHandler.post {
-                        onTextUpdate(currentText)
-                        onShowRebootChange(true)
-                    }
-                }
-                mainHandler.post {
-                    onFlashingStatusChange(if (code == 0) FlashingStatus.SUCCESS else FlashingStatus.FAILED)
-                }
-            }
-        }
+        FlashIt.FlashRestore -> restoreBoot(terminal)
+        FlashIt.FlashUninstall -> uninstallPermanently(terminal)
     }
 }
 
 fun saveLog(
-    logContent: StringBuilder,
+    terminal: TerminalSession,
     scope: CoroutineScope,
     showMessage: (String) -> Unit
 ): () -> Unit {
@@ -218,7 +159,7 @@ fun saveLog(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "KernelSU_install_log_${date}.log"
             )
-            file.writeText(logContent.toString())
+            file.writeText(terminal.logText())
             showMessage("Log saved to ${file.absolutePath}")
         }
     }

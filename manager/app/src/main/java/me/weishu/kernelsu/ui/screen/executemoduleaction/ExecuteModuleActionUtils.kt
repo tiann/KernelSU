@@ -1,42 +1,36 @@
 package me.weishu.kernelsu.ui.screen.executemoduleaction
 
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.weishu.kernelsu.R
-import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
-import me.weishu.kernelsu.ui.util.runModuleAction
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
+import me.weishu.kernelsu.terminal.TerminalSession
+import me.weishu.kernelsu.ui.terminal.TerminalViewModel
+import me.weishu.kernelsu.ui.util.FlashResult
+import me.weishu.kernelsu.ui.util.runModuleAction
 
 @Composable
 fun ExecuteModuleActionEffect(
     moduleId: String,
-    text: String,
-    logContent: StringBuilder,
-    fromShortcut: Boolean,
-    onTextUpdate: (String) -> Unit,
-    onComplete: () -> Unit = {},
+    viewModel: TerminalViewModel,
     onExit: () -> Unit
 ) {
     val context = LocalContext.current
     val noModule = stringResource(R.string.no_such_module)
     val moduleUnavailable = stringResource(R.string.module_unavailable)
-    val moduleActionSuccess = stringResource(R.string.module_action_success)
 
-    LaunchedEffect(Unit) {
-        if (text.isNotEmpty()) {
+    LaunchedEffect(viewModel.terminal.isReady) {
+        if (!viewModel.terminal.isReady || viewModel.started) {
             return@LaunchedEffect
         }
         val repo = ModuleRepositoryImpl()
@@ -56,44 +50,14 @@ fun ExecuteModuleActionEffect(
             onExit()
             return@LaunchedEffect
         }
-        var actionResult: Boolean
-        var currentText = text
-        val mainHandler = Handler(Looper.getMainLooper())
-        withContext(Dispatchers.IO) {
-            runModuleAction(
-                moduleId = moduleId,
-                onStdout = {
-                    val tempText = "$it\n"
-                    if (tempText.startsWith("[H[J")) { // clear command
-                        currentText = tempText.substring(6)
-                    } else {
-                        currentText += tempText
-                    }
-                    mainHandler.post {
-                        onTextUpdate(currentText)
-                    }
-                    logContent.append(it).append("\n")
-                },
-                onStderr = {
-                    logContent.append(it).append("\n")
-                }
-            ).let {
-                actionResult = it
-            }
+        viewModel.start { terminal ->
+            FlashResult(runModuleAction(moduleId, terminal), false)
         }
-        if (actionResult && fromShortcut) {
-            Toast.makeText(
-                context,
-                moduleActionSuccess,
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-        onComplete()
     }
 }
 
 fun saveLog(
-    logContent: StringBuilder,
+    terminal: TerminalSession,
     scope: CoroutineScope,
     showMessage: (String) -> Unit
 ): () -> Unit {
@@ -105,7 +69,7 @@ fun saveLog(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
                 "KernelSU_module_action_log_${date}.log"
             )
-            file.writeText(logContent.toString())
+            file.writeText(terminal.logText())
             showMessage("Log saved to ${file.absolutePath}")
         }
     }

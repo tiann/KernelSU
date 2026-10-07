@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui.screen.flash
 import android.widget.Toast
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,6 +22,7 @@ import me.weishu.kernelsu.data.repository.isSoftRebootPreferred
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.terminal.TerminalViewModel
 import me.weishu.kernelsu.ui.util.reboot
 
 @Composable
@@ -27,10 +30,15 @@ fun FlashScreen(flashIt: FlashIt) {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var text by rememberSaveable { mutableStateOf("") }
-    val logContent = remember { StringBuilder() }
-    var showRebootAction by rememberSaveable { mutableStateOf(false) }
-    var flashingStatus by rememberSaveable { mutableStateOf(FlashingStatus.FLASHING) }
+    val terminalViewModel: TerminalViewModel = viewModel()
+    val terminal = terminalViewModel.terminal
+    val result = terminalViewModel.result
+    val showRebootAction = result?.showReboot == true
+    val flashingStatus = when (result?.code) {
+        null -> FlashingStatus.FLASHING
+        0 -> FlashingStatus.SUCCESS
+        else -> FlashingStatus.FAILED
+    }
     val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
     // Soft reboot keeps the jailbreak and still applies modules
     val softReboot = flashIt is FlashIt.FlashModules && isSoftRebootPreferred()
@@ -48,18 +56,13 @@ fun FlashScreen(flashIt: FlashIt) {
         }
     }
 
-    FlashEffect(
-        flashIt = flashIt,
-        text = text,
-        logContent = logContent,
-        onTextUpdate = { text = it },
-        onShowRebootChange = { showRebootAction = it },
-        onFlashingStatusChange = { flashingStatus = it },
-        enabled = flashingEnabled,
-    )
+    LaunchedEffect(flashingEnabled, terminal.isReady) {
+        if (flashingEnabled && terminal.isReady) {
+            terminalViewModel.start { flashIt(flashIt, it) }
+        }
+    }
 
     val state = FlashUiState(
-        text = text,
         showRebootAction = showRebootAction,
         flashingStatus = flashingStatus,
         showJailbreakWarning = needJailbreakWarning && !flashingEnabled,
@@ -67,7 +70,7 @@ fun FlashScreen(flashIt: FlashIt) {
     )
     val actions = FlashScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
-        onSaveLog = saveLog(logContent, scope) { showMessage(it) },
+        onSaveLog = saveLog(terminal, scope) { showMessage(it) },
         onReboot = {
             scope.launch {
                 withContext(Dispatchers.IO) {
@@ -80,7 +83,7 @@ fun FlashScreen(flashIt: FlashIt) {
     )
 
     when (LocalUiMode.current) {
-        UiMode.Miuix -> FlashScreenMiuix(state, actions)
-        UiMode.Material -> FlashScreenMaterial(state, actions, snackbarHost)
+        UiMode.Miuix -> FlashScreenMiuix(state, actions, terminal)
+        UiMode.Material -> FlashScreenMaterial(state, actions, snackbarHost, terminal)
     }
 }

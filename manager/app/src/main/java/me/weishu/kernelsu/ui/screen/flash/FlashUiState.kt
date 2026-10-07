@@ -5,7 +5,6 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class FlashUiState(
-    val text: String,
     val showRebootAction: Boolean,
     val flashingStatus: FlashingStatus,
     val showJailbreakWarning: Boolean,

@@ -10,9 +10,12 @@ import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.system.Os
 import android.util.Log
-import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import java.io.File
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -23,12 +26,10 @@ import me.weishu.kernelsu.core.tasks.ExtractImage
 import me.weishu.kernelsu.core.tasks.ProbeResult
 import me.weishu.kernelsu.core.utils.DataSourceChannel
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.terminal.TerminalResult
+import me.weishu.kernelsu.terminal.TerminalSession
 import okhttp3.OkHttpClient
 import org.json.JSONArray
-import java.io.File
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-import java.util.concurrent.TimeUnit
 
 /**
  * @author weishu
@@ -41,8 +42,8 @@ private fun getKsuDaemonPath(): String {
 }
 
 data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
-    constructor(result: Shell.Result, showReboot: Boolean) : this(result.code, result.err.joinToString("\n"), showReboot)
-    constructor(result: Shell.Result) : this(result, result.isSuccess)
+    constructor(result: TerminalResult, showReboot: Boolean) : this(result.code, result.err, showReboot)
+    constructor(result: TerminalResult) : this(result, result.isSuccess)
 }
 
 object KsuCli {
@@ -75,27 +76,33 @@ fun Uri.getFileName(context: Context): String? {
     return fileName
 }
 
-fun createRootShell(globalMnt: Boolean = false): Shell {
+private fun createRootShellWithCommand(globalMnt: Boolean): Pair<Shell, Array<String>> {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
-    val builder = Shell.Builder.create()
-    return try {
-        if (globalMnt) {
-            builder.build(getKsuDaemonPath(), "debug", "su", "-g")
-        } else {
-            builder.build(getKsuDaemonPath(), "debug", "su")
-        }
-    } catch (e: Throwable) {
-        Log.w(TAG, "ksu failed: ", e)
+    val commands = listOf(
+        arrayOf(getKsuDaemonPath(), "debug", "su") + if (globalMnt) arrayOf("-g") else emptyArray(),
+        arrayOf("su") + if (globalMnt) arrayOf("-mm") else emptyArray(),
+        arrayOf("/system/bin/sh"),
+    )
+    for (command in commands.dropLast(1)) {
         try {
-            if (globalMnt) {
-                builder.build("su", "-mm")
-            } else {
-                builder.build("su")
-            }
-        } catch (e: Throwable) {
-            Log.e(TAG, "su failed: ", e)
-            builder.build("sh")
+            return Shell.Builder.create().build(*command) to command
+        } catch (e: Exception) {
+            Log.w(TAG, "Unable to start ${command.first()}", e)
         }
+    }
+    return Shell.Builder.create().build(*commands.last()) to commands.last()
+}
+
+fun createRootShell(globalMnt: Boolean = false): Shell = createRootShellWithCommand(globalMnt).first
+
+/** Probe before starting the command, so a failed command is never retried as another user. */
+fun terminalShellCommand(command: String, globalMnt: Boolean): Array<String> {
+    val (shell, argv) = createRootShellWithCommand(globalMnt)
+    return shell.use {
+        // Magisk's remote su needs -i to forward a PTY when executing -c.
+        val interactive = argv.first() == "su" &&
+                ShellUtils.fastCmd(shell, "su --help").contains("--interactive")
+        argv + (if (interactive) arrayOf("-i") else emptyArray()) + arrayOf("-c", command)
     }
 }
 
@@ -176,33 +183,11 @@ fun uninstallModule(id: String): Boolean {
     return result
 }
 
-private fun flashWithIO(
-    cmd: String,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
-): Shell.Result {
-
-    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStdout(s ?: "")
-        }
-    }
-
-    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStderr(s ?: "")
-        }
-    }
-
-    return withNewRootShell {
-        newJob().add(cmd).to(stdoutCallback, stderrCallback).exec()
-    }
-}
+private fun flashWithIO(cmd: String, terminal: TerminalSession): TerminalResult = terminal.execute(cmd)
 
 fun flashModule(
     uri: Uri,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
+    terminal: TerminalSession
 ): FlashResult {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
@@ -211,7 +196,7 @@ fun flashModule(
             this?.copyTo(output)
         }
         val cmd = "module install ${file.absolutePath}"
-        val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
+        val result = flashWithIO("${getKsuDaemonPath()} $cmd", terminal)
         Log.i("KernelSU", "install module $uri result: $result")
 
         file.delete()
@@ -220,42 +205,26 @@ fun flashModule(
     }
 }
 
-fun runModuleAction(
-    moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
-    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStdout(s ?: "")
-        }
-    }
-
-    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStderr(s ?: "")
-        }
-    }
-
-    val result = withNewRootShell(true) {
-        newJob().add("${getKsuDaemonPath()} module action $moduleId")
-            .to(stdoutCallback, stderrCallback).exec()
-    }
-
-    Log.i("KernelSU", "Module runAction result: $result")
-
-    return result.isSuccess
+fun runModuleAction(moduleId: String, terminal: TerminalSession): TerminalResult {
+    val result = terminal.execute(
+        "${getKsuDaemonPath()} module action ${ShellUtils.escapedString(moduleId)}",
+        globalMnt = true,
+    )
+    Log.i(TAG, "Module runAction result: $result")
+    return result
 }
 
 fun restoreBoot(
-    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+    terminal: TerminalSession
 ): FlashResult {
-    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f", onStdout, onStderr)
+    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f", terminal)
     return FlashResult(result)
 }
 
 fun uninstallPermanently(
-    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+    terminal: TerminalSession
 ): FlashResult {
-    val result = flashWithIO("${getKsuDaemonPath()} uninstall --package-name ${BuildConfig.APPLICATION_ID}", onStdout, onStderr)
+    val result = flashWithIO("${getKsuDaemonPath()} uninstall --package-name ${BuildConfig.APPLICATION_ID}", terminal)
     return FlashResult(result)
 }
 
@@ -298,8 +267,7 @@ fun installBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit,
+    terminal: TerminalSession,
 ): FlashResult {
     val resolver = ksuApp.contentResolver
 
@@ -345,7 +313,7 @@ fun installBoot(
         cmd += " --partition $part"
     }
 
-    val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
+    val result = flashWithIO("${getKsuDaemonPath()} $cmd", terminal)
     Log.i("KernelSU", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()
@@ -366,16 +334,15 @@ fun downloadBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit,
+    terminal: TerminalSession,
 ): FlashResult {
     val bootFile = File(ksuApp.cacheDir, "download-boot.img")
     var probedKmi: String? = null
     try {
-        onStdout("- Downloading and extracting boot image")
+        terminal.appendLine("- Downloading and extracting boot image")
         val channel = DataSourceChannel(newDownloadClient(), url)
         val magic = readMagic(channel)
-        val image = ExtractImage(bootFile, onStdout)
+        val image = ExtractImage(bootFile, terminal::appendLine)
         // Extract the KMI here while the payload is open. ZipFile closes the
         // channel it is built on, so probe on a separate channel.
         val probeChannel = DataSourceChannel(newDownloadClient(), url)
@@ -384,13 +351,13 @@ fun downloadBoot(
                 ExtractImage.probePayload(
                     probeChannel,
                     withKmi = lkm is LkmSelection.KmiNone,
-                    onProgress = onStdout,
+                    onProgress = terminal::appendLine,
                 ).kmi
             } else {
                 ExtractImage.probe(
                     probeChannel,
                     withKmi = lkm is LkmSelection.KmiNone,
-                    onProgress = onStdout,
+                    onProgress = terminal::appendLine,
                 ).kmi
             }
         } finally {
@@ -411,7 +378,7 @@ fun downloadBoot(
     // is unrelated to this device, so ksud must not use the local kernel.
     val autoKmi = if (lkm is LkmSelection.KmiNone) {
         (probedKmi ?: BootKernelVersion.parseKmiFromBoot(bootFile))?.also {
-            onStdout("- Auto detected KMI: $it")
+            terminal.appendLine("- Auto detected KMI: $it")
         }
     } else {
         null
@@ -437,18 +404,7 @@ fun downloadBoot(
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
     cmd += " -o $downloadsDir"
 
-    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStdout(s ?: "")
-        }
-    }
-    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStderr(s ?: "")
-        }
-    }
-
-    val result = Shell.getShell().newJob().add(cmd).to(stdoutCallback, stderrCallback).exec()
+    val result = flashWithIO(cmd, terminal)
     lkmFile?.delete()
     bootFile.delete()
     return FlashResult(result, false)

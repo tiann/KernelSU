@@ -14,6 +14,7 @@ add_library(kernelsu
         SHARED
         jni.cc
         ksu.cc
+        terminal.cc
         )
 
 target_include_directories(kernelsu PRIVATE .)
