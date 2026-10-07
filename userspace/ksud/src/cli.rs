@@ -200,6 +200,9 @@ enum Debug {
         /// switch to gloabl mount namespace
         #[arg(short, long, default_value = "false")]
         global_mnt: bool,
+        /// Execute a command instead of an interactive shell
+        #[arg(short, long)]
+        command: Option<String>,
     },
 
     /// Get kernel version
@@ -708,7 +711,10 @@ pub fn run() -> Result<()> {
                 println!("Kernel Version: {}", ksucalls::get_version());
                 Ok(())
             }
-            Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
+            Debug::Su {
+                global_mnt,
+                command,
+            } => crate::su::grant_root(global_mnt, command.as_deref()),
             Debug::Test => assets::ensure_binaries(false),
             Debug::ExtractBinary { name, path } => {
                 let data = assets::get_asset_data(&name)?;
