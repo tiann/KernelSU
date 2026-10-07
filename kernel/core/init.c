@@ -25,7 +25,7 @@
 #include "hook/syscall_hook.h"
 #include "feature/adb_root.h"
 #include "feature/selinux_hide.h"
-#include "feature/module_load_filter.h"
+#include "feature/module_blacklist.h"
 #include "infra/symbol_resolver.h"
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
@@ -174,7 +174,7 @@ int __init kernelsu_init(void)
     } else {
         ksu_syscall_hook_manager_init();
 
-        ksu_module_load_filter_hook_init();
+        ksu_module_blacklist_init(ksu_block_modules);
 
         ksu_allowlist_init();
 
@@ -218,7 +218,6 @@ void __exit kernelsu_exit(void)
     ksu_adb_root_exit();
     ksu_sulog_exit();
     ksu_feature_exit();
-    ksu_module_load_filter_hook_exit();
 
     put_cred(ksu_cred);
 }
