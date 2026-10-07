@@ -49,7 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -94,7 +94,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoModule
-import me.weishu.kernelsu.ui.component.PagerNavigationSpringSpec
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -110,6 +110,7 @@ import me.weishu.kernelsu.ui.component.material.TopBarBackButton
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberContentReady
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -161,7 +162,7 @@ fun ModuleRepoScreenMaterial(
                             )
                             DropdownMenuGroup(shapes = MenuDefaults.groupShapes()) {
                                 sortOptions.forEachIndexed { index, (order, resId) ->
-                                    DropdownMenuItem(
+                                    SelectableDropdownMenuItem(
                                         text = { Text(stringResource(resId)) },
                                         selected = state.sortOrder == order,
                                         onClick = {
@@ -707,6 +708,7 @@ private fun ReleaseAssetSegmentedItem(
                         onDownloading = { isDownloading = true },
                         onProgress = { p -> scope.launch(Dispatchers.Main) { progress = p } }
                     )
+                    isDownloading = false
                 }
             }
             confirmDialog.showConfirm(title = confirmTitle, content = startText)
@@ -721,11 +723,12 @@ private fun ReleaseAssetSegmentedItem(
                 FilledTonalButton(
                     onClick = {
                         val uri = downloadedUri ?: return@FilledTonalButton
-                        val file = uri.path?.let { java.io.File(it) }
-                        if (file != null && file.exists()) {
-                            onInstallModule(uri)
-                        } else {
-                            downloadedUri = null
+                        scope.launch {
+                            if (isDownloadAvailable(uri)) {
+                                onInstallModule(uri)
+                            } else {
+                                downloadedUri = null
+                            }
                         }
                     },
                     contentPadding = ButtonDefaults.TextButtonContentPadding

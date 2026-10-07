@@ -86,9 +86,14 @@ module_param_named(norc, ksu_no_custom_rc, bool, 0);
 
 char ksu_block_modules[256];
 module_param_string(block_modules, ksu_block_modules, sizeof(ksu_block_modules), 0);
+#ifdef MODULE
+bool ksu_bundled = false;
+module_param_named(bundled, ksu_bundled, bool, 0);
+#endif
 
 int __init kernelsu_init(void)
 {
+    pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_PACKAGE_NAME "\n");
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {

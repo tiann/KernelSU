@@ -10,7 +10,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
+import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -35,7 +38,7 @@ import me.weishu.kernelsu.ui.webui.WebUIActivity
 @Composable
 fun ModulePager(
     bottomInnerPadding: Dp,
-    isCurrentPage: Boolean = true
+    isCurrentPage: Boolean = true,
 ) {
     val uiMode = LocalUiMode.current
     val navigator = LocalNavigator.current
@@ -54,26 +57,41 @@ fun ModulePager(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { /* Download works regardless of result */ }
+    val latestIsCurrentPage by rememberUpdatedState(isCurrentPage)
+    val initialResumeHandled = rememberSaveable { mutableStateOf(false) }
 
-    var hasActivated by remember { mutableStateOf(false) }
-    if (isCurrentPage) hasActivated = true
+    var hasActivated by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(isCurrentPage) {
+        if (isCurrentPage) {
+            if (!hasActivated) {
+                hasActivated = true
+                viewModel.refreshEnvironmentState()
+                viewModel.initializePreferences()
+                val state = viewModel.uiState.value
+                if (!state.hasLoaded && !state.isRefreshing) {
+                    viewModel.fetchModuleList()
+                }
+                if (Build.VERSION.SDK_INT >= 33) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else if (!rawUiState.searchStatus.isCollapsed()) {
+            viewModel.updateSearchStatus(rawUiState.searchStatus.copy(searchText = "", current = SearchStatus.Status.COLLAPSED))
+        }
+    }
 
-    if (hasActivated) {
-        LaunchedEffect(Unit) {
-            viewModel.refreshEnvironmentState()
-            viewModel.initializePreferences()
-            if (Build.VERSION.SDK_INT >= 33) {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    LifecycleResumeEffect(Unit) {
+        if (initialResumeHandled.value && latestIsCurrentPage) {
+            val state = viewModel.uiState.value
+            if (!state.isRefreshing) {
+                viewModel.fetchModuleList(
+                    checkUpdate = !state.hasLoaded || viewModel.isNeedRefresh,
+                    resort = !state.hasLoaded,
+                )
             }
         }
-
-        LifecycleResumeEffect(Unit) {
-            viewModel.fetchModuleList(
-                checkUpdate = rawUiState.moduleList.isEmpty() || viewModel.isNeedRefresh,
-                resort = rawUiState.moduleList.isEmpty(),
-            )
-            onPauseOrDispose {}
-        }
+        initialResumeHandled.value = true
+        onPauseOrDispose {}
     }
 
     val actions = ModuleActions(

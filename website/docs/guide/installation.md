@@ -108,7 +108,7 @@ Open the manager, click the installation icon in the upper right corner, and sev
 Using the manager's "Direct install" can automatically back up the stock boot (or init_boot) image for temporarily restoring it during incremental OTA updates. Note that this backup is created only if the current slot has not already been patched by KernelSU.
 The SHA1 of the backup image is stored in the patched boot image, and the backup file is saved at `/data/adb/ksu/ksu_backup_$SHA1`.
 When you use the manager's "Uninstall → Restore stock image" feature, if there is a matching backup file for the SHA1 recorded in the currently patched image, it will be restored directly.
-Since 3.2.6, if you are installing KernelSU for the first time without root, after patching the boot image via "Select a file" you can choose "Backup as stock image". In that case, the backup image is stored in the manager's internal storage; after flashing and booting the patched image, opening the manager for the first time will automatically move that backup to `/data/adb/ksu`.
+Since 3.3.0, if you are installing KernelSU for the first time without root, after patching the boot image via "Select a file" you can choose "Backup as stock image". In that case, the backup image is stored in the manager's internal storage; after flashing and booting the patched image, opening the manager for the first time will automatically move that backup to `/data/adb/ksu`.
 :::
 
 ### Use the command line

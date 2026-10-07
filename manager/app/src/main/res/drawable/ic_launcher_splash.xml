@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_logo_vector">
+    <target
+        android:name="outline_a_horizontal"
+        android:animation="@animator/anim_outline_horizontal" />
+    <target
+        android:name="outline_a_vertical"
+        android:animation="@animator/anim_outline_vertical" />
+    <target
+        android:name="outline_b_horizontal"
+        android:animation="@animator/anim_outline_horizontal" />
+    <target
+        android:name="outline_b_vertical"
+        android:animation="@animator/anim_outline_vertical" />
+    <target
+        android:name="square_a"
+        android:animation="@animator/anim_square_path" />
+    <target
+        android:name="square_b"
+        android:animation="@animator/anim_square_path_rev" />
+</animated-vector>

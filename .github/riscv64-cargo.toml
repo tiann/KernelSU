@@ -1,0 +1,3 @@
+# build-std resolves a separate workspace, so pass the libc pin as Cargo config too.
+[patch.crates-io]
+libc = { git = "https://github.com/rust-lang/libc", rev = "1a661633f11a261ff9c00b40875ef72f1cbec818" }

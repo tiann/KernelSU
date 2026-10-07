@@ -67,4 +67,9 @@
     <string name="profile_flags_desc_no_new_privs">از افزایش بیشتر سطح دسترسی از طریق KernelSU در چارچوب این پروفایل روت جلوگیری می‌کند.</string>
     <string name="install_force_backup">به عنوان ایمیج اصلی پشتیبان بگیر</string>
     <string name="install_force_backup_summary">لطفاً مطمئن شوید ایمیج بوتی که انتخاب کرده‌اید همان ایمیج اصلی است</string>
+    <string name="home_lkm_update_available">نسخه جدیدتری از LKM داخلی موجود است. برای به‌روزرسانی ضربه بزنید.</string>
+    <string name="home_lkm_custom">شخصی‌سازی‌شده</string>
+    <string name="require_manager_version">به‌روزرسانی مدیر لازم است.</string>
+    <string name="require_kernel_version">به‌روزرسانی هسته لازم است. برای نصب ضربه بزنید.</string>
+    <string name="require_kernel_version_gki">به‌روزرسانی هسته لازم است.</string>
 </resources>

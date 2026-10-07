@@ -1,3 +1,4 @@
+#include "util.h"
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/gfp.h>
@@ -152,18 +153,13 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
 
     bool v2_signing_valid = false;
     int v2_signing_blocks = 0;
-    bool v3_signing_exist = false;
-    bool v3_1_signing_exist = false;
 
     int i;
-    struct file *fp = filp_open(path, O_RDONLY, 0);
+    struct file *fp = ksu_filp_open_nonotify(path, O_RDONLY | O_NOATIME);
     if (IS_ERR(fp)) {
         pr_err("open %s error.\n", path);
         return false;
     }
-
-    // disable inotify for this file
-    fp->f_mode |= FMODE_NONOTIFY;
 
     file_size = generic_file_llseek(fp, 0, SEEK_END);
     if (file_size < 0)
@@ -251,16 +247,12 @@ static __always_inline bool check_v2_signature(char *path, unsigned expected_siz
         if (id == 0x7109871au) {
             v2_signing_blocks++;
             v2_signing_valid = check_block(fp, &pos, pair_end, expected_size, expected_sha256);
-        } else if (id == 0xf05368c0u) {
-            // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
-            v3_signing_exist = true;
-        } else if (id == 0x1b93ad61u) {
-            // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
-            v3_1_signing_exist = true;
-        } else {
+        } else if (id != 0x42726577u) { // APK verity padding
+            // https://cs.android.com/android/platform/superproject/+/android-latest-release:tools/apksig/src/main/java/com/android/apksig/internal/apk/ApkSigningBlockUtils.java;l=102;drc=ebe4dfd4fd6550c949a6c7c2427484bf5e96500b
 #ifdef CONFIG_KSU_DEBUG
-            pr_info("Unknown id: 0x%08x\n", id);
+            pr_info("Unexpected signature block id: 0x%08x\n", id);
 #endif
+            goto invalid;
         }
         pos = pair_end;
     }
@@ -278,11 +270,6 @@ invalid:
     v2_signing_valid = false;
 clean:
     filp_close(fp, 0);
-
-    if (v2_signing_valid && (v3_signing_exist || v3_1_signing_exist)) {
-        pr_err("Unexpected v3 signature scheme found!\n");
-        return false;
-    }
 
     return v2_signing_valid;
 }
@@ -310,40 +297,35 @@ module_param_cb(ksu_debug_manager_appid, &expected_size_ops, &ksu_debug_manager_
 
 #endif
 
-int get_pkg_from_apk_path(char *pkg, const char *path)
+// /data/app/XXXXX/<PACKAGE_NAME>-YYY, which contains base.apk
+int get_pkg_from_apk_dir_path(char *pkg, const char *path)
 {
     int len = strlen(path);
     if (len >= KSU_MAX_PACKAGE_NAME || len < 1)
         return -1;
 
     const char *last_slash = NULL;
-    const char *second_last_slash = NULL;
-
     int i;
     for (i = len - 1; i >= 0; i--) {
         if (path[i] == '/') {
-            if (!last_slash) {
-                last_slash = &path[i];
-            } else {
-                second_last_slash = &path[i];
-                break;
-            }
+            last_slash = &path[i];
+            break;
         }
     }
 
-    if (!last_slash || !second_last_slash)
+    if (!last_slash)
         return -1;
 
-    const char *last_hyphen = strchr(second_last_slash, '-');
-    if (!last_hyphen || last_hyphen > last_slash)
+    const char *last_hyphen = strchr(last_slash, '-');
+    if (!last_hyphen)
         return -1;
 
-    int pkg_len = last_hyphen - second_last_slash - 1;
+    int pkg_len = last_hyphen - last_slash - 1;
     if (pkg_len >= KSU_MAX_PACKAGE_NAME || pkg_len <= 0)
         return -1;
 
     // Copying the package name
-    memcpy(pkg, second_last_slash + 1, pkg_len);
+    memcpy(pkg, last_slash + 1, pkg_len);
     pkg[pkg_len] = '\0';
 
     return 0;
@@ -351,24 +333,5 @@ int get_pkg_from_apk_path(char *pkg, const char *path)
 
 bool is_manager_apk(char *path)
 {
-#ifdef KSU_MANAGER_PACKAGE
-    char pkg[KSU_MAX_PACKAGE_NAME];
-    if (get_pkg_from_apk_path(pkg, path) < 0) {
-        pr_err("Failed to get package name from apk path: %s\n", path);
-        return false;
-    }
-
-    // pkg is `<real package>`
-    if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
-        return false;
-    }
-#endif
-    if (check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH)) {
-        return true;
-    }
-#ifdef EXPECTED_SIZE2
-    return check_v2_signature(path, EXPECTED_SIZE2, EXPECTED_HASH2);
-#else
-    return false;
-#endif
+    return check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH);
 }

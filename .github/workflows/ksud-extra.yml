@@ -39,6 +39,7 @@ jobs:
       run: |
         mv ksuinit-aarch64/ksuinit ./userspace/ksud/bin/aarch64/
         mv ksuinit-x86_64/ksuinit ./userspace/ksud/bin/x86_64/
+        mv ksuinit-riscv64/ksuinit ./userspace/ksud/bin/riscv64/
         
     - name: Setup rustup
       run: |

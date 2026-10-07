@@ -109,7 +109,7 @@ Open the manager, click the installation icon in the upper right corner, and sev
 Sử dụng tùy chọn "Cài đặt trực tiếp (Khuyến nghị)" trong trình quản lý có thể tự động sao lưu boot image gốc (hoặc init_boot) để tạm thời khôi phục trong các bản cập nhật OTA gia tăng. Lưu ý rằng bản sao lưu này chỉ được tạo nếu khe hiện tại chưa từng được KernelSU patch.
 Giá trị SHA1 của image sao lưu sẽ được lưu trong boot image đã patch, và tệp sao lưu được lưu tại `/data/adb/ksu/ksu_backup_$SHA1`.
 Khi bạn dùng tính năng "Gỡ cài đặt → Khôi phục image gốc" trong trình quản lý, nếu tồn tại tệp sao lưu khớp với SHA1 được ghi trong image hiện đang được patch, tệp đó sẽ được khôi phục trực tiếp.
-Kể từ phiên bản 3.2.6, nếu đây là lần đầu bạn cài KernelSU mà không có root, sau khi patch boot image bằng tùy chọn "Chọn file", bạn có thể chọn "Sao lưu thành ảnh gốc". Khi đó, image sao lưu sẽ được lưu trong bộ nhớ trong của trình quản lý; sau khi flash và khởi động bằng image đã patch, lần đầu mở trình quản lý sẽ tự động chuyển bản sao lưu đó tới `/data/adb/ksu`.
+Kể từ phiên bản 3.3.0, nếu đây là lần đầu bạn cài KernelSU mà không có root, sau khi patch boot image bằng tùy chọn "Chọn file", bạn có thể chọn "Sao lưu thành ảnh gốc". Khi đó, image sao lưu sẽ được lưu trong bộ nhớ trong của trình quản lý; sau khi flash và khởi động bằng image đã patch, lần đầu mở trình quản lý sẽ tự động chuyển bản sao lưu đó tới `/data/adb/ksu`.
 :::
 
 ### Sử dụng dòng lệnh

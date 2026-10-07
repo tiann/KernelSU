@@ -16,6 +16,10 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -140,7 +144,16 @@ fun SearchStatus.SearchPager(
             .drawBehind { drawRect(surfaceColor.copy(alpha = surfaceAlpha)) }
             .semantics { onClick { false } }
             .then(
-                if (!searchStatus.isCollapsed()) Modifier.pointerInput(Unit) { } else Modifier
+                if (!searchStatus.isCollapsed()) {
+                    Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures { }
+                        }
+                        .draggable(
+                            state = rememberDraggableState { },
+                            orientation = Orientation.Horizontal,
+                        )
+                } else Modifier
             )
     ) {
         Row(

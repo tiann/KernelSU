@@ -10,15 +10,20 @@ on:
       ddk_release:
         description: 'DDK release version'
         required: false
-        default: '20260313'
+        default: '20260828'
         type: string
-      expected_size2:
-        description: 'Second expected signature size (for PR builds)'
+      package_name:
+        description: 'package name of manager'
         required: false
         default: ''
         type: string
-      expected_hash2:
-        description: 'Second expected signature hash (for PR builds)'
+      expected_size:
+        description: 'expected signature size'
+        required: false
+        default: ''
+        type: string
+      expected_hash:
+        description: 'expected signature hash'
         required: false
         default: ''
         type: string
@@ -37,8 +42,9 @@ jobs:
 
     - name: Build kernelsu.ko
       env:
-        EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
-        EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+        PACKAGE_NAME: ${{ inputs.package_name }}
+        EXPECTED_SIZE: ${{ inputs.expected_size }}
+        EXPECTED_HASH: ${{ inputs.expected_hash }}
       run: |
         git config --global --add safe.directory /__w/KernelSU/KernelSU
 
@@ -47,16 +53,17 @@ jobs:
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
-        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
-          exit 1
+        if [ -n "$PACKAGE_NAME" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_PACKAGE_NAME=$PACKAGE_NAME"
         fi
-        if [ -z "$EXPECTED_SIZE2" ] && [ -n "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_size2 must be provided when expected_hash2 is set."
-          exit 1
+        if [ -n "$EXPECTED_SIZE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_SIZE=$EXPECTED_SIZE"
         fi
-        if [ -n "$EXPECTED_SIZE2" ]; then
-          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+        if [ -n "$EXPECTED_HASH" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_HASH=$EXPECTED_HASH"
+        fi
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_IS_PR_BUILD=1"
         fi
         CONFIG_KSU=m CC=clang make $EXTRA_ARGS
         
@@ -84,8 +91,9 @@ jobs:
 
     - name: Build kernelsu.ko for x64
       env:
-        EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
-        EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+        PACKAGE_NAME: ${{ inputs.package_name }}
+        EXPECTED_SIZE: ${{ inputs.expected_size }}
+        EXPECTED_HASH: ${{ inputs.expected_hash }}
       run: |
         cd kernel
         make clean
@@ -99,36 +107,49 @@ jobs:
         kmi=${{ inputs.kmi }}
         pushd /opt/ddk/src/$kmi
         export KDIR=/opt/ddk/kdir-x64/$kmi
+
+        # ddk-min images contain the source tarball, whose modpost patch is
+        # not applied to the fresh x86 kdir.  Keep the patch idempotent so
+        # this also works when the image already contains one or more fixes.
+        MODPOST=scripts/mod/modpost.c
+        sed -i -E 's/^([[:space:]]*)check_exports\(mod\);/\1\/\/ check_exports(mod);/' "$MODPOST"
+        sed -i -E 's/^([[:space:]]*)s->module = exp->module;/\1\/\/ s->module = exp->module;/' "$MODPOST"
+        sed -i 's/^static void check_exports(/static void __attribute__((unused)) check_exports(/' "$MODPOST"
+        sed -i 's/__version_ext_names\\") =\\n/__version_ext_names\\") = \\"\\"\\n/' "$MODPOST"
+
         make O=$KDIR gki_defconfig
         scripts/config --file $KDIR/.config -d LTO_CLANG -e LTO_NONE -d LTO_CLANG_THIN -d LTO_CLANG_FULL -d THINLTO
-        if [ "$kmi" == "android16-6.12" ]; then
+        if [ "$kmi" == "android16-6.12" ] || [ "$kmi" == "android17-6.18" ]; then
             scripts/config --file $KDIR/.config -e CONFIG_CFI_ICALL_NORMALIZE_INTEGERS
         fi
         make O=$KDIR modules_prepare
+        # Generate SELinux headers through Kbuild in this x86 output tree.
+        make O=$KDIR security/selinux/built-in.a
         popd
         
-        SELINUX_PATH=security/selinux
-        mkdir -p $KDIR/$SELINUX_PATH
-        cp /opt/ddk/kdir/$kmi/$SELINUX_PATH/*.h $KDIR/$SELINUX_PATH
-
         echo "=== Building x64 kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
-        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
-          exit 1
+        if [ -n "$PACKAGE_NAME" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_PACKAGE_NAME=$PACKAGE_NAME"
         fi
-        if [ -z "$EXPECTED_SIZE2" ] && [ -n "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_size2 must be provided when expected_hash2 is set."
-          exit 1
+        if [ -n "$EXPECTED_SIZE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_SIZE=$EXPECTED_SIZE"
         fi
-        if [ -n "$EXPECTED_SIZE2" ]; then
-          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+        if [ -n "$EXPECTED_HASH" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_EXPECTED_HASH=$EXPECTED_HASH"
+        fi
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_IS_PR_BUILD=1"
         fi
         
         MDIR=$(realpath .)
 
-        make -C $KDIR M=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        if [ "$kmi" == "android17-6.18" ]; then
+          make -C $KDIR M=$MDIR MO=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        else
+          make -C $KDIR M=$MDIR src=$MDIR compile_commands.json modules CONFIG_KSU=m CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER=y $EXTRA_ARGS
+        fi
         
         echo "=== Build completed ==="
 

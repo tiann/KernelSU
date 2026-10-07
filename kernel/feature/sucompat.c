@@ -23,6 +23,7 @@
 #include "feature/sucompat.h"
 #include "policy/app_profile.h"
 #include "hook/syscall_hook.h"
+#include "supercall/supercall.h"
 #include "sulog/event.h"
 #include "ksu.h"
 #include "util.h"
@@ -166,11 +167,12 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
     char path[sizeof(su_path) + 1];
     long ret, orig_regs[5];
     unsigned long addr;
+    int su_fd = -1;
     int tmp_fd;
     struct file *ksud_file;
     const struct cred *old_cred;
 
-    if (execveat && ((int)PT_REGS_PARM1(regs) != AT_FDCWD || (int)PT_REGS_PARM5(regs) != 0))
+    if (execveat && ((int)PT_REGS_SYSCALL_PARM1(regs) != AT_FDCWD || (int)PT_REGS_PARM5(regs) != 0))
         goto do_orig_execve;
 
     if (unlikely(!filename_user))
@@ -215,7 +217,7 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
     pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
     // execve(file, argv, environ)
     // execveat(fd, file, argv, environ, flags)
-    orig_regs[0] = regs->__PT_PARM1_REG;
+    orig_regs[0] = PT_REGS_SYSCALL_PARM1(regs);
     orig_regs[1] = regs->__PT_PARM2_REG;
     orig_regs[2] = regs->__PT_PARM3_REG;
     orig_regs[3] = regs->__PT_SYSCALL_PARM4_REG;
@@ -224,7 +226,7 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
     regs->__PT_SYSCALL_PARM4_REG = envp;
     regs->__PT_PARM3_REG = (unsigned long)argv_user;
     regs->__PT_PARM2_REG = empty_user_path();
-    regs->__PT_PARM1_REG = tmp_fd;
+    PT_REGS_SYSCALL_PARM1(regs) = tmp_fd;
 
     ret = escape_with_root_profile();
     if (ret) {
@@ -235,11 +237,18 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
     ret = ksu_syscall_table[__NR_execveat](regs);
     if (ret < 0) {
         ksu_close_fd(tmp_fd);
-        regs->__PT_PARM1_REG = orig_regs[0];
+        PT_REGS_SYSCALL_PARM1(regs) = orig_regs[0];
         regs->__PT_PARM2_REG = orig_regs[1];
         regs->__PT_PARM3_REG = orig_regs[2];
         regs->__PT_SYSCALL_PARM4_REG = orig_regs[3];
         regs->__PT_PARM5_REG = orig_regs[4];
+    } else {
+        // Only grant the scoped driver capability after the selected root
+        // profile has been applied successfully.
+        su_fd = ksu_install_su_fd();
+        if (su_fd < 0) {
+            pr_warn("install su session fd failed: %d\n", su_fd);
+        }
     }
     return ret;
 

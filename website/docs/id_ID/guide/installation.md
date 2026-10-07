@@ -108,7 +108,7 @@ Buka manajer, klik ikon instalasi di sudut kanan atas, dan beberapa opsi akan mu
 Menggunakan opsi "Langsung pasang (Disarankan)" di manajer dapat secara otomatis mencadangkan boot image stok (atau init_boot) agar dapat dipulihkan sementara saat pembaruan OTA inkremental. Perlu diperhatikan bahwa cadangan ini hanya dibuat jika slot saat ini belum pernah di-patch oleh KernelSU.
 Nilai SHA1 dari image cadangan disimpan di dalam image boot yang sudah di-patch, dan file cadangan disimpan di `/data/adb/ksu/ksu_backup_$SHA1`.
 Saat Anda menggunakan fitur "Hapus → Pulihkan image asli" di manajer, jika ada file cadangan yang cocok dengan SHA1 yang tercatat pada image yang sedang di-patch, cadangan tersebut akan langsung dipulihkan.
-Mulai versi 3.2.6, jika ini adalah pertama kalinya Anda memasang KernelSU tanpa root, setelah mem-patch boot image melalui "Pilih berkas" Anda dapat memilih "Cadangkan sebagai image stok". Dalam kasus ini, image cadangan akan disimpan di penyimpanan internal manajer; setelah image yang sudah di-patch di-flash dan perangkat berhasil boot, saat pertama kali membuka manajer cadangan tersebut akan otomatis dipindahkan ke `/data/adb/ksu`.
+Mulai versi 3.3.0, jika ini adalah pertama kalinya Anda memasang KernelSU tanpa root, setelah mem-patch boot image melalui "Pilih berkas" Anda dapat memilih "Cadangkan sebagai image stok". Dalam kasus ini, image cadangan akan disimpan di penyimpanan internal manajer; setelah image yang sudah di-patch di-flash dan perangkat berhasil boot, saat pertama kali membuka manajer cadangan tersebut akan otomatis dipindahkan ke `/data/adb/ksu`.
 :::
 
 ### Gunakan baris perintah

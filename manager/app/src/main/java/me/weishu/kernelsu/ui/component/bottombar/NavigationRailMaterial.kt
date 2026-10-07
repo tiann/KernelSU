@@ -30,6 +30,8 @@ import androidx.compose.material3.WideNavigationRailItem
 import androidx.compose.material3.WideNavigationRailValue
 import androidx.compose.material3.rememberWideNavigationRailState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,19 +39,18 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ui.LocalMainPagerState
-import me.weishu.kernelsu.ui.util.rootAvailable
 
 @Composable
 fun NavigationRailMaterial(
     navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
-    val isManager = Natives.isManager
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
-    val mainPagerState = LocalMainPagerState.current
-
+    val fullFeatured = Natives.isFullFeatured()
     if (!fullFeatured) return
+
+    val mainPagerState = LocalMainPagerState.current
 
     val items = listOf(
         Triple(R.string.home, Icons.Filled.Home, Icons.Outlined.Home),
@@ -58,9 +59,20 @@ fun NavigationRailMaterial(
         Triple(R.string.settings, Icons.Filled.Settings, Icons.Outlined.Settings)
     )
 
-    val state = rememberWideNavigationRailState()
+    val settingsRepo = remember { SettingsRepositoryImpl() }
+    val state = rememberWideNavigationRailState(
+        initialValue = if (settingsRepo.navigationRailExpanded) {
+            WideNavigationRailValue.Expanded
+        } else {
+            WideNavigationRailValue.Collapsed
+        },
+    )
     val scope = rememberCoroutineScope()
     val expanded = state.targetValue == WideNavigationRailValue.Expanded
+    LaunchedEffect(state.targetValue) {
+        settingsRepo.navigationRailExpanded =
+            state.targetValue == WideNavigationRailValue.Expanded
+    }
 
     WideNavigationRail(
         modifier = modifier.fillMaxHeight(),

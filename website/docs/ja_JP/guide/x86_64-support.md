@@ -19,9 +19,9 @@ KernelSU の `syscall_hook` は、フックしたシステムコールを統一 
 
 ### 方法 1: `KSU_X86_PATCH_SYSCALL_DISPATCHER` を有効にする
 
-KernelSU 3.2.6 では、`x86_64` 向けの新しい公式メカニズムとして `KSU_X86_PATCH_SYSCALL_DISPATCHER` ビルドオプションが追加されました。
+KernelSU 3.3.0 では、`x86_64` 向けの新しい公式メカニズムとして `KSU_X86_PATCH_SYSCALL_DISPATCHER` ビルドオプションが追加されました。
 
-このオプションを有効にすると、KernelSU は hardened syscall dispatcher を実行時に動的パッチし、従来のカーネルソースパッチを要求せずに syscall hook を動作させます。KernelSU 3.2.6 以降でカーネルをビルドする場合は、この方法を推奨します。
+このオプションを有効にすると、KernelSU は hardened syscall dispatcher を実行時に動的パッチし、従来のカーネルソースパッチを要求せずに syscall hook を動作させます。KernelSU 3.3.0 以降でカーネルをビルドする場合は、この方法を推奨します。
 
 ### 方法 2: 従来のカーネルソースパッチを適用する
 
@@ -53,5 +53,5 @@ https://github.com/android-generic/kernel-zenith/commit/f5813e10b7630e1ccd86fc2c
 
 ## どちらを選ぶべきですか？
 
-- KernelSU 3.2.6 以降を使っていて、KernelSU のビルド設定を変更できるなら `KSU_X86_PATCH_SYSCALL_DISPATCHER` を有効にしてください。
+- KernelSU 3.3.0 以降を使っていて、KernelSU のビルド設定を変更できるなら `KSU_X86_PATCH_SYSCALL_DISPATCHER` を有効にしてください。
 - 現在のカーネルパッチ運用を維持したいなら、上記の従来のソースパッチを使い続けてください。

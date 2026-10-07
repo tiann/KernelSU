@@ -10,4 +10,9 @@
     <string name="profile_flags_desc_no_new_privs">ទប់ស្កាត់ការបង្កើនសិទ្ធិបន្ថែមតាមរយៈ KernelSU នៅក្នុងបរិបទនៃប្រវត្តិរូប root នេះ។</string>
     <string name="install_force_backup">បម្រុងទុកជារូបភាពដើម</string>
     <string name="install_force_backup_summary">សូមប្រាកដថា boot image ដែលអ្នកបានជ្រើសរើសគឺជារូបភាពដើម</string>
+    <string name="home_lkm_update_available">មានកំណែថ្មីជាងនៃ LKM ដែលភ្ជាប់មកជាមួយ។ ប៉ះដើម្បីធ្វើបច្ចុប្បន្នភាព។</string>
+    <string name="home_lkm_custom">ផ្ទាល់ខ្លួន</string>
+    <string name="require_manager_version">តម្រូវឱ្យធ្វើបច្ចុប្បន្នភាពកម្មវិធីគ្រប់គ្រង។</string>
+    <string name="require_kernel_version">តម្រូវឱ្យធ្វើបច្ចុប្បន្នភាពខឺណែល។ ប៉ះដើម្បីដំឡើង។</string>
+    <string name="require_kernel_version_gki">តម្រូវឱ្យធ្វើបច្ចុប្បន្នភាពខឺណែល។</string>
 </resources>

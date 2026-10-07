@@ -73,7 +73,11 @@
     <string name="reboot_userspace">Soft Reboot</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
-    <string name="require_kernel_version">Die aktuelle KernelSU-Version %1$d ist zu alt für diese Manager-Version. Bitte auf Version %2$d oder höher aktualisieren!</string>
+    <string name="home_lkm_update_available">Eine neuere Version des mitgelieferten LKM ist verfügbar. Zum Aktualisieren tippen.</string>
+    <string name="home_lkm_custom">Benutzerdefiniert</string>
+    <string name="require_manager_version">Manager-Update erforderlich.</string>
+    <string name="require_kernel_version">Kernel-Update erforderlich. Zum Installieren tippen.</string>
+    <string name="require_kernel_version_gki">Kernel-Update erforderlich.</string>
     <string name="module_changelog">Änderungsprotokoll</string>
     <string name="app_profile_template_import_success">Erfolgreich importiert</string>
     <string name="app_profile_export_to_clipboard">In Zwischenablage exportieren</string>

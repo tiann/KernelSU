@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,18 +38,23 @@ import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
 import androidx.compose.material.icons.rounded.Colorize
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
+import androidx.compose.material.icons.rounded.Swipe
+import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlin.math.roundToInt
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,6 +77,7 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
+import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -376,6 +383,38 @@ fun ColorPaletteScreenMiuix(
                                 }
                             )
                         }
+                        SwitchPreference(
+                            title = stringResource(id = R.string.settings_enable_swipe_dismiss),
+                            summary = stringResource(id = R.string.settings_enable_swipe_dismiss_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Swipe,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_enable_swipe_dismiss),
+                                    tint = colorScheme.onBackground,
+                                )
+                            },
+                            checked = uiState.enableSwipeDismiss,
+                            onCheckedChange = actions.onSetEnableSwipeDismiss,
+                        )
+                        OverlayDropdownPreference(
+                            title = stringResource(id = R.string.settings_pager_gesture_mode),
+                            items = listOf(
+                                stringResource(id = R.string.settings_pager_gesture_native),
+                                stringResource(id = R.string.settings_pager_gesture_cross_axis),
+                                stringResource(id = R.string.settings_pager_gesture_ios_like),
+                            ),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ViewCarousel,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_pager_gesture_mode),
+                                    tint = colorScheme.onBackground,
+                                )
+                            },
+                            selectedIndex = uiState.pagerInterceptionMode.coerceIn(0, 2),
+                            onSelectedIndexChange = actions.onSetPagerInterceptionMode,
+                        )
 
                         var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
                         ArrowPreference(
@@ -421,6 +460,48 @@ fun ColorPaletteScreenMiuix(
                             onVolumeChange = {
                                 actions.onSetPageScale(it)
                             }
+                        )
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        var linesValue by remember(uiState.moduleDescriptionMaxLines) { mutableIntStateOf(uiState.moduleDescriptionMaxLines) }
+                        BasicComponent(
+                            title = stringResource(id = R.string.settings_module_description_max_lines),
+                            summary = stringResource(id = R.string.settings_module_description_max_lines_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Description,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.settings_module_description_max_lines),
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            endActions = {
+                                Text(
+                                    text = "$linesValue " + stringResource(R.string.unit_lines),
+                                    color = colorScheme.onSurfaceVariantActions,
+                                )
+                            },
+                            bottomAction = {
+                                Slider(
+                                    value = linesValue.toFloat(),
+                                    onValueChange = {
+                                        linesValue = it.roundToInt()
+                                    },
+                                    onValueChangeFinished = {
+                                        actions.onSetModuleDescriptionMaxLines(linesValue)
+                                    },
+                                    valueRange = 1f..5f,
+                                    showKeyPoints = true,
+                                    keyPoints = listOf(1f, 2f, 3f, 4f, 5f),
+                                    magnetThreshold = 0.25f,
+                                    hapticEffect = SliderDefaults.SliderHapticEffect.Step,
+                                )
+                            },
                         )
                     }
                 }

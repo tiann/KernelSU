@@ -19,9 +19,9 @@ Bạn chỉ cần dùng một trong hai. Không áp dụng cả hai cùng lúc.
 
 ### Cách 1: Bật `KSU_X86_PATCH_SYSCALL_DISPATCHER`
 
-KernelSU 3.2.6 đã giới thiệu cơ chế chính thức mới cho `x86_64`: tùy chọn build `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
+KernelSU 3.3.0 đã giới thiệu cơ chế chính thức mới cho `x86_64`: tùy chọn build `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
 
-Khi tùy chọn này được bật, KernelSU sẽ tự động vá động hardened syscall dispatcher trong lúc chạy để syscall hook hoạt động mà không cần bộ vá mã nguồn kernel cũ. Đây là cách được khuyến nghị nếu bạn đang build kernel với KernelSU 3.2.6 hoặc mới hơn.
+Khi tùy chọn này được bật, KernelSU sẽ tự động vá động hardened syscall dispatcher trong lúc chạy để syscall hook hoạt động mà không cần bộ vá mã nguồn kernel cũ. Đây là cách được khuyến nghị nếu bạn đang build kernel với KernelSU 3.3.0 hoặc mới hơn.
 
 ### Cách 2: Áp dụng bộ vá mã nguồn kernel cũ
 
@@ -53,5 +53,5 @@ https://github.com/android-generic/kernel-zenith/commit/f5813e10b7630e1ccd86fc2c
 
 ## Nên chọn cách nào?
 
-- Nếu bạn đang dùng KernelSU 3.2.6 trở lên và có thể thay đổi cấu hình build của KernelSU, hãy bật `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
+- Nếu bạn đang dùng KernelSU 3.3.0 trở lên và có thể thay đổi cấu hình build của KernelSU, hãy bật `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
 - Nếu bạn muốn giữ quy trình vá kernel hiện tại, hãy tiếp tục dùng bộ vá mã nguồn ở trên.

@@ -19,9 +19,9 @@ Você só precisa usar uma delas. Não aplique ambas ao mesmo tempo.
 
 ### Opção 1: Ativar `KSU_X86_PATCH_SYSCALL_DISPATCHER`
 
-O KernelSU 3.2.6 introduziu um novo mecanismo oficial para `x86_64`: a opção de build `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
+O KernelSU 3.3.0 introduziu um novo mecanismo oficial para `x86_64`: a opção de build `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
 
-Quando essa opção está ativada, o KernelSU aplica um patch dinâmico no dispatcher hardened de syscall em tempo de execução, permitindo que o syscall hook funcione sem exigir o conjunto anterior de patches no código-fonte do kernel. Essa é a abordagem recomendada se você estiver compilando um kernel com KernelSU 3.2.6 ou mais recente.
+Quando essa opção está ativada, o KernelSU aplica um patch dinâmico no dispatcher hardened de syscall em tempo de execução, permitindo que o syscall hook funcione sem exigir o conjunto anterior de patches no código-fonte do kernel. Essa é a abordagem recomendada se você estiver compilando um kernel com KernelSU 3.3.0 ou mais recente.
 
 ### Opção 2: Aplicar os patches originais no código-fonte do kernel
 
@@ -53,5 +53,5 @@ https://github.com/android-generic/kernel-zenith/commit/f5813e10b7630e1ccd86fc2c
 
 ## Qual método devo escolher?
 
-- Se você estiver usando KernelSU 3.2.6 ou mais recente e puder alterar a configuração de build do KernelSU, ative `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
+- Se você estiver usando KernelSU 3.3.0 ou mais recente e puder alterar a configuração de build do KernelSU, ative `KSU_X86_PATCH_SYSCALL_DISPATCHER`.
 - Se preferir manter seu fluxo atual baseado em patches no kernel, continue usando os patches de código-fonte acima.

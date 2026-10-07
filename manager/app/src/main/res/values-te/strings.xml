@@ -23,4 +23,9 @@
     <string name="profile_flags_desc_no_new_privs">ఈ రూట్ ప్రొఫైల్ సందర్భంలో KernelSU ద్వారా మరింత హక్కుల పెంపును నిరోధిస్తుంది.</string>
     <string name="install_force_backup">స్టాక్ ఇమేజ్‌గా బ్యాకప్ చేయి</string>
     <string name="install_force_backup_summary">దయచేసి మీరు ఎంచుకున్న boot ఇమేజ్ స్టాక్ ఇమేజ్ అని నిర్ధారించుకోండి</string>
+    <string name="home_lkm_update_available">అంతర్నిర్మిత LKM కొత్త వెర్షన్ అందుబాటులో ఉంది. అప్‌డేట్ చేయడానికి నొక్కండి.</string>
+    <string name="home_lkm_custom">కస్టమ్</string>
+    <string name="require_manager_version">మేనేజర్‌ను అప్‌డేట్ చేయడం అవసరం.</string>
+    <string name="require_kernel_version">కెర్నల్‌ను అప్‌డేట్ చేయడం అవసరం. ఇన్‌స్టాల్ చేయడానికి నొక్కండి.</string>
+    <string name="require_kernel_version_gki">కెర్నల్‌ను అప్‌డేట్ చేయడం అవసరం.</string>
 </resources>

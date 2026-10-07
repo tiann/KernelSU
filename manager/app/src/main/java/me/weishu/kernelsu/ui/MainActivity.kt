@@ -3,6 +3,7 @@ package me.weishu.kernelsu.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -20,36 +21,39 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults.flingBehavior
+import androidx.compose.foundation.pager.PagerDefaults.pageNestedScrollConnection
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.Natives
@@ -85,11 +89,11 @@ import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableNavigationBadge
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.util.getSuperuserCount
 import me.weishu.kernelsu.ui.util.install
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import me.weishu.kernelsu.ui.util.rememberContentReady
-import me.weishu.kernelsu.ui.util.rootAvailable
 import me.weishu.kernelsu.ui.viewmodel.MainActivityViewModel
 import me.weishu.kernelsu.ui.viewmodel.MainPagerConfig
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -97,17 +101,35 @@ import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.nav.core.NavDisplay
+import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
+import top.yukonga.miuix.kmp.nav.core.rememberNavSystemCornerRadius
+import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+import top.yukonga.miuix.kmp.utils.PagerGestureNestedScrollConnection
+import top.yukonga.miuix.kmp.utils.PagerInterceptionMode
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
+import top.yukonga.miuix.kmp.utils.pagerGestureOverride
 
 class MainActivity : ComponentActivity() {
 
     private val intentChannel = Channel<Intent>(capacity = Channel.BUFFERED)
+    private var contentReady = false
+    private var splashStartedAt = 0L
+    private val splashAnimationDurationMs = 500L
+
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+        splashStartedAt = SystemClock.uptimeMillis()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition {
+            !contentReady || SystemClock.uptimeMillis() - splashStartedAt < splashAnimationDurationMs
+        }
 
-        if (Natives.isManager && !Natives.requireNewKernel()) install()
+        val isManager = Natives.isManager
+        if (isManager && Natives.kernelUAPIVersion == Natives.managerUAPIVersion) install()
 
         if (savedInstanceState == null) intent?.let { intentChannel.trySend(it) }
 
@@ -148,13 +170,24 @@ class MainActivity : ComponentActivity() {
                 LocalEnableFloatingBottomBar provides uiState.enableFloatingBottomBar,
                 LocalEnableFloatingBottomBarBlur provides uiState.enableFloatingBottomBarBlur,
                 LocalEnableNavigationBadge provides uiState.enableNavigationBadge,
+                LocalModuleDescriptionMaxLines provides uiState.moduleDescriptionMaxLines,
                 LocalUiMode provides uiMode,
             ) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
                     IntentDispatcher(intentChannel = intentChannel)
+                    val swipeDismiss = if (uiState.enableSwipeDismiss) {
+                        if (LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl) {
+                            NavSwipeDirection.RightToLeft
+                        } else {
+                            NavSwipeDirection.LeftToRight
+                        }
+                    } else {
+                        NavSwipeDirection.None
+                    }
                     val mainScreenEntry = @Composable {
                         MainScreen(
                             initialPage = selectedMainPage,
+                            pagerInterceptionMode = uiState.pagerInterceptionMode,
                             onPageChanged = viewModel::setSelectedMainPage,
                         )
                     }
@@ -162,10 +195,7 @@ class MainActivity : ComponentActivity() {
                     val navDisplay = @Composable {
                         NavDisplay(
                             backStack = navigator.backStack,
-                            entryDecorators = listOf(
-                                rememberSaveableStateHolderNavEntryDecorator(),
-                                rememberViewModelStoreNavEntryDecorator()
-                            ),
+                            effects = NavDisplayEffects(cornerClipRadius = rememberNavSystemCornerRadius()),
                             onBack = {
                                 when (val top = navigator.current()) {
                                     is Route.TemplateEditor -> {
@@ -178,26 +208,29 @@ class MainActivity : ComponentActivity() {
 
                                     else -> navigator.pop()
                                 }
-                            },
-                            entryProvider = entryProvider {
-                                entry<Route.Main> { mainScreenEntry() }
-                                entry<Route.About> { AboutScreen() }
-                                entry<Route.Sulog> { SulogScreen() }
-                                entry<Route.ColorPalette> { ColorPaletteScreen() }
-                                entry<Route.AppProfileTemplate> { AppProfileTemplateScreen() }
-                                entry<Route.TemplateEditor> { key -> TemplateEditorScreen(key.template, key.readOnly) }
-                                entry<Route.AppProfile> { key -> AppProfileScreen(key.uid) }
-                                entry<Route.ModuleRepo> { ModuleRepoScreen() }
-                                entry<Route.ModuleRepoDetail> { key -> ModuleRepoDetailScreen(key.module) }
-                                entry<Route.Install> { InstallScreen() }
-                                entry<Route.Flash> { key -> FlashScreen(key.flashIt) }
-                                entry<Route.ExecuteModuleAction> { key -> ExecuteModuleActionScreen(key.moduleId, key.fromShortcut) }
-                                entry<Route.Home> { mainScreenEntry() }
-                                entry<Route.SuperUser> { mainScreenEntry() }
-                                entry<Route.Module> { mainScreenEntry() }
-                                entry<Route.Settings> { mainScreenEntry() }
+                            }) {
+                            entry<Route.Main>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
+                            entry<Route.About>(swipeDismiss = swipeDismiss) { AboutScreen() }
+                            entry<Route.Sulog>(swipeDismiss = swipeDismiss) { SulogScreen() }
+                            entry<Route.ColorPalette>(swipeDismiss = swipeDismiss) { ColorPaletteScreen() }
+                            entry<Route.AppProfileTemplate>(swipeDismiss = swipeDismiss) { AppProfileTemplateScreen() }
+                            entry<Route.TemplateEditor>(swipeDismiss = swipeDismiss) { key -> TemplateEditorScreen(key.template, key.readOnly) }
+                            entry<Route.AppProfile>(swipeDismiss = swipeDismiss) { key -> AppProfileScreen(key.uid) }
+                            entry<Route.ModuleRepo>(swipeDismiss = swipeDismiss) { ModuleRepoScreen() }
+                            entry<Route.ModuleRepoDetail>(swipeDismiss = swipeDismiss) { key -> ModuleRepoDetailScreen(key.module) }
+                            entry<Route.Install>(swipeDismiss = swipeDismiss) { InstallScreen() }
+                            entry<Route.Flash>(swipeDismiss = swipeDismiss) { key -> FlashScreen(key.flashIt) }
+                            entry<Route.ExecuteModuleAction>(swipeDismiss = swipeDismiss) { key ->
+                                ExecuteModuleActionScreen(
+                                    key.moduleId,
+                                    key.fromShortcut
+                                )
                             }
-                        )
+                            entry<Route.Home>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
+                            entry<Route.SuperUser>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
+                            entry<Route.Module>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
+                            entry<Route.Settings>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
+                        }
                     }
 
                     when (uiMode) {
@@ -207,6 +240,7 @@ class MainActivity : ComponentActivity() {
 
                         UiMode.Miuix -> Scaffold { navDisplay() }
                     }
+                    SideEffect { contentReady = true }
                 }
             }
         }
@@ -225,39 +259,66 @@ val LocalMainPagerState = staticCompositionLocalOf<MainPagerState> { error("Loca
 @Composable
 fun MainScreen(
     initialPage: Int = 0,
+    pagerInterceptionMode: Int = PagerInterceptionMode.CrossAxisInterceptor.ordinal,
     onPageChanged: (Int) -> Unit = {},
 ) {
     val navController = LocalNavigator.current
     val enableBlur = LocalEnableBlur.current
     val enableFloatingBottomBar = LocalEnableFloatingBottomBar.current
     val enableFloatingBottomBarBlur = LocalEnableFloatingBottomBarBlur.current
+    val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
     val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { MainPagerConfig.PAGE_COUNT })
-    val mainPagerState = rememberMainPagerState(pagerState)
-    val isManager = Natives.isManager
-    val isFullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val mainPagerState = rememberMainPagerState(
+        pagerState = pagerState,
+        animatePageChanges = !useNavigationRail,
+    )
+    val isFullFeatured = Natives.isFullFeatured()
+    val pagerMode = PagerInterceptionMode.entries.getOrElse(pagerInterceptionMode) {
+        PagerInterceptionMode.Native
+    }
+    val interceptPagerGestures = pagerMode == PagerInterceptionMode.CrossAxisInterceptor
     var userScrollEnabled by remember(isFullFeatured) { mutableStateOf(isFullFeatured) }
 
     val enableNavigationBadge = LocalEnableNavigationBadge.current
     val badgeEnabled = enableNavigationBadge && isFullFeatured
     val moduleViewModel = viewModel<ModuleViewModel>()
     val moduleUiState by moduleViewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(badgeEnabled) {
-        // The module list normally loads when the module pager is first visited; load it eagerly
-        // so the badge is populated while the user is still on another tab.
-        if (badgeEnabled && moduleViewModel.uiState.value.modules.isEmpty()) {
-            moduleViewModel.initializePreferences()
-            moduleViewModel.loadModuleList()
-            moduleViewModel.syncModuleUpdateInfo(moduleViewModel.uiState.value.modules)
-        }
-    }
 
-    // Loading the app list just for a badge is too expensive; read the kernel allowlist instead.
     val superUserViewModel = viewModel<SuperUserViewModel>()
     val grantedUidCount by remember(superUserViewModel) {
         superUserViewModel.uiState
             .map { state -> state.groupedApps.count { it.anyAllowSu } }
             .distinctUntilChanged()
     }.collectAsStateWithLifecycle(0)
+
+    var startupPreloadStarted by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(isFullFeatured) {
+        if (!isFullFeatured || startupPreloadStarted) {
+            return@LaunchedEffect
+        }
+
+        moduleViewModel.initializePreferences()
+        val moduleState = moduleViewModel.uiState.value
+        if (!moduleState.hasLoaded) {
+            if (!moduleState.isRefreshing) moduleViewModel.fetchModuleList()
+            moduleViewModel.uiState.first { it.hasLoaded }
+        }
+        moduleViewModel.syncModuleUpdateInfo(moduleViewModel.uiState.value.modules)
+
+        val superUserState = superUserViewModel.uiState.value
+        if (!superUserState.hasLoaded) {
+            superUserViewModel.initializePreferences()
+            if (superUserState.isRefreshing) {
+                superUserViewModel.uiState.first { it.hasLoaded }
+            } else {
+                superUserViewModel.loadAppList().join()
+            }
+        }
+
+        startupPreloadStarted = true
+    }
+
+    // Loading the app list just for a badge is too expensive; read the kernel allowlist instead.
     var superuserCount by remember { mutableIntStateOf(0) }
     LaunchedEffect(badgeEnabled, grantedUidCount) {
         superuserCount = if (badgeEnabled) withContext(Dispatchers.IO) { getSuperuserCount() } else 0
@@ -296,8 +357,6 @@ fun MainScreen(
 
     MainScreenBackHandler(mainPagerState, navController)
 
-    val useNavigationRail = useNavigationRail(enableFloatingBottomBar)
-
     CompositionLocalProvider(
         LocalMainPagerState provides mainPagerState
     ) {
@@ -306,18 +365,35 @@ fun MainScreen(
             Box(modifier = if (blurBackdrop != null) Modifier.layerBackdrop(blurBackdrop) else Modifier) {
                 HorizontalPager(
                     modifier = Modifier
+                        .pagerGestureOverride(
+                            pagerState = mainPagerState.pagerState,
+                            mode = pagerMode,
+                            enabled = userScrollEnabled,
+                        )
                         .then(if (enableFloatingBottomBar && enableFloatingBottomBarBlur) Modifier.layerBackdrop(backdrop) else Modifier),
                     state = mainPagerState.pagerState,
                     beyondViewportPageCount = if (contentReady) 3 else 0,
                     overscrollEffect = null,
-                    userScrollEnabled = userScrollEnabled,
+                    userScrollEnabled = userScrollEnabled && !interceptPagerGestures,
+                    pageNestedScrollConnection = if (interceptPagerGestures) {
+                        PagerGestureNestedScrollConnection
+                    } else {
+                        pageNestedScrollConnection(
+                            state = mainPagerState.pagerState,
+                            orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
+                        )
+                    },
+                    flingBehavior = flingBehavior(
+                        state = mainPagerState.pagerState,
+                        snapAnimationSpec = PagerNavigationSpringSpec,
+                    ),
                 ) { page ->
                     val isCurrentPage = page == settledPage
                     when (page) {
-                        0 -> if (isCurrentPage || contentReady) HomePager(navController, bottomInnerPadding, isCurrentPage)
-                        1 -> if (isCurrentPage || contentReady) SuperUserPager(navController, bottomInnerPadding, isCurrentPage)
-                        2 -> if (isCurrentPage || contentReady) ModulePager(bottomInnerPadding, isCurrentPage)
-                        3 -> if (isCurrentPage || contentReady) SettingPager(navController, bottomInnerPadding)
+                        0 -> if (contentReady || isCurrentPage) HomePager(navController, bottomInnerPadding, isCurrentPage)
+                        1 -> if (contentReady || isCurrentPage) SuperUserPager(navController, bottomInnerPadding, isCurrentPage)
+                        2 -> if (contentReady || isCurrentPage) ModulePager(bottomInnerPadding, isCurrentPage)
+                        3 -> if (contentReady || isCurrentPage) SettingPager(navController, bottomInnerPadding, isCurrentPage)
                     }
                 }
             }

@@ -12,11 +12,12 @@ goblin = "0.10"
 scroll = "0.13"
 
 anyhow.workspace = true
-rustix = { git = "https://github.com/Kernel-SU/rustix.git", rev = "4a53fbc", features = ["mount", "fs", "runtime", "system", "process"] }
+rustix = { git = "https://github.com/KernelSU2/rustix.git", rev = "4a53fbc", features = ["mount", "fs", "runtime", "system", "process"] }
 
 syscalls = { version = "0.8", default-features = false, features = [
     "aarch64",
     "x86_64",
+    "riscv64",
 ] }
 
 # for kmsg logging

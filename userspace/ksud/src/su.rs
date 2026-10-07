@@ -2,14 +2,13 @@ use crate::{
     defs, ksucalls,
     utils::{self, umask},
 };
-use anyhow::{Context, Ok, Result, bail};
+use anyhow::{Context, Ok, Result, anyhow, bail};
 use getopts::Options;
 use libc::c_int;
 use log::error;
-#[cfg(unix)]
 use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
-use std::{cmp::Ordering, env};
+use std::{cmp::Ordering, env, io};
 use std::{
     ffi::{CStr, CString},
     process::Command,
@@ -59,6 +58,18 @@ fn set_identity(uid: u32, gid: u32, groups: &[u32]) -> Result<()> {
     Ok(())
 }
 
+fn resolve_uid(user: &str) -> Result<u32> {
+    let c_user = CString::new(user).with_context(|| format!("Invalid user: {user}"))?;
+    let pw = unsafe { libc::getpwnam(c_user.as_ptr()).as_ref() };
+
+    if let Some(pw) = pw {
+        return Ok(pw.pw_uid);
+    }
+
+    user.parse::<u32>()
+        .map_err(|_| anyhow::anyhow!("Unknown user: {user}"))
+}
+
 fn set_selinux_context(context: &str) -> Result<()> {
     std::fs::write("/proc/thread-self/attr/current", context)?;
     Ok(())
@@ -66,16 +77,27 @@ fn set_selinux_context(context: &str) -> Result<()> {
 
 fn wrap_tty(fd: c_int) {
     let inner_fn = move || -> Result<()> {
-        if unsafe { libc::isatty(fd) != 1 } {
+        if unsafe { libc::isatty(fd) != 1 }
+            && io::Error::last_os_error().raw_os_error() != Some(libc::EACCES)
+        {
             return Ok(());
         }
+
+        // The root profile is already active here, so its SELinux domain may
+        // return EACCES while querying the original terminal. In that case,
+        // check the wrapped fd instead, since that descriptor is intended to
+        // bypass this restriction.
         let new_fd = get_wrapped_fd(fd).context("get_wrapped_fd")?;
-        if unsafe { libc::dup2(new_fd, fd) } == -1 {
-            bail!("dup {new_fd} -> {fd} errno: {}", unsafe {
-                *libc::__errno()
-            });
+        if unsafe { libc::isatty(new_fd) != 1 } {
+            unsafe { libc::close(new_fd) };
+            return Ok(());
         }
+        let dup_result = unsafe { libc::dup2(new_fd, fd) };
+        let dup_errno = unsafe { *libc::__errno() };
         unsafe { libc::close(new_fd) };
+        if dup_result == -1 {
+            bail!("dup {new_fd} -> {fd} errno: {dup_errno}");
+        }
         Ok(())
     };
 
@@ -86,9 +108,13 @@ fn wrap_tty(fd: c_int) {
 
 #[allow(clippy::similar_names)]
 pub fn root_shell() -> Result<()> {
-    // we are root now, this was set in kernel!
+    // The kernel has already applied the selected root profile.
 
-    use anyhow::anyhow;
+    // A su-session driver fd deliberately survives the exec into ksud. Claim
+    // it before handling any arguments and restore FD_CLOEXEC so it cannot
+    // leak into the target shell, including when fd wrapping is disabled.
+    ksucalls::claim_inherited_driver_fd().context("claim inherited KernelSU driver fd")?;
+
     let env_args: Vec<String> = env::args().collect();
     let program = env_args[0].clone();
     let mut executable: Option<String> = None;
@@ -251,18 +277,14 @@ pub fn root_shell() -> Result<()> {
         free_idx += 1;
     }
 
-    // use current uid if no user specified, these has been done in kernel!
-    let mut uid = getuid().as_raw();
-    if free_idx < matches.free.len() {
-        let name = &matches.free[free_idx];
-        uid = unsafe {
-            let pw = CString::new(name.as_str())
-                .ok()
-                .and_then(|c_name| libc::getpwnam(c_name.as_ptr()).as_ref());
+    let identity_requested = free_idx < matches.free.len() || gid.is_some() || !groups.is_empty();
 
-            pw.map_or_else(|| name.parse::<u32>().unwrap_or(0), |pw| pw.pw_uid)
-        }
-    }
+    // use current uid if no user specified, these has been done in kernel!
+    let uid = if free_idx < matches.free.len() {
+        resolve_uid(&matches.free[free_idx])?
+    } else {
+        getuid().as_raw()
+    };
 
     // if there is no gid provided, use uid.
     let gid = gid.unwrap_or(uid);
@@ -324,7 +346,9 @@ pub fn root_shell() -> Result<()> {
         wrap_tty(2);
     }
 
-    set_identity(uid, gid, &groups)?;
+    if identity_requested {
+        set_identity(uid, gid, &groups)?;
+    }
     if let Some(context) = selinux_context.as_deref() {
         set_selinux_context(context).with_context(|| format!("setcontext {context}"))?;
     }

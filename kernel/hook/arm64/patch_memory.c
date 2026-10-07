@@ -96,10 +96,10 @@ fail:
         unsigned long __end = __start + (sz);                                                                          \
         dcache_clean_inval_poc(__start, __end);                                                                        \
     })
-#define ksu_flush_icache(start, end) caches_clean_inval_pou
+#define ksu_flush_icache(start, end) caches_clean_inval_pou(start, end)
 #else
 #define ksu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
-#define ksu_flush_icache(start, end) __flush_icache_range
+#define ksu_flush_icache(start, end) __flush_icache_range(start, end)
 #endif
 
 struct patch_text_info {
