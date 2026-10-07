@@ -120,6 +120,7 @@ class DataSourceChannel private constructor(
 
         val request = Request.Builder()
             .url(url!!)
+            .header("Accept-Encoding", "identity")
             .header("Range", "bytes=$startPosition-${endPosition - 1}")
             .build()
 
@@ -212,20 +213,23 @@ class DataSourceChannel private constructor(
         private const val SEQ_READ_CACHE_SIZE = 1024 * 1024
         private const val SEQ_READ_THRESHOLD = 1024
         private const val DIRECT_READ_THRESHOLD = 512 * 1024
+        private val SIZE_CONTENT_RANGE = Regex("bytes 0-0/(\\d+)", RegexOption.IGNORE_CASE)
 
         private fun fetchTotalSize(client: OkHttpClient, url: String): Long {
-            val request = Request.Builder().url(url).head().build()
+            val request = Request.Builder()
+                .url(url)
+                .header("Accept-Encoding", "identity")
+                .header("Range", "bytes=0-0")
+                .build()
             client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("Failed to connect to URL: $response")
+                if (response.code != 206) {
+                    throw IOException("Expected HTTP 206 for byte range, got ${response.code}")
                 }
-                val contentLength = response.header("Content-Length")
-                    ?: throw IOException("Could not determine file size.")
-                val acceptRanges = response.header("Accept-Ranges")
-                if (acceptRanges == null || !acceptRanges.equals("bytes", ignoreCase = true)) {
-                    throw IOException("Server does not support byte ranges: $response")
-                }
-                return contentLength.toLong()
+                val contentRange = response.header("Content-Range")
+                    ?: throw IOException("Could not determine file size: missing Content-Range")
+                return SIZE_CONTENT_RANGE.matchEntire(contentRange.trim())
+                    ?.groupValues?.get(1)?.toLongOrNull()?.takeIf { it > 0 }
+                    ?: throw IOException("Invalid Content-Range: $contentRange")
             }
         }
     }
