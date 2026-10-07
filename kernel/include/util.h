@@ -58,7 +58,6 @@ static_assert(1 == 0, "Unsupported architecture!");
 #define ksyscall(...) __ksyscall_exp(ksyscall_, __ksyscall_count_args(__VA_ARGS__))(__VA_ARGS__)
 
 #define ksu_close_fd(fd) ({ ksyscall(close, fd); })
-#define ksu_sys_setns(fd, flags) ({ ksyscall(setns, fd, flags); })
 
 static inline struct file *ksu_filp_open_nonotify(const char *path, int flags)
 {
