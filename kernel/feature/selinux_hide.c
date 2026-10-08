@@ -87,7 +87,7 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
         return orig_context_write(file, buf, size);
     }
     char *canon = NULL;
-    u32 sid, len;
+    u32 sid, len, tmp;
     ssize_t length;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
@@ -95,8 +95,12 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
     if (length)
         goto out;
     length = security_context_to_sid_with_policy(backup_sepolicy, buf, size, &sid, SECSID_NULL, GFP_KERNEL);
-    if (length)
+    if (length) {
         goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(buf, size, &tmp, GFP_KERNEL);
+    }
 
     length = security_sid_to_context_with_policy(backup_sepolicy, sid, &canon, &len);
     if (length)
@@ -116,8 +120,12 @@ static ssize_t my_write_context(struct file *file, char *buf, size_t size)
         goto out;
 
     length = security_context_to_sid(&fake_state, buf, size, &sid, GFP_KERNEL);
-    if (length)
+    if (length) {
         goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(&selinux_state, buf, size, &tmp, GFP_KERNEL);
+    }
 
     length = security_sid_to_context(&fake_state, sid, &canon, &len);
     if (length)
@@ -138,7 +146,7 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
         return orig_access_write(file, buf, size);
     }
     char *scon = NULL, *tcon = NULL;
-    u32 ssid, tsid;
+    u32 ssid, tsid, sconlen, tconlen, tmp;
     u16 tclass;
     struct av_decision avd;
     ssize_t length;
@@ -166,24 +174,43 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
     if (sscanf(buf, "%s %s %hu", scon, tcon, &tclass) != 3)
         goto out;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-    length = security_context_to_sid_with_policy(backup_sepolicy, scon, strlen(scon), &ssid, SECSID_NULL, GFP_KERNEL);
-    if (length)
-        goto out;
+    sconlen = strlen(scon);
+    tconlen = strlen(tcon);
 
-    length = security_context_to_sid_with_policy(backup_sepolicy, tcon, strlen(tcon), &tsid, SECSID_NULL, GFP_KERNEL);
-    if (length)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    length = security_context_to_sid_with_policy(backup_sepolicy, scon, sconlen, &ssid, SECSID_NULL, GFP_KERNEL);
+    if (length) {
         goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(scon, sconlen, &tmp, GFP_KERNEL);
+    }
+
+    length = security_context_to_sid_with_policy(backup_sepolicy, tcon, tconlen, &tsid, SECSID_NULL, GFP_KERNEL);
+    if (length) {
+        goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(tcon, tconlen, &tmp, GFP_KERNEL);
+    }
 
     security_compute_av_user_with_policy(backup_sepolicy, ssid, tsid, tclass, &avd);
 #else
-    length = security_context_str_to_sid(&fake_state, scon, &ssid, GFP_KERNEL);
-    if (length)
+    length = security_context_to_sid(&fake_state, scon, sconlen, &ssid, GFP_KERNEL);
+    if (length) {
         goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(&selinux_state, scon, sconlen, &tmp, GFP_KERNEL);
+    }
 
-    length = security_context_str_to_sid(&fake_state, tcon, &tsid, GFP_KERNEL);
-    if (length)
+    length = security_context_to_sid(&fake_state, tcon, tconlen, &tsid, GFP_KERNEL);
+    if (length) {
         goto out;
+    } else {
+        // sync to global sidtab
+        security_context_to_sid(&selinux_state, tcon, tconlen, &tmp, GFP_KERNEL);
+    }
 
     security_compute_av_user(&fake_state, ssid, tsid, tclass, &avd);
 #endif
@@ -205,7 +232,7 @@ typedef int (*setprocattr_fn)(const char *name, void *value, size_t size);
 static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
 {
     int error;
-    u32 mysid, sid;
+    u32 mysid, sid, tmp;
     char *str = value;
     if (likely(current_uid().val < 10000)) {
         goto call_orig;
@@ -237,6 +264,13 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
 #endif
         if (error) {
             return error;
+        } else {
+            // sync to global sidtab
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+            security_context_to_sid(str, size, &tmp, GFP_KERNEL);
+#else
+            security_context_to_sid(&selinux_state, str, size, &tmp, GFP_KERNEL);
+#endif
         }
     }
 
