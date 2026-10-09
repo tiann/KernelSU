@@ -28,7 +28,7 @@ static long ksu_sys_init_module(const struct pt_regs *regs)
     if (ret == -EPERM)
         ret = 0;
 
-    return orig_sys_init_module(regs);
+    return ret;
 }
 
 static long (*orig_sys_finit_module)(const struct pt_regs *regs);
@@ -39,7 +39,7 @@ static long ksu_sys_finit_module(const struct pt_regs *regs)
     if (ret == -EPERM)
         ret = 0;
 
-    return orig_sys_finit_module(regs);
+    return ret;
 }
 
 void __init ksu_module_blacklist_init(const char *modules)
