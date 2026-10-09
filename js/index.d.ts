@@ -55,9 +55,28 @@ interface PackageInfoError {
     error: string;
 }
 
+/**
+ * @deprecated Use `pm.listPackages` instead.
+ */
 declare function listPackages(type: string): string[];
 
+/**
+ * @deprecated Use `pm.getPackagesInfo` instead.
+ */
 declare function getPackagesInfo(packages: string[]): Array<PackagesInfo | PackageInfoError>;
+
+interface PackageInfoPerUid extends PackagesInfo {
+    userId: number | null;
+}
+
+interface KsuPm {
+    readonly support: boolean;
+    readonly version: number;
+    listPackages(type: string): string[];
+    getPackagesInfo(packages: string[]): Array<PackageInfoPerUid | PackageInfoError>;
+}
+
+declare const pm: KsuPm;
 
 declare function exit();
 
@@ -171,4 +190,5 @@ export {
     getPackagesInfo,
     exit,
     io,
+    pm,
 }

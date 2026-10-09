@@ -40,6 +40,7 @@ import me.weishu.kernelsu.ui.util.resolveDownloadMimeType
 import me.weishu.kernelsu.ui.util.withNewRootShell
 import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.webui.file.KsuIO
+import me.weishu.kernelsu.ui.webui.pm.KsuPm
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -223,6 +224,7 @@ class WebViewInterface(private val state: WebUIState) {
         return currentModuleInfo.toString()
     }
 
+    @Deprecated("Use ksu.pm().listPackages() instead")
     @JavascriptInterface
     fun listPackages(type: String): String {
         val packageNames = SuperUserViewModel.apps
@@ -245,6 +247,7 @@ class WebViewInterface(private val state: WebUIState) {
         return jsonArray.toString()
     }
 
+    @Deprecated("Use ksu.pm().getPackagesInfo() instead")
     @JavascriptInterface
     fun getPackagesInfo(packageNamesJson: String): String {
         val packageNames = JSONArray(packageNamesJson)
@@ -281,6 +284,9 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun io() = KsuIO
+
+    @JavascriptInterface
+    fun pm() = KsuPm
 
     fun destroy() {
         KsuIO.destroy()

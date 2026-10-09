@@ -142,6 +142,30 @@ export function getPackagesInfo(packages) {
   }
 }
 
+const pmSupported = typeof ksu !== "undefined" && typeof ksu.pm === "function";
+
+export const pm = {
+  support: pmSupported,
+  version: pmSupported ? ksu.pm().version() : 0,
+  listPackages(type) {
+    try {
+      return JSON.parse(ksu.pm().listPackages(type));
+    } catch (error) {
+      return [];
+    }
+  },
+  getPackagesInfo(packages) {
+    try {
+      if (typeof packages !== "string") {
+        packages = JSON.stringify(packages);
+      }
+      return JSON.parse(ksu.pm().getPackagesInfo(packages));
+    } catch (error) {
+      return [];
+    }
+  },
+};
+
 export function exit() {
   ksu.exit();
 }
