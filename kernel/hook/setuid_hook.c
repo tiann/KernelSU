@@ -60,7 +60,7 @@ void __init ksu_setuid_hook_init(void)
     ksu_kernel_umount_init();
 }
 
-void __exit ksu_setuid_hook_exit(void)
+void ksu_setuid_hook_exit(void)
 {
     pr_info("ksu_core_exit\n");
     ksu_kernel_umount_exit();

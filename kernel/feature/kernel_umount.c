@@ -132,7 +132,7 @@ void __init ksu_kernel_umount_init(void)
     }
 }
 
-void __exit ksu_kernel_umount_exit(void)
+void ksu_kernel_umount_exit(void)
 {
     ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
 }
