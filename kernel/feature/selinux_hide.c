@@ -28,6 +28,7 @@
 #include "ksu.h"
 #include "policy/feature.h"
 #include "hook/lsm_hook.h"
+#include "compat/jailbreak.h"
 
 static DEFINE_MUTEX(selinux_hide_mutex);
 static bool ksu_selinux_hide_enabled __read_mostly = false;
@@ -373,18 +374,35 @@ static int ksu_selinux_hide_enable()
 
     context_write = &selinux_write_op[SEL_CONTEXT];
     pr_info("selinux_hide: context_write: 0x%lx [%pSb]\n", (unsigned long)*context_write, *context_write);
-    write_op_fn my = my_write_context;
+    access_write = &selinux_write_op[SEL_ACCESS];
+    pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
     orig_context_write = *context_write;
+    orig_access_write = *access_write;
+
+#if defined(CONFIG_KRETPROBES) && defined(__aarch64__)
+    if (static_branch_unlikely(&ksu_rkp_key)) {
+        selinux_setprocattr_hook.original = find_kernel_symbol_exact("selinux_setprocattr");
+        if (!selinux_setprocattr_hook.original) {
+            pr_err("selinux_hide: selinux_setprocattr not found\n");
+            goto unhook;
+        }
+        ret = selinux_hide_rkp_init(orig_context_write, my_write_context,
+                                     orig_access_write, my_write_access,
+                                     selinux_setprocattr_hook.original, my_setprocattr);
+        if (ret)
+            goto unhook;
+        return 0;
+    }
+#endif
+
+    write_op_fn my = my_write_context;
     ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
         goto unhook;
     }
 
-    access_write = &selinux_write_op[SEL_ACCESS];
-    pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
     my = my_write_access;
-    orig_access_write = *access_write;
     ret = ksu_patch_text(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
@@ -407,6 +425,13 @@ unhook:
 static void ksu_selinux_hide_unhook()
 {
     int ret;
+#if defined(CONFIG_KRETPROBES) && defined(__aarch64__)
+    if (static_branch_unlikely(&ksu_rkp_key)) {
+        selinux_hide_rkp_exit();
+        selinux_hide_rkp_unhook_status_open();
+        return;
+    }
+#endif
     if (orig_context_write) {
         ret =
             ksu_patch_text(context_write, &orig_context_write, sizeof(orig_context_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
@@ -507,8 +532,19 @@ static void hook_selinux_status_open()
         }
         sel_open_handle_status_slot = &ops->open;
     }
+    orig_sel_open_handle_status = READ_ONCE(*sel_open_handle_status_slot);
+#if defined(CONFIG_KRETPROBES) && defined(__aarch64__)
+    if (static_branch_unlikely(&ksu_rkp_key)) {
+        int ret = selinux_hide_rkp_hook_status_open(orig_sel_open_handle_status,
+                                                     my_sel_open_handle_status);
+        if (ret) {
+            orig_sel_open_handle_status = NULL;
+            sel_open_handle_status_slot = NULL;
+        }
+        return;
+    }
+#endif
     sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
-    orig_sel_open_handle_status = *sel_open_handle_status_slot;
     int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text sel_open_handle_status err: %d\n", ret);

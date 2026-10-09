@@ -6,6 +6,7 @@
 #include <linux/mutex.h>
 #include <asm/cacheflush.h>
 #include "infra/symbol_resolver.h"
+#include "compat/jailbreak.h"
 #include "../patch_memory.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -207,6 +208,9 @@ void __init ksu_syscall_hook_init(void)
     pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
 
     if (!ksu_syscall_table)
+        return;
+
+    if (static_branch_unlikely(&ksu_rkp_key))
         return;
 
     // Find one ni_syscall slot for the dispatcher

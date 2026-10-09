@@ -1,5 +1,7 @@
 kernelsu-objs := core/init.o
 
+kernelsu-objs += compat/jailbreak.o compat/kdp.o compat/defex.o compat/rkp.o compat/selinux_hide_rkp.o
+
 kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
