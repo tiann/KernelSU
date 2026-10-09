@@ -80,6 +80,13 @@ static struct selinux_state fake_state;
 static write_op_fn *context_write, *access_write;
 static write_op_fn orig_context_write, orig_access_write;
 
+/*
+ * No direct reference: avc_has_perm_noaudit() may not be exported to LKM
+ * builds even though it exists in SELinux's avc.c. Resolve it only when
+ * enabling this feature, before installing the LSM hook.
+ */
+static typeof(&avc_has_perm_noaudit) selinux_avc_has_perm_noaudit_fn;
+
 static ssize_t my_write_context(struct file *file, char *buf, size_t size)
 {
     // apply to all app uids
@@ -229,10 +236,22 @@ static int my_setprocattr(const char *name, void *value, size_t size);
 struct ksu_lsm_hook selinux_setprocattr_hook = KSU_LSM_HOOK_INIT(setprocattr, "selinux_setprocattr", my_setprocattr, 0);
 
 typedef int (*setprocattr_fn)(const char *name, void *value, size_t size);
+
+static int ksu_setcurrent_permission(u32 mysid)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    return avc_has_perm(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
+#else
+    return avc_has_perm(&selinux_state, mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
+#endif
+}
+
 static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
 {
     int error, perm_error;
     u32 mysid, sid;
+    struct av_decision avd;
+    bool precheck_audited = false;
     char *str = value;
     if (likely(current_uid().val < 10000)) {
         goto call_orig;
@@ -241,6 +260,33 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (strcmp(name, "current")) {
         goto call_orig;
     }
+
+    /*
+     * Stock SELinux checks SETCURRENT before converting the context. An
+     * unauthorized caller must never reach the backup-policy SID parser.
+     *
+     * Use an unaudited precheck when available: the original handler will
+     * perform the sole auditable check on both successful and denied paths.
+     * For modules without the internal helper symbol, fall back to the
+     * auditable check (one extra check on the authorized path only).
+     */
+    mysid = current_sid();
+    if (likely(selinux_avc_has_perm_noaudit_fn)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+        error = selinux_avc_has_perm_noaudit_fn(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, 0, &avd);
+#else
+        error = selinux_avc_has_perm_noaudit_fn(&selinux_state, mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, 0,
+                                                &avd);
+#endif
+        if (error)
+            goto call_orig;
+    } else {
+        precheck_audited = true;
+        error = ksu_setcurrent_permission(mysid);
+        if (error)
+            return error;
+    }
+
     if (size && str[0] && str[0] != '\n') {
         if (str[size - 1] == '\n') {
             str[size - 1] = 0;
@@ -252,13 +298,13 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         error = security_context_to_sid(&fake_state, str, size, &sid, GFP_KERNEL);
 #endif
         if (error) {
-            mysid = current_sid();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-            perm_error = avc_has_perm(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
-#else
-            perm_error = avc_has_perm(&selinux_state, mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
-#endif
-            return perm_error ?: error;
+            /* Stock would still have audited SETCURRENT before parsing. */
+            if (!precheck_audited) {
+                perm_error = ksu_setcurrent_permission(current_sid());
+                if (perm_error)
+                    return perm_error;
+            }
+            return error;
         }
     }
 
@@ -350,6 +396,10 @@ static int ksu_selinux_hide_enable()
         pr_err("no backup sepolicy available, please save feature and reboot to retry!\n");
         return -EAGAIN;
     }
+    selinux_avc_has_perm_noaudit_fn =
+        (typeof(selinux_avc_has_perm_noaudit_fn))ksu_resolve_symbol_for_functable_hook("avc_has_perm_noaudit");
+    if (!selinux_avc_has_perm_noaudit_fn)
+        pr_warn("selinux_hide: avc_has_perm_noaudit unavailable, using audited permission precheck\n");
     selinux_write_op = find_kernel_symbol_exact("write_op");
     if (!selinux_write_op) {
         pr_err("selinux_hide: no write_op found!\n");
