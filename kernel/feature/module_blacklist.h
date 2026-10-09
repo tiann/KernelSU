@@ -2,5 +2,6 @@
 #define __KSU_MODULE_BLACKLIST_H
 
 void ksu_module_blacklist_init(const char *modules);
+void ksu_module_blacklist_exit();
 
 #endif

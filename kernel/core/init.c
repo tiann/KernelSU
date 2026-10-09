@@ -205,8 +205,10 @@ void __exit kernelsu_exit(void)
 
     ksu_supercalls_exit();
 
-    if (!ksu_late_loaded)
+    if (!ksu_late_loaded) {
         ksu_ksud_exit();
+        ksu_module_blacklist_exit();
+    }
 
     // Wait for any in-flight RCU readers (e.g. handler traversing allow_list)
     synchronize_rcu();
