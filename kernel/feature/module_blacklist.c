@@ -70,11 +70,6 @@ void __init ksu_module_blacklist_init(const char *modules)
         return;
     }
 
-    for (name = blacklist + existing_len; *name; name++) {
-        if (*name == '-')
-            *name = '_';
-    }
-
     *module_blacklist = blacklist;
     pr_info("module_blacklist: blocked modules: %s\n", blacklist);
 
