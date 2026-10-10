@@ -128,13 +128,13 @@ int __init kernelsu_init(void)
     }
 
     ksu_init_symbol_resolver();
-    init_jailbreak();
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
         pr_err("prepare cred failed!\n");
         return -ENOSYS;
     }
+    init_jailbreak();
     ksu_syscall_hook_init();
 
     ksu_feature_init();

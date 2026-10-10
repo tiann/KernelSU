@@ -13,10 +13,12 @@ int init_jailbreak(void)
 {
     kdp_jb_init();
 
+#if defined(CONFIG_KRETPROBES) && defined(__aarch64__)
     if (find_kernel_symbol_exact("rkp_started")) {
         static_branch_enable(&ksu_rkp_key);
         pr_info("KSU: Samsung RKP detected\n");
     }
+#endif
 
     defex_jb_init();
     return 0;

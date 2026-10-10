@@ -429,6 +429,7 @@ static void ksu_selinux_hide_unhook()
     if (static_branch_unlikely(&ksu_rkp_key)) {
         selinux_hide_rkp_exit();
         selinux_hide_rkp_unhook_status_open();
+        orig_sel_open_handle_status = NULL;
         return;
     }
 #endif
