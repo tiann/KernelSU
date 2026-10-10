@@ -182,7 +182,7 @@ bool is_su_enabled() {
     if (ksuctl(KSU_IOCTL_GET_FEATURE, &cmd) != 0) {
         return false;
     }
-    if (!cmd.supported) {
+    if (!(cmd.supported & KSU_FEATURE_FLAG_SUPPORTED)) {
         return false;
     }
     return cmd.value != 0;
@@ -195,7 +195,7 @@ static inline bool get_feature(uint32_t feature_id, uint64_t *out_value, bool *o
         return false;
     }
     if (out_value) *out_value = cmd.value;
-    if (out_supported) *out_supported = cmd.supported;
+    if (out_supported) *out_supported = cmd.supported & KSU_FEATURE_FLAG_SUPPORTED;
     return true;
 }
 

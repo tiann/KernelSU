@@ -389,6 +389,24 @@ pub fn check_feature(id: &str) -> Result<()> {
     Ok(())
 }
 
+/// Forced features are applied by the kernel itself, only do the userspace part.
+/// Runs regardless of safe mode and the persisted config, as the kernel applies
+/// them in both cases.
+pub fn init_forced_features() {
+    for feature_id in FeatureId::ALL {
+        if let Ok(state) = crate::ksucalls::get_feature(feature_id as u32)
+            && state.forced
+        {
+            log::info!(
+                "Feature '{}' is forced to {} by boot config, skip loading",
+                feature_id.name(),
+                state.value
+            );
+            on_feature_applied(feature_id, state.value);
+        }
+    }
+}
+
 pub fn init_features() -> Result<()> {
     log::info!("Initializing features from config...");
 
@@ -434,20 +452,6 @@ pub fn init_features() -> Result<()> {
         log::warn!(
             "Failed to get managed features from modules, continuing with normal initialization"
         );
-    }
-
-    // Forced features are applied by the kernel itself, only do the userspace part
-    for feature_id in FeatureId::ALL {
-        if let Ok(state) = crate::ksucalls::get_feature(feature_id as u32)
-            && state.forced
-        {
-            log::info!(
-                "Feature '{}' is forced to {} by boot config, skip loading",
-                feature_id.name(),
-                state.value
-            );
-            on_feature_applied(feature_id, state.value);
-        }
     }
 
     if features.is_empty() {

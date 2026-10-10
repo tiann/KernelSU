@@ -367,8 +367,7 @@ private fun SulogStatusSection(
     // Skip entirely when no banner is shown; an empty Row would still take up
     // its bottom padding above the file selector.
     val showBanner = when (state.sulogStatus) {
-        "unsupported", "managed" -> true
-        "forced" -> !state.isSulogEnabled
+        "unsupported", "managed", "forced" -> true
         "supported" -> !state.isSulogEnabled
         else -> false
     }

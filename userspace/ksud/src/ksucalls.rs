@@ -273,8 +273,8 @@ pub fn get_feature(feature_id: u32) -> Result<FeatureState> {
     let flags = u32::from(cmd.supported);
     Ok(FeatureState {
         value: cmd.value,
-        // older kernels report 1 for supported
-        supported: flags != 0,
+        // older kernels report 1 for supported, matching the flag
+        supported: flags & ksu_uapi::KSU_FEATURE_FLAG_SUPPORTED != 0,
         forced: flags & ksu_uapi::KSU_FEATURE_FLAG_FORCED != 0,
     })
 }
