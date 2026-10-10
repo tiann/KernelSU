@@ -91,6 +91,8 @@ static int force_feature_param_set(const char *val, const struct kernel_param *k
 }
 
 static const struct kernel_param_ops force_feature_param_ops = {
+    // A bare `force_feature` would otherwise fail parse_args() and the whole module load
+    .flags = KERNEL_PARAM_OPS_FL_NOARG,
     .set = force_feature_param_set,
 };
 module_param_cb(force_feature, &force_feature_param_ops, NULL, 0);

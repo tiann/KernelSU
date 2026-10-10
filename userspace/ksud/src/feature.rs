@@ -360,11 +360,8 @@ pub fn save_config() -> Result<()> {
 pub fn check_feature(id: &str) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
 
-    let state = crate::ksucalls::get_feature(feature_id as u32)
-        .with_context(|| format!("Failed to get feature {id}"))?;
-
     // Forced by boot config takes precedence over module management
-    if state.forced {
+    if crate::ksucalls::get_feature(feature_id as u32).is_ok_and(|state| state.forced) {
         println!("forced");
         return Ok(());
     }
@@ -379,6 +376,10 @@ pub fn check_feature(id: &str) -> Result<()> {
         println!("managed");
         return Ok(());
     }
+
+    // Check if the feature is supported by kernel
+    let state = crate::ksucalls::get_feature(feature_id as u32)
+        .with_context(|| format!("Failed to get feature {id}"))?;
 
     if state.supported {
         println!("supported");
