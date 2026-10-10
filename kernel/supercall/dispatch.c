@@ -404,7 +404,13 @@ static int do_get_feature(void __user *arg)
     }
 
     ret = ksu_get_feature(cmd.feature_id, &cmd.value, &supported);
-    cmd.supported = supported ? 1 : 0;
+    cmd.supported = 0;
+    if (supported) {
+        cmd.supported |= KSU_FEATURE_FLAG_SUPPORTED;
+        if (ksu_feature_is_forced(cmd.feature_id)) {
+            cmd.supported |= KSU_FEATURE_FLAG_FORCED;
+        }
+    }
 
     if (ret && supported) {
         pr_err("get_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
