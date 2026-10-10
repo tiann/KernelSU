@@ -11,6 +11,8 @@
 
 DEFINE_STATIC_KEY_FALSE(ksu_defex_key);
 
+#ifdef CONFIG_ARM64
+
 typedef void (*defex_get_task_creds_t)(struct task_struct *, unsigned int *, unsigned int *,
                                        unsigned int *, unsigned short *);
 typedef int (*defex_set_task_creds_t)(struct task_struct *, unsigned int, unsigned int,
@@ -93,3 +95,11 @@ void defex_jb_exit(void)
     }
     static_branch_disable(&ksu_defex_key);
 }
+
+#else
+
+void ksu_defex_sync_current(void) {}
+void defex_jb_init(void) {}
+void defex_jb_exit(void) {}
+
+#endif
