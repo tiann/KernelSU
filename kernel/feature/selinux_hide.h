@@ -6,5 +6,6 @@ void ksu_selinux_hide_exit();
 void ksu_selinux_hide_drop_backup_if_unused();
 void ksu_selinux_hide_handle_second_stage();
 void ksu_selinux_hide_handle_post_fs_data();
+void ksu_selinux_hide_on_boot_completed();
 
 #endif
