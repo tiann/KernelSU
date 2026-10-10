@@ -520,6 +520,7 @@ static int string_to_context_struct(struct policydb *pol, struct policydb *orig_
     int rc = 0, orig_rc = 0;
 
     context_init(ctx);
+    context_init(orig_ctx);
 
     /* Parse the security context. */
 
