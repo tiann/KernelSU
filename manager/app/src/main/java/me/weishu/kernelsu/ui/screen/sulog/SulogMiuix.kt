@@ -368,6 +368,7 @@ private fun SulogStatusSection(
     // its bottom padding above the file selector.
     val showBanner = when (state.sulogStatus) {
         "unsupported", "managed" -> true
+        "forced" -> !state.isSulogEnabled
         "supported" -> !state.isSulogEnabled
         else -> false
     }
@@ -388,6 +389,12 @@ private fun SulogStatusSection(
             "managed" -> {
                 WarningCard(
                     message = stringResource(R.string.feature_status_managed_summary),
+                )
+            }
+
+            "forced" -> {
+                WarningCard(
+                    message = stringResource(R.string.feature_status_forced_summary),
                 )
             }
 
