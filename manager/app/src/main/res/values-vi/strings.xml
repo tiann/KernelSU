@@ -83,9 +83,11 @@
     <string name="profile_namespace_individual">Riêng biệt</string>
     <string name="profile_selinux_context">Ngữ cảnh SELinux</string>
     <string name="profile_umount_modules">Umount modules</string>
-    <string name="uapi_mismatch">Phiên bản uapi của Trình quản lý (%1$d) và phiên bản uapi của driver KernelSU (%2$d) không khớp!</string>
-    <string name="require_manager_version">Phiên bản Trình quản lý hiện tại %1$d quá thấp để KernelSU hoạt động bình thường. Vui lòng cập nhật Trình quản lý lên phiên bản %2$d hoặc cao hơn!</string>
-    <string name="require_kernel_version">Phiên bản KernelSU hiện tại %1$d quá thấp để Trình quản lý hoạt động bình thường. Vui lòng cập nhật lên phiên bản %2$d hoặc cao hơn!</string>
+    <string name="home_lkm_update_available">Hiện có phiên bản LKM tích hợp mới hơn. Nhấn để cập nhật.</string>
+    <string name="home_lkm_custom">Tuỳ chỉnh</string>
+    <string name="require_manager_version">Cần cập nhật Trình quản lý.</string>
+    <string name="require_kernel_version">Cần cập nhật Kernel. Nhấn để cài đặt.</string>
+    <string name="require_kernel_version_gki">Cần cập nhật Kernel.</string>
     <string name="app_profile_template_import_success">Đã nhập thành công</string>
     <string name="app_profile_export_to_clipboard">Xuất vào bộ nhớ tạm</string>
     <string name="app_profile_template_export_empty">Không tìm thấy mẫu cục bộ để xuất!</string>
@@ -223,7 +225,6 @@
     <string name="color_amber">Hổ phách</string>
     <string name="color_blue_grey">Xám xanh</string>
     <string name="color_sakura">Hoa anh đào</string>
-    <string name="home_version_mismatch">Phiên bản Trình quản lý (%1$d) và phiên bản driver của KernelSU (%2$d) không khớp!</string>
     <string name="reboot_soft">Khởi động lại mềm</string>
     <string name="jailbreak_mode">Chế độ Jailbreak</string>
     <string name="home_jailbreak">Jailbreak</string>
@@ -278,12 +279,6 @@
     <string name="sulog_filter_sucompat">Lệnh SU cổ điển</string>
     <string name="sulog_filter_ioctl_grant_root">Cấp quyền Root</string>
     <string name="sulog_filter_daemon_restart">Khởi động lại tiến trình nền</string>
-    <string name="sulog_entry_unknown_event">Sự kiện không xác định!</string>
-    <string name="sulog_entry_description_sucompat">Yêu cầu /system/bin/su đã bị chặn</string>
-    <string name="sulog_entry_title_root_grant_request">Yêu cầu cấp quyền root</string>
-    <string name="sulog_entry_description_ioctl_grant_root">Đã cấp quyền truy cập Root thông qua KernelSU ioctl</string>
-    <string name="sulog_entry_title_daemon_restarted">Tiến trình nền đã khởi động lại</string>
-    <string name="sulog_entry_title_dropped_events">Sự kiện bị huỷ bỏ</string>
     <string name="settings_sulog">Nhật ký SU</string>
     <string name="settings_sulog_summary">Ghi lại các sự kiện liên quan đến quyền Root vào các file nhật ký SU của KernelSU.</string>
     <string name="sulog_filter_root_execve">Root execve</string>

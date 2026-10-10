@@ -2,9 +2,11 @@ package me.weishu.kernelsu.core.tasks
 
 import org.apache.commons.compress.compressors.lz4.FramedLZ4CompressorInputStream
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream
+import org.apache.commons.io.IOUtils
 import me.weishu.kernelsu.core.utils.DataSourceChannel
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.DataInputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -56,6 +58,26 @@ object BootKernelVersion {
                 }
                 probeSize = minOf(probeSize * 4, kernelSize.toLong())
             }
+        }
+    }
+
+    /** Reads a boot image stream, including a decompressed ZIP entry. */
+    fun parseKmiFromBoot(input: InputStream): String? {
+        val stream = DataInputStream(input)
+        val header = ByteArray(HEADER_READ_SIZE)
+        if (IOUtils.read(stream, header) < header.size) return null
+        val (kernelOffset, kernelSize) = bootKernelBlock(header) ?: return null
+        IOUtils.skipFully(stream, kernelOffset.toLong() - header.size)
+
+        var data = ByteArray(minOf(INITIAL_KERNEL_PROBE, kernelSize.toLong()).toInt())
+        var previousSize = 0
+        while (true) {
+            stream.readFully(data, previousSize, data.size - previousSize)
+            parseKmi(data)?.let { return it }
+            decompressPartial(data)?.let { parseKmi(it) }?.let { return it }
+            if (data.size >= kernelSize) return null
+            previousSize = data.size
+            data = data.copyOf(minOf(data.size.toLong() * 4, kernelSize.toLong()).toInt())
         }
     }
 

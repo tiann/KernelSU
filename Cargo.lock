@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "adb_client"
 version = "3.1.1"
-source = "git+https://github.com/Kernel-SU/adb_client#d97a966435bebaa55017834869dec08150826aa7"
+source = "git+https://github.com/KernelSU2/adb_client#d97a966435bebaa55017834869dec08150826aa7"
 dependencies = [
  "byteorder",
  "log",
@@ -148,7 +148,7 @@ checksum = "82f6aeea286b8eb4dd3431a1be1b59d290ace00f5bfd8e2a159bc2a05e2c1667"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.3",
+ "syn 3.0.4",
 ]
 
 [[package]]
@@ -285,12 +285,12 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "chacha20"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
+checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.3.0",
+ "cpufeatures 0.3.1",
  "rand_core",
 ]
 
@@ -349,7 +349,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 3.0.3",
+ "syn 3.0.4",
 ]
 
 [[package]]
@@ -408,9 +408,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b2a41393f66f16b0823bb79094d54ac5fbd34ab292ddafb9a0456ac9f87d201"
+checksum = "5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566"
 dependencies = [
  "libc",
 ]
@@ -655,9 +655,9 @@ checksum = "d45db016d36b838f563236e9193d0ee6ce38f3f68b6c94e914b4929c96bbb890"
 
 [[package]]
 name = "flate2"
-version = "1.1.9"
+version = "1.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "843fba2746e448b37e26a819579957415c8cef339bf08564fe8b7ddbd959573c"
+checksum = "6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -877,9 +877,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.14.0"
+version = "2.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
+checksum = "07aa2048142242915a31d35844fb311e0e53fcca590c3a0a40dcf1b841fa09eb"
 dependencies = [
  "equivalent",
  "hashbrown 0.17.1",
@@ -927,7 +927,7 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 [[package]]
 name = "java-properties"
 version = "2.0.0"
-source = "git+https://github.com/Kernel-SU/java-properties.git?branch=master#42a4aa941b70ded2dd3be9e9f892471023e70229"
+source = "git+https://github.com/KernelSU2/java-properties.git?branch=master#42a4aa941b70ded2dd3be9e9f892471023e70229"
 dependencies = [
  "encoding_rs",
  "lazy_static",
@@ -1058,8 +1058,7 @@ checksum = "34b357333733e8260735ba5894eb928c02ecc69c78715f01a8019e7fa7f2db4c"
 [[package]]
 name = "libc"
 version = "0.2.189"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
+source = "git+https://github.com/rust-lang/libc?rev=1a661633f11a261ff9c00b40875ef72f1cbec818#1a661633f11a261ff9c00b40875ef72f1cbec818"
 
 [[package]]
 name = "libflate"
@@ -1195,9 +1194,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.9"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
+checksum = "b63fbc4a50860e98e7b2aa7804ded1db5cbc3aff9193adaff57a6931bf7c4b4c"
 dependencies = [
  "adler2",
  "simd-adler32",
@@ -1348,7 +1347,7 @@ dependencies = [
  "proc-macro-error-attr3",
  "proc-macro2",
  "quote",
- "syn 3.0.3",
+ "syn 3.0.4",
 ]
 
 [[package]]
@@ -1363,7 +1362,7 @@ dependencies = [
 [[package]]
 name = "prop-rs"
 version = "0.2.0"
-source = "git+https://github.com/Kernel-SU/ksu_props?rev=6f5723105d8d4cacad31d83d343defbf032c7b33#6f5723105d8d4cacad31d83d343defbf032c7b33"
+source = "git+https://github.com/KernelSU2/ksu_props?rev=ddb6ee7294467f7f25bad2118e9e24eee104144b#ddb6ee7294467f7f25bad2118e9e24eee104144b"
 dependencies = [
  "prost",
 ]
@@ -1371,7 +1370,7 @@ dependencies = [
 [[package]]
 name = "prop-rs-android"
 version = "0.2.0"
-source = "git+https://github.com/Kernel-SU/ksu_props?rev=6f5723105d8d4cacad31d83d343defbf032c7b33#6f5723105d8d4cacad31d83d343defbf032c7b33"
+source = "git+https://github.com/KernelSU2/ksu_props?rev=ddb6ee7294467f7f25bad2118e9e24eee104144b#ddb6ee7294467f7f25bad2118e9e24eee104144b"
 dependencies = [
  "libc",
  "log",
@@ -1541,7 +1540,7 @@ checksum = "6b1e7f9a428571be2dc5bc0505c13fb6bf936822b894ec87abf8a08a4e51742d"
 [[package]]
 name = "rustix"
 version = "0.38.34"
-source = "git+https://github.com/Kernel-SU/rustix.git?rev=4a53fbc#4a53fbc7cb7a07cabe87125cc21dbc27db316259"
+source = "git+https://github.com/KernelSU2/rustix.git?rev=4a53fbc#4a53fbc7cb7a07cabe87125cc21dbc27db316259"
 dependencies = [
  "bitflags 2.13.1",
  "errno 0.3.14",
@@ -1647,7 +1646,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aacc4cc499359472b4abe1bf11d0b12e688af9a805fa5e3016f9a386dc2d0214"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.3.0",
+ "cpufeatures 0.3.1",
  "digest 0.11.3",
 ]
 
@@ -1669,7 +1668,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
 dependencies = [
  "cfg-if",
- "cpufeatures 0.3.0",
+ "cpufeatures 0.3.1",
  "digest 0.11.3",
 ]
 
@@ -1729,9 +1728,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "3.0.3"
+version = "3.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53e9bae58849f64dfa4f5d5ae372c8341f7305f82a3868709269343628b659a3"
+checksum = "e6275cddf4610d1775e6d1fe9469b2e77d0f39fd98fb7450901b821e0c53649f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1774,7 +1773,7 @@ checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.3",
+ "syn 3.0.4",
 ]
 
 [[package]]
@@ -1942,9 +1941,9 @@ dependencies = [
 
 [[package]]
 name = "which"
-version = "8.0.5"
+version = "8.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f3ef584124b911bcc3875c2f1472e80f24361ceb789bd1c62b3e9a3df9ff43c"
+checksum = "bae2f2b2b816647a1cab1acc91f5bd20812d53cb344382635ec2181940c8034f"
 dependencies = [
  "libc",
 ]

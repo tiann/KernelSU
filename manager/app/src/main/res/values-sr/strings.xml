@@ -13,4 +13,9 @@
     <string name="profile_flags_desc_no_new_privs">Sprečava dalje podizanje privilegija putem KernelSU-a u okviru ovog root profila.</string>
     <string name="install_force_backup">Napravi rezervnu kopiju kao originalnu sliku</string>
     <string name="install_force_backup_summary">Uverite se da je izabrana boot slika originalna slika</string>
+    <string name="home_lkm_update_available">Доступна је новија верзија уграђеног LKM-а. Додирните за ажурирање.</string>
+    <string name="home_lkm_custom">Прилагођено</string>
+    <string name="require_manager_version">Потребно је ажурирати менаџер.</string>
+    <string name="require_kernel_version">Потребно је ажурирати кернел. Додирните за инсталирање.</string>
+    <string name="require_kernel_version_gki">Потребно је ажурирати кернел.</string>
 </resources>

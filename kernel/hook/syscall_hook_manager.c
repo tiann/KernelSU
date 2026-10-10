@@ -8,10 +8,8 @@
 #include <trace/events/syscalls.h>
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
-#include <linux/compat.h>
 #include <linux/sched/task_stack.h>
-#endif
+#include <linux/compat.h>
 
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -21,6 +19,9 @@
 #include "hook/setuid_hook.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
+#if defined(__riscv)
+#include "hook/riscv64/syscall_regs.h"
+#endif
 
 #ifdef CONFIG_KRETPROBES
 
@@ -97,7 +98,7 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 {
 #if defined(__x86_64__)
     if (unlikely(in_compat_syscall()))
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__riscv)
     if (unlikely(is_compat_task()))
 #endif
         return;
@@ -116,6 +117,9 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 #elif defined(__aarch64__)
         PT_REGS_ORIG_SYSCALL(current_regs) = id;
         current_regs->syscallno = ksu_dispatcher_nr;
+#elif defined(__riscv)
+        /* orig_a0 retains argument zero; a0 is the -ENOSYS return slot. */
+        ksu_riscv_redirect_syscall(current_regs, id, ksu_dispatcher_nr);
 #endif
     }
 }

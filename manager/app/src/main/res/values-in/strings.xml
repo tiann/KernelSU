@@ -7,7 +7,6 @@
     <string name="home_working_version">Versi: %s</string>
     <string name="home_unsupported">Tidak didukung</string>
     <string name="home_unsupported_reason">KernelSU sekarang hanya mendukung kernel GKI, tetapi Anda dapat menambal image untuk perangkat GKI</string>
-    <string name="home_version_mismatch">Versi manajer (%1$d) dan versi driver KernelSU (%2$d) tidak sesuai!</string>
     <string name="home_device_model">Model perangkat</string>
     <string name="home_kernel">Versi kernel</string>
     <string name="home_manager_version">Versi manajer</string>
@@ -35,12 +34,6 @@
     <string name="sulog_filter_sucompat">Perintah klasik SU</string>
     <string name="sulog_filter_ioctl_grant_root">Izin Root</string>
     <string name="sulog_filter_daemon_restart">Muat ulang daemon</string>
-    <string name="sulog_entry_unknown_event">Peristiwa tidak dikenal</string>
-    <string name="sulog_entry_description_sucompat">Permintaan /system/bin/su dicegat</string>
-    <string name="sulog_entry_title_root_grant_request">Permintaan akses Root</string>
-    <string name="sulog_entry_description_ioctl_grant_root">Akses Root diberikan melalui ioctl KernelSU</string>
-    <string name="sulog_entry_title_daemon_restarted">Daemon dimuat ulang</string>
-    <string name="sulog_entry_title_dropped_events">Peristiwa yang terlewat</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
     <string name="module_empty">Tidak ada modul yang terpasang</string>
@@ -105,9 +98,11 @@
     <string name="profile_selinux_context">Konteks SELinux</string>
     <string name="profile_umount_modules">Umount modul</string>
     <string name="failed_to_update_app_profile">Gagal memperbarui Profil Aplikasi untuk %s</string>
-    <string name="uapi_mismatch">Versi uapi manajer (%1$d) dan versi uapi driver KernelSU (%2$d) tidak sesuai!</string>
-    <string name="require_manager_version">Versi manajer KernelSU saat ini (%1$d) terlalu rendah agar KernelSU dapat berfungsi dengan benar. Harap perbarui manajer ke versi %2$d atau lebih tinggi!</string>
-    <string name="require_kernel_version">Versi KernelSU saat ini %1$d terlalu rendah agar manajer berfungsi dengan benar. Harap perbarui ke versi %2$d atau lebih tinggi!</string>
+    <string name="home_lkm_update_available">Versi LKM bawaan yang lebih baru tersedia. Ketuk untuk memperbarui.</string>
+    <string name="home_lkm_custom">Kustom</string>
+    <string name="require_manager_version">Manajer perlu diperbarui.</string>
+    <string name="require_kernel_version">Kernel perlu diperbarui. Ketuk untuk menginstal.</string>
+    <string name="require_kernel_version_gki">Kernel perlu diperbarui.</string>
     <string name="settings_umount_modules_default">Umount modul secara bawaan</string>
     <string name="settings_umount_modules_default_summary">Nilai bawaan global untuk \"Umount modul\" di Profil Aplikasi. Jika diaktifkan, fitur ini akan menghapus semua modifikasi modul pada sistem untuk aplikasi yang tidak memiliki profil yang ditetapkan.</string>
     <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini</string>

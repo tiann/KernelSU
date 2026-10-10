@@ -73,7 +73,11 @@
     <string name="force_stop_app">Forcer l\'arrêt</string>
     <string name="restart_app">Relancer l\'application</string>
     <string name="failed_to_update_sepolicy">Échec de la mise à jour des règles SELinux pour %s</string>
-    <string name="require_kernel_version">La version actuelle de KernelSU (%1$d) est trop ancienne pour que le gestionnaire puisse fonctionner correctement. Veuillez passer à la version %2$d ou ultérieure.</string>
+    <string name="home_lkm_update_available">Une version plus récente du LKM intégré est disponible. Appuyez pour mettre à jour.</string>
+    <string name="home_lkm_custom">Personnalisé</string>
+    <string name="require_manager_version">Mise à jour du gestionnaire requise.</string>
+    <string name="require_kernel_version">Mise à jour du noyau requise. Appuyez pour installer.</string>
+    <string name="require_kernel_version_gki">Mise à jour du noyau requise.</string>
     <string name="app_profile_template_import_success">Importation réussie</string>
     <string name="app_profile_export_to_clipboard">Exporter vers le presse-papiers</string>
     <string name="app_profile_template_export_empty">Impossible de trouver un modèle local à exporter !</string>
@@ -203,7 +207,6 @@
     <string name="color_blue_grey">Gris-bleu</string>
     <string name="color_sakura">Sakura</string>
     <string name="color_amber">Ambre</string>
-    <string name="home_version_mismatch">Incompatibilité entre la version du gestionnaire (%1$d) et la version du pilote KernelSU (%2$d).</string>
     <string name="reboot_soft">Redémarrage logiciel</string>
     <string name="jailbreak_mode">Mode Jailbreak</string>
     <string name="home_jailbreak">Jailbreak</string>

@@ -15,6 +15,9 @@ kernelsu-objs += hook/arm64/syscall_hook.o
 else ifeq ($(CONFIG_X86_64),y)
 kernelsu-objs += hook/x86_64/patch_memory.o
 kernelsu-objs += hook/x86_64/syscall_hook.o
+else ifeq ($(CONFIG_RISCV),y)
+kernelsu-objs += hook/riscv64/patch_memory.o
+kernelsu-objs += hook/riscv64/syscall_hook.o
 endif
 
 kernelsu-objs += infra/file_wrapper.o
@@ -127,35 +130,24 @@ endif
 KSU_NEW_DCACHE_FLUSH := $(shell grep -q __flush_dcache_area $(srctree)/arch/arm64/include/asm/cacheflush.h ; echo $$?)
 $(info -- KSU_NEW_DCACHE_FLUSH: $(KSU_NEW_DCACHE_FLUSH))
 
-
-ifndef KSU_EXPECTED_SIZE
-KSU_EXPECTED_SIZE := 0x033b
+KSU_IS_PR_BUILD ?= 0
+ifeq ($(KSU_IS_PR_BUILD),0)
+KSU_PACKAGE_NAME ?= me.weishu.kernelsu
+else
+KSU_PACKAGE_NAME ?= me.weishu.kernelsu.pr
 endif
+KSU_EXPECTED_SIZE ?= 0x033b
+KSU_EXPECTED_HASH ?= c371061b19d8c7d7d6133c6a9bafe198fa944e50c1b31c9d8daa8d7f1fc2d2d6
 
-ifndef KSU_EXPECTED_HASH
-KSU_EXPECTED_HASH := c371061b19d8c7d7d6133c6a9bafe198fa944e50c1b31c9d8daa8d7f1fc2d2d6
-endif
-
-ifdef KSU_MANAGER_PACKAGE
-ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
-$(info -- KernelSU Manager package name: $(KSU_MANAGER_PACKAGE))
-endif
-
+$(info -- KernelSU Manager package name: $(KSU_PACKAGE_NAME))
 $(info -- KernelSU Manager signature size: $(KSU_EXPECTED_SIZE))
 $(info -- KernelSU Manager signature hash: $(KSU_EXPECTED_HASH))
+$(info -- KernelSU is PR Build: $(KSU_IS_PR_BUILD))
 
+ccflags-y += -DKSU_PACKAGE_NAME=\"$(KSU_PACKAGE_NAME)\"
 ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)
 ccflags-y += -DEXPECTED_HASH=\"$(KSU_EXPECTED_HASH)\"
-
-ifdef KSU_EXPECTED_SIZE2
-ifndef KSU_EXPECTED_HASH2
-$(error KSU_EXPECTED_HASH2 must be set when KSU_EXPECTED_SIZE2 is set)
-endif
-ccflags-y += -DEXPECTED_SIZE2=$(KSU_EXPECTED_SIZE2)
-ccflags-y += -DEXPECTED_HASH2=\"$(KSU_EXPECTED_HASH2)\"
-$(info -- KernelSU Manager signature size2: $(KSU_EXPECTED_SIZE2))
-$(info -- KernelSU Manager signature hash2: $(KSU_EXPECTED_HASH2))
-endif
+ccflags-y += -DKSU_IS_PR_BUILD=$(KSU_IS_PR_BUILD)
 
 ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 

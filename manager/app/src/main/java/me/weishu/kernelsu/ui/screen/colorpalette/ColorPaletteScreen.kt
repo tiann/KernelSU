@@ -56,7 +56,10 @@ fun ColorPaletteScreen() {
             KernelSUApplication.setEnableOnBackInvokedCallback(context.applicationInfo, it)
             activity?.recreate()
         },
+        onSetEnableSwipeDismiss = viewModel::setEnableSwipeDismiss,
+        onSetPagerInterceptionMode = viewModel::setPagerInterceptionMode,
         onSetPageScale = viewModel::setPageScale,
+        onSetModuleDescriptionMaxLines = viewModel::setModuleDescriptionMaxLines,
     )
 
     when (LocalUiMode.current) {

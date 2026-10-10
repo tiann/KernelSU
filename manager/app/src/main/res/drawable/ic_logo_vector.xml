@@ -8,16 +8,16 @@
         android:name="splash_content"
         android:pivotX="250"
         android:pivotY="250"
-        android:scaleX="0.67"
-        android:scaleY="0.67">
+        android:scaleX="0.60"
+        android:scaleY="0.60">
         <path
             android:fillColor="@color/ic_splash_background"
             android:pathData="M135,25h230a110,110 0 0 1 110,110v230a110,110 0 0 1 -110,110h-230a110,110 0 0 1 -110,-110v-230a110,110 0 0 1 110,-110z" />
         <group
             android:pivotX="250"
             android:pivotY="250"
-            android:scaleX="0.78"
-            android:scaleY="0.78">
+            android:scaleX="0.68"
+            android:scaleY="0.68">
             <group>
                 <clip-path android:pathData="M70,50 H450 V70 H70 L50,50 Z" />
                 <path

@@ -11,11 +11,12 @@ data class HomeUiState(
     val managerUAPIVersion: Int,
     val kernelUAPIVersion: Int?,
     val lkmMode: Boolean?,
+    val isLkmBundled: Boolean,
     val isManager: Boolean,
     val isManagerPrBuild: Boolean,
     val isKernelPrBuild: Boolean,
     val requiresNewKernel: Boolean,
-    val uapiMismatch: Boolean,
+    val requiresNewManager: Boolean,
     val isRootAvailable: Boolean,
     val isSafeMode: Boolean,
     val isLateLoadMode: Boolean,
@@ -27,17 +28,23 @@ data class HomeUiState(
     val isSELinuxPermissive: Boolean
         get() = systemInfo.selinuxStatus == "Permissive"
 
-    val isFullFeatured: Boolean
-        get() = isManager && !requiresNewKernel && isRootAvailable
-
     val showGkiWarning: Boolean
         get() = ksuVersion != null && lkmMode == false
 
-    val showRequireKernelWarning: Boolean
-        get() = isManager && requiresNewKernel
+    val showLkmUpdate: Boolean
+        get() = isManager &&
+                lkmMode == true &&
+                isLkmBundled &&
+                ksuVersion?.toLong() != currentManagerVersionCode &&
+                !requiresNewKernel &&
+                !requiresNewManager
 
-    val showUAPIMisMatchWarning: Boolean
-        get() = isManager && showRequireKernelWarning && uapiMismatch
+    // Jailbreak mode runs on locked bootloaders, so flashing a boot image would brick the device.
+    val canInstallKernelUpdate: Boolean
+        get() = lkmMode == true && !isLateLoadMode
+
+    val showCustomLkmBadge: Boolean
+        get() = lkmMode == true && !isLkmBundled
 
     val showRootWarning: Boolean
         get() = ksuVersion != null && !isRootAvailable
@@ -47,9 +54,6 @@ data class HomeUiState(
 
     val showKernelPrBuildWarning: Boolean
         get() = isManager && !isManagerPrBuild && isKernelPrBuild
-
-    val showVersionMismatchWarning: Boolean
-        get() = ksuVersion != null && ksuVersion.toLong() != currentManagerVersionCode
 
     val hasUpdate: Boolean
         get() = latestVersionInfo.versionCode > currentManagerVersionCode

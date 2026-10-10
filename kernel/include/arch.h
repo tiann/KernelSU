@@ -47,6 +47,28 @@
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
 #define SYS_FSTAT_SYMBOL "__x64_sys_newfstat"
 
+#elif defined(__riscv)
+
+#define __PT_PARM1_REG a0
+#define __PT_SYSCALL_PARM1_REG orig_a0
+#define __PT_PARM2_REG a1
+#define __PT_PARM3_REG a2
+#define __PT_SYSCALL_PARM4_REG a3
+#define __PT_CCALL_PARM4_REG a3
+#define __PT_PARM5_REG a4
+#define __PT_PARM6_REG a5
+#define __PT_RET_REG ra
+#define __PT_FP_REG s0
+#define __PT_RC_REG a0
+#define __PT_SP_REG sp
+#define __PT_IP_REG epc
+#define __PT_ORIG_SYSCALL_REG a7
+
+#define REBOOT_SYMBOL "__riscv_sys_reboot"
+#define SYS_READ_SYMBOL "__riscv_sys_read"
+#define SYS_EXECVE_SYMBOL "__riscv_sys_execve"
+#define SYS_FSTAT_SYMBOL "__riscv_sys_newfstat"
+
 #else
 #error "Unsupported arch"
 #endif
@@ -57,6 +79,13 @@
 #endif
 
 #define PT_REGS_PARM1(x) (__PT_REGS_CAST(x)->__PT_PARM1_REG)
+/* RISC-V saves syscall argument zero before using a0 as the return slot.
+ * Kprobe C-call arguments (including PT_REAL_REGS) still use the live a0.
+ */
+#ifndef __PT_SYSCALL_PARM1_REG
+#define __PT_SYSCALL_PARM1_REG __PT_PARM1_REG
+#endif
+#define PT_REGS_SYSCALL_PARM1(x) (__PT_REGS_CAST(x)->__PT_SYSCALL_PARM1_REG)
 #define PT_REGS_PARM2(x) (__PT_REGS_CAST(x)->__PT_PARM2_REG)
 #define PT_REGS_PARM3(x) (__PT_REGS_CAST(x)->__PT_PARM3_REG)
 #define PT_REGS_SYSCALL_PARM4(x) (__PT_REGS_CAST(x)->__PT_SYSCALL_PARM4_REG)

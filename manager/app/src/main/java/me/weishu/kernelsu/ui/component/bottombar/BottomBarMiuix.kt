@@ -29,7 +29,6 @@ import me.weishu.kernelsu.ui.component.FloatingBottomBarItem
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBarBlur
 import me.weishu.kernelsu.ui.util.BlurredBar
-import me.weishu.kernelsu.ui.util.rootAvailable
 import top.yukonga.miuix.kmp.basic.Badge
 import top.yukonga.miuix.kmp.basic.BadgedBox
 import top.yukonga.miuix.kmp.basic.Icon
@@ -48,8 +47,7 @@ fun BottomBarMiuix(
     navigationBadge: NavigationBadgeState,
     modifier: Modifier,
 ) {
-    val isManager = Natives.isManager
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val fullFeatured = Natives.isFullFeatured()
     if (!fullFeatured) return
 
     val mainState = LocalMainPagerState.current

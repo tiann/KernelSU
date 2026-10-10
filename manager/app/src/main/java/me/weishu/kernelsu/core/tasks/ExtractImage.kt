@@ -244,7 +244,7 @@ class ExtractImage(
                             KERNEL_IMAGE_NAMES.firstNotNullOfOrNull { imageName ->
                                 zipFile.entries.asSequence()
                                     .firstOrNull { it.name.substringAfterLast('/') == imageName }
-                                    ?.let { readBootImageKmi(channel, it) }
+                                    ?.let { readBootImageKmi(zipFile, it) }
                             }
                         } else {
                             null
@@ -270,10 +270,10 @@ class ExtractImage(
                 }
         }
 
-        private fun readBootImageKmi(channel: DataSourceChannel, entry: ZipArchiveEntry): String? {
-            if (entry.method != ZipMethod.STORED.code) return null
-            return channel.slice(entry.dataOffset, entry.size).use { entryChannel ->
-                BootKernelVersion.parseKmiFromBoot(entryChannel)
+        private fun readBootImageKmi(zipFile: ZipFile, entry: ZipArchiveEntry): String? {
+            if (entry.method != ZipMethod.STORED.code && entry.method != ZipMethod.DEFLATED.code) return null
+            return zipFile.getInputStream(entry).use { input ->
+                BootKernelVersion.parseKmiFromBoot(input)
             }
         }
 
