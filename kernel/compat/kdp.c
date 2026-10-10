@@ -23,7 +23,7 @@ typedef unsigned int (*kdp_usecount_sub_and_test_t)(int nr, struct cred *);
 #else
 typedef unsigned int (*kdp_usecount_dec_and_test_t)(struct cred *);
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
 typedef long (*inc_rlimit_ucounts_t)(struct ucounts *ucounts, unsigned int type, long value);
 typedef bool (*dec_rlimit_ucounts_t)(struct ucounts *ucounts, unsigned int type, long value);
 #endif
@@ -35,7 +35,7 @@ static kdp_usecount_sub_and_test_t kdp_usecount_sub_and_test_fn;
 #else
 static kdp_usecount_dec_and_test_t kdp_usecount_dec_and_test_fn;
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
 static inc_rlimit_ucounts_t inc_rlimit_ucounts_fn;
 static dec_rlimit_ucounts_t dec_rlimit_ucounts_fn;
 #endif
@@ -82,7 +82,7 @@ static void __nocfi kdp_commit_worker(struct work_struct *work)
 
     user_changed = ro_cred->user != old_cred->user;
     if (user_changed) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
         inc_rlimit_ucounts_fn(ro_cred->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 #else
         atomic_inc(&ro_cred->user->processes);
@@ -94,7 +94,7 @@ static void __nocfi kdp_commit_worker(struct work_struct *work)
     kdp_assign_pgd_fn(cw->target);
 
     if (user_changed) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
         dec_rlimit_ucounts_fn(old_cred->ucounts, UCOUNT_RLIMIT_NPROC, 1);
 #else
         atomic_dec(&old_cred->user->processes);
@@ -175,7 +175,7 @@ void kdp_jb_init(void)
     if (!kdp_usecount_dec_and_test_fn)
         return;
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
     inc_rlimit_ucounts_fn =
         (inc_rlimit_ucounts_t)ksu_resolve_symbol_for_functable_hook("inc_rlimit_ucounts");
     dec_rlimit_ucounts_fn =
