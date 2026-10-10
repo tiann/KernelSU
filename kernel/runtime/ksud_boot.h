@@ -8,6 +8,7 @@ void on_module_mounted(void);
 void on_boot_completed(void);
 
 bool ksu_is_safe_mode(void);
+bool ksu_is_fastbootd_requested(void);
 
 int nuke_ext4_sysfs(const char *mnt);
 

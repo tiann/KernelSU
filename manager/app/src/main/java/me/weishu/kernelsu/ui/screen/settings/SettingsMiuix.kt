@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.rounded.Rule
 import androidx.compose.material.icons.rounded.Adb
 import androidx.compose.material.icons.rounded.AdminPanelSettings
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DeveloperMode
@@ -332,6 +333,26 @@ fun SettingPagerMiuix(
                                 enabled = !uiState.isLateLoadMode,
                                 checked = uiState.isLateLoadMode || uiState.useSoftReboot,
                                 onCheckedChange = actions.onSetUseSoftReboot
+                            )
+                            val fastbootdRescueSummary = when (uiState.fastbootdRescueStatus) {
+                                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                                else -> stringResource(id = R.string.settings_fastbootd_rescue_summary)
+                            }
+                            SwitchPreference(
+                                title = stringResource(id = R.string.settings_fastbootd_rescue),
+                                summary = fastbootdRescueSummary,
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.Build,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(id = R.string.settings_fastbootd_rescue),
+                                        tint = if (uiState.fastbootdRescueStatus == "supported") colorScheme.onBackground else colorScheme.disabledOnSecondaryVariant
+                                    )
+                                },
+                                enabled = uiState.fastbootdRescueStatus == "supported",
+                                checked = uiState.isFastbootdRescueEnabled,
+                                onCheckedChange = actions.onSetFastbootdRescueEnabled
                             )
                         }
 
