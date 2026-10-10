@@ -17,6 +17,7 @@ use memmap2::{Mmap, MmapOptions};
 use regex_lite::Regex;
 
 use crate::assets;
+use crate::feature_id::{FeatureId, parse_feature_id};
 
 #[cfg(target_os = "android")]
 mod android {
@@ -505,6 +506,11 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = "false")]
     no_custom_rc: bool,
 
+    /// Force a kernel feature to a value at boot, e.g. `su_compat=0`.
+    /// Forced features can not be changed or loaded by userspace. Can be repeated.
+    #[arg(long, value_name = "FEATURE=VALUE", value_parser = parse_force_feature)]
+    force_feature: Vec<(FeatureId, u64)>,
+
     #[cfg(not(target_os = "android"))]
     #[arg(long, default_value = "aarch64")]
     arch: String,
@@ -512,6 +518,16 @@ pub struct BootPatchArgs {
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
     #[arg(long, default_value = "false")]
     ramdisk: bool,
+}
+
+fn parse_force_feature(s: &str) -> Result<(FeatureId, u64)> {
+    let (name, value) = s
+        .split_once('=')
+        .context("expected FEATURE=VALUE, e.g. su_compat=0")?;
+    let value = value
+        .parse()
+        .with_context(|| format!("invalid value for feature {name}: {value}"))?;
+    Ok((parse_feature_id(name)?, value))
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -538,6 +554,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             #[cfg(target_os = "android")]
             partition,
             no_custom_rc,
+            force_feature,
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
@@ -753,6 +770,17 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
         apply_config("allow shell", "allow_shell=1", allow_shell);
         if let Some(bundled) = bundled_lkm {
             apply_config("bundled LKM", "bundled=1", bundled);
+        }
+
+        // Like the flags above, this sets the full state: no --force-feature clears it
+        ksu_config.retain(|v| !v.starts_with("force_feature="));
+        if !force_feature.is_empty() {
+            let mut entries = Vec::with_capacity(force_feature.len());
+            for (feature_id, value) in &force_feature {
+                println!("- Forcing feature {} to {value}", feature_id.name());
+                entries.push(format!("{}:{value}", feature_id.name()));
+            }
+            ksu_config.push(format!("force_feature={}", entries.join(",")));
         }
 
         if ksu_config.is_empty() {
