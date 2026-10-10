@@ -246,13 +246,38 @@ static int ksu_setcurrent_permission(u32 mysid)
 #endif
 }
 
+/*
+ * Validate only the context against the backup policy.  Keep this helper
+ * independent of AVC and of modifications to the caller's input buffer, so
+ * it can eventually run after stock SELinux's SETCURRENT check.
+ *
+ * This helper does not provide the permission check itself.  It must not be
+ * called from a pre-permission path when stock would reject the request.
+ */
+static int ksu_validate_setcurrent_context(const char *str, size_t size)
+{
+    u32 sid;
+
+    if (!size || !str[0] || str[0] == '\n')
+        return 0;
+
+    /* Match stock's newline normalization without mutating its input. */
+    if (str[size - 1] == '\n')
+        size--;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+    return security_context_to_sid_with_policy(backup_sepolicy, str, size, &sid, SECSID_NULL, GFP_KERNEL);
+#else
+    return security_context_to_sid(&fake_state, str, size, &sid, GFP_KERNEL);
+#endif
+}
+
 static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
 {
     int error, perm_error;
-    u32 mysid, sid;
+    u32 mysid;
     struct av_decision avd;
     bool precheck_audited = false;
-    char *str = value;
     if (likely(current_uid().val < 10000)) {
         goto call_orig;
     }
@@ -287,25 +312,15 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
             return error;
     }
 
-    if (size && str[0] && str[0] != '\n') {
-        if (str[size - 1] == '\n') {
-            str[size - 1] = 0;
-            size--;
+    error = ksu_validate_setcurrent_context(value, size);
+    if (error) {
+        /* Stock would still have audited SETCURRENT before parsing. */
+        if (!precheck_audited) {
+            perm_error = ksu_setcurrent_permission(current_sid());
+            if (perm_error)
+                return perm_error;
         }
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-        error = security_context_to_sid_with_policy(backup_sepolicy, str, size, &sid, SECSID_NULL, GFP_KERNEL);
-#else
-        error = security_context_to_sid(&fake_state, str, size, &sid, GFP_KERNEL);
-#endif
-        if (error) {
-            /* Stock would still have audited SETCURRENT before parsing. */
-            if (!precheck_audited) {
-                perm_error = ksu_setcurrent_permission(current_sid());
-                if (perm_error)
-                    return perm_error;
-            }
-            return error;
-        }
+        return error;
     }
 
 call_orig:
