@@ -86,6 +86,8 @@ pub fn on_post_fs_data() -> Result<()> {
         warn!("apply root profile sepolicy failed: {e}");
     }
 
+    crate::feature::init_forced_features();
+
     // load feature config
     if is_safe_mode() {
         warn!("safe mode, skip load feature config");

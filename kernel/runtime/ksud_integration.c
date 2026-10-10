@@ -25,6 +25,7 @@
 #include "ksu.h"
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
+#include "policy/feature.h"
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
@@ -164,6 +165,8 @@ void ksu_handle_execveat_ksud(const char *path, struct user_arg_ptr *argv)
             apply_kernelsu_rules();
             cache_sid();
             setup_ksu_cred();
+            // after apply_kernelsu_rules, so that selinux_hide has its sepolicy backup
+            ksu_feature_apply_forced();
             init_second_stage_executed = true;
         }
     }

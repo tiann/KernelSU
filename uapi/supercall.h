@@ -111,8 +111,12 @@ struct ksu_set_app_profile_cmd {
 struct ksu_get_feature_cmd {
     __u32 feature_id; /* Input: feature ID (enum ksu_feature_id) */
     __u64 value; /* Output: feature value/state */
-    __u8 supported; /* Output: true if feature is supported, false otherwise */
+    __u8 supported; /* Output: KSU_FEATURE_FLAG_* bits, 0 if feature is not supported */
 };
+
+#define KSU_FEATURE_FLAG_SUPPORTED (1 << 0)
+/* Value is forced by boot config (force_feature param), SET_FEATURE is refused */
+#define KSU_FEATURE_FLAG_FORCED (1 << 1)
 
 struct ksu_set_feature_cmd {
     __u32 feature_id; /* Input: feature ID (enum ksu_feature_id) */

@@ -346,6 +346,10 @@ private fun SulogStatusSection(
             WarningCard(text = stringResource(R.string.feature_status_managed_summary))
         }
 
+        "forced" -> {
+            WarningCard(text = stringResource(R.string.feature_status_forced_summary))
+        }
+
         "supported" if !state.isSulogEnabled -> {
             WarningCard(
                 text = stringResource(R.string.sulog_disabled_title),
