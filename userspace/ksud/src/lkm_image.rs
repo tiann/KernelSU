@@ -24,9 +24,11 @@ const ARM64_IMAGE_MAGIC_OFFSET: usize = 0x38;
 const ARM64_IMAGE_MAGIC: &[u8; 4] = b"ARM\x64";
 const ARM64_IMAGE_SIZE_OFFSET: usize = 0x10;
 const CAPSULE_MAGIC: &[u8; 8] = b"KSULKM1\0";
-const CAPSULE_VERSION: u32 = 1;
+const CAPSULE_VERSION: u32 = 2;
 const CAPSULE_ALIGNMENT: usize = 4096;
-const CAPSULE_HEADER_SIZE: usize = 96;
+const CAPSULE_HEADER_SIZE: usize = 112;
+/// Upper bound of the module params string, excluding the NUL terminator
+const MAX_MODULE_PARAMS_SIZE: usize = 4096;
 const CAPSULE_FLAG_SHN_ABS_FIXUPS: u64 = 1;
 const EM_AARCH64: u16 = 183;
 const ET_REL: u16 = 1;
@@ -83,6 +85,9 @@ pub struct BootPatchV2Args {
     /// Replace an existing output file
     #[arg(long, default_value = "false")]
     pub force: bool,
+
+    #[command(flatten)]
+    pub config: boot_patch::KsuConfigArgs,
 }
 
 #[derive(Clone, Debug)]
@@ -323,6 +328,8 @@ struct Capsule {
     image_size: usize,
     module_offset: usize,
     fixup_offset: usize,
+    args_offset: usize,
+    args_size: usize,
 }
 
 #[derive(Debug)]
@@ -1718,19 +1725,32 @@ fn build_capsule(
     module: &[u8],
     fixup_bytes: &[u8],
     fixup_count: usize,
+    params: &str,
 ) -> Result<Capsule> {
     ensure!(
         fixup_bytes.len() == fixup_count.saturating_mul(16),
         "fixup table length does not match its entry count"
+    );
+    ensure!(
+        params.len() <= MAX_MODULE_PARAMS_SIZE && !params.contains('\0'),
+        "invalid module params"
     );
     let capsule_offset = align_up(image_size, 16);
     let module_relative_offset = CAPSULE_HEADER_SIZE;
     let fixup_relative_offset = module_relative_offset
         .checked_add(align_up(module.len(), 16))
         .context("capsule module offset overflow")?;
-    let content_end = fixup_relative_offset
-        .checked_add(fixup_bytes.len())
-        .context("capsule fixup offset overflow")?;
+    let args_relative_offset = align_up(
+        fixup_relative_offset
+            .checked_add(fixup_bytes.len())
+            .context("capsule fixup offset overflow")?,
+        16,
+    );
+    // NUL-terminated, passed to load_module() as uargs
+    let args_size = params.len() + 1;
+    let content_end = args_relative_offset
+        .checked_add(args_size)
+        .context("capsule params offset overflow")?;
     let new_image_size = align_up(
         capsule_offset
             .checked_add(content_end)
@@ -1754,10 +1774,15 @@ fn build_capsule(
     write_u64(&mut data, 40, u64::try_from(fixup_relative_offset)?)?;
     write_u64(&mut data, 48, u64::try_from(fixup_count)?)?;
     write_u64(&mut data, 56, flags)?;
-    data[64..CAPSULE_HEADER_SIZE].copy_from_slice(&module_sha256(module)?);
+    data[64..96].copy_from_slice(&module_sha256(module)?);
+    write_u64(&mut data, 96, u64::try_from(args_relative_offset)?)?;
+    write_u64(&mut data, 104, u64::try_from(args_size)?)?;
     data[module_relative_offset..module_relative_offset + module.len()].copy_from_slice(module);
     data[fixup_relative_offset..fixup_relative_offset + fixup_bytes.len()]
         .copy_from_slice(fixup_bytes);
+    // The trailing NUL comes from the zero-filled capsule
+    data[args_relative_offset..args_relative_offset + params.len()]
+        .copy_from_slice(params.as_bytes());
 
     Ok(Capsule {
         data,
@@ -1765,6 +1790,8 @@ fn build_capsule(
         image_size: new_image_size,
         module_offset: capsule_offset + module_relative_offset,
         fixup_offset: capsule_offset + fixup_relative_offset,
+        args_offset: capsule_offset + args_relative_offset,
+        args_size,
     })
 }
 
@@ -1923,7 +1950,7 @@ impl<'a> BootstrapObject<'a> {
             read_elf_string(section_name_data, name_offset)?.clone_into(&mut section.name);
         }
 
-        let find_unique_section = |name: &str| -> Result<usize> {
+        let find_section = |name: &str| -> Result<Option<usize>> {
             let matches = sections
                 .iter()
                 .enumerate()
@@ -1931,45 +1958,54 @@ impl<'a> BootstrapObject<'a> {
                 .map(|(index, _)| index)
                 .collect::<Vec<_>>();
             ensure!(
-                matches.len() == 1,
-                "bootstrap must contain exactly one {name} section"
+                matches.len() <= 1,
+                "bootstrap must contain at most one {name} section"
             );
-            Ok(matches[0])
+            Ok(matches.first().copied())
         };
-        let text_index = find_unique_section(".text.ksu_bootstrap")?;
-        let rodata_index = find_unique_section(".rodata.ksu_bootstrap")?;
+        let text_index = find_section(".text.ksu_bootstrap")?
+            .context("bootstrap must contain exactly one .text.ksu_bootstrap section")?;
+        // Optional, the bootstrap currently keeps all its constants in literal pools
+        let rodata_index = find_section(".rodata.ksu_bootstrap")?;
         let text = &sections[text_index];
-        let rodata = &sections[rodata_index];
         ensure!(
             text.section_type == SHT_PROGBITS
                 && text.flags & (SHF_ALLOC | SHF_EXECINSTR) == (SHF_ALLOC | SHF_EXECINSTR)
                 && text.flags & SHF_WRITE == 0,
             "bootstrap text section has unsafe flags or type"
         );
-        ensure!(
-            rodata.section_type == SHT_PROGBITS
-                && rodata.flags & SHF_ALLOC != 0
-                && rodata.flags & (SHF_WRITE | SHF_EXECINSTR) == 0,
-            "bootstrap rodata section has unsafe flags or type"
-        );
+        if let Some(rodata_index) = rodata_index {
+            let rodata = &sections[rodata_index];
+            ensure!(
+                rodata.section_type == SHT_PROGBITS
+                    && rodata.flags & SHF_ALLOC != 0
+                    && rodata.flags & (SHF_WRITE | SHF_EXECINSTR) == 0,
+                "bootstrap rodata section has unsafe flags or type"
+            );
+        }
         for (index, section) in sections.iter().enumerate() {
             ensure!(
                 section.size == 0
                     || section.flags & SHF_ALLOC == 0
                     || index == text_index
-                    || index == rodata_index,
+                    || Some(index) == rodata_index,
                 "unsupported allocatable bootstrap section {}",
                 section.name
             );
         }
 
-        let rodata_output = checked_align_up(text.size, rodata.alignment)?;
-        let image_size = rodata_output
-            .checked_add(rodata.size)
-            .context("bootstrap image size overflow")?;
-        ensure!(image_size > 0, "bootstrap has no loadable bytes");
+        let text_size = text.size;
+        let mut image_size = text_size;
         sections[text_index].output_offset = Some(0);
-        sections[rodata_index].output_offset = Some(rodata_output);
+        if let Some(rodata_index) = rodata_index {
+            let rodata = &sections[rodata_index];
+            let rodata_output = checked_align_up(text_size, rodata.alignment)?;
+            image_size = rodata_output
+                .checked_add(rodata.size)
+                .context("bootstrap image size overflow")?;
+            sections[rodata_index].output_offset = Some(rodata_output);
+        }
+        ensure!(image_size > 0, "bootstrap has no loadable bytes");
 
         let symbol_tables = sections
             .iter()
@@ -2351,7 +2387,11 @@ fn apply_bootstrap_relocation(
 
 // Raw ARM64 Image injection.
 
-fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageInjectionReport)> {
+fn inject_image(
+    original_image: &[u8],
+    module: &[u8],
+    params: &str,
+) -> Result<(Vec<u8>, ImageInjectionReport)> {
     let mut image = original_image.to_vec();
     let image_size = parse_arm64_image_size(&image)?;
     ensure!(
@@ -2381,7 +2421,7 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
 
     let (fixups, unresolved) = collect_module_fixups(module, &symbols, image_base, image_size)?;
     let fixup_bytes = pack_fixups(&fixups)?;
-    let capsule = build_capsule(image_size, module, &fixup_bytes, fixups.len())?;
+    let capsule = build_capsule(image_size, module, &fixup_bytes, fixups.len(), params)?;
     let reserve_extension = capsule
         .image_size
         .checked_sub(image_size)
@@ -2414,6 +2454,11 @@ fn inject_image(original_image: &[u8], module: &[u8]) -> Result<(Vec<u8>, ImageI
         "ksu_fixup_capsule_offset",
         capsule.fixup_offset.saturating_sub(capsule.file_offset) as u64,
     );
+    definitions.insert(
+        "ksu_args_capsule_offset",
+        capsule.args_offset.saturating_sub(capsule.file_offset) as u64,
+    );
+    definitions.insert("ksu_args_size", capsule.args_size as u64);
     definitions.insert("ksu_reserve_extension", reserve_extension as u64);
     definitions.insert("ksu_page_offset", sites.page_offset);
     definitions.insert("ksu_module_size", module.len() as u64);
@@ -2600,8 +2645,15 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
             .into_owned()
     };
 
+    let mut params = Vec::new();
+    args.config.apply(&mut params);
+    let params = params.join(" ");
+    if !params.is_empty() {
+        println!("- Module params: {params}");
+    }
+
     println!("- Recovering BTF/kallsyms and injecting module");
-    let (patched_kernel, report) = inject_image(&raw_kernel, &module)?;
+    let (patched_kernel, report) = inject_image(&raw_kernel, &module, &params)?;
 
     println!("- Repacking boot image");
     let mut patcher = BootImagePatchOption::new(&boot_image);
@@ -2924,7 +2976,7 @@ mod tests {
     fn capsule_layout_matches_wire_format() {
         let module = b"module-bytes";
         let fixups = (0u8..16).collect::<Vec<_>>();
-        let capsule = build_capsule(0x20_0003, module, &fixups, 1).unwrap();
+        let capsule = build_capsule(0x20_0003, module, &fixups, 1, "allow_shell=1").unwrap();
         assert_eq!(capsule.file_offset, 0x20_0010);
         assert!(capsule.image_size.is_multiple_of(CAPSULE_ALIGNMENT));
         assert_eq!(&capsule.data[..8], CAPSULE_MAGIC);
@@ -2940,6 +2992,22 @@ mod tests {
             &capsule.data[module_offset..module_offset + module.len()],
             module
         );
+        let args_offset = usize::try_from(read_u64(&capsule.data, 96).unwrap()).unwrap();
+        let args_size = usize::try_from(read_u64(&capsule.data, 104).unwrap()).unwrap();
+        assert_eq!(args_offset, capsule.args_offset - capsule.file_offset);
+        assert!(args_offset >= 16 + usize::try_from(read_u64(&capsule.data, 40).unwrap()).unwrap());
+        assert_eq!(
+            &capsule.data[args_offset..args_offset + args_size],
+            b"allow_shell=1\0"
+        );
+        assert!(args_offset + args_size <= capsule.data.len());
+    }
+
+    #[test]
+    fn capsule_rejects_invalid_params() {
+        assert!(build_capsule(0x20_0000, b"m", &[], 0, "a\0b").is_err());
+        let long = "a".repeat(MAX_MODULE_PARAMS_SIZE + 1);
+        assert!(build_capsule(0x20_0000, b"m", &[], 0, &long).is_err());
     }
 
     #[test]

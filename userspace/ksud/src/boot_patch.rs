@@ -486,9 +486,8 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = None)]
     pub cmdline: Option<String>,
 
-    /// Always allow shell to get root permission
-    #[arg(long, default_value = "false")]
-    allow_shell: bool,
+    #[command(flatten)]
+    config: KsuConfigArgs,
 
     /// Force enable adbd and disable adbd auth
     #[arg(long, default_value = "false")]
@@ -502,6 +501,23 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = "false")]
     no_install: bool,
 
+    #[cfg(not(target_os = "android"))]
+    #[arg(long, default_value = "aarch64")]
+    arch: String,
+
+    /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
+    #[arg(long, default_value = "false")]
+    ramdisk: bool,
+}
+
+/// KernelSU module params, stored in ramdisk `/ksu_config` (boot-patch) or the
+/// injected capsule (boot-patch-v2).
+#[derive(clap::Args, Debug, Default)]
+pub struct KsuConfigArgs {
+    /// Always allow shell to get root permission
+    #[arg(long, default_value = "false")]
+    allow_shell: bool,
+
     /// Do not load custom rc
     #[arg(long, default_value = "false")]
     no_custom_rc: bool,
@@ -510,14 +526,38 @@ pub struct BootPatchArgs {
     /// Forced features can not be changed or loaded by userspace. Can be repeated.
     #[arg(long, value_name = "FEATURE=VALUE", value_parser = parse_force_feature)]
     force_feature: Vec<(FeatureId, u64)>,
+}
 
-    #[cfg(not(target_os = "android"))]
-    #[arg(long, default_value = "aarch64")]
-    arch: String,
+impl KsuConfigArgs {
+    /// Set the full state of these options in `config`, other entries are kept.
+    pub fn apply(&self, config: &mut Vec<String>) {
+        set_config_flag(config, "no custom rc", "norc=1", self.no_custom_rc);
+        set_config_flag(config, "allow shell", "allow_shell=1", self.allow_shell);
 
-    /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
-    #[arg(long, default_value = "false")]
-    ramdisk: bool,
+        config.retain(|v| !v.starts_with("force_feature="));
+        if !self.force_feature.is_empty() {
+            let mut entries = Vec::with_capacity(self.force_feature.len());
+            for (feature_id, value) in &self.force_feature {
+                println!("- Forcing feature {} to {value}", feature_id.name());
+                entries.push(format!("{}:{value}", feature_id.name()));
+            }
+            config.push(format!("force_feature={}", entries.join(",")));
+        }
+    }
+}
+
+fn set_config_flag(config: &mut Vec<String>, name: &str, value: &str, add: bool) {
+    let has_value = config.iter().any(|v| v == value);
+
+    if add {
+        println!("- Adding {name} config");
+        if !has_value {
+            config.push(value.to_owned());
+        }
+    } else if has_value {
+        println!("- Removing {name} config");
+        config.retain(|v| v != value);
+    }
 }
 
 fn parse_force_feature(s: &str) -> Result<(FeatureId, u64)> {
@@ -541,7 +581,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             kmi,
             out_name,
             cmdline,
-            allow_shell,
+            config,
             enable_adbd,
             adb_debug_prop,
             no_install,
@@ -553,8 +593,6 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             backup,
             #[cfg(target_os = "android")]
             partition,
-            no_custom_rc,
-            force_feature,
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
@@ -752,35 +790,9 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             .map(|v| v.split(' ').map(std::borrow::ToOwned::to_owned).collect())
             .unwrap_or_default();
 
-        let mut apply_config = |name: &str, value: &str, add: bool| {
-            let has_value = ksu_config.iter().any(|v| v == value);
-
-            if add {
-                println!("- Adding {name} config");
-                if !has_value {
-                    ksu_config.push(value.to_owned());
-                }
-            } else if has_value {
-                println!("- Removing {name} config");
-                ksu_config.retain(|v| v != value);
-            }
-        };
-
-        apply_config("no custom rc", "norc=1", no_custom_rc);
-        apply_config("allow shell", "allow_shell=1", allow_shell);
+        config.apply(&mut ksu_config);
         if let Some(bundled) = bundled_lkm {
-            apply_config("bundled LKM", "bundled=1", bundled);
-        }
-
-        // Like the flags above, this sets the full state: no --force-feature clears it
-        ksu_config.retain(|v| !v.starts_with("force_feature="));
-        if !force_feature.is_empty() {
-            let mut entries = Vec::with_capacity(force_feature.len());
-            for (feature_id, value) in &force_feature {
-                println!("- Forcing feature {} to {value}", feature_id.name());
-                entries.push(format!("{}:{value}", feature_id.name()));
-            }
-            ksu_config.push(format!("force_feature={}", entries.join(",")));
+            set_config_flag(&mut ksu_config, "bundled LKM", "bundled=1", bundled);
         }
 
         if ksu_config.is_empty() {
