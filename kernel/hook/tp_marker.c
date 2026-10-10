@@ -9,6 +9,7 @@
 #include "policy/allowlist.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
+#include "compat/jailbreak.h"
 
 // Tracepoint registration count management
 // == 1: just us
@@ -100,7 +101,7 @@ void ksu_mark_running_process_locked(void)
             ksu_clear_task_tracepoint_flag(t);
             pr_info("tp_marker: unmark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
         }
-        put_cred(cred);
+        ksu_put_cred(cred);
     }
     read_unlock(&tasklist_lock);
 }

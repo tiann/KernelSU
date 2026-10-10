@@ -19,6 +19,7 @@
 #include "hook/setuid_hook.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
+#include "compat/jailbreak.h"
 #if defined(__riscv)
 #include "hook/riscv64/syscall_regs.h"
 #endif
@@ -131,6 +132,12 @@ void __init ksu_syscall_hook_manager_init(void)
     pr_info("hook_manager: ksu_hook_manager_init called\n");
 
 #ifdef CONFIG_KRETPROBES
+#ifdef __aarch64__
+    if (static_branch_unlikely(&ksu_rkp_key)) {
+        ksu_rkp_hooks_init();
+        return;
+    }
+#endif
     syscall_regfunc_rp = init_kretprobe("syscall_regfunc", syscall_regfunc_handler);
     syscall_unregfunc_rp = init_kretprobe("syscall_unregfunc", syscall_unregfunc_handler);
 #endif
@@ -168,6 +175,13 @@ void __exit ksu_syscall_hook_manager_exit(void)
 #endif
 
 #ifdef CONFIG_KRETPROBES
+#ifdef __aarch64__
+    if (static_branch_unlikely(&ksu_rkp_key)) {
+        ksu_rkp_hooks_exit();
+        ksu_syscall_hook_exit();
+        return;
+    }
+#endif
     destroy_kretprobe(&syscall_regfunc_rp);
     destroy_kretprobe(&syscall_unregfunc_rp);
 #endif
