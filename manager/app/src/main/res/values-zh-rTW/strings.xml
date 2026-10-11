@@ -150,7 +150,6 @@
     <string name="module_repos">模組倉庫</string>
     <string name="module_repos_source_code">源碼</string>
     <string name="module_repos_sort_updated">更新時間</string>
-    <string name="module_repos_sort_created">建立時間</string>
     <string name="module_repos_sort_name">名稱</string>
     <string name="module_repos_sort_stars">星標數</string>
     <string name="undo">撤銷</string>

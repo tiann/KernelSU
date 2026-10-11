@@ -43,7 +43,6 @@
     <string name="module_sort_enabled_first">Urutkan (Aktif dahulu)</string>
     <string name="module_repos">Repositori</string>
     <string name="module_repos_sort_updated">Waktu diperbarui</string>
-    <string name="module_repos_sort_created">Waktu dibuat</string>
     <string name="module_repos_sort_name">Nama</string>
     <string name="module_repos_sort_stars">Bintang</string>
     <string name="module_repos_source_code">Kode sumber</string>

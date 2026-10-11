@@ -30,6 +30,7 @@ import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.modulerepo.downloadFailureMessage
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -121,6 +122,14 @@ fun ModulePager(
                 download(
                     url = request.downloadUrl,
                     fileName = request.fileName,
+                    // Registry releases are size + SHA-256 checked, kept app-private and
+                    // re-verified by the flash step; other updateJson sources are unchanged.
+                    expected = request.expected,
+                    onFailed = { failed ->
+                        viewModel.emitEffect(
+                            ModuleEffect.Toast(downloadFailureMessage(context, failed, request.fileName))
+                        )
+                    },
                     onDownloaded = { uri ->
                         if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                             navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))

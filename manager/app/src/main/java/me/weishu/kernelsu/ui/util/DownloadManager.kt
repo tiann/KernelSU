@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import me.weishu.kernelsu.data.registry.DownloadVerificationException
+import me.weishu.kernelsu.data.registry.ExpectedFile
+import me.weishu.kernelsu.data.registry.RegistryUrls
+import me.weishu.kernelsu.data.registry.canShareDownload
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -25,6 +29,10 @@ object DownloadManager {
         val status: Status = Status.PENDING,
         val resultUri: Uri? = null,
         val error: String? = null,
+        /** Set when a registry download was rejected (URL allowlist, size or SHA-256 mismatch). */
+        val verificationFailure: DownloadVerificationException.Reason? = null,
+        /** Size + SHA-256 a registry download is verified against; null for plain downloads. */
+        val expected: ExpectedFile? = null,
     )
 
     private val idCounter = AtomicInteger(0)
@@ -39,15 +47,36 @@ object DownloadManager {
         url: String,
         fileName: String,
         onCompleted: ((Uri) -> Unit)? = null,
+        expected: ExpectedFile? = null,
     ): Int {
+        // Only share an in-flight download that is verified exactly like this request.
         val existing = _downloads.value.values.find {
-            it.url == url && (it.status == Status.PENDING || it.status == Status.DOWNLOADING)
+            (it.status == Status.PENDING || it.status == Status.DOWNLOADING) &&
+                canShareDownload(url, expected, it.url, it.expected)
         }
-        if (existing != null) return existing.id
+        if (existing != null) {
+            if (onCompleted != null) {
+                completionCallbacks.merge(existing.id, onCompleted) { a, b -> { uri -> a(uri); b(uri) } }
+                // It may have finished in between; markCompleted / markFailed already drained the
+                // callbacks then, so run (completed) or drop (failed) what was merged afterwards.
+                val now = _downloads.value[existing.id]
+                if (now?.status == Status.COMPLETED && now.resultUri != null) {
+                    completionCallbacks.remove(existing.id)?.let { cb -> mainHandler.post { cb(now.resultUri) } }
+                } else if (now == null || now.status == Status.FAILED) {
+                    completionCallbacks.remove(existing.id)
+                }
+            }
+            return existing.id
+        }
 
         val id = idCounter.incrementAndGet()
-        val state = DownloadState(id = id, fileName = fileName, url = url)
+        val state = DownloadState(id = id, fileName = fileName, url = url, expected = expected)
         _downloads.update { it + (id to state) }
+
+        if (expected != null && !RegistryUrls.isAllowedReleaseDownloadUrl(url)) {
+            markFailed(id, "Download URL not allowed", DownloadVerificationException.Reason.URL_NOT_ALLOWED)
+            return id
+        }
 
         if (onCompleted != null) {
             completionCallbacks[id] = onCompleted
@@ -58,6 +87,10 @@ object DownloadManager {
             putExtra(DownloadService.EXTRA_DOWNLOAD_ID, id)
             putExtra(DownloadService.EXTRA_URL, url)
             putExtra(DownloadService.EXTRA_FILE_NAME, fileName)
+            if (expected != null) {
+                putExtra(DownloadService.EXTRA_EXPECTED_SIZE, expected.size)
+                putExtra(DownloadService.EXTRA_EXPECTED_SHA256, expected.sha256)
+            }
         }
         ContextCompat.startForegroundService(context, intent)
 
@@ -83,10 +116,14 @@ object DownloadManager {
         }
     }
 
-    internal fun markFailed(id: Int, error: String) {
+    internal fun markFailed(
+        id: Int,
+        error: String,
+        verificationFailure: DownloadVerificationException.Reason? = null,
+    ) {
         _downloads.update { map ->
             val state = map[id] ?: return@update map
-            map + (id to state.copy(status = Status.FAILED, error = error))
+            map + (id to state.copy(status = Status.FAILED, error = error, verificationFailure = verificationFailure))
         }
         completionCallbacks.remove(id)
     }
