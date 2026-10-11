@@ -13,22 +13,25 @@
 // Apps that manage to run code as the shell uid (e.g. through a system service
 // bug) would otherwise inherit the root grant of com.android.shell. When this
 // is enabled, a granted shell may only get root if it was spawned by adbd, i.e.
-// it is a real `adb shell` session.
+// it is a real `adb shell` session, or by a KernelSU root process (e.g. adb
+// daemons provided by modules such as altdb). The latter is no escalation, as
+// only processes already granted root by KernelSU run in the ksu domain.
 static DEFINE_STATIC_KEY_FALSE(ksu_shell_su_adb_only);
 
 // Deny instead of walking an unbounded chain of ancestors
 #define MAX_ANCESTOR_DEPTH 128
 
-static bool is_descendant_of_adbd(void)
+static bool has_trusted_ancestor(void)
 {
     struct task_struct *t;
     int depth = 0;
     bool found = false;
 
     rcu_read_lock();
-    // Stop at init: orphans reparented to it are not adb sessions any more
+    // Stop at init: orphans reparented to it are not attached to a session any more
     for (t = current; t->pid > 1 && depth < MAX_ANCESTOR_DEPTH; t = rcu_dereference(t->real_parent), depth++) {
-        if (is_adbd(__task_cred(t))) {
+        const struct cred *cred = __task_cred(t);
+        if (is_adbd(cred) || is_task_ksu_domain(cred)) {
             found = true;
             break;
         }
@@ -44,7 +47,7 @@ bool ksu_shell_su_allowed_for_current(void)
         return true;
     }
 
-    return is_descendant_of_adbd();
+    return has_trusted_ancestor();
 }
 
 static int shell_su_adb_only_feature_get(u64 *value)
