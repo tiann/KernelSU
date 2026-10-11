@@ -23,7 +23,7 @@ import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.util.DownloadService
 import me.weishu.kernelsu.ui.util.getFileName
-import me.weishu.kernelsu.ui.webui.WebUIActivity
+import me.weishu.kernelsu.ui.webui.util.createWebuiIntent
 
 private const val SCHEME_KSU = "ksu"
 private const val HOST_ACTION = "action"
@@ -79,14 +79,6 @@ private sealed interface PendingAction {
 private sealed interface KsuDeepLink {
     data class Action(val moduleId: String) : KsuDeepLink
     data class WebUi(val moduleId: String) : KsuDeepLink
-}
-
-private fun buildInternalWebUiUri(moduleId: String): Uri {
-    return Uri.Builder()
-        .scheme(SCHEME_KSU)
-        .authority(HOST_WEBUI)
-        .appendQueryParameter(PARAM_ID, moduleId)
-        .build()
 }
 
 fun getDisplayName(uri: Uri): String {
@@ -197,9 +189,7 @@ fun IntentDispatcher(intentChannel: ReceiveChannel<Intent>) {
             }
 
             is PendingAction.OpenWebUI -> {
-                val webIntent = Intent(context, WebUIActivity::class.java)
-                    .setData(buildInternalWebUiUri(action.moduleId))
-                context.startActivity(webIntent)
+                context.startActivity(createWebuiIntent(context, action.moduleId))
             }
         }
     }
