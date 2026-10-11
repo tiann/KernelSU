@@ -282,16 +282,21 @@ bool __ksu_is_allow_uid(uid_t uid)
     return false;
 }
 
-bool __ksu_is_allow_uid_for_current(uid_t uid)
+bool ksu_is_uid_granted_root(uid_t uid)
 {
     if (unlikely(uid == 0)) {
         // already root, but only allow our domain.
         return is_ksu_domain();
     }
+    return __ksu_is_allow_uid(uid);
+}
+
+bool __ksu_is_allow_uid_for_current(uid_t uid)
+{
     if (unlikely(uid == SHELL_UID) && !ksu_shell_su_allowed_for_current()) {
         return false;
     }
-    return __ksu_is_allow_uid(uid);
+    return ksu_is_uid_granted_root(uid);
 }
 
 bool ksu_uid_should_umount(uid_t uid)
