@@ -287,6 +287,8 @@
     <string name="download_cancel">取消</string>
     <string name="download_install">安裝</string>
     <string name="settings_adb_root_summary">以 Root 權限執行 adbd daemon</string>
+    <string name="settings_shell_su_adb_only">限制 Shell 僅可透過 ADB 取得 Root</string>
+    <string name="settings_shell_su_adb_only_summary">授權 Shell 後的額外檢查：僅由 adbd 或 KernelSU Root 程序（如 ADB 模組）啟動的 shell 程序可取得 Root，防止 App 提權至 shell 後進一步取得 Root</string>
     <string name="menu_sort">排序</string>
     <string name="sort_by_name">應用名</string>
     <string name="sort_by_package_name">套件名</string>
