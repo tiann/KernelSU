@@ -80,6 +80,12 @@ class SettingsViewModel(
             } else {
                 repo.getAdbRootPersistValue() == 1L
             }
+            val shellSuAdbOnlyStatus = repo.getShellSuAdbOnlyStatus()
+            val isShellSuAdbOnlyEnabled = if (shellSuAdbOnlyStatus == "forced") {
+                repo.getShellSuAdbOnlyValue() == 1L
+            } else {
+                repo.getShellSuAdbOnlyPersistValue() == 1L
+            }
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
@@ -111,6 +117,8 @@ class SettingsViewModel(
                     isSuEnabled = isSuEnabled,
                     adbRootStatus = adbRootStatus,
                     isAdbRootEnabled = isAdbRootEnabled,
+                    shellSuAdbOnlyStatus = shellSuAdbOnlyStatus,
+                    isShellSuAdbOnlyEnabled = isShellSuAdbOnlyEnabled,
                     kernelUmountStatus = kernelUmountStatus,
                     isKernelUmountEnabled = isKernelUmountEnabled,
                     selinuxHideStatus = selinuxHideStatus,
@@ -336,6 +344,15 @@ class SettingsViewModel(
             if (repo.setSulogEnabled(enabled)) {
                 repo.execKsudFeatureSave()
                 _uiState.update { it.copy(isSulogEnabled = enabled) }
+            }
+        }
+    }
+
+    fun setShellSuAdbOnlyEnabled(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (repo.setShellSuAdbOnlyEnabled(enabled)) {
+                repo.execKsudFeatureSave()
+                _uiState.update { it.copy(isShellSuAdbOnlyEnabled = enabled) }
             }
         }
     }
