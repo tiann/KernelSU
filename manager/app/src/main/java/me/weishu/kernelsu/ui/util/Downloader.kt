@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import me.weishu.kernelsu.data.registry.ExpectedFile
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.util.module.LatestVersionInfo
 import okhttp3.Request
@@ -18,7 +19,9 @@ suspend fun download(
     fileName: String,
     onDownloaded: (Uri) -> Unit = {},
     onDownloading: () -> Unit = {},
-    onProgress: (Int) -> Unit = {}
+    onProgress: (Int) -> Unit = {},
+    expected: ExpectedFile? = null,
+    onFailed: (DownloadManager.DownloadState) -> Unit = {},
 ) {
     onDownloading()
 
@@ -27,15 +30,19 @@ suspend fun download(
         url = url,
         fileName = fileName,
         onCompleted = onDownloaded,
+        expected = expected,
     )
 
-    DownloadManager.downloads
+    val finalState = DownloadManager.downloads
         .onEach { map -> map[downloadId]?.let { onProgress(it.progress) } }
         .first { map ->
             val status = map[downloadId]?.status
             status == DownloadManager.Status.COMPLETED ||
                 status == DownloadManager.Status.FAILED
-        }
+        }[downloadId]
+    if (finalState?.status == DownloadManager.Status.FAILED) {
+        withContext(Dispatchers.Main) { onFailed(finalState) }
+    }
 }
 
 internal suspend fun isDownloadAvailable(uri: Uri): Boolean = withContext(Dispatchers.IO) {

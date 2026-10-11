@@ -22,10 +22,14 @@ import me.weishu.kernelsu.core.tasks.BootKernelVersion
 import me.weishu.kernelsu.core.tasks.ExtractImage
 import me.weishu.kernelsu.core.tasks.ProbeResult
 import me.weishu.kernelsu.core.utils.DataSourceChannel
+import me.weishu.kernelsu.data.registry.DownloadVerificationException
+import me.weishu.kernelsu.data.registry.RegistryDownloadStore
+import me.weishu.kernelsu.data.registry.copyForInstall
 import me.weishu.kernelsu.ksuApp
 import okhttp3.OkHttpClient
 import org.json.JSONArray
 import java.io.File
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
@@ -209,19 +213,35 @@ fun flashModule(
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ): FlashResult {
-    val resolver = ksuApp.contentResolver
-    with(resolver.openInputStream(uri)) {
-        val file = File(ksuApp.cacheDir, "module.zip")
-        file.outputStream().use { output ->
-            this?.copyTo(output)
+    // Registry downloads live in app-private storage and carry their expected size + SHA-256;
+    // the exact copy handed to ksud is re-hashed right before installing.
+    val storeRoot = File(ksuApp.filesDir, RegistryDownloadStore.DIR_NAME)
+    val expected = if (uri.scheme == ContentResolver.SCHEME_FILE) {
+        uri.path?.let { RegistryDownloadStore.expectedFor(storeRoot, File(it)) }
+    } else {
+        null
+    }
+    val file = File.createTempFile("module-", ".zip", ksuApp.cacheDir)
+    try {
+        try {
+            val input = ksuApp.contentResolver.openInputStream(uri) ?: throw IOException("Cannot open $uri")
+            input.use { copyForInstall(it, file, expected) }
+        } catch (e: IOException) {
+            Log.w("KernelSU", "module $uri not installed: ${e.message}")
+            if (e is DownloadVerificationException) {
+                // Corrupted or tampered after download: never keep it around for a retry.
+                uri.path?.let { RegistryDownloadStore.delete(storeRoot, File(it)) }
+            }
+            val message = "! ${e.message ?: "Failed to read module"}"
+            onStderr(message)
+            return FlashResult(1, message, false)
         }
         val cmd = "module install ${file.absolutePath}"
         val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
         Log.i("KernelSU", "install module $uri result: $result")
-
-        file.delete()
-
         return FlashResult(result)
+    } finally {
+        file.delete()
     }
 }
 

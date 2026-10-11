@@ -14,6 +14,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
+import me.weishu.kernelsu.data.registry.RegistryUrls
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
@@ -51,6 +53,7 @@ import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 
+private const val APP_ASSETS_ORIGIN = "https://appassets.androidplatform.net"
 private val SEMICOLON_SPLIT = ";\\s*".toRegex()
 private val EQUALS_SPLIT = "=\\s*".toRegex()
 
@@ -61,7 +64,23 @@ fun GithubMarkdown(
     isMarkdown: Boolean = false,
     onLoadingChange: (Boolean) -> Unit = {},
     containerColor: androidx.compose.ui.graphics.Color? = null,
+    /**
+     * Site root of untrusted, already sanitized remote HTML (e.g. KernelSU Modules readmes and
+     * changelogs). When set, the WebView runs locked down: JavaScript and DOM storage are off,
+     * no JS bridge, no file/content access, no mixed content, sub-resources only from this
+     * site's host (plus bundled assets), relative URLs resolve against it, and every navigation
+     * is handed to an external browser instead of being loaded in place.
+     */
+    restrictedBaseUrl: String? = null,
+    /**
+     * The WebView fills the given height and scrolls itself instead of growing to its content
+     * height. Needed for in-page `#anchor` links (a wrap-content WebView has nothing to scroll).
+     */
+    scrollable: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
+    val restricted = restrictedBaseUrl != null
+    val restrictedClient = remember(restrictedBaseUrl) { restrictedBaseUrl?.let(::restrictedResourceClient) }
     val density = LocalDensity.current
     val systemDensity = LocalResources.current.displayMetrics.density
     val fontScale = density.fontScale
@@ -91,7 +110,9 @@ fun GithubMarkdown(
         )
     }
     val parser = remember(extensions) { Parser.builder().extensions(extensions).build() }
-    val renderer = remember(extensions) { HtmlRenderer.builder().extensions(extensions).build() }
+    val renderer = remember(extensions, restricted) {
+        HtmlRenderer.builder().extensions(extensions).sanitizeUrls(restricted).build()
+    }
     val rendered = remember(content, isMarkdown) {
         if (isMarkdown) renderer.render(parser.parse(content)) else content
     }
@@ -108,8 +129,18 @@ fun GithubMarkdown(
         html, body { margin: 0; padding: 0 }
         img, video { max-width: 100%; height: auto; }
         .markdown-body { padding: 16px; }
+        .markdown-body table { display: block; max-width: 100%; overflow-x: auto; }
+        .markdown-body pre { overflow-x: auto; }
     """.trimIndent()
     val html = template
+        .let { t ->
+            // The document URL is the registry site root (relative links resolve against it and
+            // `#anchor` links stay in the same document); bundled stylesheets keep loading from
+            // the asset loader.
+            if (restrictedBaseUrl == null) t else t
+                .replace("href=\"/assets/webview/", "href=\"$APP_ASSETS_ORIGIN/assets/webview/")
+                .replace(Regex("<script[^>]*>.*?</script>", RegexOption.DOT_MATCHES_ALL), "")
+        }
         .replace("@dir@", dir)
         .replace("@style@", styleContent)
         .replace("@body@", rendered)
@@ -117,7 +148,7 @@ fun GithubMarkdown(
     AndroidView(
         factory = { context ->
             val frameLayout = FrameLayout(context)
-            val webView = WebView(context).apply {
+            val webView = EdgeAwareWebView(context).apply {
                 try {
                     setBackgroundColor(Color.TRANSPARENT)
                     isVerticalScrollBarEnabled = false
@@ -125,11 +156,17 @@ fun GithubMarkdown(
 
                     settings.apply {
                         offscreenPreRaster = true
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        javaScriptEnabled = !restricted
+                        domStorageEnabled = !restricted
+                        mixedContentMode = if (restricted) {
+                            WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                        } else {
+                            WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        }
                         allowContentAccess = false
                         allowFileAccess = false
+                        javaScriptCanOpenWindowsAutomatically = false
+                        setSupportMultipleWindows(false)
                         cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                         textZoom = newTextZoom
                         setSupportZoom(false)
@@ -137,9 +174,12 @@ fun GithubMarkdown(
                     }
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.WRAP_CONTENT
+                        if (scrollable) FrameLayout.LayoutParams.MATCH_PARENT else FrameLayout.LayoutParams.WRAP_CONTENT
                     )
-                    addJavascriptInterface(scrollInterface, "AndroidScroll")
+                    isVerticalScrollBarEnabled = scrollable
+                    if (!restricted) {
+                        addJavascriptInterface(scrollInterface, "AndroidScroll")
+                    }
                     webViewClient = object : WebViewClient() {
                         private val assetLoader = WebViewAssetLoader.Builder()
                             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
@@ -147,6 +187,7 @@ fun GithubMarkdown(
 
                         override fun onPageFinished(view: WebView, url: String) {
                             super.onPageFinished(view, url)
+                            if (restricted) return
 
                             val js = """
                                 (function() {
@@ -215,6 +256,13 @@ fun GithubMarkdown(
                         override fun shouldOverrideUrlLoading(
                             view: WebView, request: WebResourceRequest
                         ): Boolean {
+                            if (restrictedBaseUrl != null) {
+                                // `#anchor` of this document: let the WebView scroll in place.
+                                if (RegistryUrls.isInPageAnchor(request.url.toString(), restrictedBaseUrl)) return false
+                                // Never navigate inside the view; only web links leave the app.
+                                val scheme = request.url.scheme?.lowercase()
+                                if (scheme != "https" && scheme != "http") return true
+                            }
                             try {
                                 val intent = Intent(Intent.ACTION_VIEW, request.url)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -233,9 +281,21 @@ fun GithubMarkdown(
                             view: WebView, request: WebResourceRequest
                         ): WebResourceResponse? {
                             assetLoader.shouldInterceptRequest(request.url)?.let { return it }
-                            val scheme = request.url.scheme ?: return null
-                            if (!scheme.startsWith("http")) return null
-                            val client: OkHttpClient = ksuApp.okhttpClient
+                            if (restrictedBaseUrl != null) {
+                                // Newer WebViews route the loadDataWithBaseURL document itself
+                                // through here as a data: main-frame request; let it load. Links
+                                // are handled by shouldOverrideUrlLoading, and Chromium blocks
+                                // page-initiated top-level data: navigations.
+                                if (request.isForMainFrame && request.url.scheme.equals("data", ignoreCase = true)) return null
+                                // Same scheme + host + port as the registry, GET only; the
+                                // restricted client re-checks every redirect hop.
+                                val allowed = request.method.equals("GET", ignoreCase = true) &&
+                                    RegistryUrls.isAllowedRestrictedResource(request.url.toString(), restrictedBaseUrl)
+                                if (!allowed) return blockedResponse()
+                            }
+                            val scheme = request.url.scheme ?: return if (restricted) blockedResponse() else null
+                            if (!scheme.startsWith("http")) return if (restricted) blockedResponse() else null
+                            val client: OkHttpClient = restrictedClient ?: ksuApp.okhttpClient
                             val call = client.newCall(
                                 Request.Builder()
                                     .url(request.url.toString())
@@ -252,6 +312,7 @@ fun GithubMarkdown(
                                 WebResourceResponse(mimeType, charset, reply.body.byteStream())
                             } catch (e: IOException) {
                                 Log.e("GithubMarkdown", "Resource load failed", e)
+                                if (restricted) return blockedResponse()
                                 WebResourceResponse(
                                     "text/html", "utf-8",
                                     ByteArrayInputStream(Log.getStackTraceString(e).toByteArray())
@@ -259,7 +320,9 @@ fun GithubMarkdown(
                             }
                         }
                     }
-                    setOnTouchListener(object : View.OnTouchListener {
+                    if (restricted) {
+                        setOnTouchListener(RestrictedTouchHandler(this, scrollable))
+                    } else setOnTouchListener(object : View.OnTouchListener {
                         private var isHorizontalScrollLocked = false
                         private var initialDownX = 0f
                         private var initialDownY = 0f
@@ -317,7 +380,7 @@ fun GithubMarkdown(
                 webView.tag = html
                 onLoadingChange(true)
                 webView.loadDataWithBaseURL(
-                    "https://appassets.androidplatform.net", html,
+                    restrictedBaseUrl ?: APP_ASSETS_ORIGIN, html,
                     "text/html", StandardCharsets.UTF_8.name(), null
                 )
             }
@@ -330,11 +393,99 @@ fun GithubMarkdown(
                 destroy()
             }
         },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .let { if (scrollable) it.fillMaxHeight() else it.wrapContentHeight() }
             .clipToBounds(),
     )
+}
+
+private fun blockedResponse() = WebResourceResponse(
+    "text/plain", "utf-8", 403, "Blocked", emptyMap(),
+    ByteArrayInputStream(ByteArray(0))
+)
+
+private val restrictedClients = java.util.concurrent.ConcurrentHashMap<String, OkHttpClient>()
+
+/**
+ * HTTP client for sub-resources of registry content: redirects are only followed while they
+ * stay on the registry origin (scheme + host + port); any other hop fails the request.
+ */
+private fun restrictedResourceClient(origin: String): OkHttpClient = restrictedClients.getOrPut(origin) {
+    ksuApp.okhttpClient.newBuilder()
+        .followSslRedirects(false)
+        .addNetworkInterceptor { chain ->
+            val url = chain.request().url.toString()
+            if (!RegistryUrls.isAllowedRestrictedResource(url, origin)) {
+                throw IOException("Blocked cross-origin resource: ${chain.request().url.host}")
+            }
+            chain.proceed(chain.request())
+        }
+        .build()
+}
+
+/**
+ * WebView that reports when a horizontal drag could not be consumed by the page (the root
+ * scroller hit its edge, i.e. no inner `overflow-x: auto` element scrolled). Works without
+ * JavaScript, so the restricted renderer can still scroll wide tables and code blocks.
+ */
+private class EdgeAwareWebView(context: android.content.Context) : WebView(context) {
+    var horizontalEdgeReached = false
+
+    override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
+        if (clampedX) horizontalEdgeReached = true
+    }
+}
+
+/**
+ * Touch arbitration for the restricted (JavaScript-off) renderer: horizontal drags go to the
+ * page first (wide tables / code scroll natively) and are handed to the parent (e.g. a pager)
+ * once the page reports it cannot scroll further; vertical drags go to the parent unless the
+ * WebView scrolls itself.
+ */
+private class RestrictedTouchHandler(
+    private val webView: EdgeAwareWebView,
+    private val scrollable: Boolean,
+) : View.OnTouchListener {
+    private val touchSlop = android.view.ViewConfiguration.get(webView.context).scaledTouchSlop
+    private var downX = 0f
+    private var downY = 0f
+    private var direction = 0 // 0 undecided, 1 horizontal, 2 vertical
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouch(v: View, event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = event.x
+                downY = event.y
+                direction = 0
+                webView.horizontalEdgeReached = false
+                v.parent.requestDisallowInterceptTouchEvent(true)
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - downX
+                val dy = event.y - downY
+                if (direction == 0 && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
+                    direction = if (abs(dx) > abs(dy)) 1 else 2
+                }
+                when (direction) {
+                    1 -> if (webView.horizontalEdgeReached) v.parent.requestDisallowInterceptTouchEvent(false)
+                    2 -> if (!scrollable) {
+                        v.parent.requestDisallowInterceptTouchEvent(false)
+                        return true
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                v.parent.requestDisallowInterceptTouchEvent(false)
+                direction = 0
+            }
+        }
+        return false
+    }
 }
 
 class MarkdownScrollInterface {

@@ -122,9 +122,15 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getBoolean("module_sort_action_first", false)
         set(value) = prefs.edit { putBoolean("module_sort_action_first", value) }
 
-    override var moduleRepoSortOrder: Int
-        get() = prefs.getInt("module_repo_sort_order", RepoSort.UPDATED.ordinal)
-        set(value) = prefs.edit { putInt("module_repo_sort_order", value) }
+    override var moduleRepoSortOrder: String
+        get() = RepoSort.fromStored(
+            name = prefs.getString("module_repo_sort", null),
+            legacyOrdinal = if (prefs.contains("module_repo_sort_order")) prefs.getInt("module_repo_sort_order", 0) else null,
+        ).name
+        set(value) = prefs.edit {
+            putString("module_repo_sort", value)
+            remove("module_repo_sort_order")
+        }
 
     override var superuserShowSystemApps: Boolean
         get() = prefs.getBoolean("show_system_apps", false)
