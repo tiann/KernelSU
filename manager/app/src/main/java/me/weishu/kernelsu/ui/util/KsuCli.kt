@@ -294,9 +294,17 @@ private fun isValidBlockModuleName(name: String): Boolean =
 fun parseBlockModules(input: String): List<String> =
     input.split(',').map { it.trim() }.filter { it.isNotEmpty() }
 
+// The kernel copies the block_modules= value into a 256-byte buffer, leaving
+// 255 bytes; a longer list would be silently truncated, leaving some modules
+// unblocked. Reject it here too.
+private const val MAX_BLOCK_MODULES_LEN = 255
+
 /** Whether every name in the block-modules field is valid (empty is valid). */
-fun isBlockModulesValid(input: String): Boolean =
-    parseBlockModules(input).all(::isValidBlockModuleName)
+fun isBlockModulesValid(input: String): Boolean {
+    val names = parseBlockModules(input)
+    return names.all(::isValidBlockModuleName) &&
+        names.joinToString(",").length <= MAX_BLOCK_MODULES_LEN
+}
 
 private fun bootPatchFlags(
     allowShell: Boolean,

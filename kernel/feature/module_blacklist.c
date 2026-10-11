@@ -1,3 +1,4 @@
+#include <asm/barrier.h>
 #include <linux/init.h>
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
@@ -28,7 +29,7 @@ static int block_modules_param_set(const char *val, const struct kernel_param *k
         return 0;
 
     if (strscpy(block_modules, val, sizeof(block_modules)) < 0)
-        pr_warn("module_blacklist: block_modules too long, truncated\n");
+        pr_err("module_blacklist: block_modules too long, truncated — some modules will not be blocked\n");
 
     return 0;
 }
@@ -41,7 +42,7 @@ static const struct kernel_param_ops block_modules_param_ops = {
 module_param_cb(block_modules, &block_modules_param_ops, NULL, 0);
 
 // Merge the configured names into the kernel's native module_blacklist.
-void ksu_module_blacklist_init(void)
+void __init ksu_module_blacklist_init(void)
 {
     char **native_blacklist;
     const char *existing;
@@ -67,11 +68,14 @@ void ksu_module_blacklist_init(void)
         return;
     }
 
-    WRITE_ONCE(*native_blacklist, merged);
+    // Release-publish: pairs with the address dependency in the lockless
+    // blacklisted() reader so it can never observe the new pointer before the
+    // string contents are visible.
+    smp_store_release(native_blacklist, merged);
     pr_info("module_blacklist: blocking modules: %s\n", merged);
 }
 
-void ksu_module_blacklist_exit(void)
+void __exit ksu_module_blacklist_exit(void)
 {
     // Intentionally does NOT restore the original module_blacklist pointer.
     // The module loader reads module_blacklist in blacklisted() without any

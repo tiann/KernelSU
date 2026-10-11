@@ -2646,6 +2646,7 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
     };
 
     let mut params = Vec::new();
+    args.config.validate()?;
     args.config.apply(&mut params);
     let params = params.join(" ");
     if !params.is_empty() {

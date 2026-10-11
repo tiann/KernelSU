@@ -533,7 +533,26 @@ pub struct KsuConfigArgs {
     block_module: Vec<String>,
 }
 
+/// Max length of the `block_modules=` value. The kernel copies it into a
+/// 256-byte buffer, leaving 255 bytes for the value; anything longer is
+/// silently truncated there, so reject it on the host instead.
+const MAX_BLOCK_MODULES_LEN: usize = 255;
+
 impl KsuConfigArgs {
+    /// Validate options whose full value is only known after joining. Call
+    /// before `apply` so the user gets an error instead of the kernel silently
+    /// truncating an over-long list (which would leave some modules unblocked).
+    pub fn validate(&self) -> Result<()> {
+        if !self.block_module.is_empty() {
+            let len = self.block_module.join(",").len();
+            ensure!(
+                len <= MAX_BLOCK_MODULES_LEN,
+                "block-module list is too long ({len} bytes, max {MAX_BLOCK_MODULES_LEN}); block fewer modules"
+            );
+        }
+        Ok(())
+    }
+
     /// Set the full state of these options in `config`, other entries are kept.
     pub fn apply(&self, config: &mut Vec<String>) {
         set_config_flag(config, "no custom rc", "norc=1", self.no_custom_rc);
@@ -817,6 +836,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             .map(|v| v.split(' ').map(std::borrow::ToOwned::to_owned).collect())
             .unwrap_or_default();
 
+        config.validate()?;
         config.apply(&mut ksu_config);
         if let Some(bundled) = bundled_lkm {
             set_config_flag(&mut ksu_config, "bundled LKM", "bundled=1", bundled);
@@ -1146,5 +1166,55 @@ mod block_modules_tests {
         let empty = KsuConfigArgs::default();
         empty.apply(&mut config);
         assert!(!config.iter().any(|v| v.starts_with("block_modules=")));
+    }
+
+    #[test]
+    fn apply_replaces_existing_block_modules() {
+        let args = KsuConfigArgs {
+            block_module: vec!["vr".to_owned()],
+            ..Default::default()
+        };
+        let mut config = vec!["block_modules=old,stale".to_owned()];
+        args.apply(&mut config);
+        assert_eq!(
+            config.iter().filter(|v| v.starts_with("block_modules=")).count(),
+            1
+        );
+        assert!(config.contains(&"block_modules=vr".to_owned()));
+    }
+
+    #[test]
+    fn apply_keeps_sibling_keys_with_shared_prefix() {
+        // A key that merely starts with "block_modules" but is not the exact
+        // "block_modules=" entry must not be dropped by retain().
+        let args = KsuConfigArgs {
+            block_module: vec!["vr".to_owned()],
+            ..Default::default()
+        };
+        let mut config = vec!["block_modules_foo=1".to_owned()];
+        args.apply(&mut config);
+        assert!(config.contains(&"block_modules_foo=1".to_owned()));
+        assert!(config.contains(&"block_modules=vr".to_owned()));
+    }
+
+    #[test]
+    fn validate_rejects_overlong_list() {
+        // Many valid names whose joined length exceeds the kernel's 255-byte
+        // value budget must be rejected rather than silently truncated.
+        let names: Vec<String> = (0..30).map(|i| format!("module_name_{i:03}")).collect();
+        assert!(names.join(",").len() > MAX_BLOCK_MODULES_LEN);
+        let args = KsuConfigArgs {
+            block_module: names,
+            ..Default::default()
+        };
+        assert!(args.validate().is_err());
+
+        // A short list is accepted.
+        let ok = KsuConfigArgs {
+            block_module: vec!["vr".to_owned(), "mkp".to_owned()],
+            ..Default::default()
+        };
+        assert!(ok.validate().is_ok());
+        assert!(KsuConfigArgs::default().validate().is_ok());
     }
 }
