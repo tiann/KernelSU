@@ -221,7 +221,8 @@ private fun loadRegistryIcon(url: String): ImageBitmap? {
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
             if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
             var sample = 1
-            while (bounds.outWidth / (sample * 2) >= ICON_DECODE_PX && bounds.outHeight / (sample * 2) >= ICON_DECODE_PX) sample *= 2
+            // Bound the larger side so very wide or tall images are downsampled too.
+            while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= ICON_DECODE_PX) sample *= 2
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
                 ?.asImageBitmap()
         }

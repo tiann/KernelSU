@@ -143,9 +143,13 @@ class RegistryClient(
         } catch (e: ModuleNotInIndexException) {
             throw e
         } catch (e: Exception) {
-            val cached = readCachedDetail(id)?.takeIf { it.buildId == catalog.buildId && it.id == id }
+            // A refresh above may already have advanced the catalog: only fall back to a cached
+            // detail of the build the client is on now, for a module that is still listed there.
+            val latest = current ?: catalog
+            if (latest.find(id) == null) throw e
+            val cached = readCachedDetail(id)?.takeIf { it.buildId == latest.buildId && it.id == id }
                 ?: throw e
-            return DetailLoad(catalog, cached, fromCache = true, error = e)
+            return DetailLoad(latest, cached, fromCache = true, error = e)
         }
     }
 

@@ -57,10 +57,13 @@ object DownloadManager {
         if (existing != null) {
             if (onCompleted != null) {
                 completionCallbacks.merge(existing.id, onCompleted) { a, b -> { uri -> a(uri); b(uri) } }
-                // It may have finished in between; markCompleted already drained the callbacks then.
+                // It may have finished in between; markCompleted / markFailed already drained the
+                // callbacks then, so run (completed) or drop (failed) what was merged afterwards.
                 val now = _downloads.value[existing.id]
                 if (now?.status == Status.COMPLETED && now.resultUri != null) {
                     completionCallbacks.remove(existing.id)?.let { cb -> mainHandler.post { cb(now.resultUri) } }
+                } else if (now == null || now.status == Status.FAILED) {
+                    completionCallbacks.remove(existing.id)
                 }
             }
             return existing.id

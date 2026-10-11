@@ -214,6 +214,22 @@ class RegistryClientTest {
     }
 
     @Test
+    fun cachedDetailOfTheCatalogBeforeARefreshIsNotUsed() {
+        val f = FakeFetcher()
+        f.set(indexUrl, index(b1), index(b3))
+        f.set(listUrl, modules(b1, summary("foo")), modules(b3, summary("foo")))
+        f.set(detailUrl("foo"), detail("foo", b1), detail("foo", b2))
+        val c = client(f)
+        c.loadCatalog()
+        assertEquals(b1, c.loadDetail("foo").detail.buildId) // cached as b1
+
+        // Redeployed: the detail is b2, the refreshed catalog b3. The cached b1 detail no longer
+        // matches the catalog the client is on, so it must not be offered.
+        assertThrows(BuildMismatchException::class.java) { c.loadDetail("foo") }
+        assertEquals(b3, c.currentCatalog()?.buildId)
+    }
+
+    @Test
     fun moduleMissingFromIndexIsNotLoaded() {
         val f = FakeFetcher()
         f.set(indexUrl, index(b1))

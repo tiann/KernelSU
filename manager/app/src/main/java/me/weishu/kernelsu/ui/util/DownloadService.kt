@@ -218,7 +218,7 @@ class DownloadService : Service() {
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildFailureNotification(displayName, verificationFailure != null)
+                    buildFailureNotification(displayName, verificationFailure)
                 )
             } finally {
                 pendingUri?.let { deleteDownload(it) }
@@ -370,14 +370,19 @@ class DownloadService : Service() {
         return builder.build()
     }
 
-    private fun buildFailureNotification(fileName: String, verificationFailed: Boolean = false) =
-        NotificationCompat.Builder(this, CHANNEL_ID)
+    private fun buildFailureNotification(
+        fileName: String,
+        verificationFailure: DownloadVerificationException.Reason? = null,
+    ) = NotificationCompat.Builder(this, CHANNEL_ID)
         .setContentTitle(getString(R.string.download_failed_title))
         .setContentText(
-            getString(
-                if (verificationFailed) R.string.module_repo_download_verify_failed else R.string.download_failed_content,
-                fileName
-            )
+            when (verificationFailure) {
+                null -> getString(R.string.download_failed_content, fileName)
+                DownloadVerificationException.Reason.URL_NOT_ALLOWED -> getString(R.string.module_repo_download_url_blocked)
+                DownloadVerificationException.Reason.SIZE_MISMATCH,
+                DownloadVerificationException.Reason.SHA256_MISMATCH ->
+                    getString(R.string.module_repo_download_verify_failed, fileName)
+            }
         )
         .setSmallIcon(android.R.drawable.stat_notify_error)
         .setAutoCancel(true)
