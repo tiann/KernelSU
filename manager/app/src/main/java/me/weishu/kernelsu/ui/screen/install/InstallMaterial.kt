@@ -204,7 +204,18 @@ internal fun InstallScreenMaterial(
                         value = uiState.blockModules,
                         onValueChange = actions.onBlockModulesChange,
                         label = { Text(stringResource(id = R.string.install_block_modules)) },
-                        supportingText = { Text(stringResource(id = R.string.install_block_modules_summary)) },
+                        supportingText = {
+                            Text(
+                                stringResource(
+                                    if (uiState.blockModulesValid) {
+                                        R.string.install_block_modules_summary
+                                    } else {
+                                        R.string.install_block_modules_invalid
+                                    }
+                                )
+                            )
+                        },
+                        isError = !uiState.blockModulesValid,
                         singleLine = true,
                     )
                 }
@@ -213,7 +224,7 @@ internal fun InstallScreenMaterial(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                enabled = uiState.installMethod != null,
+                enabled = uiState.installMethod != null && uiState.blockModulesValid,
                 onClick = actions.onNext
             ) { Text(stringResource(R.string.install_next)) }
         }

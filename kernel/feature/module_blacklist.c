@@ -40,16 +40,13 @@ static const struct kernel_param_ops block_modules_param_ops = {
 };
 module_param_cb(block_modules, &block_modules_param_ops, NULL, 0);
 
-// Address of the kernel's `char *module_blacklist`, the value it held before we
-// overwrote it, and the string we installed.
-static char **native_blacklist;
-static char *orig_blacklist;
-static char *our_blacklist;
-
+// Merge the configured names into the kernel's native module_blacklist.
 void ksu_module_blacklist_init(void)
 {
+    char **native_blacklist;
+    const char *existing;
     char *merged;
-    size_t orig_len;
+    size_t existing_len;
 
     if (!block_modules[0])
         return;
@@ -60,36 +57,28 @@ void ksu_module_blacklist_init(void)
         return;
     }
 
-    orig_blacklist = *native_blacklist;
-    orig_len = orig_blacklist ? strlen(orig_blacklist) : 0;
+    existing = *native_blacklist;
+    existing_len = existing ? strlen(existing) : 0;
 
     // Merge with any existing blacklist (e.g. one set on the kernel cmdline).
-    merged = kasprintf(GFP_KERNEL, "%s%s%s", orig_len ? orig_blacklist : "", orig_len ? "," : "", block_modules);
+    merged = kasprintf(GFP_KERNEL, "%s%s%s", existing_len ? existing : "", existing_len ? "," : "", block_modules);
     if (!merged) {
         pr_err("module_blacklist: cannot allocate blacklist\n");
-        native_blacklist = NULL;
         return;
     }
 
-    our_blacklist = merged;
     WRITE_ONCE(*native_blacklist, merged);
     pr_info("module_blacklist: blocking modules: %s\n", merged);
 }
 
 void ksu_module_blacklist_exit(void)
 {
-    if (!native_blacklist || !our_blacklist)
-        return;
-
-    // Only revert if nothing else swapped it in the meantime.
-    if (READ_ONCE(*native_blacklist) == our_blacklist)
-        WRITE_ONCE(*native_blacklist, orig_blacklist);
-
-    // Deliberately leak `our_blacklist`: the module loader may still be reading
-    // it via blacklisted(), so freeing risks a use-after-free. It is a one-time,
-    // bounded allocation.
-    native_blacklist = NULL;
-    our_blacklist = NULL;
-    orig_blacklist = NULL;
-    pr_info("module_blacklist: restored\n");
+    // Intentionally does NOT restore the original module_blacklist pointer.
+    // The module loader reads module_blacklist in blacklisted() without any
+    // lock or READ_ONCE, testing it for NULL and then dereferencing it; swapping
+    // the pointer back (especially to the common NULL) could race that reader
+    // into a NULL dereference. The merged string already contains any
+    // pre-existing entries and lives on the kernel heap, so leaving it installed
+    // stays valid even after KernelSU is unloaded. The one-time, bounded
+    // allocation is deliberately leaked.
 }

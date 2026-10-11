@@ -285,6 +285,19 @@ private fun writeLkmFile(lkm: LkmSelection): File? {
     return file
 }
 
+// A single module name as accepted by ksud's --block-module parser.
+private fun isValidBlockModuleName(name: String): Boolean =
+    name.isNotEmpty() && name.length <= 64 &&
+        name.all { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' || it == '_' }
+
+/** Parse the comma-separated block-modules field into the non-empty names. */
+fun parseBlockModules(input: String): List<String> =
+    input.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+
+/** Whether every name in the block-modules field is valid (empty is valid). */
+fun isBlockModulesValid(input: String): Boolean =
+    parseBlockModules(input).all(::isValidBlockModuleName)
+
 private fun bootPatchFlags(
     allowShell: Boolean,
     enableAdb: Boolean,
@@ -294,14 +307,12 @@ private fun bootPatchFlags(
     if (allowShell) append(" --allow-shell")
     if (enableAdb) append(" --enable-adbd")
     if (forceBackup) append(" --backup")
-    // Sanitize: only kernel-valid module names survive, so the free-text input
-    // can never inject into the shell command.
-    val cleaned = blockModules
-        .split(',')
-        .map { name -> name.filter { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' || it == '_' } }
-        .filter { it.isNotEmpty() }
-        .joinToString(",")
-    if (cleaned.isNotEmpty()) append(" --block-module $cleaned")
+    // Names are validated in the UI before install; pass them through without
+    // mutating. Drop the flag entirely (never inject) if anything slips through.
+    val names = parseBlockModules(blockModules)
+    if (names.isNotEmpty() && names.all(::isValidBlockModuleName)) {
+        append(" --block-module ${names.joinToString(",")}")
+    }
 }
 
 fun installBoot(

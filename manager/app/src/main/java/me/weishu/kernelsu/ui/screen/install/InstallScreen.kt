@@ -37,6 +37,7 @@ import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
 import me.weishu.kernelsu.ui.util.getDefaultPartition
 import me.weishu.kernelsu.ui.util.getLoadedBlockableModules
+import me.weishu.kernelsu.ui.util.isBlockModulesValid
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.probeRemoteBootPartitions
@@ -135,8 +136,11 @@ fun InstallScreen() {
         }
     }
 
+    val blockModulesInvalidMessage = stringResource(R.string.install_block_modules_invalid)
     val onInstall = {
-        installMethod?.let { method ->
+        if (!isBlockModulesValid(blockModules)) {
+            showMessage(blockModulesInvalidMessage)
+        } else installMethod?.let { method ->
             navigator.push(
                 Route.Flash(
                     when (method) {
@@ -254,6 +258,7 @@ fun InstallScreen() {
         forceBackup = forceBackup,
         canForceBackup = installMethod is InstallMethod.SelectFile,
         blockModules = blockModules,
+        blockModulesValid = isBlockModulesValid(blockModules),
     )
     val actions = InstallScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },

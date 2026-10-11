@@ -21,6 +21,7 @@ internal data class InstallUiState(
     val forceBackup: Boolean,
     val canForceBackup: Boolean,
     val blockModules: String,
+    val blockModulesValid: Boolean,
 )
 
 @Immutable

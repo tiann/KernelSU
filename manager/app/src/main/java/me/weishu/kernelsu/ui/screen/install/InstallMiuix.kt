@@ -283,9 +283,19 @@ internal fun InstallScreenMiuix(
                                         .padding(horizontal = 12.dp, vertical = 8.dp)
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.install_block_modules_summary),
+                                    text = stringResource(
+                                        if (uiState.blockModulesValid) {
+                                            R.string.install_block_modules_summary
+                                        } else {
+                                            R.string.install_block_modules_invalid
+                                        }
+                                    ),
                                     fontSize = 12.sp,
-                                    color = colorScheme.onSurfaceVariantSummary,
+                                    color = if (uiState.blockModulesValid) {
+                                        colorScheme.onSurfaceVariantSummary
+                                    } else {
+                                        colorScheme.error
+                                    },
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                                 )
                             }
@@ -296,7 +306,7 @@ internal fun InstallScreenMiuix(
                             .fillMaxWidth()
                             .padding(top = 12.dp),
                         text = stringResource(id = R.string.install_next),
-                        enabled = uiState.installMethod != null,
+                        enabled = uiState.installMethod != null && uiState.blockModulesValid,
                         colors = ButtonDefaults.textButtonColorsPrimary(),
                         onClick = actions.onNext
                     )
