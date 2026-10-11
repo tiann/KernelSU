@@ -289,10 +289,19 @@ private fun bootPatchFlags(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
+    blockModules: String,
 ): String = buildString {
     if (allowShell) append(" --allow-shell")
     if (enableAdb) append(" --enable-adbd")
     if (forceBackup) append(" --backup")
+    // Sanitize: only kernel-valid module names survive, so the free-text input
+    // can never inject into the shell command.
+    val cleaned = blockModules
+        .split(',')
+        .map { name -> name.filter { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' || it == '_' } }
+        .filter { it.isNotEmpty() }
+        .joinToString(",")
+    if (cleaned.isNotEmpty()) append(" --block-module $cleaned")
 }
 
 fun installBoot(
@@ -303,6 +312,7 @@ fun installBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
+    blockModules: String,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -327,7 +337,7 @@ fun installBoot(
     } else {
         " -b ${bootFile.absolutePath}"
     }
-    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup)
+    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup, blockModules)
 
     if (ota) {
         cmd += " -u"
@@ -371,6 +381,7 @@ fun downloadBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
+    blockModules: String,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -427,7 +438,7 @@ fun downloadBoot(
     }
 
     var cmd = "${getKsuDaemonPath()} boot-patch -b ${bootFile.absolutePath}"
-    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup)
+    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup, blockModules)
 
     val lkmFile = writeLkmFile(lkm)
     if (lkmFile != null) {

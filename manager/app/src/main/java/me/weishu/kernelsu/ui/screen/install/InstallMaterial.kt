@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -193,6 +194,19 @@ internal fun InstallScreenMaterial(
                         summary = stringResource(id = R.string.enable_adb_summary),
                         checked = uiState.enableAdb,
                         onCheckedChange = actions.onSelectEnableAdb,
+                    )
+                }
+                item(visible = uiState.advancedOptionsShown) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        value = uiState.blockModules,
+                        onValueChange = actions.onBlockModulesChange,
+                        label = { Text(stringResource(id = R.string.install_block_modules)) },
+                        supportingText = { Text(stringResource(id = R.string.install_block_modules_summary)) },
+                        placeholder = { Text("oplus_secure_guard,vr") },
+                        singleLine = true,
                     )
                 }
             }
