@@ -358,6 +358,7 @@ private fun RepoModuleList(
             val installState = repoInstallState(installedVersions[module.moduleId], module.latestVersionCode)
             val maxLinesLimit = LocalModuleDescriptionMaxLines.current
             var summaryExpanded by rememberSaveable(module.moduleId) { mutableStateOf(false) }
+            var summaryCanExpand by rememberSaveable(module.moduleId) { mutableStateOf(true) }
 
             TonalCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -402,9 +403,16 @@ private fun RepoModuleList(
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
-                                ) { summaryExpanded = !summaryExpanded },
+                                ) {
+                                    if (summaryCanExpand) {
+                                        summaryExpanded = !summaryExpanded
+                                    } else {
+                                        onModuleClick(module)
+                                    }
+                                },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
+                            onCanExpandChange = { summaryCanExpand = it },
                         )
                     }
 
@@ -418,7 +426,7 @@ private fun RepoModuleList(
                     ) {
                         Text(
                             text = module.latestVersion,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -436,7 +444,7 @@ private fun RepoModuleList(
                                 )
                                 Text(
                                     text = formatStarCount(stars),
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(start = 4.dp)
                                 )
@@ -446,7 +454,7 @@ private fun RepoModuleList(
                         if (module.latestReleaseTime.isNotEmpty()) {
                             Text(
                                 text = module.latestReleaseTime,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }

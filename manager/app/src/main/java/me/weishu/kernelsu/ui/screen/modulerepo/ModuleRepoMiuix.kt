@@ -317,7 +317,7 @@ fun ModuleRepoScreenMiuix(
                                     color = colorScheme.onSurfaceVariantSummary,
                                 )
                                 if (module.summary.isNotEmpty()) {
-                                    RepoSummaryText(module)
+                                    RepoSummaryText(module) { actions.onOpenRepoDetail(module) }
                                 }
                             }
                         }
@@ -473,7 +473,7 @@ fun ModuleRepoScreenMiuix(
                                             color = colorScheme.onSurfaceVariantSummary,
                                         )
                                         if (module.summary.isNotEmpty()) {
-                                            RepoSummaryText(module)
+                                            RepoSummaryText(module) { actions.onOpenRepoDetail(module) }
                                         }
                                         HorizontalDivider(
                                             modifier = Modifier.padding(vertical = 8.dp),
@@ -519,9 +519,10 @@ fun ModuleRepoScreenMiuix(
 }
 
 @Composable
-private fun RepoSummaryText(module: RepoModule) {
+private fun RepoSummaryText(module: RepoModule, onModuleClick: () -> Unit) {
     val maxLinesLimit = LocalModuleDescriptionMaxLines.current
     var expanded by rememberSaveable(module.moduleId) { mutableStateOf(false) }
+    var canExpand by rememberSaveable(module.moduleId) { mutableStateOf(true) }
     ExpandableDescriptionText(
         text = module.summary,
         expanded = expanded,
@@ -532,9 +533,16 @@ private fun RepoSummaryText(module: RepoModule) {
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-            ) { expanded = !expanded },
+            ) {
+                if (canExpand) {
+                    expanded = !expanded
+                } else {
+                    onModuleClick()
+                }
+            },
         fontSize = 14.sp,
         color = colorScheme.onSurfaceVariantSummary,
+        onCanExpandChange = { canExpand = it },
     )
 }
 
