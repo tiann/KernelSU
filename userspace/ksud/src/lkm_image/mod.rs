@@ -102,7 +102,13 @@ pub struct BootPatchV2Args {
     /// flags, never both.
     #[arg(
         long,
-        conflicts_with_all = ["allow_shell", "no_custom_rc", "force_feature", "bundled"]
+        conflicts_with_all = [
+            "allow_shell",
+            "no_custom_rc",
+            "force_feature",
+            "block_module",
+            "bundled"
+        ]
     )]
     pub module_args: Option<String>,
 
@@ -577,6 +583,10 @@ pub fn patch_boot(args: &BootPatchV2Args) -> Result<()> {
             .into_owned()
     };
 
+    // Options whose full value is only known after joining are checked before
+    // the params go into the capsule: the kernel truncates an over-long
+    // `block_modules` value silently, which would leave modules unblocked.
+    args.config.validate()?;
     let params = args.load_args();
     if !params.is_empty() {
         println!("- Module params: {params}");
@@ -741,6 +751,35 @@ mod tests {
             .load_args(),
             "bundled=1 allow_shell=1 force_feature=su_compat:0,adb_root:1"
         );
+        // Blocking vendor anti-root modules rides the same plumbing: the list
+        // becomes a `block_modules=` kernel module param inside the capsule.
+        assert_eq!(
+            parse(&["--block-module", "vr"]).unwrap().patch.load_args(),
+            "block_modules=vr"
+        );
+        assert_eq!(
+            parse(&["--block-module", "vr,vklp"])
+                .unwrap()
+                .patch
+                .load_args(),
+            "block_modules=vr,vklp"
+        );
+        assert_eq!(
+            parse(&[
+                "--bundled",
+                "--allow-shell",
+                "--force-feature",
+                "su_compat=0",
+                "--block-module",
+                "vr",
+                "--block-module",
+                "mkp"
+            ])
+            .unwrap()
+            .patch
+            .load_args(),
+            "bundled=1 allow_shell=1 force_feature=su_compat:0 block_modules=vr,mkp"
+        );
     }
 
     /// A raw string and the named flags describe the same thing, so clap has to
@@ -751,6 +790,31 @@ mod tests {
         assert!(parse(&["--module-args", "x", "--no-custom-rc"]).is_err());
         assert!(parse(&["--module-args", "x", "--bundled"]).is_err());
         assert!(parse(&["--module-args", "x", "--force-feature", "su_compat=0"]).is_err());
+        // `--module-args` replaces the whole params string, so combining it
+        // with `--block-module` would silently drop the block list.
+        assert!(parse(&["--module-args", "x", "--block-module", "vr"]).is_err());
+    }
+
+    /// An over-long block list has to fail on the host: the kernel copies the
+    /// value into a 255-byte buffer and truncates silently, which would leave
+    /// some modules unblocked.
+    #[test]
+    fn block_module_list_is_validated_before_patching() {
+        assert!(parse(&[]).unwrap().patch.config.validate().is_ok());
+        assert!(
+            parse(&["--block-module", "vr,mkp"])
+                .unwrap()
+                .patch
+                .config
+                .validate()
+                .is_ok()
+        );
+
+        let many: Vec<String> = (0..30).map(|i| format!("module_name_{i:03}")).collect();
+        let long = many.join(",");
+        assert!(long.len() > 255);
+        let cli = parse(&["--block-module", long.as_str()]).unwrap();
+        assert!(cli.patch.config.validate().is_err());
     }
 
     /// The emulator boots the `bzImage`/`Image` itself and a kernel build tree
