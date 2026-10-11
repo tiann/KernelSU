@@ -605,7 +605,7 @@ private fun RepoBadgesMiuix(
 
 /** Loading / not-in-index / failure placeholder; returns true when the page content can be shown. */
 @Composable
-private fun LazyItemScope.DetailStatusMiuix(state: ModuleRepoDetailUiState, onRetry: () -> Unit): Boolean {
+private fun LazyItemScope.detailStatusMiuix(state: ModuleRepoDetailUiState, onRetry: () -> Unit): Boolean {
     when {
         state.notInIndex -> {
             Box(
@@ -698,7 +698,7 @@ private fun ReadmePage(
                 }
             }
             item {
-                if (!DetailStatusMiuix(state, onRetry) || detail == null) return@item
+                if (!detailStatusMiuix(state, onRetry) || detail == null) return@item
                 val readmeHtml = detail.readmeHtml
                 if (readmeHtml != null) {
                     var loaded by remember(readmeHtml) { mutableStateOf(false) }
@@ -799,7 +799,7 @@ fun ReleasesPage(
             overscrollEffect = null,
         ) {
             if (detail == null) {
-                item { DetailStatusMiuix(state, onRetry) }
+                item { detailStatusMiuix(state, onRetry) }
                 return@LazyColumn
             }
             item {

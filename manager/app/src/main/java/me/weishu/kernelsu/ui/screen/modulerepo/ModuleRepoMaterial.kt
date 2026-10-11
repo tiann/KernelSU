@@ -569,7 +569,7 @@ fun ModuleRepoDetailScreenMaterial(
 
 /** Loading / not-in-index / failure placeholder; returns true when the page content can be shown. */
 @Composable
-private fun LazyItemScope.DetailStatus(state: ModuleRepoDetailUiState, onRetry: () -> Unit): Boolean {
+private fun LazyItemScope.detailStatus(state: ModuleRepoDetailUiState, onRetry: () -> Unit): Boolean {
     when {
         state.notInIndex -> {
             Box(
@@ -648,7 +648,7 @@ private fun ReadmePage(
             }
         }
         item {
-            if (!DetailStatus(state, onRetry) || detail == null) return@item
+            if (!detailStatus(state, onRetry) || detail == null) return@item
             val readmeHtml = detail.readmeHtml
             if (readmeHtml != null) {
                 var loaded by remember(readmeHtml) { mutableStateOf(false) }
@@ -736,7 +736,7 @@ fun ReleasesPage(
         verticalArrangement = Arrangement.spacedBy(13.dp),
     ) {
         if (detail == null) {
-            item { DetailStatus(state, onRetry) }
+            item { detailStatus(state, onRetry) }
             return@LazyColumn
         }
         if (detail.fromCache) {
