@@ -7,7 +7,9 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +74,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.RepoModule
 import me.weishu.kernelsu.data.model.RepoRelease
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
@@ -82,7 +86,9 @@ import me.weishu.kernelsu.ui.component.miuix.SearchBarFake
 import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
+import me.weishu.kernelsu.ui.screen.module.ExpandableDescriptionText
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.isDownloadAvailable
@@ -311,14 +317,7 @@ fun ModuleRepoScreenMiuix(
                                     color = colorScheme.onSurfaceVariantSummary,
                                 )
                                 if (module.summary.isNotEmpty()) {
-                                    Text(
-                                        text = module.summary,
-                                        fontSize = 14.sp,
-                                        color = colorScheme.onSurfaceVariantSummary,
-                                        modifier = Modifier.padding(top = 2.dp),
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 4,
-                                    )
+                                    RepoSummaryText(module)
                                 }
                             }
                         }
@@ -474,14 +473,7 @@ fun ModuleRepoScreenMiuix(
                                             color = colorScheme.onSurfaceVariantSummary,
                                         )
                                         if (module.summary.isNotEmpty()) {
-                                            Text(
-                                                text = module.summary,
-                                                fontSize = 14.sp,
-                                                color = colorScheme.onSurfaceVariantSummary,
-                                                modifier = Modifier.padding(top = 2.dp),
-                                                overflow = TextOverflow.Ellipsis,
-                                                maxLines = 4,
-                                            )
+                                            RepoSummaryText(module)
                                         }
                                         HorizontalDivider(
                                             modifier = Modifier.padding(vertical = 8.dp),
@@ -524,6 +516,26 @@ fun ModuleRepoScreenMiuix(
             }
         }
     }
+}
+
+@Composable
+private fun RepoSummaryText(module: RepoModule) {
+    val maxLinesLimit = LocalModuleDescriptionMaxLines.current
+    var expanded by rememberSaveable(module.moduleId) { mutableStateOf(false) }
+    ExpandableDescriptionText(
+        text = module.summary,
+        expanded = expanded,
+        maxLinesLimit = maxLinesLimit,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+            ) { expanded = !expanded },
+        fontSize = 14.sp,
+        color = colorScheme.onSurfaceVariantSummary,
+    )
 }
 
 /** Star icon + compact count; nothing when the count is unknown or 0. */
@@ -678,9 +690,11 @@ private fun ReadmePage(
         ) {
             if (detail?.fromCache == true) {
                 item(key = "__notice_cached", contentType = "notice") {
-                    CachedDetailNoticeMiuix(Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(top = 6.dp))
+                    CachedDetailNoticeMiuix(
+                        Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(top = 6.dp)
+                    )
                 }
             }
             item {
@@ -793,9 +807,11 @@ fun ReleasesPage(
             }
             if (detail.fromCache) {
                 item(key = "__notice_cached", contentType = "notice") {
-                    CachedDetailNoticeMiuix(Modifier
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 8.dp))
+                    CachedDetailNoticeMiuix(
+                        Modifier
+                            .padding(horizontal = 24.dp)
+                            .padding(bottom = 8.dp)
+                    )
                 }
             }
             items(items = detail.releases, key = { "release_${it.tag}" }, contentType = { "release" }) { rel ->

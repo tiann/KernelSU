@@ -9,6 +9,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,6 +78,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,6 +114,8 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.material.TopBarBackButton
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
+import me.weishu.kernelsu.ui.screen.module.ExpandableDescriptionText
+import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberContentReady
 import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
@@ -286,14 +291,14 @@ private fun RepoBadges(
     metamodule: Boolean,
     installState: RepoInstallState,
 ) {
-    if (!metamodule && installState == RepoInstallState.NONE) return
     Row(
-        modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+        modifier = Modifier.padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (metamodule) {
             StatusTag(
                 "META",
+                modifier = Modifier.padding(bottom = 4.dp),
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 backgroundColor = MaterialTheme.colorScheme.primary
             )
@@ -301,12 +306,14 @@ private fun RepoBadges(
         when (installState) {
             RepoInstallState.UPDATABLE -> StatusTag(
                 stringResource(R.string.module_repo_update_available),
+                modifier = Modifier.padding(bottom = 4.dp),
                 contentColor = MaterialTheme.colorScheme.onTertiary,
                 backgroundColor = MaterialTheme.colorScheme.tertiary
             )
 
             RepoInstallState.INSTALLED -> StatusTag(
                 stringResource(R.string.module_repo_installed),
+                modifier = Modifier.padding(bottom = 4.dp),
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 backgroundColor = MaterialTheme.colorScheme.secondaryContainer
             )
@@ -349,6 +356,8 @@ private fun RepoModuleList(
         items(modules, key = { it.moduleId }, contentType = { "module" }) { module ->
             val moduleAuthor = stringResource(id = R.string.module_author)
             val installState = repoInstallState(installedVersions[module.moduleId], module.latestVersionCode)
+            val maxLinesLimit = LocalModuleDescriptionMaxLines.current
+            var summaryExpanded by rememberSaveable(module.moduleId) { mutableStateOf(false) }
 
             TonalCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -383,13 +392,19 @@ private fun RepoModuleList(
                         )
                     }
                     if (module.summary.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
+                        ExpandableDescriptionText(
                             text = module.summary,
+                            expanded = summaryExpanded,
+                            maxLinesLimit = maxLinesLimit,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                ) { summaryExpanded = !summaryExpanded },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 4,
                         )
                     }
 
