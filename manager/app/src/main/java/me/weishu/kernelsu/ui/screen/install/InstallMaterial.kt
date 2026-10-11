@@ -197,13 +197,21 @@ internal fun InstallScreenMaterial(
                     )
                 }
                 item(visible = uiState.advancedOptionsShown) {
+                    SegmentedCheckboxItem(
+                        title = stringResource(id = R.string.install_block_modules),
+                        summary = stringResource(id = R.string.install_block_modules_warning),
+                        checked = uiState.blockModulesEnabled,
+                        onCheckedChange = actions.onSelectBlockModules,
+                    )
+                }
+                item(visible = uiState.advancedOptionsShown && uiState.blockModulesEnabled) {
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         value = uiState.blockModules,
                         onValueChange = actions.onBlockModulesChange,
-                        label = { Text(stringResource(id = R.string.install_block_modules)) },
+                        label = { Text(stringResource(id = R.string.install_block_modules_list)) },
                         supportingText = {
                             Text(
                                 stringResource(

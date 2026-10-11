@@ -273,31 +273,39 @@ internal fun InstallScreenMiuix(
                                     summary = stringResource(id = R.string.enable_adb_summary),
                                     onCheckedChange = actions.onSelectEnableAdb
                                 )
-                                TextField(
-                                    value = uiState.blockModules,
-                                    onValueChange = actions.onBlockModulesChange,
-                                    label = stringResource(id = R.string.install_block_modules),
-                                    singleLine = true,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                CheckboxPreference(
+                                    title = stringResource(id = R.string.install_block_modules),
+                                    checked = uiState.blockModulesEnabled,
+                                    summary = stringResource(id = R.string.install_block_modules_warning),
+                                    onCheckedChange = actions.onSelectBlockModules
                                 )
-                                Text(
-                                    text = stringResource(
-                                        if (uiState.blockModulesValid) {
-                                            R.string.install_block_modules_summary
+                                if (uiState.blockModulesEnabled) {
+                                    TextField(
+                                        value = uiState.blockModules,
+                                        onValueChange = actions.onBlockModulesChange,
+                                        label = stringResource(id = R.string.install_block_modules_list),
+                                        singleLine = true,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            if (uiState.blockModulesValid) {
+                                                R.string.install_block_modules_summary
+                                            } else {
+                                                R.string.install_block_modules_invalid
+                                            }
+                                        ),
+                                        fontSize = 12.sp,
+                                        color = if (uiState.blockModulesValid) {
+                                            colorScheme.onSurfaceVariantSummary
                                         } else {
-                                            R.string.install_block_modules_invalid
-                                        }
-                                    ),
-                                    fontSize = 12.sp,
-                                    color = if (uiState.blockModulesValid) {
-                                        colorScheme.onSurfaceVariantSummary
-                                    } else {
-                                        colorScheme.error
-                                    },
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                                )
+                                            colorScheme.error
+                                        },
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }

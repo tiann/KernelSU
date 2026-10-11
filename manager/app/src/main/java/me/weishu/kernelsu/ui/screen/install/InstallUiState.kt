@@ -20,6 +20,7 @@ internal data class InstallUiState(
     val enableAdb: Boolean,
     val forceBackup: Boolean,
     val canForceBackup: Boolean,
+    val blockModulesEnabled: Boolean,
     val blockModules: String,
     val blockModulesValid: Boolean,
 )
@@ -38,5 +39,6 @@ internal data class InstallScreenActions(
     val onSelectAllowShell: (Boolean) -> Unit,
     val onSelectEnableAdb: (Boolean) -> Unit,
     val onSelectForceBackup: (Boolean) -> Unit,
+    val onSelectBlockModules: (Boolean) -> Unit,
     val onBlockModulesChange: (String) -> Unit,
 )
