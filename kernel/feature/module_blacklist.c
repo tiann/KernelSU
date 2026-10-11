@@ -2,6 +2,7 @@
 #include <linux/init.h>
 #include <linux/moduleparam.h>
 #include <linux/slab.h>
+#include <linux/smp.h>
 #include <linux/string.h>
 
 #include "feature/module_blacklist.h"
@@ -72,6 +73,9 @@ void __init ksu_module_blacklist_init(void)
     // blacklisted() reader so it can never observe the new pointer before the
     // string contents are visible.
     smp_store_release(native_blacklist, merged);
+    // Force every other CPU through a memory barrier so any module load already
+    // in flight observes the new list right away (suggested by @backslashxx).
+    kick_all_cpus_sync();
     pr_info("module_blacklist: blocking modules: %s\n", merged);
 }
 
