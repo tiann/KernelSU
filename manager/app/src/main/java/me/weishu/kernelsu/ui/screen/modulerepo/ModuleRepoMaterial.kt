@@ -985,7 +985,6 @@ fun InfoPage(
     val layoutDirection = LocalLayoutDirection.current
     val detail = state.detail
     val authors = detail?.module?.authorList?.map { AuthorArg(it.name, it.link) } ?: state.module.authorsList
-    val metamodule = detail?.module?.metamodule ?: state.module.metamodule
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -999,13 +998,6 @@ fun InfoPage(
     ) {
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                RepoBadges(
-                    metamodule = metamodule,
-                    installState = repoInstallState(
-                        state.installedVersionCode,
-                        detail?.module?.latestVersionCode ?: state.module.latestVersionCode
-                    ),
-                )
                 if (state.notInIndex) {
                     Text(
                         text = stringResource(R.string.module_repo_not_in_index),

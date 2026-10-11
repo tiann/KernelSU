@@ -1118,11 +1118,6 @@ fun InfoPage(
     val layoutDirection = LocalLayoutDirection.current
     val detail = state.detail
     val authors = detail?.module?.authorList?.map { AuthorArg(it.name, it.link) } ?: state.module.authorsList
-    val metamodule = detail?.module?.metamodule ?: state.module.metamodule
-    val installState = repoInstallState(
-        state.installedVersionCode,
-        detail?.module?.latestVersionCode ?: state.module.latestVersionCode
-    )
     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
         LazyColumn(
             modifier = Modifier
@@ -1139,12 +1134,7 @@ fun InfoPage(
             overscrollEffect = null,
         ) {
             item {
-                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 6.dp)) {
-                    if (metamodule || installState != RepoInstallState.NONE) {
-                        Row(modifier = Modifier.padding(bottom = 4.dp)) {
-                            RepoBadgesMiuix(metamodule, installState)
-                        }
-                    }
+                Column(modifier = Modifier.padding(horizontal = 18.dp)) {
                     if (state.notInIndex) {
                         Text(
                             text = stringResource(R.string.module_repo_not_in_index),
