@@ -1177,7 +1177,10 @@ mod block_modules_tests {
         let mut config = vec!["block_modules=old,stale".to_owned()];
         args.apply(&mut config);
         assert_eq!(
-            config.iter().filter(|v| v.starts_with("block_modules=")).count(),
+            config
+                .iter()
+                .filter(|v| v.starts_with("block_modules="))
+                .count(),
             1
         );
         assert!(config.contains(&"block_modules=vr".to_owned()));
