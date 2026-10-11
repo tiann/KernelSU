@@ -142,7 +142,8 @@ class DownloadService : Service() {
             var displayName = fileName
             try {
                 val uri = if (expected != null) {
-                    downloadVerified(id, url, fileName, expected)
+                    // Already stored under its final name: delete it if cancelled before completion.
+                    downloadVerified(id, url, fileName, expected).also { pendingUri = it }
                 } else {
                     val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).build())
                     activeCalls[id] = call

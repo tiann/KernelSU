@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.data.registry
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -55,7 +56,46 @@ class RegistryUpdatePolicyTest {
         val shared = "https://github.com/owner/repo/releases/download/latest/foo.zip"
         val d = detail.copy(releases = listOf(release("v2", 200, sha2, shared), release("v1", 100, sha1, shared)))
         assertEquals(ExpectedFile(200, sha1), (decide(zipUrl = shared, versionCode = 100, d = d) as UpdateVerification.Registry).expected)
-        assertEquals(ExpectedFile(300, sha2), (decide(zipUrl = shared, versionCode = 999, d = d) as UpdateVerification.Registry).expected)
+        assertEquals(ExpectedFile(300, sha2), (decide(zipUrl = shared, versionCode = 200, d = d) as UpdateVerification.Registry).expected)
+        assertTrue(decide(zipUrl = shared, versionCode = 999, d = d) is UpdateVerification.Rejected)
+    }
+
+    @Test
+    fun registryZipWithAnotherVersionCodeIsRejected() {
+        // The v1 ZIP offered as versionCode 200 would be a silent downgrade.
+        assertEquals(
+            UpdateVerification.Rejected("versionCode does not match the registry release"),
+            decide(zipUrl = zip("v1"), versionCode = 200),
+        )
+        // Also when updateJson is author-hosted.
+        assertEquals(
+            UpdateVerification.Rejected("versionCode does not match the registry release"),
+            decide(updateJson = authorUpdateJson, zipUrl = zip("v1"), versionCode = 200),
+        )
+    }
+
+    @Test
+    fun releaseOfARenamedRepositoryIsStillVerified() {
+        // Release URLs keep the owner/repo they were listed under.
+        val old = "https://github.com/old-owner/old-repo/releases/download/v2/foo.zip"
+        val renamed = detail.copy(releases = listOf(release("v2", 200, sha2, old)))
+        val v = decide(zipUrl = old, d = renamed) as UpdateVerification.Registry
+        assertEquals(ExpectedFile(300, sha2), v.expected)
+    }
+
+    @Test
+    fun unrelatedUpdatesAreLegacyWithoutRegistryData() {
+        val zips = listOf("https://example.com/foo.zip", "https://raw.githubusercontent.com/owner/repo/main/foo.zip", "not a url")
+        for (zipUrl in zips) {
+            assertTrue(zipUrl, RegistryUpdatePolicy.isUnrelatedToRegistry(base, authorUpdateJson, zipUrl))
+            for (inIndex in listOf(true, false, null)) for (d in listOf(detail, null)) {
+                assertEquals(zipUrl, UpdateVerification.Legacy, decide(authorUpdateJson, zipUrl, 200, inIndex, d))
+            }
+        }
+        // Possibly a registry release, or a registry-hosted updateJson: registry data is needed.
+        assertFalse(RegistryUpdatePolicy.isUnrelatedToRegistry(base, authorUpdateJson, zip("v2")))
+        assertFalse(RegistryUpdatePolicy.isUnrelatedToRegistry(base, authorUpdateJson, " HTTPS://GitHub.com/owner/repo/releases/download/v2/foo.zip#x"))
+        assertFalse(RegistryUpdatePolicy.isUnrelatedToRegistry(base, registryUpdateJson, "https://example.com/foo.zip"))
     }
 
     @Test
@@ -74,8 +114,7 @@ class RegistryUpdatePolicyTest {
         assertTrue(decide(d = null) is UpdateVerification.Rejected)
         assertTrue(decide(inIndex = false, d = null) is UpdateVerification.Rejected)
         assertTrue(decide(inIndex = null, d = null) is UpdateVerification.Rejected)
-        // A registry release URL of another repository is never accepted.
-        val foreign = detail.copy(releases = listOf(release("v2", 200, sha2, "https://github.com/evil/repo/releases/download/v2/foo.zip")))
-        assertTrue(decide(zipUrl = "https://github.com/evil/repo/releases/download/v2/foo.zip", d = foreign) is UpdateVerification.Rejected)
+        // Only URLs of the module's own registry releases match.
+        assertTrue(decide(zipUrl = "https://github.com/evil/repo/releases/download/v2/foo.zip") is UpdateVerification.Rejected)
     }
 }

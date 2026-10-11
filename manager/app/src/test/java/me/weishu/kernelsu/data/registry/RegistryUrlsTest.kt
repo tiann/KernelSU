@@ -13,8 +13,6 @@ class RegistryUrlsTest {
     @Test
     fun acceptsGithubReleaseDownloads() {
         assertTrue(RegistryUrls.isAllowedReleaseDownloadUrl(good))
-        assertTrue(RegistryUrls.isAllowedReleaseDownloadUrl(good, "owner/repo"))
-        assertTrue(RegistryUrls.isAllowedReleaseDownloadUrl(good, "Owner/Repo"))
         assertTrue(RegistryUrls.isAllowedReleaseDownloadUrl("https://GitHub.com/o-1/r.e_p/releases/download/v2/a%20b.zip"))
     }
 
@@ -40,7 +38,6 @@ class RegistryUrlsTest {
             "",
         )
         for (url in bad) assertFalse(url, RegistryUrls.isAllowedReleaseDownloadUrl(url))
-        assertFalse(RegistryUrls.isAllowedReleaseDownloadUrl(good, "owner/other"))
     }
 
     @Test

@@ -354,7 +354,7 @@ class ModuleViewModel(
             )
             if (verification is UpdateVerification.Rejected) {
                 Log.w(TAG, "refusing update of ${module.id}: ${verification.reason}")
-                emitEffect(ModuleEffect.SnackBar(ksuApp.getString(R.string.module_update_unverifiable, module.name)))
+                emitEffect(ModuleEffect.Toast(ksuApp.getString(R.string.module_update_unverifiable, module.name)))
                 return@launch
             }
             val dialogState = buildUpdateConfirmDialogState(module, updateInfo, verification)

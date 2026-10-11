@@ -270,20 +270,27 @@ fun ModuleRepoScreenMiuix(
                                 if (module.moduleName.isNotEmpty()) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         RepoModuleIcon(module.iconUrl, Modifier.padding(end = 8.dp))
-                                        Text(
-                                            text = module.moduleName,
-                                            fontSize = 17.sp,
-                                            fontWeight = FontWeight(550),
-                                            color = colorScheme.onSurface
-                                        )
-                                        RepoBadgesMiuix(
-                                            metamodule = module.metamodule,
-                                            installState = repoInstallState(
-                                                state.installedVersions[module.moduleId],
-                                                module.latestVersionCode
-                                            ),
-                                        )
-                                        Spacer(Modifier.weight(1f))
+                                        Row(
+                                            modifier = Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = module.moduleName,
+                                                fontSize = 17.sp,
+                                                fontWeight = FontWeight(550),
+                                                color = colorScheme.onSurface,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f, fill = false),
+                                            )
+                                            RepoBadgesMiuix(
+                                                metamodule = module.metamodule,
+                                                installState = repoInstallState(
+                                                    state.installedVersions[module.moduleId],
+                                                    module.latestVersionCode
+                                                ),
+                                            )
+                                        }
                                         RepoStarsMiuix(module.stars, Modifier.padding(start = 8.dp))
                                     }
                                 }
@@ -405,7 +412,7 @@ fun ModuleRepoScreenMiuix(
                             overscrollEffect = null,
                         ) {
                             if (state.stale) {
-                                item(key = "stale", contentType = "notice") {
+                                item(key = "__notice_stale", contentType = "notice") {
                                     Text(
                                         text = stringResource(R.string.module_repo_using_cache),
                                         fontSize = 12.sp,
@@ -433,7 +440,10 @@ fun ModuleRepoScreenMiuix(
                                                     text = module.moduleName,
                                                     fontSize = 17.sp,
                                                     fontWeight = FontWeight(550),
-                                                    color = colorScheme.onSurface
+                                                    color = colorScheme.onSurface,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.weight(1f, fill = false),
                                                 )
                                                 RepoBadgesMiuix(
                                                     metamodule = module.metamodule,
@@ -628,6 +638,17 @@ private fun LazyItemScope.DetailStatusMiuix(state: ModuleRepoDetailUiState, onRe
     return false
 }
 
+/** The detail is the last good cached copy because it could not be refreshed. */
+@Composable
+private fun CachedDetailNoticeMiuix(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.module_repo_using_cache),
+        fontSize = 12.sp,
+        color = colorScheme.onSurfaceVariantSummary,
+        modifier = modifier,
+    )
+}
+
 @Composable
 private fun ReadmePage(
     state: ModuleRepoDetailUiState,
@@ -637,48 +658,7 @@ private fun ReadmePage(
     val layoutDirection = LocalLayoutDirection.current
     val isReady = rememberContentReady()
     val detail = state.detail
-    val readmeHtml = detail?.readmeHtml
     Box(modifier = if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier) {
-        if (detail != null && readmeHtml != null) {
-            // The WebView scrolls itself so in-page #anchor links work without JavaScript.
-            var loaded by remember(readmeHtml) { mutableStateOf(false) }
-            val alpha by animateFloatAsState(
-                targetValue = if (loaded) 1f else 0f,
-                animationSpec = tween(durationMillis = 300),
-                label = "MiuixReadmeAlpha",
-            )
-            val placeholderAlpha by animateFloatAsState(
-                targetValue = if (loaded) 0f else 1f,
-                animationSpec = tween(durationMillis = 150),
-                label = "MiuixReadmePlaceholderAlpha",
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                if (isReady) {
-                    GithubMarkdown(
-                        content = readmeHtml,
-                        onLoadingChange = { loaded = !it },
-                        restrictedBaseUrl = detail.readmeBaseUrl,
-                        scrollable = true,
-                        modifier = Modifier.graphicsLayer { this.alpha = alpha },
-                    )
-                }
-                if (placeholderAlpha > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer { this.alpha = placeholderAlpha },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        InfiniteProgressIndicator()
-                    }
-                }
-            }
-            return@Box
-        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
@@ -693,8 +673,49 @@ private fun ReadmePage(
             ),
             overscrollEffect = null,
         ) {
+            if (detail?.fromCache == true) {
+                item(key = "__notice_cached", contentType = "notice") {
+                    CachedDetailNoticeMiuix(Modifier.padding(horizontal = 24.dp).padding(top = 6.dp))
+                }
+            }
             item {
                 if (!DetailStatusMiuix(state, onRetry) || detail == null) return@item
+                val readmeHtml = detail.readmeHtml
+                if (readmeHtml != null) {
+                    var loaded by remember(readmeHtml) { mutableStateOf(false) }
+                    val alpha by animateFloatAsState(
+                        targetValue = if (loaded) 1f else 0f,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "MiuixReadmeAlpha",
+                    )
+                    val placeholderAlpha by animateFloatAsState(
+                        targetValue = if (loaded) 0f else 1f,
+                        animationSpec = tween(durationMillis = 150),
+                        label = "MiuixReadmePlaceholderAlpha",
+                    )
+                    Box {
+                        if (isReady) {
+                            Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
+                                GithubMarkdown(
+                                    content = readmeHtml,
+                                    onLoadingChange = { loaded = !it },
+                                    restrictedBaseUrl = detail.readmeBaseUrl,
+                                )
+                            }
+                        }
+                        if (placeholderAlpha > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxSize()
+                                    .graphicsLayer { this.alpha = placeholderAlpha },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                InfiniteProgressIndicator()
+                            }
+                        }
+                    }
+                    return@item
+                }
                 Box(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
@@ -765,7 +786,12 @@ fun ReleasesPage(
             item {
                 Spacer(Modifier.height(6.dp))
             }
-            items(items = detail.releases, key = { it.tag }, contentType = { "release" }) { rel ->
+            if (detail.fromCache) {
+                item(key = "__notice_cached", contentType = "notice") {
+                    CachedDetailNoticeMiuix(Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp))
+                }
+            }
+            items(items = detail.releases, key = { "release_${it.tag}" }, contentType = { "release" }) { rel ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1103,6 +1129,13 @@ fun InfoPage(
                     if (detail?.healthStale == true) {
                         Text(
                             text = stringResource(R.string.module_repo_health_stale),
+                            fontSize = 14.sp,
+                            color = colorScheme.onSurfaceVariantSummary,
+                        )
+                    }
+                    if (detail?.fromCache == true) {
+                        Text(
+                            text = stringResource(R.string.module_repo_using_cache),
                             fontSize = 14.sp,
                             color = colorScheme.onSurfaceVariantSummary,
                         )

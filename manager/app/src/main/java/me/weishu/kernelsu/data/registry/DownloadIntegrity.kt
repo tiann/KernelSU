@@ -205,15 +205,22 @@ object RegistryDownloadStore {
         return deleted
     }
 
-    /** Removes entries older than [maxAgeMillis] (and anything that is not a store entry). */
+    /**
+     * Removes entries older than [maxAgeMillis] (and old leftovers that are not store entries).
+     * Recent directories are kept even when empty: a concurrent download may have just created
+     * its directory and not yet its temporary file.
+     */
     fun cleanup(root: File, maxAgeMillis: Long, now: Long = System.currentTimeMillis()) {
+        fun isOld(f: File) = now - f.lastModified() > maxAgeMillis
         root.listFiles()?.forEach { dir ->
+            // Checked before deleting anything inside, which bumps the directory's mtime.
+            val dirOld = isOld(dir)
             if (!dir.isDirectory || expectedFromDirName(dir.name) == null) {
-                dir.deleteRecursively()
+                if (dirOld) dir.deleteRecursively()
                 return@forEach
             }
-            dir.listFiles()?.forEach { f -> if (now - f.lastModified() > maxAgeMillis) f.delete() }
-            if (dir.list()?.isEmpty() == true) dir.delete()
+            dir.listFiles()?.forEach { f -> if (isOld(f)) f.delete() }
+            if (dirOld && dir.list()?.isEmpty() == true) dir.delete()
         }
     }
 }

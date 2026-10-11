@@ -162,8 +162,26 @@ class DownloadStoreTest {
         val stored = RegistryDownloadStore.download(ByteArrayInputStream(data), root, expected, "m.zip")
         File(root, "stray.txt").writeText("x")
         RegistryDownloadStore.cleanup(root, maxAgeMillis = 60_000, now = stored.lastModified() + 1_000)
-        assertEquals(listOf("${stored.parentFile!!.name}/m.zip"), listing(root))
+        assertEquals(listOf("${stored.parentFile!!.name}/m.zip", "stray.txt"), listing(root))
         RegistryDownloadStore.cleanup(root, maxAgeMillis = 60_000, now = stored.lastModified() + 120_000)
+        assertEquals(0, root.list()!!.size)
+    }
+
+    @Test
+    fun cleanupKeepsFreshDirectoriesOfConcurrentDownloads() {
+        val root = root()
+        // Just created by a concurrent download, before (or while) it writes its .part file.
+        val empty = File(root, RegistryDownloadStore.dirNameFor(expected)).apply { mkdirs() }
+        val other = ExpectedFile(expected.size, "b".repeat(64))
+        val partial = File(root, RegistryDownloadStore.dirNameFor(other)).apply { mkdirs() }
+        val part = File.createTempFile("dl-", ".part", partial)
+        val now = maxOf(empty.lastModified(), partial.lastModified(), part.lastModified())
+
+        RegistryDownloadStore.cleanup(root, maxAgeMillis = 60_000, now = now + 1_000)
+        assertTrue(empty.isDirectory)
+        assertTrue(part.isFile)
+
+        RegistryDownloadStore.cleanup(root, maxAgeMillis = 60_000, now = now + 120_000)
         assertEquals(0, root.list()!!.size)
     }
 

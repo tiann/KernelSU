@@ -104,11 +104,8 @@ object RegistryUrls {
     private fun decodeSegment(s: String): String? =
         runCatching { URLDecoder.decode(s.replace("+", "%2B"), "UTF-8") }.getOrNull()
 
-    /**
-     * Only `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>` is accepted.
-     * When [expectedRepo] ("owner/repo") is given the URL must belong to that repository.
-     */
-    fun isAllowedReleaseDownloadUrl(url: String, expectedRepo: String? = null): Boolean {
+    /** Only `https://github.com/<owner>/<repo>/releases/download/<tag>/<file>` is accepted. */
+    fun isAllowedReleaseDownloadUrl(url: String): Boolean {
         val uri = runCatching { URI(url) }.getOrNull() ?: return false
         if (!uri.isAbsolute || uri.isOpaque) return false
         if (!uri.scheme.equals("https", ignoreCase = true)) return false
@@ -129,7 +126,6 @@ object RegistryUrls {
         val repo = segments[1]
         if (!REPO_PART.matches(owner) || !REPO_PART.matches(repo)) return false
         if (segments[2] != "releases" || segments[3] != "download") return false
-        if (expectedRepo != null && !"$owner/$repo".equals(expectedRepo, ignoreCase = true)) return false
         return true
     }
 

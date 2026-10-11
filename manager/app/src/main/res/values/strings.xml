@@ -53,6 +53,7 @@
     <string name="module_repo_using_cache">Couldn\'t refresh the repository, showing the last downloaded copy</string>
     <string name="module_repo_unsupported_schema">The module repository uses a newer format. Please update KernelSU Manager.</string>
     <string name="module_repo_load_failed">Failed to load the module repository</string>
+    <string name="module_repo_empty">No modules available</string>
     <string name="module_repo_not_in_index">This module is not in the repository index right now and can\'t be installed from here.</string>
     <string name="module_repo_no_readme">No README</string>
     <string name="module_repo_health_stale">The repository couldn\'t sync this module recently; information may be outdated.</string>
@@ -66,7 +67,6 @@
     <string name="module_repo_download_verify_failed">%s failed the integrity check (size or SHA-256 mismatch) and was deleted</string>
     <string name="module_repo_download_url_blocked">Download blocked: only GitHub release downloads are allowed</string>
     <string name="module_repo_readme_failed">Couldn\'t load the README</string>
-    <string name="module_repo_readme_locale">README language</string>
     <string name="module_repo_tags">Tags</string>
     <string name="module_repo_stars">GitHub stars</string>
     <string name="module_repo_attestation">Build provenance (attestation)</string>

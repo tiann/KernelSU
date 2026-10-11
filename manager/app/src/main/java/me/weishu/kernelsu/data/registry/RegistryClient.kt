@@ -122,6 +122,8 @@ class RegistryClient(
      * when the module is not part of the current index.
      */
     fun loadDetail(id: String): DetailLoad {
+        // A catalog loaded right here is as fresh as a re-read would be.
+        var refreshed = current == null
         val catalog = catalog()
         val summary = catalog.find(id) ?: throw ModuleNotInIndexException(id)
         try {
@@ -131,6 +133,7 @@ class RegistryClient(
                 return DetailLoad(catalog, detail)
             }
             // The site was redeployed in between: re-read index + list once, never mix builds.
+            refreshed = true
             val fresh = synchronized(lock) { fetchCatalog() }
             val freshSummary = fresh.find(id) ?: throw ModuleNotInIndexException(id)
             val (freshText, freshDetail) =
@@ -143,6 +146,22 @@ class RegistryClient(
         } catch (e: ModuleNotInIndexException) {
             throw e
         } catch (e: Exception) {
+            // The detail may be gone because the module was removed in a newer build: re-read
+            // index + list once. Offline, the cached fallback below still applies.
+            if (!refreshed) {
+                val fresh = runCatching { synchronized(lock) { fetchCatalog() } }.getOrNull()
+                if (fresh != null) {
+                    val freshSummary = fresh.find(id) ?: throw ModuleNotInIndexException(id)
+                    if (fresh.buildId != catalog.buildId) {
+                        runCatching { fetchDetail(freshSummary) }.getOrNull()
+                            ?.takeIf { (_, detail) -> detail.buildId == fresh.buildId }
+                            ?.let { (text, detail) ->
+                                writeDetail(id, text)
+                                return DetailLoad(fresh, detail)
+                            }
+                    }
+                }
+            }
             // A refresh above may already have advanced the catalog: only fall back to a cached
             // detail of the build the client is on now, for a module that is still listed there.
             val latest = current ?: catalog

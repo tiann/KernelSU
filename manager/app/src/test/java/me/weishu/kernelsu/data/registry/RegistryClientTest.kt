@@ -241,6 +241,58 @@ class RegistryClientTest {
     }
 
     @Test
+    fun removedModuleIsReportedAsNotInIndex() {
+        val f = FakeFetcher()
+        f.set(indexUrl, index(b1))
+        f.set(listUrl, modules(b1, summary("foo"), summary("bar")))
+        f.set(detailUrl("foo"), detail("foo", b1))
+        val c = client(f)
+        c.loadCatalog()
+        assertEquals(b1, c.loadDetail("foo").detail.buildId) // cached as b1
+
+        // Removed in b2: its detail is gone (404) and the client still holds b1.
+        f.set(indexUrl, index(b2))
+        f.set(listUrl, modules(b2, summary("bar")))
+        f.responses.remove(detailUrl("foo"))
+        assertThrows(ModuleNotInIndexException::class.java) { c.loadDetail("foo") }
+        assertEquals(b2, c.currentCatalog()?.buildId)
+    }
+
+    @Test
+    fun failedDetailIsReloadedForANewerBuild() {
+        val f = FakeFetcher()
+        f.set(indexUrl, index(b1), index(b2))
+        f.set(listUrl, modules(b1, summary("foo")), modules(b2, summary("foo")))
+        f.set(detailUrl("foo"), "{broken", detail("foo", b2))
+        val c = client(f)
+        c.loadCatalog()
+        val load = c.loadDetail("foo")
+        assertFalse(load.fromCache)
+        assertEquals(b2, load.catalog.buildId)
+        assertEquals(b2, load.detail.buildId)
+        assertEquals(2, f.count(detailUrl("foo")))
+    }
+
+    @Test
+    fun offlineDetailFallsBackToCacheAfterAFailedRefresh() {
+        val f = FakeFetcher()
+        f.set(indexUrl, index(b1))
+        f.set(listUrl, modules(b1, summary("foo")))
+        f.set(detailUrl("foo"), detail("foo", b1))
+        val c = client(f)
+        c.loadCatalog()
+        c.loadDetail("foo")
+
+        f.offline = true
+        val load = c.loadDetail("foo")
+        assertTrue(load.fromCache)
+        assertNotNull(load.error)
+        assertEquals(b1, load.detail.buildId)
+        // One refresh of index + list was attempted.
+        assertEquals(2, f.count(indexUrl))
+    }
+
+    @Test
     fun detailIdMustMatch() {
         val f = FakeFetcher()
         f.set(indexUrl, index(b1))
@@ -266,7 +318,8 @@ class RegistryClientTest {
             )
         )
         val releases = client(f).loadDetail("foo").detail.releases
-        assertEquals(listOf("v1", "v0"), releases.map { it.tag })
+        // A release of another owner/repo is kept: its URL predates a rename or transfer.
+        assertEquals(listOf("v2", "v1", "v0"), releases.map { it.tag })
         assertTrue(releases.last().prerelease)
     }
 

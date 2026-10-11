@@ -23,8 +23,10 @@ sealed interface UpdateVerification {
  * - The module's id is not in the registry index -> [UpdateVerification.Legacy] (Rejected if
  *   updateJson is served by the registry). Index unavailable: treated like "in the index,
  *   detail unavailable".
- * - `zipUrl` is the ZIP of a registry release of that module -> [UpdateVerification.Registry]
- *   (when several releases share the URL, the one with the offered versionCode wins).
+ * - `zipUrl` is the ZIP of a registry release of that module with the offered versionCode ->
+ *   [UpdateVerification.Registry]. If it is a registry release ZIP but no release with that
+ *   URL has the offered versionCode -> [UpdateVerification.Rejected] (no downgrade through a
+ *   mislabelled ZIP), wherever updateJson is hosted.
  * - `updateJson` itself is served by the registry site but nothing matches (or the detail
  *   could not be loaded) -> [UpdateVerification.Rejected]; registry metadata is never
  *   downloaded unverified.
@@ -45,11 +47,13 @@ object RegistryUpdatePolicy {
         if (inIndex == false) {
             return if (fromRegistry) UpdateVerification.Rejected("module is not in the registry index") else UpdateVerification.Legacy
         }
-        val candidates = detail?.releases.orEmpty().filter { sameUrl(it.zip.url, zipUrl) }
-        val release = candidates.firstOrNull { it.versionCode == versionCode } ?: candidates.firstOrNull()
-        if (release != null && detail != null &&
-            RegistryUrls.isAllowedReleaseDownloadUrl(release.zip.url, detail.source.fullName)
-        ) {
+        // Release URLs are fixed when a release is listed and keep the old owner/repo after a
+        // rename or transfer; the download itself is pinned by size + SHA-256.
+        val candidates = detail?.releases.orEmpty()
+            .filter { sameUrl(it.zip.url, zipUrl) && RegistryUrls.isAllowedReleaseDownloadUrl(it.zip.url) }
+        if (candidates.isNotEmpty()) {
+            val release = candidates.firstOrNull { it.versionCode == versionCode }
+                ?: return UpdateVerification.Rejected("versionCode does not match the registry release")
             return UpdateVerification.Registry(
                 zipUrl = release.zip.url,
                 expected = ExpectedFile(release.zip.size, release.zip.sha256),
@@ -64,6 +68,14 @@ object RegistryUpdatePolicy {
             UpdateVerification.Legacy
         }
     }
+
+    /**
+     * True when [decide] returns [UpdateVerification.Legacy] whatever the index and detail say:
+     * updateJson is not served by the registry and zipUrl is not on github.com, where every
+     * registry release ZIP lives (see [sameUrl]).
+     */
+    fun isUnrelatedToRegistry(registryBaseUrl: String, updateJsonUrl: String, zipUrl: String): Boolean =
+        !RegistryUrls.isSameOrigin(updateJsonUrl, registryBaseUrl) && RegistryUrls.hostOf(zipUrl.trim()) != "github.com"
 
     /** URL equality with a case-insensitive scheme/host; path and query must match exactly. */
     fun sameUrl(a: String, b: String): Boolean {

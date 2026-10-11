@@ -14,7 +14,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
@@ -68,15 +67,11 @@ fun GithubMarkdown(
      * Site root of untrusted, already sanitized remote HTML (e.g. KernelSU Modules readmes and
      * changelogs). When set, the WebView runs locked down: JavaScript and DOM storage are off,
      * no JS bridge, no file/content access, no mixed content, sub-resources only from this
-     * site's host (plus bundled assets), relative URLs resolve against it, and every navigation
-     * is handed to an external browser instead of being loaded in place.
+     * site's host (plus bundled assets), relative URLs resolve against it, raw HTML in Markdown
+     * is escaped, nothing is ever loaded in place, and only web links the user tapped are
+     * handed to an external browser.
      */
     restrictedBaseUrl: String? = null,
-    /**
-     * The WebView fills the given height and scrolls itself instead of growing to its content
-     * height. Needed for in-page `#anchor` links (a wrap-content WebView has nothing to scroll).
-     */
-    scrollable: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val restricted = restrictedBaseUrl != null
@@ -111,7 +106,7 @@ fun GithubMarkdown(
     }
     val parser = remember(extensions) { Parser.builder().extensions(extensions).build() }
     val renderer = remember(extensions, restricted) {
-        HtmlRenderer.builder().extensions(extensions).sanitizeUrls(restricted).build()
+        HtmlRenderer.builder().extensions(extensions).sanitizeUrls(restricted).escapeHtml(restricted).build()
     }
     val rendered = remember(content, isMarkdown) {
         if (isMarkdown) renderer.render(parser.parse(content)) else content
@@ -174,9 +169,8 @@ fun GithubMarkdown(
                     }
                     layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
-                        if (scrollable) FrameLayout.LayoutParams.MATCH_PARENT else FrameLayout.LayoutParams.WRAP_CONTENT
+                        FrameLayout.LayoutParams.WRAP_CONTENT
                     )
-                    isVerticalScrollBarEnabled = scrollable
                     if (!restricted) {
                         addJavascriptInterface(scrollInterface, "AndroidScroll")
                     }
@@ -257,9 +251,12 @@ fun GithubMarkdown(
                             view: WebView, request: WebResourceRequest
                         ): Boolean {
                             if (restrictedBaseUrl != null) {
-                                // `#anchor` of this document: let the WebView scroll in place.
-                                if (RegistryUrls.isInPageAnchor(request.url.toString(), restrictedBaseUrl)) return false
-                                // Never navigate inside the view; only web links leave the app.
+                                // `#anchor` of this document: the view is as tall as its content,
+                                // so there is nothing to scroll to; never leave the app for it.
+                                if (RegistryUrls.isInPageAnchor(request.url.toString(), restrictedBaseUrl)) return true
+                                // Never navigate inside the view; only web links the user tapped
+                                // leave the app (no automatic redirects such as <meta refresh>).
+                                if (!request.hasGesture()) return true
                                 val scheme = request.url.scheme?.lowercase()
                                 if (scheme != "https" && scheme != "http") return true
                             }
@@ -321,7 +318,7 @@ fun GithubMarkdown(
                         }
                     }
                     if (restricted) {
-                        setOnTouchListener(RestrictedTouchHandler(this, scrollable))
+                        setOnTouchListener(RestrictedTouchHandler(this))
                     } else setOnTouchListener(object : View.OnTouchListener {
                         private var isHorizontalScrollLocked = false
                         private var initialDownX = 0f
@@ -395,7 +392,7 @@ fun GithubMarkdown(
         },
         modifier = modifier
             .fillMaxWidth()
-            .let { if (scrollable) it.fillMaxHeight() else it.wrapContentHeight() }
+            .wrapContentHeight()
             .clipToBounds(),
     )
 }
@@ -441,12 +438,10 @@ private class EdgeAwareWebView(context: android.content.Context) : WebView(conte
 /**
  * Touch arbitration for the restricted (JavaScript-off) renderer: horizontal drags go to the
  * page first (wide tables / code scroll natively) and are handed to the parent (e.g. a pager)
- * once the page reports it cannot scroll further; vertical drags go to the parent unless the
- * WebView scrolls itself.
+ * once the page reports it cannot scroll further; vertical drags always go to the parent.
  */
 private class RestrictedTouchHandler(
     private val webView: EdgeAwareWebView,
-    private val scrollable: Boolean,
 ) : View.OnTouchListener {
     private val touchSlop = android.view.ViewConfiguration.get(webView.context).scaledTouchSlop
     private var downX = 0f
@@ -472,7 +467,7 @@ private class RestrictedTouchHandler(
                 }
                 when (direction) {
                     1 -> if (webView.horizontalEdgeReached) v.parent.requestDisallowInterceptTouchEvent(false)
-                    2 -> if (!scrollable) {
+                    2 -> {
                         v.parent.requestDisallowInterceptTouchEvent(false)
                         return true
                     }

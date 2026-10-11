@@ -1,9 +1,11 @@
 package me.weishu.kernelsu.ui.screen.modulerepo
 
+import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoModule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.io.IOException
 import java.util.Locale
 
 class RepoSortTest {
@@ -91,6 +93,18 @@ class RepoSortTest {
         assertEquals("1M", formatStarCount(1_000_000))
         assertEquals("2.5M", formatStarCount(2_500_000))
         assertEquals("2147M", formatStarCount(Int.MAX_VALUE))
+    }
+
+    @Test
+    fun emptyStateMessageOnlyOnceSomethingWasLoaded() {
+        // Not loaded yet, or (re)loading: keep the progress indicator.
+        assertNull(ModuleRepoUiState().emptyStateMessage)
+        assertNull(ModuleRepoUiState(isRefreshing = true).emptyStateMessage)
+        assertNull(ModuleRepoUiState(isRefreshing = true, hasLoaded = true).emptyStateMessage)
+        // Loaded, but the repository lists no modules.
+        assertEquals(R.string.module_repo_empty, ModuleRepoUiState(hasLoaded = true).emptyStateMessage)
+        assertNull(ModuleRepoUiState(hasLoaded = true, modules = listOf(module("a", null, 0))).emptyStateMessage)
+        assertEquals(R.string.module_repo_load_failed, ModuleRepoUiState(error = IOException("x")).emptyStateMessage)
     }
 
     @Test

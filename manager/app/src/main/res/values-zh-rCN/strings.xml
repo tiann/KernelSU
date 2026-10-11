@@ -41,6 +41,7 @@
     <string name="module_repo_using_cache">无法刷新模块仓库，正在显示上次获取的内容</string>
     <string name="module_repo_unsupported_schema">模块仓库使用了更新的数据格式，请更新 KernelSU 管理器</string>
     <string name="module_repo_load_failed">加载模块仓库失败</string>
+    <string name="module_repo_empty">暂无模块</string>
     <string name="module_repo_not_in_index">该模块当前不在模块仓库索引中，无法从此处安装</string>
     <string name="module_repo_no_readme">暂无说明文档</string>
     <string name="module_repo_health_stale">模块仓库最近未能同步此模块，信息可能已过时</string>
@@ -54,7 +55,6 @@
     <string name="module_repo_download_verify_failed">%s 未通过完整性校验（大小或 SHA-256 不一致），已删除</string>
     <string name="module_repo_download_url_blocked">已阻止下载：仅允许从 GitHub Release 下载</string>
     <string name="module_repo_readme_failed">说明文档加载失败</string>
-    <string name="module_repo_readme_locale">说明文档语言</string>
     <string name="module_repo_tags">标签</string>
     <string name="module_repo_stars">GitHub 星标</string>
     <string name="module_repo_attestation">构建来源证明（Attestation）</string>

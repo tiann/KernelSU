@@ -337,7 +337,7 @@ private fun RepoModuleList(
         ),
     ) {
         if (stale) {
-            item(key = "stale", contentType = "notice") {
+            item(key = "__notice_stale", contentType = "notice") {
                 Text(
                     text = stringResource(R.string.module_repo_using_cache),
                     style = MaterialTheme.typography.bodySmall,
@@ -593,6 +593,17 @@ private fun LazyItemScope.DetailStatus(state: ModuleRepoDetailUiState, onRetry: 
     return false
 }
 
+/** The detail is the last good cached copy because it could not be refreshed. */
+@Composable
+private fun CachedDetailNotice(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.module_repo_using_cache),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier,
+    )
+}
+
 @Composable
 private fun ReadmePage(
     state: ModuleRepoDetailUiState,
@@ -603,42 +614,6 @@ private fun ReadmePage(
     val layoutDirection = LocalLayoutDirection.current
     val isReady = rememberContentReady()
     val detail = state.detail
-    val readmeHtml = detail?.readmeHtml
-    if (detail != null && readmeHtml != null) {
-        // The WebView scrolls itself so in-page #anchor links work without JavaScript.
-        var loaded by remember(readmeHtml) { mutableStateOf(false) }
-        val alpha by animateFloatAsState(
-            targetValue = if (loaded) 1f else 0f,
-            animationSpec = tween(durationMillis = 300),
-            label = "ReadmeAlpha",
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            if (isReady) {
-                GithubMarkdown(
-                    content = readmeHtml,
-                    onLoadingChange = { loaded = !it },
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    restrictedBaseUrl = detail.readmeBaseUrl,
-                    scrollable = true,
-                    modifier = Modifier.graphicsLayer { this.alpha = alpha },
-                )
-            }
-            AnimatedVisibility(
-                visible = !loaded,
-                enter = EnterTransition.None,
-                exit = fadeOut(animationSpec = tween(durationMillis = 150)),
-            ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    LoadingIndicator()
-                }
-            }
-        }
-        return
-    }
 
     LazyColumn(
         modifier = Modifier
@@ -651,8 +626,47 @@ private fun ReadmePage(
             bottom = innerPadding.calculateBottomPadding(),
         ),
     ) {
+        if (detail?.fromCache == true) {
+            item(key = "__notice_cached", contentType = "notice") {
+                CachedDetailNotice(Modifier.padding(horizontal = 20.dp))
+            }
+        }
         item {
             if (!DetailStatus(state, onRetry) || detail == null) return@item
+            val readmeHtml = detail.readmeHtml
+            if (readmeHtml != null) {
+                var loaded by remember(readmeHtml) { mutableStateOf(false) }
+                val alpha by animateFloatAsState(
+                    targetValue = if (loaded) 1f else 0f,
+                    animationSpec = tween(durationMillis = 300),
+                    label = "ReadmeAlpha",
+                )
+                Box {
+                    if (isReady) {
+                        Box(modifier = Modifier.graphicsLayer { this.alpha = alpha }) {
+                            GithubMarkdown(
+                                content = readmeHtml,
+                                onLoadingChange = { loaded = !it },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                restrictedBaseUrl = detail.readmeBaseUrl,
+                            )
+                        }
+                    }
+                    AnimatedVisibility(
+                        visible = !loaded,
+                        enter = EnterTransition.None,
+                        exit = fadeOut(animationSpec = tween(durationMillis = 150)),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            LoadingIndicator()
+                        }
+                    }
+                }
+                return@item
+            }
             Box(
                 modifier = Modifier.fillParentMaxSize(),
                 contentAlignment = Alignment.Center
@@ -709,9 +723,14 @@ fun ReleasesPage(
             item { DetailStatus(state, onRetry) }
             return@LazyColumn
         }
+        if (detail.fromCache) {
+            item(key = "__notice_cached", contentType = "notice") {
+                CachedDetailNotice(Modifier.padding(horizontal = 4.dp))
+            }
+        }
         items(
             items = detail.releases,
-            key = { it.tag },
+            key = { "release_${it.tag}" },
             contentType = { "release" }
         ) { rel ->
             SegmentedColumn(
@@ -981,6 +1000,13 @@ fun InfoPage(
                 if (detail?.healthStale == true) {
                     Text(
                         text = stringResource(R.string.module_repo_health_stale),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (detail?.fromCache == true) {
+                    Text(
+                        text = stringResource(R.string.module_repo_using_cache),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

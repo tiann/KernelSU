@@ -49,6 +49,8 @@ enum class RepoSort {
 
 data class ModuleRepoUiState(
     val isRefreshing: Boolean = false,
+    /** A module list (possibly empty) has been loaded at least once. */
+    val hasLoaded: Boolean = false,
     val sortOrder: RepoSort = RepoSort.UPDATED,
     val offline: Boolean = false,
     val modules: List<RepoModule> = emptyList(),
@@ -60,13 +62,14 @@ data class ModuleRepoUiState(
     /** Installed module id -> versionCode, for "installed" / "update" badges. */
     val installedVersions: Map<String, Int> = emptyMap(),
 ) {
-    /** Message to show instead of the list when nothing could be loaded, or null while loading. */
+    /** Message to show instead of the list when it is empty or could not be loaded, or null while loading. */
     val emptyStateMessage: Int?
         get() = when {
             modules.isNotEmpty() || isRefreshing && !offline -> null
             error is UnsupportedSchemaException -> R.string.module_repo_unsupported_schema
             offline -> R.string.network_offline
             error != null -> R.string.module_repo_load_failed
+            hasLoaded -> R.string.module_repo_empty
             else -> null
         }
 }

@@ -121,7 +121,7 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
         val seenTags = HashSet<String>()
         val releases = releaseElements.mapNotNull { element ->
             val release = runCatching { decode(ApiRelease.serializer(), element) }.getOrNull()
-                ?.let { sanitizeRelease(it, fullName) }
+                ?.let { sanitizeRelease(it) }
                 ?: return@mapNotNull null
             // LazyColumn keys are tags: the first (newest) entry of a tag wins.
             if (!seenTags.add(release.tag)) return@mapNotNull null
@@ -167,7 +167,9 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
         )
     }
 
-    private fun sanitizeRelease(r: ApiRelease, fullName: String): ApiRelease? {
+    // The ZIP URL is not tied to source.fullName: it is fixed when the release is listed and
+    // keeps the old owner/repo after a rename or transfer. The download is pinned by SHA-256.
+    private fun sanitizeRelease(r: ApiRelease): ApiRelease? {
         val valid = r.tag.isNotBlank() &&
             r.versionCode >= 1 &&
             r.immutable &&
@@ -175,7 +177,7 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
             SHA256.matches(r.zip.sha256) &&
             GIT_SHA.matches(r.tagCommit) &&
             RegistryUrls.isHttpsUrl(r.releaseUrl) &&
-            RegistryUrls.isAllowedReleaseDownloadUrl(r.zip.url, fullName)
+            RegistryUrls.isAllowedReleaseDownloadUrl(r.zip.url)
         if (!valid) return null
         return r.copy(attestationUrl = r.attestationUrl?.takeIf(RegistryUrls::isHttpsUrl))
     }

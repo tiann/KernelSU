@@ -119,10 +119,11 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
         zipUrl: String,
         versionCode: Int,
     ): UpdateVerification = withContext(Dispatchers.IO) {
-        val catalog = runCatching {
-            // The in-memory index may predate the module's listing: re-read it once before deciding.
-            client.catalog().takeIf { it.find(moduleId) != null } ?: client.loadCatalog().catalog
+        if (RegistryUpdatePolicy.isUnrelatedToRegistry(client.baseUrl, updateJsonUrl, zipUrl)) {
+            return@withContext UpdateVerification.Legacy
         }
+        // Use the index in memory as is; only load one (network, then cache) when there is none.
+        val catalog = runCatching { client.catalog() }
             .onFailure { Log.w(TAG, "registry index unavailable for update check", it) }
             .getOrNull()
         val inIndex = catalog?.let { it.find(moduleId) != null }
