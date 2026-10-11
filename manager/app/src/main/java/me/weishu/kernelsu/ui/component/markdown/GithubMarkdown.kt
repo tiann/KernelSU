@@ -59,6 +59,7 @@ private val EQUALS_SPLIT = "=\\s*".toRegex()
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "WrongConstant")
 @Composable
 fun GithubMarkdown(
+    modifier: Modifier = Modifier,
     content: String,
     isMarkdown: Boolean = false,
     onLoadingChange: (Boolean) -> Unit = {},
@@ -72,7 +73,6 @@ fun GithubMarkdown(
      * handed to an external browser.
      */
     restrictedBaseUrl: String? = null,
-    modifier: Modifier = Modifier,
 ) {
     val restricted = restrictedBaseUrl != null
     val restrictedClient = remember(restrictedBaseUrl) { restrictedBaseUrl?.let(::restrictedResourceClient) }

@@ -73,7 +73,6 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoRelease
 import me.weishu.kernelsu.ui.component.ListPopupDefaults
-import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
@@ -89,7 +88,6 @@ import me.weishu.kernelsu.ui.util.BlurredBar
 import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
 import me.weishu.kernelsu.ui.util.rememberContentReady
-import java.text.NumberFormat
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.DropdownImpl
@@ -122,9 +120,11 @@ import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import top.yukonga.miuix.kmp.utils.PressFeedbackType
 import top.yukonga.miuix.kmp.utils.overScrollVertical
 import top.yukonga.miuix.kmp.utils.scrollEndHaptic
+import java.text.NumberFormat
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -298,6 +298,7 @@ fun ModuleRepoScreenMiuix(
                                     Text(
                                         text = "ID: ${module.moduleId}",
                                         fontSize = 12.sp,
+                                        modifier = Modifier.padding(top = 2.dp),
                                         fontWeight = FontWeight(550),
                                         color = colorScheme.onSurfaceVariantSummary,
                                     )
@@ -417,7 +418,9 @@ fun ModuleRepoScreenMiuix(
                                         text = stringResource(R.string.module_repo_using_cache),
                                         fontSize = 12.sp,
                                         color = colorScheme.onSurfaceVariantSummary,
-                                        modifier = Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp),
+                                        modifier = Modifier
+                                            .padding(horizontal = 24.dp)
+                                            .padding(bottom = 8.dp),
                                     )
                                 }
                             }
@@ -458,6 +461,7 @@ fun ModuleRepoScreenMiuix(
                                             Text(
                                                 text = "ID: ${module.moduleId}",
                                                 fontSize = 12.sp,
+                                                modifier = Modifier.padding(top = 2.dp),
                                                 fontWeight = FontWeight(550),
                                                 color = colorScheme.onSurfaceVariantSummary,
                                             )
@@ -495,7 +499,6 @@ fun ModuleRepoScreenMiuix(
                                                     color = colorScheme.onSurfaceVariantSummary,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.weight(1f, fill = false),
                                                 )
                                                 RepoStarsMiuix(module.stars, Modifier.padding(start = 12.dp))
                                                 Spacer(Modifier.weight(1f))
@@ -675,7 +678,9 @@ private fun ReadmePage(
         ) {
             if (detail?.fromCache == true) {
                 item(key = "__notice_cached", contentType = "notice") {
-                    CachedDetailNoticeMiuix(Modifier.padding(horizontal = 24.dp).padding(top = 6.dp))
+                    CachedDetailNoticeMiuix(Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 6.dp))
                 }
             }
             item {
@@ -788,7 +793,9 @@ fun ReleasesPage(
             }
             if (detail.fromCache) {
                 item(key = "__notice_cached", contentType = "notice") {
-                    CachedDetailNoticeMiuix(Modifier.padding(horizontal = 24.dp).padding(bottom = 8.dp))
+                    CachedDetailNoticeMiuix(Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 8.dp))
                 }
             }
             items(items = detail.releases, key = { "release_${it.tag}" }, contentType = { "release" }) { rel ->
@@ -894,12 +901,14 @@ fun ReleasesPage(
                         )
                         InfoRowMiuix(
                             stringResource(R.string.module_repo_release_page), rel.tagCommit.take(12), rel.releaseUrl,
-                            actionIconTint, secondaryContainer, uriHandler
+                            actionIconTint, secondaryContainer, uriHandler,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                         )
                         rel.attestationUrl?.let { url ->
                             InfoRowMiuix(
                                 stringResource(R.string.module_repo_attestation), null, url,
-                                actionIconTint, secondaryContainer, uriHandler
+                                actionIconTint, secondaryContainer, uriHandler,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                             )
                         }
                     }
@@ -1018,9 +1027,10 @@ private fun InfoRowMiuix(
     actionIconTint: Color,
     secondaryContainer: Color,
     uriHandler: UriHandler,
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {

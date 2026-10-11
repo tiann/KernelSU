@@ -51,7 +51,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenuGroup
-import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -61,6 +60,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -97,7 +97,6 @@ import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.RepoModule
 import me.weishu.kernelsu.data.model.RepoRelease
-import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import me.weishu.kernelsu.ui.component.ScrollToTopOnChange
 import me.weishu.kernelsu.ui.component.dialog.ConfirmDialogHandle
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
@@ -114,6 +113,7 @@ import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.util.isDownloadAvailable
 import me.weishu.kernelsu.ui.util.rememberContentReady
+import top.yukonga.miuix.kmp.utils.PagerNavigationSpringSpec
 import java.text.NumberFormat
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -288,7 +288,7 @@ private fun RepoBadges(
 ) {
     if (!metamodule && installState == RepoInstallState.NONE) return
     Row(
-        modifier = Modifier.padding(vertical = 4.dp),
+        modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (metamodule) {
@@ -372,13 +372,13 @@ private fun RepoModuleList(
                     }
                     Text(
                         text = "ID: ${module.moduleId}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (module.authors.isNotEmpty()) {
                         Text(
                             text = "$moduleAuthor: ${module.authors}",
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -407,7 +407,6 @@ private fun RepoModuleList(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
                         )
                         module.stars?.takeIf { it > 0 }?.let { stars ->
                             Row(
@@ -539,12 +538,14 @@ fun ModuleRepoDetailScreenMaterial(
             ExpressiveTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 tabs = tabs,
-                onTabClick = { scope.launch {
-                    pagerState.animateScrollToPage(
-                        page = it,
-                        animationSpec = PagerNavigationSpringSpec,
-                    )
-                } },
+                onTabClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = it,
+                            animationSpec = PagerNavigationSpringSpec,
+                        )
+                    }
+                },
                 modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
             )
         }
@@ -795,17 +796,6 @@ fun ReleasesPage(
                         }
                     }
                     add {
-                        InfoLinkItem(
-                            headline = stringResource(R.string.module_repo_release_page),
-                            supporting = rel.tagCommit.take(12),
-                            url = rel.releaseUrl,
-                            uriHandler = uriHandler,
-                        )
-                    }
-                    rel.attestationUrl?.let { url ->
-                        add { InfoLinkItem(stringResource(R.string.module_repo_attestation), null, url, uriHandler) }
-                    }
-                    add {
                         ReleaseZipSegmentedItem(
                             release = rel,
                             canInstall = state.canInstall,
@@ -816,6 +806,17 @@ fun ReleasesPage(
                             onInstallModule = onInstallModule,
                             setPendingDownload = setPendingDownload,
                         )
+                    }
+                    add {
+                        InfoLinkItem(
+                            headline = stringResource(R.string.module_repo_release_page),
+                            supporting = rel.tagCommit.take(12),
+                            url = rel.releaseUrl,
+                            uriHandler = uriHandler,
+                        )
+                    }
+                    rel.attestationUrl?.let { url ->
+                        add { InfoLinkItem(stringResource(R.string.module_repo_attestation), null, url, uriHandler) }
                     }
                 }
             )
