@@ -566,6 +566,20 @@ suspend fun getAvailablePartitions(): List<String> = withContext(Dispatchers.IO)
     out.filter { it.isNotBlank() }.map { it.trim() }
 }
 
+// Known vendor anti-root kernel modules that `--block-module` is meant for.
+private val KNOWN_BLOCKABLE_MODULES = listOf(
+    "vr", "vklp", "oplus_secure_guard", "oplus_secure_guard_new", "mkp"
+)
+
+// Return the known anti-root modules currently loaded on this device (per
+// /proc/modules), so the install screen can pre-fill only the relevant ones.
+suspend fun getLoadedBlockableModules(): List<String> = withContext(Dispatchers.IO) {
+    val shell = getRootShell()
+    val out = shell.newJob().add("cat /proc/modules").to(ArrayList(), null).exec().out
+    val loaded = out.mapNotNull { it.trim().substringBefore(' ').takeIf(String::isNotBlank) }.toHashSet()
+    KNOWN_BLOCKABLE_MODULES.filter { it in loaded }
+}
+
 fun hasMagisk(): Boolean {
     val shell = getRootShell(true)
     val result = shell.newJob().add("which magisk").exec()

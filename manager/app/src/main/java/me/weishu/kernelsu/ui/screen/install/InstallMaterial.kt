@@ -205,7 +205,6 @@ internal fun InstallScreenMaterial(
                         onValueChange = actions.onBlockModulesChange,
                         label = { Text(stringResource(id = R.string.install_block_modules)) },
                         supportingText = { Text(stringResource(id = R.string.install_block_modules_summary)) },
-                        placeholder = { Text("oplus_secure_guard,vr") },
                         singleLine = true,
                     )
                 }

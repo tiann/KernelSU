@@ -36,6 +36,7 @@ import me.weishu.kernelsu.ui.util.LkmSelection
 import me.weishu.kernelsu.ui.util.getAvailablePartitions
 import me.weishu.kernelsu.ui.util.getCurrentKmi
 import me.weishu.kernelsu.ui.util.getDefaultPartition
+import me.weishu.kernelsu.ui.util.getLoadedBlockableModules
 import me.weishu.kernelsu.ui.util.getSlotSuffix
 import me.weishu.kernelsu.ui.util.isAbDevice
 import me.weishu.kernelsu.ui.util.probeRemoteBootPartitions
@@ -67,6 +68,19 @@ fun InstallScreen() {
     var enableAdb by rememberSaveable { mutableStateOf(false) }
     var forceBackup by rememberSaveable { mutableStateOf(false) }
     var blockModules by rememberSaveable { mutableStateOf("") }
+    var blockModulesPrefilled by rememberSaveable { mutableStateOf(false) }
+
+    // Pre-fill the block list with the known anti-root modules actually loaded
+    // on this device, once. The user can still edit or clear it.
+    LaunchedEffect(Unit) {
+        if (!blockModulesPrefilled) {
+            blockModulesPrefilled = true
+            val detected = getLoadedBlockableModules()
+            if (detected.isNotEmpty() && blockModules.isBlank()) {
+                blockModules = detected.joinToString(",")
+            }
+        }
+    }
 
     val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
     val partitions by produceState(initialValue = emptyList()) { value = getAvailablePartitions() }
