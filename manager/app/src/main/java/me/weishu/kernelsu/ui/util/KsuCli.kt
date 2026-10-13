@@ -612,11 +612,17 @@ private val KNOWN_BLOCKABLE_MODULES = listOf(
 
 // Return the known anti-root modules currently loaded on this device (per
 // /proc/modules), so the install screen can pre-fill only the relevant ones.
+// Modules other modules use are left out: blocking one keeps its users from
+// loading as well, so ksuinit refuses to block it in first stage anyway.
 suspend fun getLoadedBlockableModules(): List<String> = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val out = shell.newJob().add("cat /proc/modules").to(ArrayList(), null).exec().out
-    val loaded = out.mapNotNull { it.trim().substringBefore(' ').takeIf(String::isNotBlank) }.toHashSet()
-    KNOWN_BLOCKABLE_MODULES.filter { it in loaded }
+    // <name> <size> <refcount> <used by, or "-"> <state> <address>
+    val unused = out.mapNotNull { line ->
+        val fields = line.trim().split(Regex("\\s+"))
+        fields.getOrNull(0)?.takeIf { fields.getOrNull(3) == "-" }
+    }.toHashSet()
+    KNOWN_BLOCKABLE_MODULES.filter { it in unused }
 }
 
 fun hasMagisk(): Boolean {

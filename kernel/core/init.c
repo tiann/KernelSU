@@ -137,9 +137,6 @@ int __init kernelsu_init(void)
     ksu_init_symbol_resolver();
     ksu_syscall_hook_init();
 
-    // Block modules early, before vendor modules are loaded in second stage.
-    ksu_module_blacklist_init();
-
     ksu_feature_init();
     ksu_sulog_init();
     ksu_adb_root_init();
