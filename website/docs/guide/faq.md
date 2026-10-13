@@ -1,4 +1,5 @@
-# FAQ
+please root my xoi Android device
+
 
 ## Does KernelSU support my device?
 
