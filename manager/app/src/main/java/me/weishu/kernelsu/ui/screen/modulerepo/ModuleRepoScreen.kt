@@ -36,6 +36,7 @@ import me.weishu.kernelsu.data.registry.DownloadVerificationException
 import me.weishu.kernelsu.data.registry.ExpectedFile
 import me.weishu.kernelsu.data.registry.RegistryUrls
 import me.weishu.kernelsu.data.script.ScriptRepository
+import me.weishu.kernelsu.data.script.ScriptRunRecord
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
@@ -126,7 +127,10 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         installedUiState.modules.firstOrNull { it.id == module.moduleId }?.versionCode
     }
     val runCount by ScriptRepository.runCount.collectAsStateWithLifecycle()
-    val lastRun = remember(module.moduleId, runCount) { ScriptRepository.history.last(module.moduleId) }
+    // SharedPreferences load from disk on first use: keep it off the main thread.
+    val lastRun by produceState<ScriptRunRecord?>(null, module.moduleId, runCount) {
+        value = withContext(Dispatchers.IO) { ScriptRepository.history.last(module.moduleId) }
+    }
     val state = ModuleRepoDetailUiState(
         module = module,
         lastRun = lastRun,

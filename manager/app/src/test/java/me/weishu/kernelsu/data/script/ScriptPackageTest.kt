@@ -75,20 +75,43 @@ class ScriptPackageTest {
 
     @Test
     fun parsesModuleProp() {
-        val props = ScriptPackage.parseModuleProp("# comment\r\nid = a.b\r\nname=Name = with eq\nbogus\nid=second\n")
+        // Java properties, like ksud: later duplicates win, `:` / whitespace separators, BOM dropped.
+        val props = ScriptPackage.parseModuleProp("\uFEFF# comment\r\nid = first\r\nname=Name = with eq\nid=a.b\nauthor: Bob\nversion v1\n")
         assertEquals("a.b", props["id"])
         assertEquals("Name = with eq", props["name"])
-        assertEquals(2, props.size)
+        assertEquals("Bob", props["author"])
+        assertEquals("v1", props["version"])
+        assertFalse(ScriptPackage.isOneshot(ScriptPackage.parseModuleProp("oneshot=true\noneshot=false\n")["oneshot"]))
+        assertTrue(ScriptPackage.isOneshot(ScriptPackage.parseModuleProp("oneshot=false\noneshot=true\n")["oneshot"]))
         val m = ScriptPackage.manifestOf(ScriptPackage.parseModuleProp(prop))
         assertEquals(ScriptManifest("my_script", "My Script", "v1", 3, "Alice", "Does a thing"), m)
     }
 
     @Test
-    fun checksEntryNames() {
-        for (ok in listOf("a", "a/b", "dir/", "a/b.sh", ".hidden", "a..b")) ScriptPackage.checkEntryName(ok)
-        for (bad in listOf("", "/abs", "../x", "a/../b", "a/..", "./a", "a//b", "a\\b", "a\u0000", "..")) {
-            assertReason(ScriptPackageException.Reason.UNSAFE_ENTRY) { ScriptPackage.checkEntryName(bad) }
+    fun normalizesEntryNames() {
+        // Like ksud's zip crate and the registry validator: empty and "." segments are dropped.
+        assertEquals("a/b", ScriptPackage.normalizeEntryName("a/b"))
+        assertEquals("dir", ScriptPackage.normalizeEntryName("dir/"))
+        assertEquals("action.sh", ScriptPackage.normalizeEntryName("./action.sh"))
+        assertEquals("lib/x", ScriptPackage.normalizeEntryName("lib//./x"))
+        assertEquals("", ScriptPackage.normalizeEntryName("./"))
+        for (ok in listOf(".hidden", "a..b")) assertEquals(ok, ScriptPackage.normalizeEntryName(ok))
+        for (bad in listOf("", "/abs", "../x", "a/../b", "a/..", "a\\b", "a\u0000", "a\nb", "..")) {
+            assertReason(ScriptPackageException.Reason.UNSAFE_ENTRY) { ScriptPackage.normalizeEntryName(bad) }
         }
+    }
+
+    @Test
+    fun acceptsNonCanonicalEntryNames() {
+        val z = zip(file("./module.prop", prop), Entry.Dir("./"), file("./action.sh", "echo hi\n"), file("lib//x", "x"))
+        assertEquals("my_script", ScriptPackage.validate(z).id)
+        assertEquals("my_script", FileInputStream(z).use { ScriptPackage.readOneshotManifest(it) }?.id)
+        val dest = File(tmp.root, "out")
+        ScriptPackage.extract(z, dest)
+        assertEquals("echo hi\n", File(dest, "action.sh").readText())
+        assertEquals("x", File(dest, "lib/x").readText())
+        // Two names for the same path are still a duplicate.
+        assertReason(ScriptPackageException.Reason.UNSAFE_ENTRY) { ScriptPackage.validate(validZip(file("./action.sh", "dup"))) }
     }
 
     @Test
@@ -192,5 +215,16 @@ class ScriptPackageTest {
             file("action.sh", ""),
         )
         assertNull(FileInputStream(bomb).use { ScriptPackage.readOneshotManifest(it) })
+        // The compressed input is capped as well.
+        val endless = object : java.io.InputStream() {
+            override fun read(): Int = 0
+        }
+        assertNull(ScriptPackage.readOneshotManifest(endless))
+    }
+
+    @Test
+    fun boundedStreamFailsPastTheLimit() {
+        assertEquals(4, ScriptPackage.bounded(ByteArray(4).inputStream(), 4).readBytes().size)
+        assertReason(ScriptPackageException.Reason.TOO_LARGE) { ScriptPackage.bounded(ByteArray(5).inputStream(), 4).readBytes() }
     }
 }

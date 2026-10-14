@@ -5,8 +5,11 @@ import org.apache.commons.compress.archivers.zip.ZipFile
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.StringReader
+import java.util.Properties
 import java.util.UUID
 import java.util.zip.ZipInputStream
 
@@ -48,6 +51,9 @@ object ScriptPackage {
     const val PARAMS = "params.json"
 
     const val MAX_TOTAL_BYTES = 64L * 1024 * 1024
+
+    /** Cap on the ZIP itself (contents + headers) for sources that are not size-verified. */
+    const val MAX_ZIP_BYTES = MAX_TOTAL_BYTES + 16L * 1024 * 1024
     const val MAX_ENTRIES = 4096
     const val MAX_PROP_BYTES = 64 * 1024
     const val MAX_PARAMS_BYTES = 64 * 1024
@@ -66,41 +72,57 @@ object ScriptPackage {
 
     fun isValidModuleId(id: String): Boolean = id.length in 2..64 && MODULE_ID.matches(id)
 
-    /** `key=value` lines; `#` comments and lines without `=` are skipped, the first key wins. */
+    /**
+     * Java properties, like ksud (java-properties crate) and the registry validator read
+     * module.prop: `=`, `:` or whitespace separators, escapes, continuation lines, the last
+     * duplicate wins. A UTF-8 BOM is dropped.
+     */
     fun parseModuleProp(text: String): Map<String, String> {
-        val props = LinkedHashMap<String, String>()
-        text.lineSequence().forEach { raw ->
-            val line = raw.trimEnd('\r')
-            if (line.trimStart().startsWith("#")) return@forEach
-            val eq = line.indexOf('=')
-            if (eq <= 0) return@forEach
-            val key = line.substring(0, eq).trim()
-            if (key.isNotEmpty() && key !in props) props[key] = line.substring(eq + 1).trim()
-        }
-        return props
+        val props = Properties()
+        props.load(StringReader(text.removePrefix("\uFEFF")))
+        return props.stringPropertyNames().associateWith { props.getProperty(it) }
     }
 
     fun manifestOf(props: Map<String, String>): ScriptManifest {
-        val id = props["id"].orEmpty()
+        val id = props["id"].orEmpty().trim()
         return ScriptManifest(
             id = id,
-            name = props["name"].orEmpty().ifBlank { id },
-            version = props["version"].orEmpty(),
+            name = props["name"].orEmpty().trim().ifBlank { id },
+            version = props["version"].orEmpty().trim(),
             versionCode = props["versionCode"]?.trim()?.toIntOrNull(),
-            author = props["author"].orEmpty(),
-            description = props["description"].orEmpty(),
+            author = props["author"].orEmpty().trim(),
+            description = props["description"].orEmpty().trim(),
         )
     }
 
     /**
-     * Throws unless [name] is a safe relative path: no absolute path, no `.`/`..`/empty
-     * segment, no backslash or NUL. A trailing `/` marks a directory.
+     * The path [name] extracts to, normalized like ksud's zip crate and the registry validator:
+     * empty and `.` segments are dropped (`./a//b` -> `a/b`, `./` -> `""`, the root). Throws for
+     * an absolute path, a `..` segment, a backslash or a control character.
      */
-    fun checkEntryName(name: String) {
+    fun normalizeEntryName(name: String): String {
         fun unsafe(): Nothing = throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Unsafe entry: $name")
-        if (name.isEmpty() || name.startsWith("/") || '\\' in name || '\u0000' in name) unsafe()
-        val segments = name.removeSuffix("/").split('/')
-        if (segments.any { it.isEmpty() || it == "." || it == ".." }) unsafe()
+        if (name.isEmpty() || name.startsWith("/") || '\\' in name || name.any { it < ' ' || it == '\u007f' }) unsafe()
+        val segments = name.split('/').filter { it.isNotEmpty() && it != "." }
+        if (segments.any { it == ".." }) unsafe()
+        return segments.joinToString("/")
+    }
+
+    /** [input] capped at [limit] bytes: reading more fails with [ScriptPackageException.Reason.TOO_LARGE]. */
+    fun bounded(input: InputStream, limit: Long): InputStream = object : FilterInputStream(input) {
+        private var count = 0L
+
+        private fun counted(n: Int): Int {
+            if (n > 0) {
+                count += n
+                if (count > limit) throw ScriptPackageException(ScriptPackageException.Reason.TOO_LARGE, "Input exceeds $limit bytes")
+            }
+            return n
+        }
+
+        override fun read(): Int = super.read().also { if (it >= 0) counted(1) }
+        override fun read(b: ByteArray, off: Int, len: Int): Int = counted(super.read(b, off, len))
+        override fun skip(n: Long): Long = super.skip(n).also { if (it > 0) counted(it.toInt()) }
     }
 
     /**
@@ -108,7 +130,8 @@ object ScriptPackage {
      * is not, or cannot be read. Only a hint: [validate] is what decides before running.
      */
     fun readOneshotManifest(input: InputStream): ScriptManifest? = try {
-        ZipInputStream(input).use { zip ->
+        // The compressed stream is capped too: endless empty deflate blocks inflate to nothing.
+        ZipInputStream(bounded(input, MAX_ZIP_BYTES)).use { zip ->
             var manifest: ScriptManifest? = null
             // nextEntry() would inflate a skipped entry in full: drain it here, within the same
             // budget extraction has, so entries before module.prop cannot be a ZIP bomb.
@@ -116,7 +139,7 @@ object ScriptPackage {
             val buf = ByteArray(8192)
             for (i in 0 until MAX_ENTRIES) {
                 val entry = zip.nextEntry ?: break
-                if (entry.name == MODULE_PROP) {
+                if (normalizeEntryName(entry.name) == MODULE_PROP && !entry.isDirectory) {
                     val props = parseModuleProp(readLimited(zip, MAX_PROP_BYTES).toString(Charsets.UTF_8))
                     if (isOneshot(props["oneshot"])) manifest = manifestOf(props)
                     break
@@ -156,7 +179,7 @@ object ScriptPackage {
 
     private fun isDirectory(entry: ZipArchiveEntry): Boolean = entry.name.endsWith("/")
 
-    /** Checks every entry of the central directory; returns the entries by name. */
+    /** Checks every entry of the central directory; returns the entries by normalized path. */
     private fun checkEntries(file: ZipFile): Map<String, ZipArchiveEntry> {
         val byName = LinkedHashMap<String, ZipArchiveEntry>()
         var declared = 0L
@@ -164,7 +187,7 @@ object ScriptPackage {
             if (byName.size >= MAX_ENTRIES) {
                 throw ScriptPackageException(ScriptPackageException.Reason.TOO_LARGE, "More than $MAX_ENTRIES entries")
             }
-            checkEntryName(entry.name)
+            val key = normalizeEntryName(entry.name)
             if (entry.isUnixSymlink) {
                 throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Symlink entry: ${entry.name}")
             }
@@ -175,7 +198,11 @@ object ScriptPackage {
                     throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Special file entry: ${entry.name}")
                 }
             }
-            val key = entry.name.removeSuffix("/")
+            if (key.isEmpty()) {
+                // "./" is the extraction root itself; a file cannot be.
+                if (isDirectory(entry)) continue
+                throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Unsafe entry: ${entry.name}")
+            }
             if (byName.put(key, entry) != null) {
                 throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Duplicate entry: ${entry.name}")
             }
@@ -242,9 +269,9 @@ object ScriptPackage {
                 val root = tmp.canonicalFile
                 var total = 0L
                 val buf = ByteArray(64 * 1024)
-                for (entry in entries.values) {
-                    val target = File(root, entry.name.removeSuffix("/"))
-                    // Defence in depth on top of checkEntryName.
+                for ((path, entry) in entries) {
+                    val target = File(root, path)
+                    // Defence in depth on top of normalizeEntryName.
                     if (!target.canonicalPath.startsWith(root.path + File.separator)) {
                         throw ScriptPackageException(ScriptPackageException.Reason.UNSAFE_ENTRY, "Unsafe entry: ${entry.name}")
                     }

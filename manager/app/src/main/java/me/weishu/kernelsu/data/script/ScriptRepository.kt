@@ -21,11 +21,15 @@ import me.weishu.kernelsu.data.registry.DownloadVerificationException
 import me.weishu.kernelsu.data.registry.RegistryDownloadStore
 import me.weishu.kernelsu.data.registry.copyForInstall
 import me.weishu.kernelsu.ksuApp
+import me.weishu.kernelsu.ui.util.removeAsRoot
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.security.MessageDigest
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteRecursively
 
 /** A validated script, extracted and ready to run. */
 data class PreparedScript(
@@ -38,6 +42,9 @@ data class PreparedScript(
     val actionSourceTruncated: Boolean,
 )
 
+/** The page released the extraction while it was being prepared; nobody waits for the result. */
+class ReleasedException : IOException("Extraction released during preparation")
+
 /** The registry ZIP is not (or no longer) a verified download of the store. */
 class UnverifiedScriptException : IOException("Registry download is not verified")
 
@@ -49,8 +56,14 @@ object ScriptRepository {
 
     private fun root(): File = File(ksuApp.filesDir, DIR_NAME)
 
-    /** Extraction held by each owner (one run page); everything else under [root] is stale. */
-    private val extractions = ConcurrentHashMap<String, File>()
+    /**
+     * Extraction held by each owner (one preparation of a run page); everything else under
+     * [root] is stale. Guarded by itself together with [released].
+     */
+    private val extractions = HashMap<String, File>()
+
+    /** Owners released before their preparation registered an extraction. */
+    private val released = HashSet<String>()
 
     /** Deletes released extractions off the caller's (often the main) thread. */
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -86,11 +99,16 @@ object ScriptRepository {
     /**
      * Copies, verifies, validates and extracts the ZIP at [uri]. With [registryId] the ZIP must
      * be a verified registry download (re-hashed here like a module install) whose module.prop
-     * id equals [registryId]. The extraction belongs to [owner] until [release]; preparing again
-     * for the same owner releases its previous one.
+     * id equals [registryId]. The extraction belongs to [owner], a token unique to this
+     * preparation, until [release]; releasing it earlier (even before this returns) drops it.
      */
     suspend fun prepare(uri: Uri, registryId: String?, owner: String): PreparedScript = withContext(Dispatchers.IO) {
-        prepareLock.withLock { prepareLocked(uri, registryId, owner) }
+        try {
+            prepareLock.withLock { prepareLocked(uri, registryId, owner) }
+        } finally {
+            // The token is never reused: forget an early release that found nothing to drop.
+            synchronized(extractions) { released.remove(owner) }
+        }
     }
 
     private fun prepareLocked(uri: Uri, registryId: String?, owner: String): PreparedScript {
@@ -106,7 +124,8 @@ object ScriptRepository {
         try {
             try {
                 val input = ksuApp.contentResolver.openInputStream(uri) ?: throw IOException("Cannot open $uri")
-                input.use { copyForInstall(it, zip, expected) }
+                // A local source has no verified size and may never end.
+                input.use { copyForInstall(if (expected == null) ScriptPackage.bounded(it, ScriptPackage.MAX_ZIP_BYTES) else it, zip, expected) }
             } catch (e: DownloadVerificationException) {
                 // Corrupted or tampered after download: never keep it around for a retry.
                 uri.path?.let { RegistryDownloadStore.delete(storeRoot, File(it)) }
@@ -116,13 +135,20 @@ object ScriptRepository {
             val sha256 = sha256(zip)
             // One directory per preparation: the same ZIP may be open on two run pages at once.
             val dir = File(root(), "$sha256-${UUID.randomUUID()}")
-            extractions.put(owner, dir)?.let(::delete)
+            synchronized(extractions) {
+                if (released.remove(owner)) throw ReleasedException()
+                extractions[owner] = dir
+            }
             cleanup()
             try {
                 ScriptPackage.extract(zip, dir)
-                return readPrepared(manifest, dir, sha256)
+                val prepared = readPrepared(manifest, dir, sha256)
+                // Released while extracting: release() may have run before the directory existed.
+                if (synchronized(extractions) { extractions[owner] != dir }) throw ReleasedException()
+                return prepared
             } catch (e: Throwable) {
                 release(owner)
+                delete(dir)
                 throw e
             }
         } finally {
@@ -163,7 +189,9 @@ object ScriptRepository {
      * script: the run removes its directory as root, since the script may create root-owned files.
      */
     fun release(owner: String) {
-        val dir = extractions.remove(owner) ?: return
+        val dir = synchronized(extractions) {
+            extractions.remove(owner) ?: run { released.add(owner); null }
+        } ?: return
         ioScope.launch { delete(dir) }
     }
 
@@ -186,12 +214,26 @@ object ScriptRepository {
 
     /** Drops extractions no page holds, e.g. left behind by a killed process. */
     private fun cleanup() {
-        val held = extractions.values.mapTo(HashSet()) { it.name }
+        val held = synchronized(extractions) { extractions.values.mapTo(HashSet()) { it.name } }
         root().listFiles()?.forEach { f -> if (f.name !in held) delete(f) }
     }
 
+    /**
+     * Deletes [dir] without following symlinks (a script may have linked to anywhere), and as
+     * root when the app cannot (root-owned files left by a run whose own cleanup failed).
+     */
+    @OptIn(ExperimentalPathApi::class)
     private fun delete(dir: File) {
-        if (dir.exists() && !dir.deleteRecursively()) Log.w(TAG, "cannot delete $dir")
+        val path = dir.toPath()
+        if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) return
+        try {
+            path.deleteRecursively()
+        } catch (e: IOException) {
+            Log.w(TAG, "cannot delete $dir, retrying as root", e)
+            runCatching { removeAsRoot(dir.absolutePath) }
+                .onSuccess { removed -> if (!removed) Log.w(TAG, "cannot remove $dir as root") }
+                .onFailure { Log.w(TAG, "cannot remove $dir as root", it) }
+        }
     }
 
     private fun sha256(file: File): String {

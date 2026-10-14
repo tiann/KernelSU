@@ -108,6 +108,23 @@ class ScriptParamsTest {
         assertInvalid("""{"key":"A","type":"enum","label":"x","options":[{"value":"a","label":{"en":"A"}}]}""")
         assertInvalid("""{"key":"A","type":"bool","label":1}""")
         assertInvalid("""{"key":"A","type":"bool","label":"x","description":""}""")
+        // Trimmed before the length check, like the validator's zod schema.
+        assertInvalid("""{"key":"A","type":"bool","label":"   "}""")
+        assertEquals("x".repeat(200), parse("""{"key":"A","type":"bool","label":" ${"x".repeat(200)}  "}""").params[0].label)
+    }
+
+    @Test
+    fun matchesValidatorJsonReading() {
+        // A UTF-8 BOM is dropped, and integers may be written like any JSON number with an integral value.
+        assertEquals(0, ScriptParamsParser.parse("\uFEFF{\"schemaVersion\":1,\"params\":[]}").params.size)
+        assertEquals(0, ScriptParamsParser.parse("""{"schemaVersion":1.0,"params":[]}""").params.size)
+        val text = parse("""{"key":"A","type":"string","label":"x","maxLength":5.0}""").params[0] as ScriptParam.Text
+        assertEquals(5, text.maxLength)
+        val int = parse("""{"key":"A","type":"int","label":"x","min":1e1,"max":2E+1}""").params[0] as ScriptParam.Integer
+        assertEquals(10, int.min)
+        assertEquals(20, int.max)
+        assertInvalid("""{"key":"A","type":"int","label":"x","min":1.5}""")
+        assertInvalid("""{"key":"A","type":"int","label":"x","min":1e10}""")
     }
 
     @Test
@@ -133,7 +150,6 @@ class ScriptParamsTest {
         assertInvalid("""{"key":"A","type":"int","label":"x","min":5,"max":1}""")
         assertInvalid("""{"key":"A","type":"int","label":"x","min":1,"max":3,"default":4}""")
         assertInvalid("""{"key":"A","type":"int","label":"x","max":-1}""")
-        assertInvalid("""{"key":"A","type":"int","label":"x","min":1e2}""")
         // int32 only.
         assertInvalid("""{"key":"A","type":"int","label":"x","max":2147483648}""")
         assertInvalid("""{"key":"A","type":"int","label":"x","min":-2147483649}""")

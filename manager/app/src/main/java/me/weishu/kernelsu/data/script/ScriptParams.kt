@@ -8,7 +8,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.longOrNull
 
 /*
  * params.json (schemaVersion 1) of a one-shot script: the parameters the manager asks for
@@ -149,12 +148,15 @@ object ScriptParamsParser {
     const val MAX_MAX_LENGTH = 1024
 
     private val KEY = Regex("^[A-Z][A-Z0-9_]{0,31}$")
+    private val JSON_NUMBER = Regex("^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$")
     private val OPTION_VALUE = Regex("^[A-Za-z0-9._-]{1,64}$")
     private val JSON = Json { isLenient = false }
 
     private fun fail(message: String): Nothing = throw ScriptParamsException(message)
 
-    fun parse(text: String): ScriptParams {
+    fun parse(source: String): ScriptParams {
+        // The registry validator decodes params.json with a BOM-stripping TextDecoder.
+        val text = source.removePrefix("\uFEFF")
         val root = try {
             JSON.parseToJsonElement(text)
         } catch (e: SerializationException) {
@@ -165,8 +167,8 @@ object ScriptParamsParser {
         // kotlinx keeps the last of duplicate keys; the registry rejects them, so do we.
         findDuplicateKey(text)?.let { fail("Duplicate JSON key: $it") }
 
-        val version = (root["schemaVersion"] as? JsonPrimitive)?.takeIf { !it.isString }?.longOrNull
-        if (version != SCHEMA_VERSION.toLong()) fail("Unsupported schemaVersion: ${root["schemaVersion"]}")
+        val version = root["schemaVersion"]?.let(::integerOf)
+        if (version != SCHEMA_VERSION) fail("Unsupported schemaVersion: ${root["schemaVersion"]}")
         val array = root["params"] as? JsonArray ?: fail("params must be an array")
         if (array.size > MAX_PARAMS) fail("At most $MAX_PARAMS params are allowed")
 
@@ -238,11 +240,16 @@ object ScriptParamsParser {
         (this[name] as? JsonPrimitive)?.takeIf { it.isString }?.content
 
     /** A plain JSON integer (no fraction or exponent) within int32. */
+    /**
+     * A JSON number that is a 32-bit integer *as a double*, like JSON.parse + zod `.int()` in
+     * the registry validator: `5`, `5.0` and `5e0` are all 5.
+     */
     private fun integerOf(element: JsonElement): Int? {
         val p = element as? JsonPrimitive ?: return null
-        if (p.isString) return null
-        if (!Regex("^-?[0-9]+$").matches(p.content)) return null
-        return p.content.toIntOrNull()
+        if (p.isString || !JSON_NUMBER.matches(p.content)) return null
+        val d = p.content.toDoubleOrNull() ?: return null
+        if (d != Math.floor(d) || d < Int.MIN_VALUE || d > Int.MAX_VALUE) return null
+        return d.toInt()
     }
 
     private fun JsonObject.integer(name: String, key: String): Int? {
@@ -302,9 +309,11 @@ object ScriptParamsParser {
         return null
     }
 
+    /** Trimmed first, like the validator's zod `.trim().min(1).max(200)`. */
     private fun checkText(text: String, what: String): String {
-        if (text.isEmpty() || text.length > MAX_TEXT_LENGTH) fail("$what must be 1..$MAX_TEXT_LENGTH characters")
-        return text
+        val trimmed = text.trim()
+        if (trimmed.isEmpty() || trimmed.length > MAX_TEXT_LENGTH) fail("$what must be 1..$MAX_TEXT_LENGTH characters")
+        return trimmed
     }
 
     private fun text(element: JsonElement?, what: String): String? = when (element) {

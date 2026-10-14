@@ -2,8 +2,10 @@ package me.weishu.kernelsu.ui.screen.scriptrun
 
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +59,11 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
     LaunchedEffect(arg, visit) { viewModel.load(arg, visit) }
     // No swipe-dismiss while the script runs (the output screen already blocks back).
     SideEffect { onBackEnabledChange(state.phase != ScriptRunPhase.RUNNING) }
+    // ViewModels here live as long as the activity: free the extraction when the page goes away.
+    val activity = LocalActivity.current
+    DisposableEffect(viewModel) {
+        onDispose { if (activity?.isChangingConfigurations != true) viewModel.leave() }
+    }
 
     if (state.phase == ScriptRunPhase.RUNNING || state.phase == ScriptRunPhase.FINISHED) {
         val snackbarHost = remember { SnackbarHostState() }

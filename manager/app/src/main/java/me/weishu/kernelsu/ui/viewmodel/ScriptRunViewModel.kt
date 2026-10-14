@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.registry.DownloadVerificationException
+import me.weishu.kernelsu.data.script.ReleasedException
 import me.weishu.kernelsu.data.script.ScriptCommand
 import me.weishu.kernelsu.data.script.ScriptPackageException
 import me.weishu.kernelsu.data.script.ScriptRepository
@@ -38,8 +39,9 @@ class ScriptRunViewModel : ViewModel() {
     private var visit: String? = null
     private var prepareJob: Job? = null
 
-    /** Owner of this page's extraction in [ScriptRepository]. */
-    private val owner = UUID.randomUUID().toString()
+    /** Token of the current preparation, owning its extraction in [ScriptRepository]. */
+    @Volatile
+    private var owner: String? = null
 
     /**
      * Prepares [arg] once per page visit ([visit] survives configuration changes, so a
@@ -50,11 +52,14 @@ class ScriptRunViewModel : ViewModel() {
         this.visit = visit
         synchronized(logContent) { logContent.setLength(0) }
         _state.value = ScriptRunUiState(displayName = arg.displayName, offerInstall = arg.offerInstall)
-        prepareJob?.cancel()
-        ScriptRepository.release(owner)
+        releaseExtraction()
+        val token = UUID.randomUUID().toString()
+        owner = token
         prepareJob = viewModelScope.launch {
-            runCatching { ScriptRepository.prepare(arg.uri, arg.registryId, owner) }
+            runCatching { ScriptRepository.prepare(arg.uri, arg.registryId, token) }
                 .onSuccess { prepared ->
+                    // Superseded or left: releaseExtraction() already released this token.
+                    if (owner != token) return@onSuccess
                     val values = prepared.params.defaults
                     val lastRun = withContext(Dispatchers.IO) { ScriptRepository.history.last(prepared.manifest.id) }
                     _state.update {
@@ -69,6 +74,7 @@ class ScriptRunViewModel : ViewModel() {
                 }
                 .onFailure { e ->
                     if (e is CancellationException) throw e
+                    if (e is ReleasedException || owner != token) return@onFailure
                     Log.w(TAG, "cannot prepare script ${arg.uri}", e)
                     _state.update { it.copy(phase = ScriptRunPhase.FAILED, error = errorMessage(e)) }
                 }
@@ -89,6 +95,7 @@ class ScriptRunViewModel : ViewModel() {
         val prepared = current.prepared ?: return
         if (!current.canRun) return
         val dir = prepared.dir.absolutePath
+        val token = owner ?: return
         val command = try {
             ScriptCommand.build(
                 dir,
@@ -123,7 +130,8 @@ class ScriptRunViewModel : ViewModel() {
                 runCatching { removeAsRoot(dir) }
                     .onSuccess { removed -> if (!removed) Log.w(TAG, "cannot remove $dir") }
                     .onFailure { Log.w(TAG, "cannot remove $dir", it) }
-                ScriptRepository.release(owner)
+                ScriptRepository.release(token)
+                if (owner == token) owner = null
                 code
             }
             _state.update {
@@ -136,9 +144,26 @@ class ScriptRunViewModel : ViewModel() {
         }
     }
 
+    /**
+     * The page is gone (not just recreated): drop the extraction and start over on the next
+     * visit. A running script cleans up when it ends, even after the page is gone.
+     */
+    fun leave() {
+        if (_state.value.phase == ScriptRunPhase.RUNNING) return
+        releaseExtraction()
+        visit = null
+        _state.value = ScriptRunUiState()
+    }
+
+    private fun releaseExtraction() {
+        prepareJob?.cancel()
+        prepareJob = null
+        owner?.let(ScriptRepository::release)
+        owner = null
+    }
+
     override fun onCleared() {
-        // A running script cleans up when it ends, even after the page is gone.
-        if (_state.value.phase != ScriptRunPhase.RUNNING) ScriptRepository.release(owner)
+        if (_state.value.phase != ScriptRunPhase.RUNNING) releaseExtraction()
     }
 
     private fun errorMessage(e: Throwable): String {
