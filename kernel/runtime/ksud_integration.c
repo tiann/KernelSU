@@ -654,8 +654,17 @@ void __init ksu_ksud_init()
 {
     int ret;
 
-    ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
-    ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+    ret = ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
+    if (ret) {
+        pr_err("ksud: failed to hook __NR_read: %d\n", ret);
+        return;
+    }
+    ret = ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
+    if (ret) {
+        pr_err("ksud: failed to hook __NR_fstat: %d\n", ret);
+        ksu_syscall_table_unhook(__NR_read);
+        return;
+    }
 
     ret = register_kprobe(&input_event_kp);
     pr_info("ksud: input_event_kp: %d\n", ret);

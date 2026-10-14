@@ -39,7 +39,8 @@ bool ksu_has_syscall_hook(int nr);
 // Saves the original handler to *@old (if non-NULL) and records the entry
 // for restoration at module exit. Use this for boot-time hooks that replace
 // a real syscall entry (e.g. ksud hooking __NR_execve/__NR_read/__NR_fstat).
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
+// Returns 0 on success, negative errno if the write failed or was rejected.
+int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
 
 // Restore syscall_table[@nr] to its original value recorded by
 // ksu_syscall_table_hook(), and remove the entry from the tracking list.
