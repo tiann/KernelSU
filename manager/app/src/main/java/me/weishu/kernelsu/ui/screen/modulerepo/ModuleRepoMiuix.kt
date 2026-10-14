@@ -123,6 +123,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.FileDownloads
 import top.yukonga.miuix.kmp.icon.extended.HorizontalSplit
 import top.yukonga.miuix.kmp.icon.extended.Link
+import top.yukonga.miuix.kmp.icon.extended.Play
 import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
@@ -1013,7 +1014,7 @@ private fun ReleaseZipRowMiuix(
                         if (isDownloadAvailable(downloadedUri)) {
                             onInstallModule(downloadedUri)
                         } else {
-                            handle.downloadedUri = null
+                            handle.setDownloaded(null)
                         }
                     }
                 } else {
@@ -1039,7 +1040,7 @@ private fun ReleaseZipRowMiuix(
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = MiuixIcons.FileDownloads,
+                        imageVector = if (downloadedUri != null && isScript) MiuixIcons.Play else MiuixIcons.FileDownloads,
                         tint = actionIconTint,
                         contentDescription = label
                     )

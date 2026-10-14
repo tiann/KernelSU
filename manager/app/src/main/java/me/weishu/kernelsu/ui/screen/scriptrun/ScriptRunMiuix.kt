@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -47,7 +48,9 @@ import me.weishu.kernelsu.data.script.ScriptParam
 import me.weishu.kernelsu.ui.component.miuix.EditText
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.util.BlurredBar
+import me.weishu.kernelsu.ui.util.ShellHighlightColors
 import me.weishu.kernelsu.ui.util.rememberBlurBackdrop
+import me.weishu.kernelsu.ui.util.rememberShellHighlight
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
@@ -113,6 +116,7 @@ internal fun ScriptRunScreenMiuix(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight()
+                    .imePadding()
                     .scrollEndHaptic()
                     .overScrollVertical()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -197,36 +201,33 @@ private fun ScriptInfoMiuix(state: ScriptRunUiState, prepared: PreparedScript, a
 private fun ParamsFormMiuix(state: ScriptRunUiState, prepared: PreparedScript, actions: ScriptRunActions) {
     val params = prepared.params.params
     if (params.isEmpty()) return
-    val locale = currentLocaleTag()
     SmallTitle(text = stringResource(R.string.script_params), modifier = Modifier.padding(top = 6.dp))
     Card(modifier = Modifier.fillMaxWidth()) {
         params.forEach { param ->
             val value = state.values[param.key] ?: param.defaultValue
-            val label = param.label.resolve(locale)
-            val description = param.description?.resolve(locale)
             val error = state.errors[param.key]
             when (param) {
                 is ScriptParam.Bool -> SwitchPreference(
-                    title = label,
-                    summary = description,
+                    title = param.label,
+                    summary = param.description,
                     checked = value == "true",
                     onCheckedChange = { actions.onValueChange(param.key, it.toString()) },
                 )
 
                 is ScriptParam.Choice -> OverlayDropdownPreference(
-                    items = param.options.map { it.label?.resolve(locale) ?: it.value },
+                    items = param.options.map { it.label ?: it.value },
                     selectedIndex = param.options.indexOfFirst { it.value == value }.coerceAtLeast(0),
-                    title = label,
-                    summary = description,
+                    title = param.label,
+                    summary = param.description,
                     onSelectedIndexChange = { index -> actions.onValueChange(param.key, param.options[index].value) },
                 )
 
                 is ScriptParam.Text, is ScriptParam.Integer -> {
                     EditText(
-                        title = label,
+                        title = param.label,
                         value = value,
                         onValueChange = { actions.onValueChange(param.key, it) },
-                        summary = error?.let { paramErrorText(param, it) } ?: description,
+                        summary = error?.let { paramErrorText(param, it) } ?: param.description,
                         keyboardOptions = if (param is ScriptParam.Integer) {
                             KeyboardOptions(keyboardType = integerKeyboardType(param))
                         } else {
@@ -262,9 +263,13 @@ private fun SourceSectionMiuix(prepared: PreparedScript) {
             }
         )
         if (expanded) {
+            val source = rememberShellHighlight(
+                prepared.actionSource,
+                ShellHighlightColors.forBackground(colorScheme.surfaceContainer),
+            )
             SelectionContainer {
                 Text(
-                    text = prepared.actionSource,
+                    text = source,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 12.sp,
                     softWrap = false,

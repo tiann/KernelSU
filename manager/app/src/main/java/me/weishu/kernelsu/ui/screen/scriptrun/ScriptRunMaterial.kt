@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -60,6 +61,8 @@ import me.weishu.kernelsu.ui.component.material.SegmentedTextField
 import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.material.TopBarBackButton
 import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
+import me.weishu.kernelsu.ui.util.ShellHighlightColors
+import me.weishu.kernelsu.ui.util.rememberShellHighlight
 
 @Composable
 internal fun ScriptRunScreenMaterial(
@@ -108,6 +111,7 @@ internal fun ScriptRunScreenMaterial(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
+                    .imePadding()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(13.dp)
@@ -185,28 +189,25 @@ private fun ScriptInfo(state: ScriptRunUiState, prepared: PreparedScript, action
 private fun ParamsForm(state: ScriptRunUiState, prepared: PreparedScript, actions: ScriptRunActions) {
     val params = prepared.params.params
     if (params.isEmpty()) return
-    val locale = currentLocaleTag()
     SegmentedColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         title = stringResource(R.string.script_params),
         content = params.map { param ->
             {
                 val value = state.values[param.key] ?: param.defaultValue
-                val label = param.label.resolve(locale)
-                val description = param.description?.resolve(locale)
                 val error = state.errors[param.key]
                 when (param) {
                     is ScriptParam.Bool -> SegmentedSwitchItem(
-                        title = label,
-                        summary = description,
+                        title = param.label,
+                        summary = param.description,
                         checked = value == "true",
                         onCheckedChange = { actions.onValueChange(param.key, it.toString()) },
                     )
 
                     is ScriptParam.Choice -> SegmentedDropdownItem(
-                        title = label,
-                        summary = description,
-                        items = param.options.map { it.label?.resolve(locale) ?: it.value },
+                        title = param.label,
+                        summary = param.description,
+                        items = param.options.map { it.label ?: it.value },
                         selectedIndex = param.options.indexOfFirst { it.value == value }.coerceAtLeast(0),
                         onItemSelected = { index -> actions.onValueChange(param.key, param.options[index].value) },
                     )
@@ -214,7 +215,7 @@ private fun ParamsForm(state: ScriptRunUiState, prepared: PreparedScript, action
                     is ScriptParam.Text, is ScriptParam.Integer -> {
                         val errorText = error?.let { paramErrorText(param, it) }
                         SegmentedTextField(
-                            label = label,
+                            label = param.label,
                             value = value,
                             onValueChange = { actions.onValueChange(param.key, it) },
                             singleLine = true,
@@ -225,7 +226,7 @@ private fun ParamsForm(state: ScriptRunUiState, prepared: PreparedScript, action
                             } else {
                                 KeyboardOptions.Default
                             },
-                            supportingContent = (errorText ?: description)?.let { text ->
+                            supportingContent = (errorText ?: param.description)?.let { text ->
                                 {
                                     Text(
                                         text = text,
@@ -268,9 +269,13 @@ private fun SourceSection(prepared: PreparedScript) {
             }
             if (expanded) add {
                 SegmentedItemContainer {
+                    val source = rememberShellHighlight(
+                        prepared.actionSource,
+                        ShellHighlightColors.forBackground(MaterialTheme.colorScheme.surfaceBright),
+                    )
                     SelectionContainer {
                         Text(
-                            text = prepared.actionSource,
+                            text = source,
                             fontFamily = FontFamily.Monospace,
                             style = MaterialTheme.typography.bodySmall,
                             softWrap = false,

@@ -50,6 +50,7 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import okhttp3.Request
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 @Composable
 fun ModuleRepoScreen() {
@@ -160,15 +161,29 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
 
 /** UI state of downloading one release ZIP. */
 @Stable
-class ReleaseDownloadHandle {
+class ReleaseDownloadHandle(private val sha256: String, downloadedUri: Uri?) {
     var isDownloading by mutableStateOf(false)
     var progress by mutableIntStateOf(0)
-    var downloadedUri by mutableStateOf<Uri?>(null)
+    var downloadedUri by mutableStateOf(downloadedUri)
+        private set
+
+    fun setDownloaded(uri: Uri?) {
+        downloadedUri = uri
+        if (uri != null) verifiedDownloads[sha256] = uri else verifiedDownloads.remove(sha256)
+    }
 }
+
+/**
+ * Verified release ZIPs of this process, keyed by SHA-256, so the Install / Run button survives
+ * leaving and reopening the detail page. Callers still check [isDownloadAvailable] before use.
+ */
+private val verifiedDownloads = ConcurrentHashMap<String, Uri>()
 
 @Composable
 fun rememberReleaseDownload(release: RepoRelease): ReleaseDownloadHandle =
-    remember(release.zipUrl, release.sha256) { ReleaseDownloadHandle() }
+    remember(release.zipUrl, release.sha256) {
+        ReleaseDownloadHandle(release.sha256, verifiedDownloads[release.sha256])
+    }
 
 /**
  * Downloads a release ZIP. The download service only accepts GitHub Release URLs (and their CDN
@@ -184,7 +199,7 @@ fun CoroutineScope.startReleaseDownload(context: Context, release: RepoRelease, 
             fileName = release.zipName,
             onDownloaded = { uri ->
                 handle.isDownloading = false
-                handle.downloadedUri = uri
+                handle.setDownloaded(uri)
             },
             onDownloading = { handle.isDownloading = true },
             onProgress = { p -> launch(Dispatchers.Main) { handle.progress = p } },

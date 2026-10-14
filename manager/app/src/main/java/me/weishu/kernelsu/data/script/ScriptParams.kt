@@ -17,47 +17,6 @@ import kotlinx.serialization.json.longOrNull
 
 class ScriptParamsException(message: String) : Exception(message)
 
-/**
- * A plain string (same text for every locale) or locale -> string. Plain strings are stored
- * with an empty locale key.
- */
-data class LocalizedText(val entries: List<Pair<String, String>>) {
-
-    /** Exact locale, then language + region, then language only, then `en`, then the first entry. */
-    fun resolve(locale: String): String {
-        if (entries.size == 1) return entries[0].second
-        for (candidate in localeCandidates(locale) + "en") {
-            entries.firstOrNull { it.first.equals(candidate, ignoreCase = true) }?.let { return it.second }
-        }
-        return entries.first().second
-    }
-
-    companion object {
-        fun of(text: String) = LocalizedText(listOf("" to text))
-
-        /** "zh-Hans-CN" -> ["zh-Hans-CN", "zh-CN", "zh"]; Chinese scripts without a region imply one. */
-        internal fun localeCandidates(locale: String): List<String> {
-            val parts = locale.trim().replace('_', '-').split('-').filter { it.isNotEmpty() }
-            if (parts.isEmpty()) return emptyList()
-            val language = parts[0]
-            val rest = parts.drop(1)
-            val script = rest.firstOrNull()?.takeIf { it.length == 4 && it.all(Char::isLetter) }
-            val region = rest.firstOrNull { (it.length == 2 && it.all(Char::isLetter)) || (it.length == 3 && it.all(Char::isDigit)) }
-            val impliedRegion = when {
-                region != null || !language.equals("zh", ignoreCase = true) -> null
-                script.equals("Hans", ignoreCase = true) -> "CN"
-                script.equals("Hant", ignoreCase = true) -> "TW"
-                else -> null
-            }
-            return listOfNotNull(
-                parts.joinToString("-"),
-                (region ?: impliedRegion)?.let { "$language-$it" },
-                language,
-            ).distinct()
-        }
-    }
-}
-
 /** Why a parameter value is rejected. */
 enum class ParamError {
     REQUIRED,
@@ -77,8 +36,8 @@ enum class ParamError {
  */
 sealed class ScriptParam {
     abstract val key: String
-    abstract val label: LocalizedText
-    abstract val description: LocalizedText?
+    abstract val label: String
+    abstract val description: String?
 
     /** Canonical form of the default value. */
     abstract val defaultValue: String
@@ -93,8 +52,8 @@ sealed class ScriptParam {
 
     data class Bool(
         override val key: String,
-        override val label: LocalizedText,
-        override val description: LocalizedText?,
+        override val label: String,
+        override val description: String?,
         val default: Boolean,
     ) : ScriptParam() {
         override val defaultValue: String get() = default.toString()
@@ -102,12 +61,12 @@ sealed class ScriptParam {
             if (value == "true" || value == "false") null else ParamError.INVALID_BOOLEAN
     }
 
-    data class EnumOption(val value: String, val label: LocalizedText?)
+    data class EnumOption(val value: String, val label: String?)
 
     data class Choice(
         override val key: String,
-        override val label: LocalizedText,
-        override val description: LocalizedText?,
+        override val label: String,
+        override val description: String?,
         val options: List<EnumOption>,
         val default: String,
     ) : ScriptParam() {
@@ -118,8 +77,8 @@ sealed class ScriptParam {
 
     data class Text(
         override val key: String,
-        override val label: LocalizedText,
-        override val description: LocalizedText?,
+        override val label: String,
+        override val description: String?,
         val default: String,
         val maxLength: Int,
         val pattern: String?,
@@ -140,8 +99,8 @@ sealed class ScriptParam {
 
     data class Integer(
         override val key: String,
-        override val label: LocalizedText,
-        override val description: LocalizedText?,
+        override val label: String,
+        override val description: String?,
         val default: Int,
         val min: Int?,
         val max: Int?,
@@ -209,7 +168,6 @@ object ScriptParamsParser {
     const val MAX_PATTERN_LENGTH = 256
 
     private val KEY = Regex("^[A-Z][A-Z0-9_]{0,31}$")
-    private val LOCALE = Regex("^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$")
     private val OPTION_VALUE = Regex("^[A-Za-z0-9._-]{1,64}$")
     private val JSON = Json { isLenient = false }
 
@@ -242,8 +200,8 @@ object ScriptParamsParser {
     private fun parseParam(obj: JsonObject, index: Int): ScriptParam {
         val key = obj.string("key") ?: fail("params[$index].key is required")
         if (!KEY.matches(key)) fail("Invalid key: $key")
-        val label = localized(obj["label"], "$key.label") ?: fail("$key.label is required")
-        val description = localized(obj["description"], "$key.description")
+        val label = text(obj["label"], "$key.label") ?: fail("$key.label is required")
+        val description = text(obj["description"], "$key.description")
         val default = obj["default"]?.takeIf { it !is JsonNull }
 
         val param = when (obj.string("type")) {
@@ -261,7 +219,7 @@ object ScriptParamsParser {
                     val o = e as? JsonObject ?: fail("$key.options entries must be objects")
                     val value = o.string("value")?.takeIf(OPTION_VALUE::matches) ?: fail("$key: invalid option value")
                     if (!values.add(value)) fail("$key: duplicate option $value")
-                    ScriptParam.EnumOption(value, localized(o["label"], "$key.$value.label"))
+                    ScriptParam.EnumOption(value, text(o["label"], "$key.$value.label"))
                 }
                 val defaultValue = default?.let { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail("$key.default must be a string") }
                     ?: options.first().value
@@ -375,23 +333,10 @@ object ScriptParamsParser {
         return text
     }
 
-    private fun localized(element: JsonElement?, what: String): LocalizedText? = when (element) {
+    private fun text(element: JsonElement?, what: String): String? = when (element) {
         null, is JsonNull -> null
-        is JsonPrimitive -> {
-            if (!element.isString) fail("$what must be a string or an object")
-            LocalizedText.of(checkText(element.content, what))
-        }
-
-        is JsonObject -> {
-            if (element.isEmpty()) fail("$what must have at least one locale")
-            LocalizedText(element.entries.map { (locale, value) ->
-                if (!LOCALE.matches(locale)) fail("$what: invalid locale $locale")
-                val text = (value as? JsonPrimitive)?.takeIf { it.isString }?.content ?: fail("$what.$locale must be a string")
-                locale to checkText(text, "$what.$locale")
-            })
-        }
-
-        else -> fail("$what must be a string or an object")
+        is JsonPrimitive -> if (element.isString) checkText(element.content, what) else fail("$what must be a string")
+        else -> fail("$what must be a string")
     }
 }
 

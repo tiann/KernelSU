@@ -15,13 +15,13 @@ class ScriptParamsTest {
             {
               "key": "ENABLE_FASTBOOT",
               "type": "bool",
-              "label": { "en": "Also enable fastboot", "zh-CN": "同时开启 Fastboot" },
+              "label": "Also enable fastboot",
               "description": "Optional longer help text",
               "default": true,
               "futureField": 1
             },
             { "key": "MODE", "type": "enum", "label": "Mode", "default": "a",
-              "options": [ { "value": "a", "label": { "en": "A" } }, { "value": "b" } ] },
+              "options": [ { "value": "a", "label": "A" }, { "value": "b" } ] },
             { "key": "NAME", "type": "string", "label": "Name", "default": "", "maxLength": 64,
               "pattern": "^[a-z]*$", "required": false },
             { "key": "COUNT", "type": "int", "label": "Count", "default": 1, "min": 0, "max": 10 }
@@ -42,13 +42,12 @@ class ScriptParamsTest {
 
         val bool = p[0] as ScriptParam.Bool
         assertEquals(true, bool.default)
-        assertEquals("Also enable fastboot", bool.label.resolve("en-US"))
-        assertEquals("同时开启 Fastboot", bool.label.resolve("zh-CN"))
-        assertEquals("Optional longer help text", bool.description!!.resolve("fr"))
+        assertEquals("Also enable fastboot", bool.label)
+        assertEquals("Optional longer help text", bool.description)
 
         val choice = p[1] as ScriptParam.Choice
         assertEquals(listOf("a", "b"), choice.options.map { it.value })
-        assertEquals("A", choice.options[0].label!!.resolve("de"))
+        assertEquals("A", choice.options[0].label)
         assertNull(choice.options[1].label)
 
         val text = p[2] as ScriptParam.Text
@@ -103,30 +102,13 @@ class ScriptParamsTest {
     }
 
     @Test
-    fun validatesLocalizedText() {
+    fun validatesText() {
         assertInvalid("""{"key":"A","type":"bool","label":""}""")
         assertInvalid("""{"key":"A","type":"bool","label":"${"x".repeat(201)}"}""")
-        assertInvalid("""{"key":"A","type":"bool","label":{}}""")
-        assertInvalid("""{"key":"A","type":"bool","label":{"EN":"x"}}""")
-        assertInvalid("""{"key":"A","type":"bool","label":{"en":1}}""")
+        assertInvalid("""{"key":"A","type":"bool","label":{"en":"x"}}""")
+        assertInvalid("""{"key":"A","type":"enum","label":"x","options":[{"value":"a","label":{"en":"A"}}]}""")
         assertInvalid("""{"key":"A","type":"bool","label":1}""")
         assertInvalid("""{"key":"A","type":"bool","label":"x","description":""}""")
-        parse("""{"key":"A","type":"bool","label":{"zh-Hant-TW":"x","pt-BR":"y"}}""")
-    }
-
-    @Test
-    fun resolvesLocaleWithFallbacks() {
-        val text = LocalizedText(listOf("fr" to "French", "en" to "English", "zh-CN" to "简体", "zh-TW" to "繁體"))
-        assertEquals("French", text.resolve("fr-FR"))
-        assertEquals("English", text.resolve("de-DE"))
-        assertEquals("简体", text.resolve("zh-Hans-CN"))
-        assertEquals("简体", text.resolve("zh-Hans"))
-        assertEquals("简体", text.resolve("zh_CN"))
-        assertEquals("繁體", text.resolve("zh-Hant"))
-        assertEquals("English", text.resolve(""))
-        // Without "en", the first entry wins.
-        assertEquals("Deutsch", LocalizedText(listOf("de" to "Deutsch", "ja" to "日本語")).resolve("ko"))
-        assertEquals("plain", LocalizedText.of("plain").resolve("ja"))
     }
 
     @Test

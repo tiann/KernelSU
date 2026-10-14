@@ -914,7 +914,7 @@ private fun ReleaseZipSegmentedItem(
                                 if (isDownloadAvailable(downloadedUri)) {
                                     onInstallModule(downloadedUri)
                                 } else {
-                                    handle.downloadedUri = null
+                                    handle.setDownloaded(null)
                                 }
                             }
                         },
