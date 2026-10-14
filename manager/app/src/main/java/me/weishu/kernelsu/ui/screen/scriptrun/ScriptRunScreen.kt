@@ -137,8 +137,8 @@ internal fun paramErrorText(param: ScriptParam, error: ParamError): String = whe
     ParamError.INVALID_CHARACTERS -> stringResource(R.string.script_param_invalid_characters)
     ParamError.PATTERN_MISMATCH -> stringResource(R.string.script_param_pattern)
     ParamError.NOT_AN_INTEGER -> stringResource(R.string.script_param_not_integer)
-    ParamError.BELOW_MIN -> stringResource(R.string.script_param_below_min, (param as? ScriptParam.Integer)?.min ?: 0L)
-    ParamError.ABOVE_MAX -> stringResource(R.string.script_param_above_max, (param as? ScriptParam.Integer)?.max ?: 0L)
+    ParamError.BELOW_MIN -> stringResource(R.string.script_param_below_min, (param as? ScriptParam.Integer)?.min ?: 0)
+    ParamError.ABOVE_MAX -> stringResource(R.string.script_param_above_max, (param as? ScriptParam.Integer)?.max ?: 0)
     ParamError.INVALID_OPTION, ParamError.INVALID_BOOLEAN -> stringResource(R.string.script_param_invalid)
 }
 

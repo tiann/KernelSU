@@ -142,9 +142,9 @@ sealed class ScriptParam {
         override val key: String,
         override val label: LocalizedText,
         override val description: LocalizedText?,
-        val default: Long,
-        val min: Long?,
-        val max: Long?,
+        val default: Int,
+        val min: Int?,
+        val max: Int?,
     ) : ScriptParam() {
         override val defaultValue: String get() = default.toString()
 
@@ -160,8 +160,10 @@ sealed class ScriptParam {
         override fun canonical(value: String): String = parseInteger(value)!!.toString()
 
         companion object {
-            private val INTEGER = Regex("^[+-]?[0-9]{1,19}$")
-            fun parseInteger(value: String): Long? = value.trim().takeIf(INTEGER::matches)?.toLongOrNull()
+            private val INTEGER = Regex("^[+-]?[0-9]{1,10}$")
+
+            /** Values are int32 like min / max / default; anything outside is not an integer. */
+            fun parseInteger(value: String): Int? = value.trim().takeIf(INTEGER::matches)?.toIntOrNull()
         }
     }
 
@@ -190,6 +192,7 @@ object ScriptParamsParser {
     const val MAX_TEXT_LENGTH = 200
     const val DEFAULT_MAX_LENGTH = 256
     const val MAX_MAX_LENGTH = 1024
+    const val MAX_PATTERN_LENGTH = 256
 
     private val KEY = Regex("^[A-Z][A-Z0-9_]{0,31}$")
     private val LOCALE = Regex("^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$")
@@ -206,6 +209,8 @@ object ScriptParamsParser {
         } catch (e: IllegalArgumentException) {
             fail("Malformed JSON: ${e.message}")
         } as? JsonObject ?: fail("params.json must be an object")
+        // kotlinx keeps the last of duplicate keys; the registry rejects them, so do we.
+        findDuplicateKey(text)?.let { fail("Duplicate JSON key: $it") }
 
         val version = (root["schemaVersion"] as? JsonPrimitive)?.takeIf { !it.isString }?.longOrNull
         if (version != SCHEMA_VERSION.toLong()) fail("Unsupported schemaVersion: ${root["schemaVersion"]}")
@@ -252,11 +257,12 @@ object ScriptParamsParser {
             "string" -> {
                 val maxLength = obj.integer("maxLength", key)?.also {
                     if (it !in 1..MAX_MAX_LENGTH) fail("$key.maxLength must be 1..$MAX_MAX_LENGTH")
-                }?.toInt() ?: DEFAULT_MAX_LENGTH
+                } ?: DEFAULT_MAX_LENGTH
                 val pattern = obj["pattern"]?.takeIf { it !is JsonNull }?.let {
                     (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail("$key.pattern must be a string")
                 }
                 if (pattern != null) {
+                    if (pattern.length > MAX_PATTERN_LENGTH) fail("$key.pattern is longer than $MAX_PATTERN_LENGTH")
                     runCatching { Regex(pattern) }.onFailure { fail("$key.pattern does not compile: ${it.message}") }
                 }
                 val required = obj["required"]?.takeIf { it !is JsonNull }?.let {
@@ -264,7 +270,7 @@ object ScriptParamsParser {
                 } ?: false
                 val defaultValue = default?.let { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail("$key.default must be a string") }
                     ?: ""
-                // An empty default is fine even when required: the user has to fill it in.
+                // An empty default is always fine, even when required: the user has to fill it in.
                 ScriptParam.Text(key, label, description, defaultValue, maxLength, pattern, required)
             }
 
@@ -272,7 +278,7 @@ object ScriptParamsParser {
                 val min = obj.integer("min", key)
                 val max = obj.integer("max", key)
                 if (min != null && max != null && min > max) fail("$key: min > max")
-                val defaultValue = default?.let { integerOf(it) ?: fail("$key.default must be an integer") } ?: min ?: 0L
+                val defaultValue = default?.let { integerOf(it) ?: fail("$key.default must be an integer") } ?: min ?: 0
                 ScriptParam.Integer(key, label, description, defaultValue, min, max)
             }
 
@@ -285,17 +291,69 @@ object ScriptParamsParser {
     private fun JsonObject.string(name: String): String? =
         (this[name] as? JsonPrimitive)?.takeIf { it.isString }?.content
 
-    private fun integerOf(element: JsonElement): Long? {
+    /** A plain JSON integer (no fraction or exponent) within int32. */
+    private fun integerOf(element: JsonElement): Int? {
         val p = element as? JsonPrimitive ?: return null
         if (p.isString) return null
-        // Reject fractions and exponents: only plain JSON integers are integers.
         if (!Regex("^-?[0-9]+$").matches(p.content)) return null
-        return p.content.toLongOrNull()
+        return p.content.toIntOrNull()
     }
 
-    private fun JsonObject.integer(name: String, key: String): Long? {
+    private fun JsonObject.integer(name: String, key: String): Int? {
         val e = this[name]?.takeIf { it !is JsonNull } ?: return null
-        return integerOf(e) ?: fail("$key.$name must be an integer")
+        return integerOf(e) ?: fail("$key.$name must be a 32-bit integer")
+    }
+
+    /**
+     * First key that occurs twice in one object of the (already parsed, so valid) JSON
+     * [text], or null.
+     */
+    internal fun findDuplicateKey(text: String): String? {
+        class Frame(val keys: HashSet<String>?, var expectKey: Boolean)
+
+        val stack = ArrayDeque<Frame>()
+        var i = 0
+        while (i < text.length) {
+            when (text[i]) {
+                '{' -> stack.addLast(Frame(HashSet(), expectKey = true))
+                '[' -> stack.addLast(Frame(null, expectKey = false))
+                '}', ']' -> stack.removeLastOrNull()
+                ',' -> stack.lastOrNull()?.let { if (it.keys != null) it.expectKey = true }
+                '"' -> {
+                    val sb = StringBuilder()
+                    i++
+                    while (i < text.length && text[i] != '"') {
+                        if (text[i] == '\\' && i + 1 < text.length) {
+                            i++
+                            when (val e = text[i]) {
+                                'u' -> {
+                                    text.substring(i + 1, minOf(i + 5, text.length)).toIntOrNull(16)?.let { sb.append(it.toChar()) }
+                                    i += 4
+                                }
+
+                                'b' -> sb.append('\b')
+                                'f' -> sb.append('\u000C')
+                                'n' -> sb.append('\n')
+                                'r' -> sb.append('\r')
+                                't' -> sb.append('\t')
+                                else -> sb.append(e)
+                            }
+                        } else {
+                            sb.append(text[i])
+                        }
+                        i++
+                    }
+                    val top = stack.lastOrNull()
+                    if (top?.keys != null && top.expectKey) {
+                        val key = sb.toString()
+                        if (!top.keys.add(key)) return key
+                        top.expectKey = false
+                    }
+                }
+            }
+            i++
+        }
+        return null
     }
 
     private fun checkText(text: String, what: String): String {

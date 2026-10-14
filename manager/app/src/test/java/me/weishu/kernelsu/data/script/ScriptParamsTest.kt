@@ -56,9 +56,9 @@ class ScriptParamsTest {
         assertEquals("^[a-z]*$", text.pattern)
 
         val int = p[3] as ScriptParam.Integer
-        assertEquals(1L, int.default)
-        assertEquals(0L, int.min)
-        assertEquals(10L, int.max)
+        assertEquals(1, int.default)
+        assertEquals(0, int.min)
+        assertEquals(10, int.max)
 
         assertEquals(
             mapOf("ENABLE_FASTBOOT" to "true", "MODE" to "a", "NAME" to "", "COUNT" to "1"),
@@ -155,6 +155,32 @@ class ScriptParamsTest {
         assertInvalid("""{"key":"A","type":"int","label":"x","min":1,"max":3,"default":4}""")
         assertInvalid("""{"key":"A","type":"int","label":"x","max":-1}""")
         assertInvalid("""{"key":"A","type":"int","label":"x","min":1e2}""")
+        // int32 only.
+        assertInvalid("""{"key":"A","type":"int","label":"x","max":2147483648}""")
+        assertInvalid("""{"key":"A","type":"int","label":"x","min":-2147483649}""")
+        assertInvalid("""{"key":"A","type":"int","label":"x","default":2147483648}""")
+        parse("""{"key":"A","type":"int","label":"x","min":-2147483648,"max":2147483647}""")
+
+        assertInvalid("""{"key":"A","type":"string","label":"x","pattern":"${"a".repeat(257)}"}""")
+        parse("""{"key":"A","type":"string","label":"x","pattern":"${"a".repeat(256)}"}""")
+        // Pattern only applies to non-empty values, also for the default.
+        parse("""{"key":"A","type":"string","label":"x","pattern":"^[a-z]+$","required":true}""")
+    }
+
+    @Test
+    fun rejectsDuplicateJsonKeys() {
+        val e = assertThrows(ScriptParamsException::class.java) {
+            ScriptParamsParser.parse("""{"schemaVersion":1,"params":[{"key":"A","type":"bool","label":"x","label":"y"}]}""")
+        }
+        assertTrue(e.message!!.contains("label"))
+        assertThrows(ScriptParamsException::class.java) {
+            ScriptParamsParser.parse("""{"schemaVersion":1,"params":[],"params":[]}""")
+        }
+        // Escaped spellings of the same key are the same key.
+        assertEquals("ab", ScriptParamsParser.findDuplicateKey("""{"ab":1,"a\u0062":2}"""))
+        // Same key in different objects, or as a string value, is fine.
+        assertNull(ScriptParamsParser.findDuplicateKey("""{"a":{"a":1},"b":["a","a"],"c":"a","d":{"x":"\"a\""}}"""))
+        assertNull(ScriptParamsParser.findDuplicateKey(sample))
     }
 
     @Test
@@ -191,6 +217,8 @@ class ScriptParamsTest {
         assertEquals(ParamError.NOT_AN_INTEGER, count.validate("1.0"))
         assertEquals(ParamError.NOT_AN_INTEGER, count.validate(""))
         assertEquals(ParamError.NOT_AN_INTEGER, count.validate("99999999999999999999"))
+        assertEquals(ParamError.NOT_AN_INTEGER, count.validate("2147483648"))
+        assertEquals(ParamError.INVALID_CHARACTERS, text.validate("a\rb"))
 
         assertTrue(p.validate(p.defaults).isEmpty())
         assertEquals(mapOf("COUNT" to ParamError.ABOVE_MAX), p.validate(mapOf("COUNT" to "42")))
