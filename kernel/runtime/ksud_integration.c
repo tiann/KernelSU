@@ -654,6 +654,10 @@ void __init ksu_ksud_init()
 {
     int ret;
 
+    // The work is schedulable from ksu_is_safe_mode() regardless of whether
+    // the hooks below succeed, so it must be initialized first.
+    INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
+
     ret = ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
     if (ret) {
         pr_err("ksud: failed to hook __NR_read: %d\n", ret);
@@ -668,8 +672,6 @@ void __init ksu_ksud_init()
 
     ret = register_kprobe(&input_event_kp);
     pr_info("ksud: input_event_kp: %d\n", ret);
-
-    INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
 
 void __exit ksu_ksud_exit()

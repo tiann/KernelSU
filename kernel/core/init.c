@@ -231,8 +231,10 @@ void __exit kernelsu_exit(void)
     ksu_feature_exit();
     ksu_module_blacklist_exit();
 
-    exit_jailbreak();
+    // The cred must be released while KDP handling is still enabled.
     ksu_put_cred(ksu_cred);
+
+    exit_jailbreak();
 }
 
 #if NEED_OWN_STACKPROTECTOR

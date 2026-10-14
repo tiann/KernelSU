@@ -59,7 +59,8 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook);
 
 // Restore the LSM hook entry previously patched by ksu_lsm_hook() back to the
 // original handler saved in hook->original, and remove it from global tracking.
-void ksu_lsm_unhook(struct ksu_lsm_hook *hook);
+// Returns 0 on success; a failed restoration keeps the hook installed.
+int ksu_lsm_unhook(struct ksu_lsm_hook *hook);
 
 // --- BPF LSM chaining API (register/unregister) ---
 // Register a handler by replacing the BPF LSM implementation for this hook.

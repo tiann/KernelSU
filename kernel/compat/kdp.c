@@ -1,3 +1,4 @@
+#include <linux/binfmts.h>
 #include <linux/completion.h>
 #include <linux/cred.h>
 #include <linux/jump_label.h>
@@ -79,6 +80,14 @@ static void __nocfi kdp_commit_worker(struct work_struct *work)
         cw->result = -EIO;
         goto out;
     }
+
+    // commit_creds() resets dumpability and pdeath_signal on the task
+    // receiving the credentials before publishing them. The vendor helper
+    // does not, so mirror that here or a previously dumpable process stays
+    // readable by its former UID.
+    if (cw->target->mm)
+        set_dumpable(cw->target->mm, suid_dumpable);
+    cw->target->pdeath_signal = 0;
 
     user_changed = ro_cred->user != old_cred->user;
     if (user_changed) {

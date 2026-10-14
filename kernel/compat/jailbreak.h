@@ -22,7 +22,20 @@ void rkp_jb_exit(void);
 // On RKP kernels this patches the original function's entry instruction to
 // branch to @replacement; elsewhere it writes the slot through the normal
 // table writer. The slot must hold a kernel function pointer.
-int ksu_compat_patch_slot(void **slot, void *replacement);
+//
+// If @callthrough is non-NULL it receives the address callers must use to
+// reach the original function, published before the hook becomes active.
+// Under RKP this is a stub prepared during installation; elsewhere it is
+// the original address itself.
+int ksu_compat_patch_slot(void **slot, void *replacement, void **callthrough);
+
+// Undo ksu_compat_patch_slot(): restore the slot to @original. Under RKP
+// the entry branch is removed; elsewhere the slot is written back.
+int ksu_compat_restore_slot(void **slot, void *original);
+
+// Undo a direct branch site installed by ksu_compat_patch_slot() on
+// @original (the address the engine recorded). RKP-only.
+int ksu_compat_restore_branch(void *original);
 
 // Return the callable address for the original function of an installed
 // branch site: the original itself, or its call-through stub under RKP.

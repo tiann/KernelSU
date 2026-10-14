@@ -8,6 +8,7 @@
 #include <asm/cacheflush.h>
 #include <asm/unistd.h>
 #include "infra/symbol_resolver.h"
+#include "compat/jailbreak.h"
 #include "../patch_memory.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -40,13 +41,10 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
     pr_info("patch syscall %d, 0x%lx -> 0x%lx\n", nr, (unsigned long)READ_ONCE(ksu_syscall_table[nr]),
             (unsigned long)fn);
 
-    int ret = ksu_patch_text(&ksu_syscall_table[nr], &fn, sizeof(fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
-    if (!ret && READ_ONCE(ksu_syscall_table[nr]) != fn)
-        ret = -EIO;
-    if (ret)
-        pr_err("patch syscall %d failed: %d\n", nr, ret);
-
-    return ret;
+    // Under RKP the table still holds the original pointer while the
+    // function entry branches to fn, so a content check would fail a
+    // successful install.
+    return ksu_compat_patch_slot((void **)&ksu_syscall_table[nr], fn, NULL);
 }
 
 // Direct syscall table patching: overwrite syscall_table[nr] with fn,
@@ -65,13 +63,18 @@ int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
     int ret;
 
     syscall_fn_t orig = READ_ONCE(ksu_syscall_table[nr]);
-    if (old)
-        *old = orig;
+    void *callthrough = NULL;
 
-    if (patch_syscall_table(nr, fn)) {
-        ret = -EIO;
+    // ksu_compat_patch_slot publishes the call-through (the RKP stub or the
+    // original address) before activation, so a task entering the
+    // replacement after the branch lands never sees a NULL original.
+    ret = ksu_compat_patch_slot((void **)&ksu_syscall_table[nr], fn, &callthrough);
+    if (ret) {
+        pr_err("patch syscall %d failed: %d\n", nr, ret);
         goto out_unlock;
     }
+    if (old)
+        *old = (syscall_fn_t)callthrough;
 
     // Record for later restoration only after the write is verified.
     // Keep the first original when re-hooking the same slot so unhook
@@ -91,7 +94,7 @@ int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             hooked_count++;
         } else {
             pr_warn("hooked_entries full, cannot track syscall %d for restoration\n", nr);
-            patch_syscall_table(nr, orig);
+            ksu_compat_restore_slot((void **)&ksu_syscall_table[nr], orig);
             ret = -ENOSPC;
             goto out_unlock;
         }
@@ -117,7 +120,7 @@ void ksu_syscall_table_unhook(int nr)
 
     for (i = 0; i < hooked_count; i++) {
         if (hooked_entries[i].nr == nr) {
-            if (patch_syscall_table(nr, hooked_entries[i].orig)) {
+            if (ksu_compat_restore_slot((void **)&ksu_syscall_table[nr], hooked_entries[i].orig)) {
                 // Keep the entry so exit can retry the restore
                 mutex_unlock(&hooked_entries_lock);
                 return;
@@ -261,7 +264,7 @@ void __exit ksu_syscall_hook_exit(void)
         syscall_fn_t orig = hooked_entries[i].orig;
 
         pr_info("restore syscall %d to 0x%lx\n", nr, (unsigned long)orig);
-        if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+        if (ksu_compat_restore_slot((void **)&ksu_syscall_table[nr], orig)) {
             pr_err("restore syscall %d failed, keeping entry\n", nr);
             i++;
             continue;
