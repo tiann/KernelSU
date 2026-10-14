@@ -1,3 +1,4 @@
+<img width="1080" height="487" alt="Screenshot_2026-10-14-08-25-40-267-edit_com resukisu resukisu" src="https://github.com/user-attachments/assets/ab66a433-5273-4642-a089-e9b61534606a" />
 # How to build
 
 ::: warning
