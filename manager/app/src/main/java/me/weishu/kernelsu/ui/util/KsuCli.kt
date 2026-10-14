@@ -270,6 +270,38 @@ fun runModuleAction(
     return result.isSuccess
 }
 
+/**
+ * Runs a prepared one-shot script command (see ScriptCommand) in a new root shell in the
+ * global mount namespace, like a module action. Returns the exit code.
+ */
+fun runOneshotScript(
+    command: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Int {
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result = withNewRootShell(true) {
+        newJob().add(command).to(stdoutCallback, stderrCallback).exec()
+    }
+    Log.i(TAG, "one-shot script exit code: ${result.code}")
+    return result.code
+}
+
+/** Removes a script's extraction directory, including files the script created as root. */
+fun removeAsRoot(path: String) {
+    val escaped = "'" + path.replace("'", "'\\''") + "'"
+    ShellUtils.fastCmdResult(getRootShell(), "rm -rf $escaped")
+}
+
 fun restoreBoot(
     onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): FlashResult {

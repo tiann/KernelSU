@@ -18,6 +18,8 @@ data class RepoModule(
     val summary: String,
     val tags: List<String>,
     val metamodule: Boolean,
+    /** A one-shot script (registry `kind: script`): run by the manager, never installed. */
+    val isScript: Boolean = false,
     val iconUrl: String?,
     val latestVersion: String,
     val latestVersionCode: Int,

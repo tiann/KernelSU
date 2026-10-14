@@ -15,6 +15,7 @@ import me.weishu.kernelsu.data.registry.ApiVersionRef
 import me.weishu.kernelsu.data.registry.FileRegistryCache
 import me.weishu.kernelsu.data.registry.RegistryClient
 import me.weishu.kernelsu.data.registry.RegistryFetcher
+import me.weishu.kernelsu.data.registry.RegistryKind
 import me.weishu.kernelsu.data.registry.RegistryLocale
 import me.weishu.kernelsu.data.registry.RegistryUpdatePolicy
 import me.weishu.kernelsu.data.registry.RegistryUrls
@@ -154,7 +155,7 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
     }.getOrDefault(iso to 0L)
 
     private fun ApiModuleSummary.toRepoModule(): RepoModule =
-        buildRepoModule(id, name, summary, authors, tags, metamodule, icon, stable, stars, starsRepository)
+        buildRepoModule(id, name, summary, authors, tags, metamodule, kind, icon, stable, stars, starsRepository)
 
     private fun buildRepoModule(
         id: String,
@@ -163,6 +164,7 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
         authors: List<ApiAuthor>,
         tags: List<String>,
         metamodule: Boolean,
+        kind: String,
         icon: String?,
         stable: ApiVersionRef,
         stars: Int?,
@@ -180,6 +182,7 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
             summary = summary.trim(),
             tags = tags,
             metamodule = metamodule,
+            isScript = kind == RegistryKind.SCRIPT,
             iconUrl = icon?.let { client.resolve(it) },
             latestVersion = stable.version,
             latestVersionCode = stable.versionCode,
@@ -196,7 +199,7 @@ class ModuleRepoRepositoryImpl : ModuleRepoRepository {
         readmeFailed: Boolean,
         fromCache: Boolean,
     ): RepoModuleDetail {
-        val module = buildRepoModule(id, name, summary, authors, tags, metamodule, icon, stable, stars, starsRepository)
+        val module = buildRepoModule(id, name, summary, authors, tags, metamodule, kind, icon, stable, stars, starsRepository)
         return RepoModuleDetail(
             module = module,
             license = license,

@@ -35,12 +35,14 @@ import me.weishu.kernelsu.data.model.RepoRelease
 import me.weishu.kernelsu.data.registry.DownloadVerificationException
 import me.weishu.kernelsu.data.registry.ExpectedFile
 import me.weishu.kernelsu.data.registry.RegistryUrls
+import me.weishu.kernelsu.data.script.ScriptRepository
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.util.DownloadManager
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoDetailViewModel
@@ -88,6 +90,7 @@ fun ModuleRepoScreen() {
                 latestVersionCode = module.latestVersionCode,
                 latestReleaseTime = module.latestReleaseTime,
                 metamodule = module.metamodule,
+                script = module.isScript,
             )
             navigator.push(Route.ModuleRepoDetail(args))
         },
@@ -115,9 +118,17 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         detailVm.load(module.moduleId)
     }
 
-    val installedVersionCode = installedUiState.modules.firstOrNull { it.id == module.moduleId }?.versionCode
+    // Scripts are never installed: an installed module of the same id is unrelated.
+    val installedVersionCode = if (detailState.detail?.module?.isScript ?: module.script) {
+        null
+    } else {
+        installedUiState.modules.firstOrNull { it.id == module.moduleId }?.versionCode
+    }
+    val runCount by ScriptRepository.runCount.collectAsStateWithLifecycle()
+    val lastRun = remember(module.moduleId, runCount) { ScriptRepository.history.last(module.moduleId) }
     val state = ModuleRepoDetailUiState(
         module = module,
+        lastRun = lastRun,
         detail = detailState.detail,
         loaded = detailState.loaded,
         notInIndex = detailState.notInIndex,
@@ -130,7 +141,14 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         onBack = { navigator.pop() },
         onOpenWebUrl = { state.webUrl.takeIf { it.isNotEmpty() }?.let(openUrl) },
         onOpenUrl = openUrl,
-        onInstallModule = { uri -> navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri)))) },
+        onInstallModule = { uri ->
+            if (state.isScript) {
+                val name = state.detail?.module?.moduleName ?: module.moduleName
+                navigator.push(Route.ScriptRun(ScriptRunArg(uri, registryId = module.moduleId, displayName = name)))
+            } else {
+                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
+            }
+        },
         onRetry = { detailVm.load(module.moduleId, force = true) },
     )
 
