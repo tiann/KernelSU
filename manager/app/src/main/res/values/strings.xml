@@ -372,7 +372,6 @@
     <string name="script_param_required">This field is required</string>
     <string name="script_param_too_long">At most %d characters</string>
     <string name="script_param_invalid_characters">Line breaks are not allowed</string>
-    <string name="script_param_pattern">Does not match the required format</string>
     <string name="script_param_not_integer">Enter an integer</string>
     <string name="script_param_below_min">Must be at least %d</string>
     <string name="script_param_above_max">Must be at most %d</string>

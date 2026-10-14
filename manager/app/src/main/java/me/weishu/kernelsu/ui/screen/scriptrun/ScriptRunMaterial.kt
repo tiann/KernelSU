@@ -78,17 +78,21 @@ internal fun ScriptRunScreenMaterial(
         val prepared = state.prepared
         when {
             state.phase == ScriptRunPhase.FAILED -> Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(16.dp),
+                modifier = Modifier.padding(innerPadding),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.script_error_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                Text(text = state.error.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.script_error_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Text(text = state.error.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                }
+                if (state.offerInstall) InstallAnywayCard(actions)
             }
 
             prepared == null -> Box(
@@ -168,18 +172,22 @@ private fun ScriptInfo(state: ScriptRunUiState, prepared: PreparedScript, action
             }
         }
     )
-    if (state.offerInstall) {
-        TonalCard(modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.script_local_notice), style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(
-                    onClick = actions.onInstallAsModule,
-                    modifier = Modifier.padding(top = 8.dp),
-                ) {
-                    Text(stringResource(R.string.script_install_anyway))
-                }
+    if (state.offerInstall) InstallAnywayCard(actions)
+}
+
+/** A local ZIP can still be installed as a module, also when it cannot be run as a script. */
+@Composable
+private fun InstallAnywayCard(actions: ScriptRunActions) {
+    TonalCard(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.script_local_notice), style = MaterialTheme.typography.bodyMedium)
+            OutlinedButton(
+                onClick = actions.onInstallAsModule,
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                Text(stringResource(R.string.script_install_anyway))
             }
         }
     }

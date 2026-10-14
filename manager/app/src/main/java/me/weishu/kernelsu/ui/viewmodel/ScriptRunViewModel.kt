@@ -24,6 +24,7 @@ import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunPhase
 import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunUiState
 import me.weishu.kernelsu.ui.util.removeAsRoot
 import me.weishu.kernelsu.ui.util.runOneshotScript
+import java.util.UUID
 
 /** Prepares a one-shot script, collects its parameters and runs it once. */
 class ScriptRunViewModel : ViewModel() {
@@ -37,6 +38,9 @@ class ScriptRunViewModel : ViewModel() {
     private var visit: String? = null
     private var prepareJob: Job? = null
 
+    /** Owner of this page's extraction in [ScriptRepository]. */
+    private val owner = UUID.randomUUID().toString()
+
     /**
      * Prepares [arg] once per page visit ([visit] survives configuration changes, so a
      * finished run stays on screen after a rotation but a new visit starts over).
@@ -47,8 +51,9 @@ class ScriptRunViewModel : ViewModel() {
         synchronized(logContent) { logContent.setLength(0) }
         _state.value = ScriptRunUiState(displayName = arg.displayName, offerInstall = arg.offerInstall)
         prepareJob?.cancel()
+        ScriptRepository.release(owner)
         prepareJob = viewModelScope.launch {
-            runCatching { ScriptRepository.prepare(arg.uri, arg.registryId) }
+            runCatching { ScriptRepository.prepare(arg.uri, arg.registryId, owner) }
                 .onSuccess { prepared ->
                     val values = prepared.params.defaults
                     val lastRun = withContext(Dispatchers.IO) { ScriptRepository.history.last(prepared.manifest.id) }
@@ -118,6 +123,7 @@ class ScriptRunViewModel : ViewModel() {
                 runCatching { removeAsRoot(dir) }
                     .onSuccess { removed -> if (!removed) Log.w(TAG, "cannot remove $dir") }
                     .onFailure { Log.w(TAG, "cannot remove $dir", it) }
+                ScriptRepository.release(owner)
                 code
             }
             _state.update {
@@ -128,6 +134,11 @@ class ScriptRunViewModel : ViewModel() {
                 )
             }
         }
+    }
+
+    override fun onCleared() {
+        // A running script cleans up when it ends, even after the page is gone.
+        if (_state.value.phase != ScriptRunPhase.RUNNING) ScriptRepository.release(owner)
     }
 
     private fun errorMessage(e: Throwable): String {

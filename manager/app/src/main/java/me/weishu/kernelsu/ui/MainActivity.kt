@@ -187,6 +187,8 @@ class MainActivity : ComponentActivity() {
                     }
                     val flashRoute = navigator.current() as? Route.Flash
                     var flashBackEnabled by remember(flashRoute) { mutableStateOf(false) }
+                    val scriptRunRoute = navigator.current() as? Route.ScriptRun
+                    var scriptRunBackEnabled by remember(scriptRunRoute) { mutableStateOf(true) }
                     val mainScreenEntry = @Composable {
                         MainScreen(
                             initialPage = selectedMainPage,
@@ -236,7 +238,14 @@ class MainActivity : ComponentActivity() {
                                     key.fromShortcut
                                 )
                             }
-                            entry<Route.ScriptRun>(swipeDismiss = swipeDismiss) { key -> ScriptRunScreen(key.arg) }
+                            entry<Route.ScriptRun>(swipeDismiss = if (scriptRunBackEnabled) swipeDismiss else NavSwipeDirection.None) { key ->
+                                ScriptRunScreen(
+                                    key.arg,
+                                    onBackEnabledChange = { enabled ->
+                                        if (navigator.current() == key) scriptRunBackEnabled = enabled
+                                    },
+                                )
+                            }
                             entry<Route.Home>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
                             entry<Route.SuperUser>(swipeDismiss = swipeDismiss) { mainScreenEntry() }
                             entry<Route.Module>(swipeDismiss = swipeDismiss) { mainScreenEntry() }

@@ -23,7 +23,7 @@ class ScriptParamsTest {
             { "key": "MODE", "type": "enum", "label": "Mode", "default": "a",
               "options": [ { "value": "a", "label": "A" }, { "value": "b" } ] },
             { "key": "NAME", "type": "string", "label": "Name", "default": "", "maxLength": 64,
-              "pattern": "^[a-z]*$", "required": false },
+              "required": false },
             { "key": "COUNT", "type": "int", "label": "Count", "default": 1, "min": 0, "max": 10 }
           ]
         }
@@ -52,7 +52,6 @@ class ScriptParamsTest {
 
         val text = p[2] as ScriptParam.Text
         assertEquals(64, text.maxLength)
-        assertEquals("^[a-z]*$", text.pattern)
 
         val int = p[3] as ScriptParam.Integer
         assertEquals(1, int.default)
@@ -124,8 +123,6 @@ class ScriptParamsTest {
         assertInvalid("""{"key":"A","type":"string","label":"x","maxLength":0}""")
         assertInvalid("""{"key":"A","type":"string","label":"x","maxLength":1025}""")
         assertInvalid("""{"key":"A","type":"string","label":"x","maxLength":2,"default":"abc"}""")
-        assertInvalid("""{"key":"A","type":"string","label":"x","pattern":"(unclosed"}""")
-        assertInvalid("""{"key":"A","type":"string","label":"x","pattern":"^[a-z]+$","default":"ABC"}""")
         assertInvalid("""{"key":"A","type":"string","label":"x","default":"a\nb"}""")
         assertInvalid("""{"key":"A","type":"string","label":"x","required":"yes"}""")
         // A required field may start out empty: the user has to fill it in.
@@ -143,10 +140,9 @@ class ScriptParamsTest {
         assertInvalid("""{"key":"A","type":"int","label":"x","default":2147483648}""")
         parse("""{"key":"A","type":"int","label":"x","min":-2147483648,"max":2147483647}""")
 
-        assertInvalid("""{"key":"A","type":"string","label":"x","pattern":"${"a".repeat(257)}"}""")
-        parse("""{"key":"A","type":"string","label":"x","pattern":"${"a".repeat(256)}"}""")
-        // Pattern only applies to non-empty values, also for the default.
-        parse("""{"key":"A","type":"string","label":"x","pattern":"^[a-z]+$","required":true}""")
+        // `pattern` is not part of the format: like any unknown field it is ignored, never enforced.
+        val text = parse("""{"key":"A","type":"string","label":"x","pattern":"(a+)+$"}""").params[0]
+        assertNull(text.validate("a".repeat(64) + "!"))
     }
 
     @Test
@@ -179,9 +175,6 @@ class ScriptParamsTest {
         val text = p.params[2]
         assertNull(text.validate(""))
         assertNull(text.validate("abc"))
-        assertEquals(ParamError.PATTERN_MISMATCH, text.validate("ABC"))
-        // Full match, not find.
-        assertEquals(ParamError.PATTERN_MISMATCH, text.validate("abc1"))
         assertEquals(ParamError.TOO_LONG, text.validate("a".repeat(65)))
         assertEquals(ParamError.INVALID_CHARACTERS, text.validate("a\nb"))
         assertEquals(ParamError.INVALID_CHARACTERS, text.validate("a\u0000"))
@@ -204,14 +197,5 @@ class ScriptParamsTest {
 
         assertTrue(p.validate(p.defaults).isEmpty())
         assertEquals(mapOf("COUNT" to ParamError.ABOVE_MAX), p.validate(mapOf("COUNT" to "42")))
-    }
-
-    @Test
-    fun catastrophicPatternGivesUpAsMismatch() {
-        val text = parse("""{"key":"S","type":"string","label":"S","pattern":"(a+)+$","maxLength":1024}""").params[0]
-        val start = System.nanoTime()
-        assertEquals(ParamError.PATTERN_MISMATCH, text.validate("a".repeat(64) + "!"))
-        assertTrue((System.nanoTime() - start) / 1_000_000 < 2_000)
-        assertNull(text.validate("aaaa"))
     }
 }

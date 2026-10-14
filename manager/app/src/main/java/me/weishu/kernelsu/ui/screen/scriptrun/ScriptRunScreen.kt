@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -44,7 +45,7 @@ import java.util.UUID
  * output (shared with module actions) once it runs.
  */
 @Composable
-fun ScriptRunScreen(arg: ScriptRunArg) {
+fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
     val uiMode = LocalUiMode.current
@@ -54,6 +55,8 @@ fun ScriptRunScreen(arg: ScriptRunArg) {
 
     val visit = rememberSaveable { UUID.randomUUID().toString() }
     LaunchedEffect(arg, visit) { viewModel.load(arg, visit) }
+    // No swipe-dismiss while the script runs (the output screen already blocks back).
+    SideEffect { onBackEnabledChange(state.phase != ScriptRunPhase.RUNNING) }
 
     if (state.phase == ScriptRunPhase.RUNNING || state.phase == ScriptRunPhase.FINISHED) {
         val snackbarHost = remember { SnackbarHostState() }
@@ -131,7 +134,6 @@ internal fun paramErrorText(param: ScriptParam, error: ParamError): String = whe
     ParamError.REQUIRED -> stringResource(R.string.script_param_required)
     ParamError.TOO_LONG -> stringResource(R.string.script_param_too_long, (param as? ScriptParam.Text)?.maxLength ?: 0)
     ParamError.INVALID_CHARACTERS -> stringResource(R.string.script_param_invalid_characters)
-    ParamError.PATTERN_MISMATCH -> stringResource(R.string.script_param_pattern)
     ParamError.NOT_AN_INTEGER -> stringResource(R.string.script_param_not_integer)
     ParamError.BELOW_MIN -> stringResource(R.string.script_param_below_min, (param as? ScriptParam.Integer)?.min ?: 0)
     ParamError.ABOVE_MAX -> stringResource(R.string.script_param_above_max, (param as? ScriptParam.Integer)?.max ?: 0)

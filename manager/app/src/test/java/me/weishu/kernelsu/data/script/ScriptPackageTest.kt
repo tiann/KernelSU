@@ -97,12 +97,15 @@ class ScriptPackageTest {
             file("params.json", """{"schemaVersion":1,"params":[{"key":"A","type":"bool","label":"a"}]}"""),
             Entry.Dir("data/"),
             file("data/nested/file.txt", "payload", mode = 0x81A4),
+            file("bin/helper", "#!/system/bin/sh\n", mode = 0x8DED), // 0106755: setuid is not restored
         )
         assertEquals("my_script", ScriptPackage.validate(z, "my_script").id)
         val dest = File(tmp.root, "oneshot/abc")
         ScriptPackage.extract(z, dest)
         assertEquals("echo hi\n", File(dest, "action.sh").readText())
         assertEquals("payload", File(dest, "data/nested/file.txt").readText())
+        assertTrue(File(dest, "bin/helper").canExecute())
+        assertFalse(File(dest, "data/nested/file.txt").canExecute())
         // No temporary directory is left next to the extraction.
         assertEquals(listOf("abc"), dest.parentFile!!.list()!!.toList())
 
@@ -182,5 +185,12 @@ class ScriptPackageTest {
         val module = zip(file("module.prop", "id=m\nname=M\n"), file("customize.sh", ""))
         assertNull(FileInputStream(module).use { ScriptPackage.readOneshotManifest(it) })
         assertNull("garbage".byteInputStream().use { ScriptPackage.readOneshotManifest(it) })
+        // Entries before module.prop are drained within the extraction budget, not inflated unbounded.
+        val bomb = zip(
+            Entry.FileEntry("big.bin", ByteArray((ScriptPackage.MAX_TOTAL_BYTES + 1).toInt())),
+            file("module.prop", prop),
+            file("action.sh", ""),
+        )
+        assertNull(FileInputStream(bomb).use { ScriptPackage.readOneshotManifest(it) })
     }
 }

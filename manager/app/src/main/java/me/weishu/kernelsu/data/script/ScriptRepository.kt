@@ -4,11 +4,16 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.BuildConfig
 import me.weishu.kernelsu.Natives
@@ -20,6 +25,7 @@ import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 /** A validated script, extracted and ready to run. */
 data class PreparedScript(
@@ -40,9 +46,17 @@ object ScriptRepository {
     const val DIR_NAME = "oneshot"
     private const val PREFS = "oneshot_scripts"
     private const val MAX_SOURCE_CHARS = 256 * 1024
-    private const val STALE_EXTRACTION_MS = 24L * 60 * 60 * 1000
 
     private fun root(): File = File(ksuApp.filesDir, DIR_NAME)
+
+    /** Extraction held by each owner (one run page); everything else under [root] is stale. */
+    private val extractions = ConcurrentHashMap<String, File>()
+
+    /** Deletes released extractions off the caller's (often the main) thread. */
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /** Serialises preparations, so cleanup never sees another preparation's half-done files. */
+    private val prepareLock = Mutex()
 
     val history: ScriptRunHistory by lazy {
         val prefs = ksuApp.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -72,9 +86,14 @@ object ScriptRepository {
     /**
      * Copies, verifies, validates and extracts the ZIP at [uri]. With [registryId] the ZIP must
      * be a verified registry download (re-hashed here like a module install) whose module.prop
-     * id equals [registryId].
+     * id equals [registryId]. The extraction belongs to [owner] until [release]; preparing again
+     * for the same owner releases its previous one.
      */
-    suspend fun prepare(uri: Uri, registryId: String?): PreparedScript = withContext(Dispatchers.IO) {
+    suspend fun prepare(uri: Uri, registryId: String?, owner: String): PreparedScript = withContext(Dispatchers.IO) {
+        prepareLock.withLock { prepareLocked(uri, registryId, owner) }
+    }
+
+    private fun prepareLocked(uri: Uri, registryId: String?, owner: String): PreparedScript {
         val storeRoot = File(ksuApp.filesDir, RegistryDownloadStore.DIR_NAME)
         val expected = if (uri.scheme == ContentResolver.SCHEME_FILE) {
             uri.path?.let { RegistryDownloadStore.expectedFor(storeRoot, File(it)) }
@@ -97,37 +116,55 @@ object ScriptRepository {
             val sha256 = sha256(zip)
             // One directory per preparation: the same ZIP may be open on two run pages at once.
             val dir = File(root(), "$sha256-${UUID.randomUUID()}")
-            cleanup(except = dir.name)
-            ScriptPackage.extract(zip, dir)
-
-            val paramsFile = File(dir, ScriptPackage.PARAMS)
-            val params = if (paramsFile.isFile) {
-                ScriptPackage.parseParams(paramsFile.readText())
-            } else {
-                ScriptParams.EMPTY
+            extractions.put(owner, dir)?.let(::delete)
+            cleanup()
+            try {
+                ScriptPackage.extract(zip, dir)
+                return readPrepared(manifest, dir, sha256)
+            } catch (e: Throwable) {
+                release(owner)
+                throw e
             }
-            // Read at most one char past the limit: action.sh itself may be up to the ZIP size cap.
-            val source = File(dir, ScriptPackage.ACTION).bufferedReader().use { reader ->
-                val buf = CharArray(MAX_SOURCE_CHARS + 1)
-                var n = 0
-                while (n < buf.size) {
-                    val read = reader.read(buf, n, buf.size - n)
-                    if (read == -1) break
-                    n += read
-                }
-                String(buf, 0, n)
-            }
-            PreparedScript(
-                manifest = manifest,
-                dir = dir,
-                sha256 = sha256,
-                params = params,
-                actionSource = source.take(MAX_SOURCE_CHARS),
-                actionSourceTruncated = source.length > MAX_SOURCE_CHARS,
-            )
         } finally {
             zip.delete()
         }
+    }
+
+    private fun readPrepared(manifest: ScriptManifest, dir: File, sha256: String): PreparedScript {
+        val paramsFile = File(dir, ScriptPackage.PARAMS)
+        val params = if (paramsFile.isFile) {
+            ScriptPackage.parseParams(paramsFile.readText())
+        } else {
+            ScriptParams.EMPTY
+        }
+        // Read at most one char past the limit: action.sh itself may be up to the ZIP size cap.
+        val source = File(dir, ScriptPackage.ACTION).bufferedReader().use { reader ->
+            val buf = CharArray(MAX_SOURCE_CHARS + 1)
+            var n = 0
+            while (n < buf.size) {
+                val read = reader.read(buf, n, buf.size - n)
+                if (read == -1) break
+                n += read
+            }
+            String(buf, 0, n)
+        }
+        return PreparedScript(
+            manifest = manifest,
+            dir = dir,
+            sha256 = sha256,
+            params = params,
+            actionSource = source.take(MAX_SOURCE_CHARS),
+            actionSourceTruncated = source.length > MAX_SOURCE_CHARS,
+        )
+    }
+
+    /**
+     * Drops the extraction of [owner] (page left, or the preparation failed). Not for a running
+     * script: the run removes its directory as root, since the script may create root-owned files.
+     */
+    fun release(owner: String) {
+        val dir = extractions.remove(owner) ?: return
+        ioScope.launch { delete(dir) }
     }
 
     private val _runCount = MutableStateFlow(0)
@@ -147,14 +184,14 @@ object ScriptRepository {
         _runCount.update { it + 1 }
     }
 
-    /** Drops old extractions; recent ones may belong to another open run page. */
-    private fun cleanup(except: String) {
-        val now = System.currentTimeMillis()
-        root().listFiles()?.forEach { f ->
-            if (f.name != except && now - f.lastModified() > STALE_EXTRACTION_MS) {
-                if (!f.deleteRecursively()) Log.w(TAG, "cannot delete $f")
-            }
-        }
+    /** Drops extractions no page holds, e.g. left behind by a killed process. */
+    private fun cleanup() {
+        val held = extractions.values.mapTo(HashSet()) { it.name }
+        root().listFiles()?.forEach { f -> if (f.name !in held) delete(f) }
+    }
+
+    private fun delete(dir: File) {
+        if (dir.exists() && !dir.deleteRecursively()) Log.w(TAG, "cannot delete $dir")
     }
 
     private fun sha256(file: File): String {

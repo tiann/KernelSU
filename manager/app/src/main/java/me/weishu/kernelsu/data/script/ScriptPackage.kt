@@ -56,6 +56,7 @@ object ScriptPackage {
     private const val S_IFMT = 0xF000
     private const val S_IFREG = 0x8000
     private const val S_IFDIR = 0x4000
+    private const val S_IXUSR = 0x40
 
     /** Same rule as ksud's `metamodule`: trimmed value is "1" or ASCII case-insensitive "true". */
     fun isOneshot(value: String?): Boolean {
@@ -109,12 +110,22 @@ object ScriptPackage {
     fun readOneshotManifest(input: InputStream): ScriptManifest? = try {
         ZipInputStream(input).use { zip ->
             var manifest: ScriptManifest? = null
+            // nextEntry() would inflate a skipped entry in full: drain it here, within the same
+            // budget extraction has, so entries before module.prop cannot be a ZIP bomb.
+            var skipped = 0L
+            val buf = ByteArray(8192)
             for (i in 0 until MAX_ENTRIES) {
                 val entry = zip.nextEntry ?: break
                 if (entry.name == MODULE_PROP) {
                     val props = parseModuleProp(readLimited(zip, MAX_PROP_BYTES).toString(Charsets.UTF_8))
                     if (isOneshot(props["oneshot"])) manifest = manifestOf(props)
                     break
+                }
+                while (true) {
+                    val n = zip.read(buf)
+                    if (n == -1) break
+                    skipped += n
+                    if (skipped > MAX_TOTAL_BYTES) return@use null
                 }
             }
             manifest
@@ -257,6 +268,10 @@ object ScriptPackage {
                                 out.write(buf, 0, n)
                             }
                         }
+                    }
+                    // Keep helpers the script runs directly executable; setuid / setgid are never restored.
+                    if (entry.platform == ZipArchiveEntry.PLATFORM_UNIX && (entry.unixMode and S_IXUSR) != 0) {
+                        if (!target.setExecutable(true, true)) throw IOException("Cannot make ${entry.name} executable")
                     }
                 }
             }

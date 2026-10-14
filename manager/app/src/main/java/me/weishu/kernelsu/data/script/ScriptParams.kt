@@ -22,7 +22,6 @@ enum class ParamError {
     REQUIRED,
     TOO_LONG,
     INVALID_CHARACTERS,
-    PATTERN_MISMATCH,
     NOT_AN_INTEGER,
     BELOW_MIN,
     ABOVE_MAX,
@@ -81,18 +80,15 @@ sealed class ScriptParam {
         override val description: String?,
         val default: String,
         val maxLength: Int,
-        val pattern: String?,
         val required: Boolean,
     ) : ScriptParam() {
-        private val regex: Regex? by lazy { pattern?.let(::Regex) }
         override val defaultValue: String get() = default
 
-        /** Empty is valid unless [required]; [pattern] (full match) applies to non-empty values. */
+        /** Empty is valid unless [required]. */
         override fun validate(value: String): ParamError? = when {
             value.isEmpty() -> if (required) ParamError.REQUIRED else null
             value.any { it == '\u0000' || it == '\n' || it == '\r' } -> ParamError.INVALID_CHARACTERS
             value.length > maxLength -> ParamError.TOO_LONG
-            regex?.let { matchesWithin(it, value) } == false -> ParamError.PATTERN_MISMATCH
             else -> null
         }
     }
@@ -127,20 +123,6 @@ sealed class ScriptParam {
     }
 
     companion object {
-        /** Upper bound for one pattern match; validation runs on every edit, on the UI thread. */
-        const val PATTERN_TIMEOUT_MS = 100L
-
-        /**
-         * Full match of [regex] against [value] that gives up (as a mismatch) after
-         * [PATTERN_TIMEOUT_MS]: patterns come from the package, and java.util.regex can
-         * backtrack exponentially, e.g. `(a+)+$`.
-         */
-        fun matchesWithin(regex: Regex, value: String, timeoutMs: Long = PATTERN_TIMEOUT_MS): Boolean = try {
-            regex.matches(DeadlineCharSequence(value, System.nanoTime() + timeoutMs * 1_000_000))
-        } catch (_: PatternTimeoutException) {
-            false
-        }
-
         const val ENV_PREFIX = "KSU_PARAM_"
     }
 }
@@ -165,7 +147,6 @@ object ScriptParamsParser {
     const val MAX_TEXT_LENGTH = 200
     const val DEFAULT_MAX_LENGTH = 256
     const val MAX_MAX_LENGTH = 1024
-    const val MAX_PATTERN_LENGTH = 256
 
     private val KEY = Regex("^[A-Z][A-Z0-9_]{0,31}$")
     private val OPTION_VALUE = Regex("^[A-Za-z0-9._-]{1,64}$")
@@ -230,20 +211,13 @@ object ScriptParamsParser {
                 val maxLength = obj.integer("maxLength", key)?.also {
                     if (it !in 1..MAX_MAX_LENGTH) fail("$key.maxLength must be 1..$MAX_MAX_LENGTH")
                 } ?: DEFAULT_MAX_LENGTH
-                val pattern = obj["pattern"]?.takeIf { it !is JsonNull }?.let {
-                    (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail("$key.pattern must be a string")
-                }
-                if (pattern != null) {
-                    if (pattern.length > MAX_PATTERN_LENGTH) fail("$key.pattern is longer than $MAX_PATTERN_LENGTH")
-                    runCatching { Regex(pattern) }.onFailure { fail("$key.pattern does not compile: ${it.message}") }
-                }
                 val required = obj["required"]?.takeIf { it !is JsonNull }?.let {
                     (it as? JsonPrimitive)?.takeIf { p -> !p.isString }?.booleanOrNull ?: fail("$key.required must be a boolean")
                 } ?: false
                 val defaultValue = default?.let { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content ?: fail("$key.default must be a string") }
                     ?: ""
                 // An empty default is always fine, even when required: the user has to fill it in.
-                ScriptParam.Text(key, label, description, defaultValue, maxLength, pattern, required)
+                ScriptParam.Text(key, label, description, defaultValue, maxLength, required)
             }
 
             "int" -> {
@@ -338,24 +312,4 @@ object ScriptParamsParser {
         is JsonPrimitive -> if (element.isString) checkText(element.content, what) else fail("$what must be a string")
         else -> fail("$what must be a string")
     }
-}
-
-private class PatternTimeoutException : RuntimeException()
-
-/** Lets a regex match be aborted: every character access checks the deadline. */
-private class DeadlineCharSequence(
-    private val inner: CharSequence,
-    private val deadlineNanos: Long,
-) : CharSequence {
-    override val length: Int get() = inner.length
-
-    override fun get(index: Int): Char {
-        if (System.nanoTime() > deadlineNanos) throw PatternTimeoutException()
-        return inner[index]
-    }
-
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        DeadlineCharSequence(inner.subSequence(startIndex, endIndex), deadlineNanos)
-
-    override fun toString(): String = inner.toString()
 }

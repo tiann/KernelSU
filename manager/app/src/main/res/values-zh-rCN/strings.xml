@@ -366,7 +366,6 @@
     <string name="script_param_required">此项为必填</string>
     <string name="script_param_too_long">最多 %d 个字符</string>
     <string name="script_param_invalid_characters">不允许换行</string>
-    <string name="script_param_pattern">格式不符合要求</string>
     <string name="script_param_not_integer">请输入整数</string>
     <string name="script_param_below_min">不能小于 %d</string>
     <string name="script_param_above_max">不能大于 %d</string>

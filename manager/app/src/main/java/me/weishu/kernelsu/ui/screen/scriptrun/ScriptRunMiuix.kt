@@ -133,6 +133,7 @@ internal fun ScriptRunScreenMiuix(
                                 summary = state.error,
                             )
                         }
+                        if (state.offerInstall) InstallAnywayCardMiuix(actions)
                     } else {
                         ScriptInfoMiuix(state, prepared, actions)
                         ParamsFormMiuix(state, prepared, actions)
@@ -179,21 +180,25 @@ private fun ScriptInfoMiuix(state: ScriptRunUiState, prepared: PreparedScript, a
             summary = lastRunText(context, state.lastRun),
         )
     }
-    if (state.offerInstall) {
-        Card(
+    if (state.offerInstall) InstallAnywayCardMiuix(actions)
+}
+
+/** A local ZIP can still be installed as a module, also when it cannot be run as a script. */
+@Composable
+private fun InstallAnywayCardMiuix(actions: ScriptRunActions) {
+    Card(
+        modifier = Modifier
+            .padding(top = 12.dp)
+            .fillMaxWidth()
+    ) {
+        BasicComponent(summary = stringResource(R.string.script_local_notice))
+        TextButton(
             modifier = Modifier
-                .padding(top = 12.dp)
                 .fillMaxWidth()
-        ) {
-            BasicComponent(summary = stringResource(R.string.script_local_notice))
-            TextButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                text = stringResource(R.string.script_install_anyway),
-                onClick = actions.onInstallAsModule,
-            )
-        }
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            text = stringResource(R.string.script_install_anyway),
+            onClick = actions.onInstallAsModule,
+        )
     }
 }
 
