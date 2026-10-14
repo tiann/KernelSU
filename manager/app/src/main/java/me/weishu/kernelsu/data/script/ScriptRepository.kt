@@ -19,6 +19,7 @@ import me.weishu.kernelsu.ksuApp
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
+import java.util.UUID
 
 /** A validated script, extracted and ready to run. */
 data class PreparedScript(
@@ -94,8 +95,9 @@ object ScriptRepository {
             }
             val manifest = ScriptPackage.validate(zip, registryId)
             val sha256 = sha256(zip)
-            val dir = File(root(), sha256)
-            cleanup(except = sha256)
+            // One directory per preparation: the same ZIP may be open on two run pages at once.
+            val dir = File(root(), "$sha256-${UUID.randomUUID()}")
+            cleanup(except = dir.name)
             ScriptPackage.extract(zip, dir)
 
             val paramsFile = File(dir, ScriptPackage.PARAMS)
@@ -104,7 +106,17 @@ object ScriptRepository {
             } else {
                 ScriptParams.EMPTY
             }
-            val source = File(dir, ScriptPackage.ACTION).readText()
+            // Read at most one char past the limit: action.sh itself may be up to the ZIP size cap.
+            val source = File(dir, ScriptPackage.ACTION).bufferedReader().use { reader ->
+                val buf = CharArray(MAX_SOURCE_CHARS + 1)
+                var n = 0
+                while (n < buf.size) {
+                    val read = reader.read(buf, n, buf.size - n)
+                    if (read == -1) break
+                    n += read
+                }
+                String(buf, 0, n)
+            }
             PreparedScript(
                 manifest = manifest,
                 dir = dir,

@@ -50,7 +50,7 @@ object ScriptPackage {
     const val MAX_TOTAL_BYTES = 64L * 1024 * 1024
     const val MAX_ENTRIES = 4096
     const val MAX_PROP_BYTES = 64 * 1024
-    const val MAX_PARAMS_BYTES = 256 * 1024
+    const val MAX_PARAMS_BYTES = 64 * 1024
 
     private val MODULE_ID = Regex("^[a-zA-Z][a-zA-Z0-9._-]+$")
     private const val S_IFMT = 0xF000

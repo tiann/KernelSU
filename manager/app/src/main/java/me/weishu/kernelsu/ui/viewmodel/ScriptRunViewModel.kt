@@ -115,7 +115,9 @@ class ScriptRunViewModel : ViewModel() {
                 )
                 ScriptRepository.recordRun(prepared, code)
                 // Nothing stays behind: the script may have created root-owned files in its directory.
-                runCatching { removeAsRoot(dir) }.onFailure { Log.w(TAG, "cannot remove $dir", it) }
+                runCatching { removeAsRoot(dir) }
+                    .onSuccess { removed -> if (!removed) Log.w(TAG, "cannot remove $dir") }
+                    .onFailure { Log.w(TAG, "cannot remove $dir", it) }
                 code
             }
             _state.update {

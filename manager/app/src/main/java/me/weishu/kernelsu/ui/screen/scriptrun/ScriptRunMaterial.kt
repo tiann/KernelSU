@@ -221,7 +221,7 @@ private fun ParamsForm(state: ScriptRunUiState, prepared: PreparedScript, action
                             isError = error != null,
                             placeholder = null,
                             keyboardOptions = if (param is ScriptParam.Integer) {
-                                KeyboardOptions(keyboardType = KeyboardType.Number)
+                                KeyboardOptions(keyboardType = integerKeyboardType(param))
                             } else {
                                 KeyboardOptions.Default
                             },

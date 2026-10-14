@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -158,3 +159,7 @@ internal fun scriptSubtitle(id: String, version: String, versionCode: Int?): Str
     if (version.isNotBlank()) append(" · ").append(version)
     if (versionCode != null) append(" (").append(versionCode).append(')')
 }
+
+/** The plain number keypad of most IMEs has no "-": use a text keyboard when negatives are allowed. */
+internal fun integerKeyboardType(param: ScriptParam.Integer): KeyboardType =
+    if ((param.min ?: Int.MIN_VALUE) < 0) KeyboardType.Ascii else KeyboardType.Number

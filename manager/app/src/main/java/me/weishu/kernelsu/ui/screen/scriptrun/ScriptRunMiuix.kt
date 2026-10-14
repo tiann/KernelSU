@@ -228,7 +228,7 @@ private fun ParamsFormMiuix(state: ScriptRunUiState, prepared: PreparedScript, a
                         onValueChange = { actions.onValueChange(param.key, it) },
                         summary = error?.let { paramErrorText(param, it) } ?: description,
                         keyboardOptions = if (param is ScriptParam.Integer) {
-                            KeyboardOptions(keyboardType = KeyboardType.Number)
+                            KeyboardOptions(keyboardType = integerKeyboardType(param))
                         } else {
                             KeyboardOptions.Default
                         },

@@ -223,4 +223,13 @@ class ScriptParamsTest {
         assertTrue(p.validate(p.defaults).isEmpty())
         assertEquals(mapOf("COUNT" to ParamError.ABOVE_MAX), p.validate(mapOf("COUNT" to "42")))
     }
+
+    @Test
+    fun catastrophicPatternGivesUpAsMismatch() {
+        val text = parse("""{"key":"S","type":"string","label":"S","pattern":"(a+)+$","maxLength":1024}""").params[0]
+        val start = System.nanoTime()
+        assertEquals(ParamError.PATTERN_MISMATCH, text.validate("a".repeat(64) + "!"))
+        assertTrue((System.nanoTime() - start) / 1_000_000 < 2_000)
+        assertNull(text.validate("aaaa"))
+    }
 }

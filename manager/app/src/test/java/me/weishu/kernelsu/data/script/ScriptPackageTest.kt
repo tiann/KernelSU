@@ -169,6 +169,10 @@ class ScriptPackageTest {
         val dest = File(tmp.root, "out")
         assertReason(ScriptPackageException.Reason.TOO_LARGE) { ScriptPackage.extract(z, dest) }
         assertFalse(dest.exists())
+
+        // params.json is capped at 64 KiB, like the registry validator.
+        val padded = """{"schemaVersion":1,"params":[]}""".padEnd(ScriptPackage.MAX_PARAMS_BYTES + 1, ' ')
+        assertReason(ScriptPackageException.Reason.TOO_LARGE) { ScriptPackage.validate(validZip(file("params.json", padded))) }
     }
 
     @Test

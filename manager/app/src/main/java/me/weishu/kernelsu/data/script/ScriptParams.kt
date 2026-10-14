@@ -133,7 +133,7 @@ sealed class ScriptParam {
             value.isEmpty() -> if (required) ParamError.REQUIRED else null
             value.any { it == '\u0000' || it == '\n' || it == '\r' } -> ParamError.INVALID_CHARACTERS
             value.length > maxLength -> ParamError.TOO_LONG
-            regex?.matches(value) == false -> ParamError.PATTERN_MISMATCH
+            regex?.let { matchesWithin(it, value) } == false -> ParamError.PATTERN_MISMATCH
             else -> null
         }
     }
@@ -168,6 +168,20 @@ sealed class ScriptParam {
     }
 
     companion object {
+        /** Upper bound for one pattern match; validation runs on every edit, on the UI thread. */
+        const val PATTERN_TIMEOUT_MS = 100L
+
+        /**
+         * Full match of [regex] against [value] that gives up (as a mismatch) after
+         * [PATTERN_TIMEOUT_MS]: patterns come from the package, and java.util.regex can
+         * backtrack exponentially, e.g. `(a+)+$`.
+         */
+        fun matchesWithin(regex: Regex, value: String, timeoutMs: Long = PATTERN_TIMEOUT_MS): Boolean = try {
+            regex.matches(DeadlineCharSequence(value, System.nanoTime() + timeoutMs * 1_000_000))
+        } catch (_: PatternTimeoutException) {
+            false
+        }
+
         const val ENV_PREFIX = "KSU_PARAM_"
     }
 }
@@ -379,4 +393,24 @@ object ScriptParamsParser {
 
         else -> fail("$what must be a string or an object")
     }
+}
+
+private class PatternTimeoutException : RuntimeException()
+
+/** Lets a regex match be aborted: every character access checks the deadline. */
+private class DeadlineCharSequence(
+    private val inner: CharSequence,
+    private val deadlineNanos: Long,
+) : CharSequence {
+    override val length: Int get() = inner.length
+
+    override fun get(index: Int): Char {
+        if (System.nanoTime() > deadlineNanos) throw PatternTimeoutException()
+        return inner[index]
+    }
+
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        DeadlineCharSequence(inner.subSequence(startIndex, endIndex), deadlineNanos)
+
+    override fun toString(): String = inner.toString()
 }

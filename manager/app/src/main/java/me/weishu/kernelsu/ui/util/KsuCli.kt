@@ -297,9 +297,9 @@ fun runOneshotScript(
 }
 
 /** Removes a script's extraction directory, including files the script created as root. */
-fun removeAsRoot(path: String) {
+fun removeAsRoot(path: String): Boolean {
     val escaped = "'" + path.replace("'", "'\\''") + "'"
-    ShellUtils.fastCmdResult(getRootShell(), "rm -rf $escaped")
+    return ShellUtils.fastCmdResult(getRootShell(), "rm -rf $escaped")
 }
 
 fun restoreBoot(
