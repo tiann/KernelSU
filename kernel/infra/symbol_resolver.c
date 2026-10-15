@@ -37,7 +37,9 @@ static int (*kallsyms_on_each_symbol_fn)(int (*fn)(void *, const char *, struct 
                                          void *data) = NULL;
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && !defined(__x86_64__)
+// With IBT, objtool seals kallsyms_on_each_match_symbol (never address-taken) and
+// an indirect call to it traps with "Missing ENDBR".
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0) && !IS_ENABLED(CONFIG_X86_KERNEL_IBT)
 #define HAVE_ON_EACH_MATCH_SYMBOL 1
 #else
 #define HAVE_ON_EACH_MATCH_SYMBOL 0
