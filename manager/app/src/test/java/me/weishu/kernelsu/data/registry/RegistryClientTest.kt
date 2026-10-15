@@ -585,4 +585,40 @@ class RegistryClientTest {
         assertEquals(0, m.stars)
         assertEquals("KernelSU-Modules/example-module", m.starsRepository)
     }
+
+    @Test
+    fun kindDefaultsToModuleAndUnknownKindsAreHidden() {
+        val f = FakeFetcher()
+        f.set(indexUrl, index(b1))
+        f.set(
+            listUrl,
+            modules(
+                b1,
+                summary("plain"),
+                summary("mod", extra = ",\"kind\":\"module\""),
+                summary("tool", extra = ",\"kind\":\"script\""),
+                summary("future", extra = ",\"kind\":\"theme\""),
+                summary("numeric", extra = ",\"kind\":1"),
+                summary("metascript", extra = ",\"kind\":\"script\"").replace("\"metamodule\":false", "\"metamodule\":true"),
+            )
+        )
+        val modules = client(f).loadCatalog().catalog.modules
+        assertEquals(listOf("plain", "mod", "tool"), modules.map { it.id })
+        assertEquals(listOf("module", "module", "script"), modules.map { it.kind })
+    }
+
+    @Test
+    fun detailKindIsParsedAndUnknownKindRejected() {
+        val parser = RegistryParser()
+        assertEquals(RegistryKind.MODULE, parser.parseDetail(detail("foo", b1)).kind)
+        val script = detail("foo", b1, extra = ",\"kind\":\"script\"").replace("\"metamodule\":true", "\"metamodule\":false")
+        assertEquals(RegistryKind.SCRIPT, parser.parseDetail(script).kind)
+        assertThrows(RegistryFormatException::class.java) {
+            parser.parseDetail(detail("foo", b1, extra = ",\"kind\":\"theme\""))
+        }
+        // detail() is a metamodule: a metamodule script is a manifest error.
+        assertThrows(RegistryFormatException::class.java) {
+            parser.parseDetail(detail("foo", b1, extra = ",\"kind\":\"script\""))
+        }
+    }
 }

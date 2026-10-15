@@ -47,6 +47,10 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
 
         fun isValidModuleId(id: String): Boolean = id.length in 2..64 && MODULE_ID.matches(id)
         fun isValidBuildId(id: String): Boolean = BUILD_ID.matches(id)
+
+        /** Unknown kinds are hidden; a script can never be a metamodule (a manifest error upstream). */
+        fun isSupportedKind(kind: String, metamodule: Boolean): Boolean =
+            RegistryKind.isKnown(kind) && !(kind == RegistryKind.SCRIPT && metamodule)
     }
 
     private fun parseObject(text: String): JsonObject {
@@ -114,6 +118,7 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
         )
         requireBuildId(detail.buildId)
         if (!isValidModuleId(detail.id)) throw RegistryFormatException("Invalid module id: ${detail.id}")
+        if (!isSupportedKind(detail.kind, detail.metamodule)) throw RegistryFormatException("Unsupported kind: ${detail.kind}")
         if (detail.stable.versionCode < 1) throw RegistryFormatException("Invalid stable versionCode")
         if (detail.source.host != "github") throw RegistryFormatException("Unsupported source host: ${detail.source.host}")
         val fullName = detail.source.fullName
@@ -161,6 +166,7 @@ class RegistryParser(private val json: Json = DEFAULT_JSON) {
         if (!isValidModuleId(s.id)) return null
         if (!RegistryUrls.isValidApiPath(s.detail)) return null
         if (s.stable.versionCode < 1) return null
+        if (!isSupportedKind(s.kind, s.metamodule)) return null
         return s.copy(
             icon = s.icon?.takeIf(RegistryUrls::isValidApiPath),
             authors = s.authors.map { a -> a.copy(url = a.url?.takeIf(RegistryUrls::isHttpsUrl)) },

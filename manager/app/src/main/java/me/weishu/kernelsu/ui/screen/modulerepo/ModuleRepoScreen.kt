@@ -35,12 +35,15 @@ import me.weishu.kernelsu.data.model.RepoRelease
 import me.weishu.kernelsu.data.registry.DownloadVerificationException
 import me.weishu.kernelsu.data.registry.ExpectedFile
 import me.weishu.kernelsu.data.registry.RegistryUrls
+import me.weishu.kernelsu.data.script.ScriptRepository
+import me.weishu.kernelsu.data.script.ScriptRunRecord
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.util.DownloadManager
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoDetailViewModel
@@ -48,6 +51,7 @@ import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
 import okhttp3.Request
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 @Composable
 fun ModuleRepoScreen() {
@@ -88,6 +92,7 @@ fun ModuleRepoScreen() {
                 latestVersionCode = module.latestVersionCode,
                 latestReleaseTime = module.latestReleaseTime,
                 metamodule = module.metamodule,
+                script = module.isScript,
             )
             navigator.push(Route.ModuleRepoDetail(args))
         },
@@ -115,9 +120,20 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         detailVm.load(module.moduleId)
     }
 
-    val installedVersionCode = installedUiState.modules.firstOrNull { it.id == module.moduleId }?.versionCode
+    // Scripts are never installed: an installed module of the same id is unrelated.
+    val installedVersionCode = if (detailState.detail?.module?.isScript ?: module.script) {
+        null
+    } else {
+        installedUiState.modules.firstOrNull { it.id == module.moduleId }?.versionCode
+    }
+    val runCount by ScriptRepository.runCount.collectAsStateWithLifecycle()
+    // SharedPreferences load from disk on first use: keep it off the main thread.
+    val lastRun by produceState<ScriptRunRecord?>(null, module.moduleId, runCount) {
+        value = withContext(Dispatchers.IO) { ScriptRepository.history.last(module.moduleId) }
+    }
     val state = ModuleRepoDetailUiState(
         module = module,
+        lastRun = lastRun,
         detail = detailState.detail,
         loaded = detailState.loaded,
         notInIndex = detailState.notInIndex,
@@ -130,7 +146,14 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         onBack = { navigator.pop() },
         onOpenWebUrl = { state.webUrl.takeIf { it.isNotEmpty() }?.let(openUrl) },
         onOpenUrl = openUrl,
-        onInstallModule = { uri -> navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri)))) },
+        onInstallModule = { uri ->
+            if (state.isScript) {
+                val name = state.detail?.module?.moduleName ?: module.moduleName
+                navigator.push(Route.ScriptRun(ScriptRunArg(uri, registryId = module.moduleId, displayName = name)))
+            } else {
+                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
+            }
+        },
         onRetry = { detailVm.load(module.moduleId, force = true) },
     )
 
@@ -142,15 +165,29 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
 
 /** UI state of downloading one release ZIP. */
 @Stable
-class ReleaseDownloadHandle {
+class ReleaseDownloadHandle(private val sha256: String, downloadedUri: Uri?) {
     var isDownloading by mutableStateOf(false)
     var progress by mutableIntStateOf(0)
-    var downloadedUri by mutableStateOf<Uri?>(null)
+    var downloadedUri by mutableStateOf(downloadedUri)
+        private set
+
+    fun setDownloaded(uri: Uri?) {
+        downloadedUri = uri
+        if (uri != null) verifiedDownloads[sha256] = uri else verifiedDownloads.remove(sha256)
+    }
 }
+
+/**
+ * Verified release ZIPs of this process, keyed by SHA-256, so the Install / Run button survives
+ * leaving and reopening the detail page. Callers still check [isDownloadAvailable] before use.
+ */
+private val verifiedDownloads = ConcurrentHashMap<String, Uri>()
 
 @Composable
 fun rememberReleaseDownload(release: RepoRelease): ReleaseDownloadHandle =
-    remember(release.zipUrl, release.sha256) { ReleaseDownloadHandle() }
+    remember(release.zipUrl, release.sha256) {
+        ReleaseDownloadHandle(release.sha256, verifiedDownloads[release.sha256])
+    }
 
 /**
  * Downloads a release ZIP. The download service only accepts GitHub Release URLs (and their CDN
@@ -166,7 +203,7 @@ fun CoroutineScope.startReleaseDownload(context: Context, release: RepoRelease, 
             fileName = release.zipName,
             onDownloaded = { uri ->
                 handle.isDownloading = false
-                handle.downloadedUri = uri
+                handle.setDownloaded(uri)
             },
             onDownloading = { handle.isDownloading = true },
             onProgress = { p -> launch(Dispatchers.Main) { handle.progress = p } },
