@@ -236,6 +236,8 @@ This script inherits all variables and functions from the built-in `install.sh`:
 
 **Note**: This script is **NOT** called when installing the metamodule itself.
 
+**Hot install**: KernelSU applies [hot install](module.md#hot-install) requests itself after `metainstall.sh` returns. If your metamodule implements its own hot install, skip it when `KSU_HAS_HOT_INSTALL` is `true`.
+
 #### 3. metauninstall.sh - Cleanup Hook
 
 **Purpose**: Clean up resources when regular modules are uninstalled.

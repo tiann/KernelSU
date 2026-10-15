@@ -1,7 +1,7 @@
 #[allow(clippy::wildcard_imports)]
 use crate::utils::*;
 use crate::{
-    assets, defs, ksucalls, metamodule,
+    assets, defs, hot_install, ksucalls, metamodule,
     restorecon::{restore_syscon, setsyscon},
     sepolicy,
 };
@@ -271,6 +271,15 @@ impl Drop for SigchldBlock {
 }
 
 pub fn exec_script<T: AsRef<Path>>(path: T, wait: ScriptWait) -> Result<()> {
+    exec_script_with(path, wait, |_| {})
+}
+
+/// Like `exec_script`, letting the caller adjust the command before it is spawned.
+pub fn exec_script_with<T: AsRef<Path>>(
+    path: T,
+    wait: ScriptWait,
+    configure: impl FnOnce(&mut Command),
+) -> Result<()> {
     info!("exec {}", path.as_ref().display());
 
     let is_module_script = path.as_ref().starts_with(defs::MODULE_DIR);
@@ -334,6 +343,7 @@ pub fn exec_script<T: AsRef<Path>>(path: T, wait: ScriptWait) -> Result<()> {
         .arg("sh")
         .arg(path.as_ref())
         .envs(get_common_script_envs(validated_module_id));
+    configure(&mut command);
 
     let result = match wait {
         ScriptWait::NoWait => command.spawn().map(|_| ()),
@@ -737,6 +747,8 @@ fn install_module_to_system(zip: &str) -> Result<()> {
     let file = File::open(zip)?;
     let mut archive = zip::ZipArchive::new(file)?;
     archive.extract(&updated_dir)?;
+    // Only installer.sh may request a hot install, not a file shipped in the zip
+    std::fs::remove_file(updated_dir.join(defs::HOT_INSTALL_MARKER)).ok();
 
     // Set permission and selinux context for $MOD/system
     let module_system_dir = updated_dir.join("system");
@@ -749,7 +761,17 @@ fn install_module_to_system(zip: &str) -> Result<()> {
     println!("- Running module installer");
     exec_install_script(zip, is_metamodule, module_id)?;
 
+    if let Some(request) = hot_install::take_request(&updated_dir)
+        && hot_install::apply(module_id, is_metamodule, &request)
+    {
+        println!("- Module installed successfully, no reboot required!");
+        info!("Module {module_id} installed successfully!");
+        return Ok(());
+    }
+
     let module_dir = Path::new(MODULE_DIR).join(module_id);
+    // A metamodule doing its own hot install may have moved the marker into the live dir
+    std::fs::remove_file(module_dir.join(defs::HOT_INSTALL_MARKER)).ok();
     ensure_dir_exists(&module_dir)?;
     copy(
         updated_dir.join("module.prop"),

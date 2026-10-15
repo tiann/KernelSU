@@ -4,6 +4,7 @@ mod android {
     use std::time::Duration;
 
     pub const BOOT_STAGE_TIMEOUT: Duration = Duration::from_secs(35);
+    pub const HOT_INSTALL_SCRIPT_TIMEOUT: Duration = Duration::from_secs(30);
     pub const EMULATED_SOFT_REBOOT_TIMEOUT: Duration = Duration::from_secs(5);
     pub const WAITSYS_READY_TIMEOUT: Duration = Duration::from_secs(2);
     pub const WAITSYS_STOP_TIMEOUT: Duration = Duration::from_secs(5);
@@ -29,6 +30,8 @@ mod android {
     pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
     pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
     pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
+    // Replaced module dirs are parked here until the next boot
+    pub const HOT_INSTALL_TRASH_DIR: &str = concatcp!(WORKING_DIR, "hot_install_trash/");
 
     // Prefer /metadata/watchdog/ when present, else /metadata
     pub const PREINIT_DIR_WATCHDOG: &str = "/metadata/watchdog/ksu/";
@@ -42,6 +45,8 @@ mod android {
     pub const UPDATE_FILE_NAME: &str = "update";
     pub const REMOVE_FILE_NAME: &str = "remove";
     pub const MODULE_INIT_RC_DIR: &str = "initrc";
+    // Written by installer.sh when customize.sh requests a hot install
+    pub const HOT_INSTALL_MARKER: &str = ".ksu_hot_install";
 
     // Module config system
     pub const MODULE_CONFIG_DIR: &str = concatcp!(WORKING_DIR, "module_configs/");
