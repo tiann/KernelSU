@@ -183,8 +183,10 @@ object ScriptPackage {
     private fun checkEntries(file: ZipFile): Map<String, ZipArchiveEntry> {
         val byName = LinkedHashMap<String, ZipArchiveEntry>()
         var declared = 0L
+        var count = 0
         for (entry in file.entries) {
-            if (byName.size >= MAX_ENTRIES) {
+            // Counts every record, including the skipped "./" ones.
+            if (++count > MAX_ENTRIES) {
                 throw ScriptPackageException(ScriptPackageException.Reason.TOO_LARGE, "More than $MAX_ENTRIES entries")
             }
             val key = normalizeEntryName(entry.name)

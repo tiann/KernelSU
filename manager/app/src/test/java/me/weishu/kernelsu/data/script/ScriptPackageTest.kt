@@ -199,6 +199,10 @@ class ScriptPackageTest {
         // params.json is capped at 64 KiB, like the registry validator.
         val padded = """{"schemaVersion":1,"params":[]}""".padEnd(ScriptPackage.MAX_PARAMS_BYTES + 1, ' ')
         assertReason(ScriptPackageException.Reason.TOO_LARGE) { ScriptPackage.validate(validZip(file("params.json", padded))) }
+
+        // Root directory records are skipped but still count towards the entry limit.
+        val roots = Array<Entry>(ScriptPackage.MAX_ENTRIES) { Entry.Dir("./") }
+        assertReason(ScriptPackageException.Reason.TOO_LARGE) { ScriptPackage.validate(validZip(*roots)) }
     }
 
     @Test
