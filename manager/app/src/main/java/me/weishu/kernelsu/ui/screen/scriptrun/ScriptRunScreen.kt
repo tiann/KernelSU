@@ -18,6 +18,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.script.ParamError
@@ -57,8 +60,14 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
 
     val visit = rememberSaveable { UUID.randomUUID().toString() }
     LaunchedEffect(arg, visit) { viewModel.load(arg, visit) }
-    // No swipe-dismiss while the script runs (the output screen already blocks back).
-    SideEffect { onBackEnabledChange(state.phase != ScriptRunPhase.RUNNING) }
+    // The script cannot be stopped: no back (gesture included) and no swipe-dismiss while it runs.
+    val running = state.phase == ScriptRunPhase.RUNNING
+    SideEffect { onBackEnabledChange(!running) }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = running,
+        onBackCompleted = {},
+    )
     // ViewModels here live as long as the activity: free the extraction when the page goes away.
     val activity = LocalActivity.current
     DisposableEffect(viewModel) {

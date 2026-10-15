@@ -189,6 +189,9 @@ class MainActivity : ComponentActivity() {
                     var flashBackEnabled by remember(flashRoute) { mutableStateOf(false) }
                     val scriptRunRoute = navigator.current() as? Route.ScriptRun
                     var scriptRunBackEnabled by remember(scriptRunRoute) { mutableStateOf(true) }
+                    // Read here, not inside the NavDisplay builder: NavDisplay only rebuilds its entries
+                    // (and their swipeDismiss) when the builder lambda changes, so it must capture the value.
+                    val scriptRunSwipeDismiss = if (scriptRunBackEnabled) swipeDismiss else NavSwipeDirection.None
                     val mainScreenEntry = @Composable {
                         MainScreen(
                             initialPage = selectedMainPage,
@@ -238,7 +241,7 @@ class MainActivity : ComponentActivity() {
                                     key.fromShortcut
                                 )
                             }
-                            entry<Route.ScriptRun>(swipeDismiss = if (scriptRunBackEnabled) swipeDismiss else NavSwipeDirection.None) { key ->
+                            entry<Route.ScriptRun>(swipeDismiss = scriptRunSwipeDismiss) { key ->
                                 ScriptRunScreen(
                                     key.arg,
                                     onBackEnabledChange = { enabled ->
