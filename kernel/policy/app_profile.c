@@ -18,6 +18,7 @@
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
 #include "hook/tp_marker.h"
+#include "compat/jailbreak.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
 static struct group_info root_groups = { .usage = REFCOUNT_INIT(2) };
@@ -202,8 +203,11 @@ int escape_with_root_profile(void)
     setup_groups(profile, cred);
     setup_selinux(profile->selinux_domain, cred);
 
-    commit_creds(cred);
-
+    ret = ksu_commit_creds(cred);
+    if (ret) {
+        pr_err("ksu_commit_creds failed: %d\n", ret);
+        goto out_abort_creds;
+    }
     disable_seccomp();
 
     if (profile->flags & FLAG_KSU_NO_NEW_PRIVS) {
