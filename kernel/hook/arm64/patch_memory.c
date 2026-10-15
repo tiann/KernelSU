@@ -13,6 +13,7 @@
 #include "linux/stop_machine.h"
 #include "asm/cacheflush.h"
 #include "asm-generic/fixmap.h"
+#include "compat/jailbreak.h"
 
 // https://github.com/fuqiuluo/ovo/blob/f7da411458e87d32438dc14fce5a3313ed0c967e/ovo/mmuhack.c#L21
 
@@ -188,6 +189,9 @@ static int ksu_patch_text_cb(void *arg)
 
 int ksu_patch_text(void *dst, void *src, size_t len, int flags)
 {
+    if (static_branch_unlikely(&ksu_rkp_key) && len == sizeof(void *))
+        return ksu_rkp_branch_patch(dst, src);
+
     struct patch_text_info info = {
         .dst = dst,
         .src = src,
