@@ -361,14 +361,16 @@ export MODULE_HOT_RUN_SCRIPT=hotinstall.sh
 
 1. 用新版本替换 `/data/adb/modules/<id>`。旧目录会被移走，下次开机时才删除，因此仍在使用旧版本的进程和挂载在此之前可以继续工作。
 2. 加载模块的 `sepolicy.rule`。规则只会增加，新版本删掉的规则在重启前仍然有效。
-3. 在模块目录中执行 `MODULE_HOT_RUN_SCRIPT`，环境与启动脚本相同，运行在全局 mount 命名空间中。安装程序最多等待 30 秒，长期运行的服务请放到后台启动。
+3. 执行 `MODULE_HOT_RUN_SCRIPT`（相对于模块目录的路径），方式与启动脚本相同：运行在全局 mount 命名空间中，工作目录为脚本所在目录。脚本输出会显示在安装界面中，stdin 为 `/dev/null`，并忽略 `SIGPIPE`，因此安装程序退出后后台进程不会被杀掉。安装程序最多等待 30 秒，长期运行的服务请放到后台启动。脚本不存在时会跳过。
 4. 不留下 `update` 标记，管理器不会提示重启。
+
+即使 `sepolicy.rule` 加载失败、脚本执行失败或超时，模块仍视为热安装成功，请留意安装输出。
 
 和普通安装一样，即使旧版本处于禁用状态，安装后模块也会被启用。
 
 立即生效：模块文件本身、WebUI、`action.sh` 以及 `module.prop` 中的信息。
 
-下次开机才生效：`system` 下的文件（由元模块挂载）、`system.prop`、`initrc`，以及 `post-fs-data.sh`、`post-mount.sh`、`service.sh`、`boot-completed.sh` 这几个阶段。热安装时**不会**执行它们，但之后每次开机仍会照常执行。如果需要它们立即生效，请在 `MODULE_HOT_RUN_SCRIPT` 中处理，例如启动你的服务或调用 `resetprop`。
+下次开机才生效：`system` 及其他分区目录下的文件（由元模块挂载）、`system.prop`、`initrc`，以及 `post-fs-data.sh`、`post-mount.sh`、`service.sh`、`boot-completed.sh` 这几个阶段。热安装时**不会**执行它们，但之后每次开机仍会照常执行。如果需要它们立即生效，请在 `MODULE_HOT_RUN_SCRIPT` 中处理，例如启动你的服务或调用 `resetprop`。
 
 KernelSU 不会替你停止旧版本，更新时也不会执行 `uninstall.sh`。如果你的模块运行了守护进程，`MODULE_HOT_RUN_SCRIPT` 应先停止旧实例再启动新实例。
 
@@ -376,10 +378,8 @@ KernelSU 不会替你停止旧版本，更新时也不会执行 `uninstall.sh`�
 
 - 正在安装的是元模块。
 - 设备处于安全模式。
-- `MODULE_HOT_RUN_SCRIPT` 不是指向模块内文件的相对路径。
+- `MODULE_HOT_RUN_SCRIPT` 不是指向模块内文件的相对路径（指向模块外的符号链接会被拒绝）。
 - 无法替换模块目录。
-
-安装程序支持热安装时，`KSU_HAS_HOT_INSTALL` 的值为 `true`。
 
 ## 启动脚本 {#boot-scripts}
 

@@ -260,7 +260,8 @@ private fun moduleNeedsReboot(zip: File): Boolean {
     }.getOrNull()
     if (id == null || !MODULE_ID_REGEX.matches(id)) return true
     val dir = "/data/adb/modules/$id"
-    return ShellUtils.fastCmdResult(getRootShell(), "[ ! -d $dir ] || [ -e $dir/update ]")
+    // Any failure to check counts as needing a reboot
+    return !ShellUtils.fastCmdResult(getRootShell(), "[ -d $dir ] && [ ! -e $dir/update ]")
 }
 
 fun runModuleAction(

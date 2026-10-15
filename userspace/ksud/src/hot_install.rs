@@ -7,8 +7,8 @@
 //! boot (mounting system/, system.prop, post-fs-data.sh, ...) still waits for the next boot.
 
 use crate::{
-    defs,
-    module::{ScriptWait, exec_script},
+    assets, defs,
+    module::{ScriptWait, exec_script_with},
     sepolicy,
     utils::{ensure_dir_exists, is_safe_mode, switch_mnt_ns},
 };
@@ -17,8 +17,10 @@ use anyhow::{Context, Result, bail};
 use log::{info, warn};
 
 use std::{
-    fs::{remove_dir_all, remove_file, rename},
+    fs::{canonicalize, remove_dir_all, remove_file, rename},
+    os::unix::process::CommandExt,
     path::{Component, Path, PathBuf},
+    process::{Command, Stdio},
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
@@ -39,48 +41,58 @@ pub fn take_request(staged_dir: &Path) -> Option<Request> {
     })
 }
 
-fn check_run_script(staged_dir: &Path, script: &str) -> Result<()> {
-    let path = Path::new(script);
-    if !path.components().all(|c| matches!(c, Component::Normal(_))) {
+/// Resolve the run script to a path relative to the module dir. A missing script is skipped,
+/// like the metamodule implementations do.
+fn check_run_script(staged_dir: &Path, script: &str) -> Result<Option<PathBuf>> {
+    let mut components = Path::new(script).components().peekable();
+    while components.next_if_eq(&Component::CurDir).is_some() {}
+    let relative: PathBuf = components.collect();
+    if relative.as_os_str().is_empty()
+        || !relative
+            .components()
+            .all(|c| matches!(c, Component::Normal(_)))
+    {
         bail!("invalid MODULE_HOT_RUN_SCRIPT '{script}'");
     }
-    if !staged_dir.join(path).is_file() {
-        bail!("MODULE_HOT_RUN_SCRIPT '{script}' not found");
+
+    let path = staged_dir.join(&relative);
+    if path.symlink_metadata().is_err() {
+        println!("! MODULE_HOT_RUN_SCRIPT '{script}' not found, skipping it");
+        return Ok(None);
     }
-    Ok(())
+    // Symlinks may only point to files inside the module
+    let resolved = canonicalize(&path)?;
+    if !resolved.is_file() || !resolved.starts_with(canonicalize(staged_dir)?) {
+        bail!("MODULE_HOT_RUN_SCRIPT '{script}' is not a file inside the module");
+    }
+    Ok(Some(relative))
 }
 
-fn check(module_id: &str, is_metamodule: bool, request: &Request) -> Result<()> {
+fn check(module_id: &str, is_metamodule: bool, request: &Request) -> Result<Option<PathBuf>> {
     if is_metamodule {
         bail!("metamodules are always applied at boot");
     }
     if is_safe_mode() {
         bail!("modules are disabled in safe mode");
     }
-    if let Some(script) = &request.run_script {
-        check_run_script(&Path::new(defs::MODULE_UPDATE_DIR).join(module_id), script)?;
-    }
-    Ok(())
+    let Some(script) = &request.run_script else {
+        return Ok(None);
+    };
+    check_run_script(&Path::new(defs::MODULE_UPDATE_DIR).join(module_id), script)
 }
 
 /// Move the live module dir out of the way. Running processes and existing mounts may still
 /// reference it, so it is only deleted on the next boot.
-fn stash(live_dir: &Path, module_id: &str) -> Result<Option<PathBuf>> {
+fn stash(live_dir: &Path, module_id: &str) -> Result<PathBuf> {
     ensure_dir_exists(defs::HOT_INSTALL_TRASH_DIR)?;
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or_default();
     let target = Path::new(defs::HOT_INSTALL_TRASH_DIR).join(format!("{module_id}.{nanos}"));
-    match rename(live_dir, &target) {
-        Ok(()) => Ok(Some(target)),
-        Err(e) if e.raw_os_error() == Some(libc::EXDEV) => {
-            remove_dir_all(live_dir)
-                .with_context(|| format!("Failed to remove {}", live_dir.display()))?;
-            Ok(None)
-        }
-        Err(e) => Err(e).with_context(|| format!("Failed to move {}", live_dir.display())),
-    }
+    // Never delete the live dir here: on failure the regular update path still needs it
+    rename(live_dir, &target).with_context(|| format!("Failed to move {}", live_dir.display()))?;
+    Ok(target)
 }
 
 fn swap(module_id: &str) -> Result<()> {
@@ -88,7 +100,7 @@ fn swap(module_id: &str) -> Result<()> {
     let live_dir = Path::new(defs::MODULE_DIR).join(module_id);
 
     let stashed = if live_dir.exists() {
-        stash(&live_dir, module_id)?
+        Some(stash(&live_dir, module_id)?)
     } else {
         None
     };
@@ -110,11 +122,16 @@ fn swap(module_id: &str) -> Result<()> {
 pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
     println!("- Hot install requested");
 
-    if let Err(e) = check(module_id, is_metamodule, request).and_then(|()| swap(module_id)) {
-        println!("- Hot install skipped: {e:#}");
-        println!("- Reboot to apply the module");
-        return false;
-    }
+    let run_script = match check(module_id, is_metamodule, request)
+        .and_then(|script| swap(module_id).map(|()| script))
+    {
+        Ok(script) => script,
+        Err(e) => {
+            println!("- Hot install skipped: {e:#}");
+            println!("- Reboot to apply the module");
+            return false;
+        }
+    };
     info!("Module {module_id} hot installed");
 
     let live_dir = Path::new(defs::MODULE_DIR).join(module_id);
@@ -125,19 +142,38 @@ pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
         println!("! Failed to apply sepolicy.rule");
     }
 
-    if live_dir.join("system").is_dir() && !live_dir.join("skip_mount").exists() {
-        println!("- Note: files under system/ are mounted on the next boot");
+    if !live_dir.join("skip_mount").exists()
+        && ["system", "vendor", "product", "system_ext", "odm"]
+            .iter()
+            .any(|partition| live_dir.join(partition).is_dir())
+    {
+        println!("- Note: partition files are mounted on the next boot");
     }
 
-    if let Some(script) = &request.run_script {
+    if let Some(script) = run_script {
         // The installer usually runs in the manager's mount namespace; boot scripts run in
         // init's, so mounts made by the script must land there too
         if let Err(e) = switch_mnt_ns(1) {
             warn!("Failed to switch to init mount namespace: {e}");
         }
-        println!("- Running {script}");
+        println!("- Running {}", script.display());
         let deadline = Instant::now() + defs::HOT_INSTALL_SCRIPT_TIMEOUT;
-        if let Err(e) = exec_script(live_dir.join(script), ScriptWait::Until(deadline)) {
+        let result = exec_script_with(
+            live_dir.join(script),
+            ScriptWait::Until(deadline),
+            |command| {
+                // Output goes to the installer's pipe, which the manager closes once the install
+                // ends; ignore SIGPIPE so background processes started here keep running
+                command.stdin(Stdio::null());
+                unsafe {
+                    command.pre_exec(|| {
+                        libc::signal(libc::SIGPIPE, libc::SIG_IGN);
+                        Ok(())
+                    });
+                }
+            },
+        );
+        if let Err(e) = result {
             println!("! {e:#}");
         }
     }
@@ -145,12 +181,35 @@ pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
     true
 }
 
-/// Drop module dirs replaced by hot installs during the previous boot.
+/// Drop module dirs replaced by hot installs during the previous boot. The trash is renamed
+/// first and deleted in the background so a large one does not hold up boot.
 pub fn clean_trash() {
     let trash = Path::new(defs::HOT_INSTALL_TRASH_DIR);
-    if trash.exists()
-        && let Err(e) = remove_dir_all(trash)
+    if !trash.exists() {
+        return;
+    }
+    let old = Path::new(defs::WORKING_DIR).join("hot_install_trash.old");
+    // Left over if the previous background removal did not finish
+    if old.exists()
+        && let Err(e) = remove_dir_all(&old)
     {
-        warn!("Failed to clean {}: {e}", trash.display());
+        warn!("Failed to clean {}: {e}", old.display());
+    }
+    if let Err(e) = rename(trash, &old) {
+        warn!("Failed to move {}: {e}", trash.display());
+        return;
+    }
+    let spawned = Command::new(assets::BUSYBOX_PATH)
+        .args(["rm", "-rf"])
+        .arg(&old)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn();
+    if let Err(e) = spawned {
+        warn!("Failed to spawn trash removal: {e}");
+        if let Err(e) = remove_dir_all(&old) {
+            warn!("Failed to clean {}: {e}", old.display());
+        }
     }
 }
