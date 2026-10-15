@@ -54,6 +54,7 @@ function sidebarGuide() {
           { text: '元模組', link: '/zh_TW/guide/metamodule.md' },
           { text: '模組 WebUI', link: '/zh_TW/guide/module-webui.md' },
           { text: '模組配置', link: '/zh_TW/guide/module-config.md' },
+          { text: '一次性腳本', link: '/zh_TW/guide/module-script.md' },
           { text: 'App Profile', link: '/zh_TW/guide/app-profile.md' },
           { text: '搶救開機迴圈', link: '/zh_TW/guide/rescue-from-bootloop.md' },
           { text: 'x86_64 支援', link: '/zh_TW/guide/x86_64-support' },

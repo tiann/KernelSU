@@ -16,6 +16,10 @@ KernelSU 的模块支持显示界面并与用户交互，请参阅 [WebUI 文档
 
 KernelSU 提供了一个内置的配置系统，允许模块存储持久化或临时的键值设置。详情请参阅[模块配置文档](module-config.md)。
 
+## 一次性脚本
+
+模块 ZIP 也可以是一次性脚本：KernelSU 管理器只运行它一次，而不是安装它。详情请参阅[一次性脚本文档](module-script.md)。
+
 ## Busybox
 
 KernelSU 提供了一个功能完备的 BusyBox 二进制文件（包括完整的 SELinux 支持）。可执行文件位于 `/data/adb/ksu/bin/busybox`。
