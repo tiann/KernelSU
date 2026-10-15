@@ -312,6 +312,7 @@ KernelSU 模块不支持在 Recovery 中安装！！
 - `KSU_UAPI_VER` (int): KernelSU 用户空间 (ksud) 的 UAPI 版本号 (如：`2`)。当内核驱动发生破坏性更改时此版本号会递增，模块可据此判断兼容性。
 - `KSU_RUNTIME_MODE` (string): KernelSU 当前的运行模式。可能的值为 `built-in`（即 GKI 模式，编译进内核）、`lkm`（开机时作为内核模块加载）或 `late-load`（开机后作为内核模块加载）。
 - `KSU_LATE_LOAD` (int?): 如果 KernelSU 是在开机后延迟加载的，此变量的值为 `1`，否则不设置此变量。
+- `KSU_HAS_HOT_INSTALL` (bool): 安装程序支持[热安装](#hot-install)时为 `true`。
 
 ::: warning
 `MAGISK_VER_CODE` 在 KernelSU 中永远为 `25200`，`MAGISK_VER` 则为 `v25.2`，请不要通过这两个变量来判断是否是 KernelSU！
@@ -342,6 +343,43 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
     for all directories in <directory> (including itself), it will call:
        set_perm dir owner group dirpermission context
 ```
+
+### 热安装 {#hot-install}
+
+默认情况下，新安装或更新的模块会被放在 `/data/adb/modules_update` 中，重启后才会生效。如果你的模块不依赖只在开机时才会进行的操作，可以在 `customize.sh` 中请求 KernelSU 立即应用：
+
+```sh
+# customize.sh
+export MODULE_HOT_INSTALL_REQUEST=true
+# 可选：新版本生效后要执行的模块内脚本
+export MODULE_HOT_RUN_SCRIPT=hotinstall.sh
+```
+
+这个请求在安装时判断，因此由模块自己决定是否需要重启，例如只在新版本没有改动 `system` 下的文件时才请求热安装。
+
+安装脚本（包括 `customize.sh` 和元模块的 `metainstall.sh`）成功结束后，KernelSU 会：
+
+1. 用新版本替换 `/data/adb/modules/<id>`。旧目录会被移走，下次开机时才删除，因此仍在使用旧版本的进程和挂载在此之前可以继续工作。
+2. 加载模块的 `sepolicy.rule`。规则只会增加，新版本删掉的规则在重启前仍然有效。
+3. 在模块目录中执行 `MODULE_HOT_RUN_SCRIPT`，环境与启动脚本相同，运行在全局 mount 命名空间中。安装程序最多等待 30 秒，长期运行的服务请放到后台启动。
+4. 不留下 `update` 标记，管理器不会提示重启。
+
+和普通安装一样，即使旧版本处于禁用状态，安装后模块也会被启用。
+
+立即生效：模块文件本身、WebUI、`action.sh` 以及 `module.prop` 中的信息。
+
+下次开机才生效：`system` 下的文件（由元模块挂载）、`system.prop`、`initrc`，以及 `post-fs-data.sh`、`post-mount.sh`、`service.sh`、`boot-completed.sh` 这几个阶段。热安装时**不会**执行它们，但之后每次开机仍会照常执行。如果需要它们立即生效，请在 `MODULE_HOT_RUN_SCRIPT` 中处理，例如启动你的服务或调用 `resetprop`。
+
+KernelSU 不会替你停止旧版本，更新时也不会执行 `uninstall.sh`。如果你的模块运行了守护进程，`MODULE_HOT_RUN_SCRIPT` 应先停止旧实例再启动新实例。
+
+以下情况 KernelSU 会回退为重启后生效，并打印原因：
+
+- 正在安装的是元模块。
+- 设备处于安全模式。
+- `MODULE_HOT_RUN_SCRIPT` 不是指向模块内文件的相对路径。
+- 无法替换模块目录。
+
+安装程序支持热安装时，`KSU_HAS_HOT_INSTALL` 的值为 `true`。
 
 ## 启动脚本 {#boot-scripts}
 
