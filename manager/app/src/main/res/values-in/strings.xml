@@ -30,9 +30,9 @@
     <string name="sulog_enable_action">Aktifkan</string>
     <string name="sulog_filter_title">Filter berdasarkan jenis</string>
     <string name="sulog_clean_title">Bersihkan log</string>
-    <string name="sulog_filter_root_execve">Eksekusi Root</string>
+    <string name="sulog_filter_root_execve">Eksekusi root</string>
     <string name="sulog_filter_sucompat">Perintah klasik SU</string>
-    <string name="sulog_filter_ioctl_grant_root">Izin Root</string>
+    <string name="sulog_filter_ioctl_grant_root">Izin root</string>
     <string name="sulog_filter_daemon_restart">Muat ulang daemon</string>
     <string name="module_failed_to_enable">Gagal mengaktifkan modul: %s</string>
     <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
@@ -49,7 +49,7 @@
     <string name="module_repo_update_available">Pembaruan</string>
     <string name="module_repo_installed">Terpasang</string>
     <string name="module_repo_using_cache">Gagal menyegarkan repositori, menampilkan salinan unduhan terakhir</string>
-    <string name="module_repo_unsupported_schema">Repositori modul menggunakan format yang lebih baru. Silakan perbarui Manajer KernelSU.</string>
+    <string name="module_repo_unsupported_schema">Repositori modul menggunakan format yang lebih baru. Silakan perbarui manajer KernelSU.</string>
     <string name="module_repo_load_failed">Gagal memuat repositori modul</string>
     <string name="module_repo_empty">Tidak ada modul yang tersedia</string>
     <string name="module_repo_not_in_index">Modul ini tidak ada dalam indeks repositori saat ini dan tidak dapat dipasang dari sini.</string>
@@ -65,9 +65,9 @@
     <string name="module_repo_download_verify_failed">%s gagal dalam pemeriksaan integritas (ukuran atau SHA-256 tidak cocok) dan telah dihapus</string>
     <string name="module_repo_download_url_blocked">Unduhan diblokir: hanya unduhan rilis GitHub yang diizinkan</string>
     <string name="module_repo_readme_failed">Gagal memuat README</string>
-    <string name="module_repo_tags">Tag</string>
+    <string name="module_repo_tags">Tagar</string>
     <string name="module_repo_stars">Bintang</string>
-    <string name="module_repo_attestation">Asal-usul build (atestasi)</string>
+    <string name="module_repo_attestation">Asal-usul build (sertifikat)</string>
     <string name="module_repo_release_page">Halaman rilis</string>
     <string name="module_update_unverifiable">Pembaruan %s tidak dapat diverifikasi dengan repositori modul dan tidak diunduh</string>
     <string name="confirm">Ya</string>
@@ -95,7 +95,7 @@
     <string name="jailbreak_mode">Mode jailbreak</string>
     <string name="home_jailbreak">Jailbreak</string>
     <string name="jailbreak_timeout">Proses jailbreak mungkin gagal, harap periksa log</string>
-    <string name="jailbreak_reboot_warning">Anda sedang berada dalam mode jailbreak. Memulai ulang normal akan menghilangkan akses Root, dan Anda harus melakukan jailbreak lagi setelah perangkat menyala. Tetap ingin mulai ulang?</string>
+    <string name="jailbreak_reboot_warning">Anda sedang berada dalam mode jailbreak. Memulai ulang normal akan menghilangkan akses root, dan Anda harus melakukan jailbreak lagi setelah perangkat menyala. Tetap ingin mulai ulang?</string>
     <string name="safe_mode_module_disabled">Pemasangan modul dinonaktifkan pada mode aman</string>
     <string name="reboot_to_apply">Mulai ulang untuk menerapkan</string>
     <string name="module_magisk_conflict">Modul tidak tersedia karena konflik dengan Magisk!</string>
@@ -174,7 +174,7 @@
     <string name="settings_pager_gesture_cross_axis">Sumbu silang</string>
     <string name="settings_pager_gesture_ios_like">Gaya iOS</string>
     <string name="settings_module_check_update">Periksa pembaruan modul</string>
-    <string name="grant_root_failed">Gagal memberikan akses Root!</string>
+    <string name="grant_root_failed">Gagal memberikan akses root!</string>
     <string name="home_pr_build_warning">Ini adalah build PR debug untuk permintaan perubahan. JANGAN gunakan di lingkungan produksi!</string>
     <string name="home_pr_kernel_warning">Kernel ini dibuild dengan dukungan tanda tangan PR (Pull Requests). Ini bukan kernel produksi!</string>
     <string name="action">Aksi</string>
@@ -206,7 +206,7 @@
     <string name="settings_uninstall_permanent">Copot permanen</string>
     <string name="settings_restore_stock_image">Pulihkan image bawaan</string>
     <string name="settings_uninstall_temporary_message">Copot sementara KernelSU, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
-    <string name="settings_uninstall_permanent_message">Copot KernelSU (Root dan semua modul) sepenuhnya dan secara permanen.</string>
+    <string name="settings_uninstall_permanent_message">Copot KernelSU (root dan semua modul) sepenuhnya dan secara permanen.</string>
     <string name="settings_restore_stock_image_message">Pulihkan image bawaan (jika cadangan ada), biasanya digunakan sebelum OTA; jika Anda perlu mencopot KernelSU, harap gunakan \"Copot permanen\".</string>
     <string name="flashing">Memasang</string>
     <string name="flash_success">Pemasangan berhasil</string>
@@ -215,7 +215,7 @@
     <string name="save_log">Simpan log</string>
     <string name="log_saved">Log disimpan</string>
     <string name="settings_sucompat">Perintah klasik SU</string>
-    <string name="settings_sucompat_summary">Izinkan akses Root melalui /system/bin/su pada proses baru yang dibuat</string>
+    <string name="settings_sucompat_summary">Izinkan akses root melalui /system/bin/su pada proses baru yang dibuat</string>
     <string name="settings_kernel_umount">Umount kernel</string>
     <string name="settings_kernel_umount_summary">Unmount modul dari kernel pada profil aplikasi</string>
     <string name="settings_selinux_hide">Sembunyikan modifikasi SELinux</string>
@@ -223,7 +223,7 @@
     <string name="settings_selinux_hide_reboot_required">Mulai ulang untuk menerapkan</string>
     <string name="settings_selinux_hide_failed">Kesalahan: %d</string>
     <string name="settings_sulog">SU log</string>
-    <string name="settings_sulog_summary">Rekam peristiwa terkait Root ke dalam berkas sulog KernelSU</string>
+    <string name="settings_sulog_summary">Rekam peristiwa terkait root ke dalam berkas sulog KernelSU</string>
     <string name="feature_status_unsupported_summary">Kernel tidak mendukung fitur ini</string>
     <string name="feature_status_managed_summary">Fitur ini dikelola oleh modul</string>
     <string name="settings_mode_enable_by_default">Aktifkan (Bawaan)</string>
@@ -251,7 +251,7 @@
     <string name="settings_page_scale">Skala tampilan</string>
     <string name="settings_page_scale_summary">Sesuaikan skala tampilan</string>
     <string name="settings_module_description_max_lines">Batas baris deskripsi modul</string>
-    <string name="settings_module_description_max_lines_summary">Deskripsi yang melebihi jumlah baris ini akan diringkas secara otomatis</string>
+    <string name="settings_module_description_max_lines_summary">Deskripsi yang melebihi jumlah baris akan diringkas secara otomatis</string>
     <string name="unit_lines">Baris</string>
     <string name="settings_color_spec">Spesifikasi warna</string>
     <string name="settings_color_style">Gaya warna</string>
@@ -301,12 +301,14 @@
     <string name="settings_auto_jailbreak_summary">Secara otomatis menggunakan Magica untuk meningkatkan hak akses ketika SELinux Permissive terdeteksi saat boot. Membutuhkan pemberian izin mulai otomatis ke aplikasi ini.</string>
     <string name="settings_soft_reboot">Mulai ulang lunak</string>
     <string name="settings_soft_reboot_summary">Gunakan mulai ulang lunak alih-alih mulai ulang normal saat memasang, memperbarui, atau mengaktifkan/menonaktifkan modul.</string>
-    <string name="allow_shell">Selalu berikan izin akses Root ke Shell</string>
+    <string name="allow_shell">Selalu berikan izin akses root ke Shell</string>
     <string name="allow_shell_summary">Selalu izinkan ADB Shell untuk memanggil perintah SU. Jangan aktifkan ini kecuali benar-benar diperlukan.</string>
     <string name="enable_adb">Paksa aktif ADB saat boot</string>
     <string name="enable_adb_summary">Paksa aktif debugging USB dan nonaktifkan otentikasi ADB. Jangan aktifkan ini kecuali benar-benar diperlukan.</string>
-    <string name="install_block_modules">Blokir modul kernel</string>
-    <string name="install_block_modules_summary">Nama-nama modul yang dipisahkan koma untuk menghentikan pemuatan saat penyiapan ulang, misalnya oplus_secure_guard. Biarkan kosong jika tidak ingin memblokir apa pun.</string>
+    <string name="install_block_modules">Blokir modul kernel (berisiko)</string>
+    <string name="install_block_modules_warning">Menghentikan pemuatan modul kernel yang terdaftar saat boot. Memblokir modul yang dibutuhkan oleh sistem dapat menyebabkan perangkat berhenti di logo boot atau bootloop (mis. MediaTek mkp pada beberapa perangkat). Aktifkan ini hanya jika Anda yakin modul tersebut aman untuk diblokir pada perangkat Anda. Untuk memulihkan, pasang image boot / init_boot bawaan menggunakan fastboot.</string>
+    <string name="install_block_modules_list">Modul yang akan diblokir</string>
+    <string name="install_block_modules_summary">Nama-nama modul yang dipisahkan koma untuk menghentikan pemuatan saat boot (mis. oplus_secure_guard). Biarkan kosong jika tidak ingin memblokir apa pun.</string>
     <string name="install_block_modules_invalid">Nama modul hanya boleh berisi huruf, angka dan garis bawah, masing-masing maksimal 64 karakter.</string>
     <string name="advanced_options">Opsi lanjutan</string>
     <string name="expand">Perluas</string>
@@ -319,15 +321,17 @@
     <string name="download">Unduh</string>
     <string name="download_cancel">Batal</string>
     <string name="download_install">Pasang</string>
-    <string name="settings_adb_root" translatable="false">ADB Root</string>
-    <string name="settings_adb_root_summary">Jalankan daemon adbd dengan hak akses Root</string>
+    <string name="settings_adb_root">ADB root</string>
+    <string name="settings_adb_root_summary">Jalankan daemon adbd dengan hak akses root</string>
+    <string name="settings_shell_su_adb_only">Batasi root shell untuk ADB</string>
+    <string name="settings_shell_su_adb_only_summary">Pemeriksaan tambahan saat shell diberi hak akses root: hanya proses yang dipicu oleh adbd atau proses root KernelSU (mis. modul ADB) yang dapat menggunakannya, guna mencegah aplikasi yang memperoleh hak akses shell melakukan peningkatan hak akses ke root.</string>
     <string name="menu_sort">Urutkan</string>
     <string name="sort_by_name">Nama aplikasi</string>
     <string name="sort_by_package_name">Nama paket</string>
     <string name="sort_by_install_time">Waktu pemasangan</string>
     <string name="sort_by_update_time">Waktu pembaruan</string>
     <string name="sort_reverse">Terbalik</string>
-    <string name="profile_flags_desc_no_new_privs">Mencegah peningkatan hak akses lebih lanjut melalui KernelSU dalam konteks profil Root ini</string>
+    <string name="profile_flags_desc_no_new_privs">Mencegah peningkatan hak akses lebih lanjut melalui KernelSU dalam konteks profil root ini</string>
     <string name="module_shortcut_copy_scheme">Salin skema URL</string>
     <string name="module_shortcut_scheme_copied">Skema URL disalin</string>
     <string name="nav_rail_expand">Perluas bilah navigasi</string>
