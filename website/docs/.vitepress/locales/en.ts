@@ -54,6 +54,7 @@ function sidebarGuide() {
           { text: 'Metamodule', link: '/guide/metamodule.md' },
           { text: 'Module WebUI', link: '/guide/module-webui.md' },
           { text: 'Module Configuration', link: '/guide/module-config.md' },
+          { text: 'One-shot Scripts', link: '/guide/module-script.md' },
           { text: 'App Profile', link: '/guide/app-profile.md' },
           { text: 'Rescue from bootloop', link: '/guide/rescue-from-bootloop.md' },
           { text: 'x86_64 support', link: '/guide/x86_64-support' },

@@ -52,6 +52,7 @@ function sidebarGuide() {
           { text: 'Руководство по разработке модулей', link: '/ru_RU/guide/module.md' },
           { text: 'Метамодуль', link: '/ru_RU/guide/metamodule.md' },
           { text: 'Конфигурация модулей', link: '/ru_RU/guide/module-config.md' },
+          { text: 'Одноразовые скрипты', link: '/ru_RU/guide/module-script.md' },
           { text: 'Профиль приложений', link: '/ru_RU/guide/app-profile.md' },
           { text: 'Выход из циклической загрузки', link: '/ru_RU/guide/rescue-from-bootloop.md' },
           { text: 'Поддержка x86_64', link: '/ru_RU/guide/x86_64-support' },
