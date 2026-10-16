@@ -425,8 +425,9 @@ static int do_insmod(const struct module_ctx *m, int argc, char **argv)
      * Prefer the KSU insmod supercall: it resolves the module's undefined
      * (non-exported) symbols against kallsyms before loading, which plain
      * finit_module cannot do. The module binary is mmap'd from the validated
-     * fd and handed to the kernel directly. Fall back to finit_module when the
-     * KSU driver is unavailable or the supercall itself fails.
+     * fd and handed to the kernel directly. Fall back to finit_module only
+     * when the supercall is unusable, never after a load attempt, so a
+     * module's init does not run twice.
      */
     drv = ksu_get_driver_fd();
     if (drv >= 0) {
@@ -443,14 +444,21 @@ static int do_insmod(const struct module_ctx *m, int argc, char **argv)
                     .flags = 0,
                 };
 
+                /* sys_ioctl returns -errno directly */
                 ret = sys_ioctl(drv, KSU_IOCTL_INSMOD, (unsigned long)&cmd);
                 munmap(image, st.st_size);
-                if (ret == 0) {
+                if (ret == 0 || ret == -EEXIST) {
                     close(fd);
-                    klog("[%s] insmod %s ok (ksu)", m->id, argv[1]);
+                    klog("[%s] insmod %s %s (ksu)", m->id, argv[1], ret ? "already loaded" : "ok");
                     return 0;
                 }
-                klog("[%s] insmod %s via ksu failed: %d, trying finit_module", m->id, argv[1], ret);
+                /* Unknown ioctl, not permitted, or rejected before loading */
+                if (ret != -ENOTTY && ret != -EPERM && ret != -ENOEXEC) {
+                    close(fd);
+                    klog("[%s] insmod %s failed: %d (ksu)", m->id, argv[1], -ret);
+                    return -1;
+                }
+                klog("[%s] insmod %s via ksu unavailable: %d, trying finit_module", m->id, argv[1], -ret);
             }
         }
     }
@@ -822,7 +830,12 @@ static void supervise(pid_t worker)
             klog("timed out after %d ms, killing worker", TOTAL_TIMEOUT_MS);
             kill(-worker, SIGKILL);
             kill(worker, SIGKILL);
-            waitpid(worker, NULL, 0);
+            /*
+             * SIGKILL cannot interrupt a worker stuck in a module's init, so do
+             * not block on it: boot must go on, init reaps it later.
+             */
+            for (i = 0; i < 100 && waitpid(worker, NULL, WNOHANG) != worker; i++)
+                sleep_ms(10);
             break;
         }
         sleep_ms(10);
@@ -830,17 +843,13 @@ static void supervise(pid_t worker)
 
     /*
      * Nothing may outlive preinit: once policy loads, leftovers would keep
-     * running in the kernel domain. Orphans are reparented to us, reap them.
+     * running in the kernel domain. Orphans are reparented to us, reap what
+     * has already exited. Do not wait for the rest: first stage init may have
+     * left children of its own (e.g. snapuserd) that stay alive.
      */
     kill(-worker, SIGKILL);
-    for (i = 0; i < 100; i++) {
-        r = waitpid(-1, NULL, WNOHANG);
-        if (r > 0)
-            continue;
-        if (r < 0 && errno != EINTR)
-            break;
-        sleep_ms(10);
-    }
+    while ((r = waitpid(-1, NULL, WNOHANG)) > 0 || (r < 0 && errno == EINTR))
+        ;
 }
 
 int main(int argc, char **argv, char **envp)
