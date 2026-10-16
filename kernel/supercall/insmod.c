@@ -4,9 +4,13 @@
  *
  * Loads an out-of-tree kernel module from a caller-provided image, resolving
  * its undefined symbols against the running kernel's kallsyms before handing
- * the image to the kernel's internal load_module(). This lets a module
- * reference non-exported kernel symbols, acting as a self-contained
- * replacement for an external LKM loader.
+ * the image to the regular init_module syscall. This lets a module reference
+ * non-exported kernel symbols, acting as a self-contained replacement for an
+ * external LKM loader.
+ *
+ * Same approach as ksuinit's userspace loader: patch the symbol table, then go
+ * through init_module, so CAP_SYS_MODULE, modules_disabled, LSM and module
+ * signature checks all still apply.
  *
  * The caller passes the module binary directly (a userspace buffer), not a
  * path or fd, so there is no re-open and no path/TOCTOU concern.
@@ -15,94 +19,93 @@
  */
 
 #include <linux/elf.h>
+#include <linux/err.h>
+#include <linux/mm.h>
+#include <linux/mman.h>
 #include <linux/slab.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
-#include <linux/version.h>
 #include <linux/vmalloc.h>
 
 #include "klog.h" // IWYU pragma: keep
+#include "util.h"
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
 #include "infra/symbol_resolver.h"
 
-// struct load_info lives in the kernel's private module internals header,
-// whose path moved in 6.1.
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
-#include "kernel/module/internal.h"
-#else
-#include "kernel/module-internal.h"
-#endif
-
-// load_module() is static in the kernel; resolve it by name at runtime.
-typedef int (*load_module_fn_t)(struct load_info *info, const char __user *uargs, int flags);
+static bool range_ok(u64 off, u64 size, size_t len)
+{
+    return off <= len && size <= len - off;
+}
 
 /*
  * Walk the module ELF symbol table and bind every undefined symbol to its
- * address in the running kernel, so the subsequent load_module() does not
+ * address in the running kernel, so the subsequent init_module does not
  * reject the module over unresolved (non-exported) symbols.
+ *
+ * This runs before the kernel's own ELF validation, so every offset taken from
+ * the image is bounds checked here. Returns -ENOEXEC for a malformed image.
  */
-static int __nocfi ksu_patch_module_symbols(void *buf, size_t len)
+static int ksu_patch_module_symbols(void *buf, size_t len)
 {
     Elf64_Ehdr *eh = buf;
-    Elf64_Shdr *sh, *shend;
-    Elf64_Sym *symtab = NULL, *symtab_end = NULL, *sym;
-    char *strtab = NULL, *strtab_end = NULL;
-    size_t shend_off;
-    int idx, symstr_idx = -1;
+    Elf64_Shdr *shdrs, *symsec = NULL, *strsec;
+    Elf64_Sym *syms;
+    const char *strtab;
+    size_t nsyms, strsz, i;
 
-    if (len <= sizeof(Elf64_Ehdr)) {
-        pr_err("insmod: module too small: %zu\n", len);
-        return -EINVAL;
+    if (len < sizeof(*eh) || memcmp(eh->e_ident, ELFMAG, SELFMAG) || eh->e_ident[EI_CLASS] != ELFCLASS64 ||
+        eh->e_type != ET_REL) {
+        pr_err("insmod: not an ELF64 relocatable object\n");
+        return -ENOEXEC;
     }
-    if (eh->e_shentsize != sizeof(Elf64_Shdr)) {
-        pr_err("insmod: invalid shentsize: %u\n", eh->e_shentsize);
-        return -EINVAL;
-    }
-    shend_off = eh->e_shoff + (size_t)eh->e_shentsize * eh->e_shnum;
-    if (eh->e_shoff > len || shend_off > len || shend_off < eh->e_shoff) {
+    if (eh->e_shentsize != sizeof(Elf64_Shdr) || !range_ok(eh->e_shoff, (u64)eh->e_shnum * sizeof(Elf64_Shdr), len)) {
         pr_err("insmod: section headers out of bounds\n");
-        return -EINVAL;
+        return -ENOEXEC;
     }
 
-    sh = buf + eh->e_shoff;
-    shend = buf + shend_off;
-    for (idx = 0; sh < shend; sh++, idx++) {
-        if (sh->sh_type == SHT_SYMTAB && !symtab) {
-            if (sh->sh_entsize != sizeof(Elf64_Sym) || sh->sh_size % sizeof(Elf64_Sym) != 0)
-                continue;
-            if (sh->sh_offset >= len || sh->sh_offset + sh->sh_size > len)
-                continue;
-            symtab = buf + sh->sh_offset;
-            symtab_end = (void *)symtab + sh->sh_size;
-            symstr_idx = sh->sh_link;
-        } else if (sh->sh_type == SHT_STRTAB && symstr_idx == idx && !strtab) {
-            if (sh->sh_offset >= len || sh->sh_offset + sh->sh_size > len)
-                continue;
-            strtab = buf + sh->sh_offset;
-            strtab_end = strtab + sh->sh_size;
+    shdrs = buf + eh->e_shoff;
+    for (i = 0; i < eh->e_shnum; i++) {
+        if (shdrs[i].sh_type == SHT_SYMTAB) {
+            symsec = &shdrs[i];
+            break;
         }
     }
-
-    if (!symtab || !strtab) {
-        pr_err("insmod: symtab/strtab not found\n");
-        return -EINVAL;
+    if (!symsec || symsec->sh_entsize != sizeof(Elf64_Sym) || symsec->sh_size % sizeof(Elf64_Sym) ||
+        !range_ok(symsec->sh_offset, symsec->sh_size, len) || symsec->sh_link >= eh->e_shnum) {
+        pr_err("insmod: bad or missing symtab\n");
+        return -ENOEXEC;
     }
 
-    for (sym = symtab, idx = 0; sym < symtab_end; sym++, idx++) {
-        char *name;
+    strsec = &shdrs[symsec->sh_link];
+    strtab = buf + strsec->sh_offset;
+    strsz = strsec->sh_size;
+    // A trailing NUL guarantees every name starting inside the table ends there.
+    if (strsec->sh_type != SHT_STRTAB || !strsz || !range_ok(strsec->sh_offset, strsz, len) ||
+        strtab[strsz - 1] != '\0') {
+        pr_err("insmod: bad symbol strtab\n");
+        return -ENOEXEC;
+    }
+
+    syms = buf + symsec->sh_offset;
+    nsyms = symsec->sh_size / sizeof(Elf64_Sym);
+    // Entry 0 is the reserved null symbol.
+    for (i = 1; i < nsyms; i++) {
+        Elf64_Sym *sym = &syms[i];
+        const char *name;
         unsigned long addr;
 
-        if (sym->st_shndx != SHN_UNDEF)
+        if (sym->st_shndx != SHN_UNDEF || sym->st_name >= strsz)
             continue;
 
         name = strtab + sym->st_name;
-        if (name < strtab || name >= strtab_end || !*name)
+        if (!*name)
             continue;
 
         addr = find_kernel_symbol_exact(name);
         if (!addr) {
             // Leave it undefined: it may be a genuinely exported symbol that
-            // load_module() can still resolve the normal way.
+            // init_module can still resolve the normal way.
             pr_warn("insmod: symbol not found: %s\n", name);
             continue;
         }
@@ -114,11 +117,10 @@ static int __nocfi ksu_patch_module_symbols(void *buf, size_t len)
     return 0;
 }
 
-int __nocfi ksu_do_insmod(void __user *arg)
+int ksu_do_insmod(void __user *arg)
 {
     struct ksu_insmod_cmd cmd;
-    load_module_fn_t load_module_fn;
-    struct load_info info = {};
+    unsigned long uaddr;
     void *buf;
     size_t len;
     int ret;
@@ -137,43 +139,45 @@ int __nocfi ksu_do_insmod(void __user *arg)
         return -EINVAL;
     }
 
-    load_module_fn = (load_module_fn_t)find_kernel_symbol_exact("load_module");
-    if (!load_module_fn) {
-        pr_err("insmod: load_module symbol not found\n");
-        return -ENOSYS;
-    }
-
     len = (size_t)cmd.data_len;
-
-    // load_module() takes ownership of the image as info.hdr and frees it with
-    // vfree() on both success and failure, so it must be vmalloc'd and must not
-    // be freed here once handed over.
     buf = vmalloc(len);
     if (!buf)
         return -ENOMEM;
 
     if (copy_from_user(buf, (const void __user *)(uintptr_t)cmd.data, len)) {
         pr_err("insmod: copy module image failed\n");
-        vfree(buf);
-        return -EFAULT;
+        ret = -EFAULT;
+        goto out_free;
     }
 
     ret = ksu_patch_module_symbols(buf, len);
-    if (ret) {
-        pr_err("insmod: patch symbols failed: %d\n", ret);
-        vfree(buf);
-        return ret;
+    if (ret)
+        goto out_free;
+
+    // init_module takes a userspace image: stage the patched copy in a fresh
+    // anonymous mapping of the caller, the source buffer may be read-only.
+    uaddr = vm_mmap(NULL, 0, len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, 0);
+    if (IS_ERR_VALUE(uaddr)) {
+        ret = (int)uaddr;
+        pr_err("insmod: map staging buffer failed: %d\n", ret);
+        goto out_free;
     }
 
-    info.hdr = buf;
-    info.len = len;
+    if (copy_to_user((void __user *)uaddr, buf, len)) {
+        pr_err("insmod: stage module image failed\n");
+        ret = -EFAULT;
+    } else {
+        vfree(buf);
+        buf = NULL;
+        ret = ksyscall(init_module, uaddr, len, (const char __user *)(uintptr_t)cmd.params);
+        if (ret)
+            pr_err("insmod: init_module failed: %d\n", ret);
+        else
+            pr_info("insmod: module loaded\n");
+    }
 
-    // From here load_module() owns info.hdr.
-    ret = load_module_fn(&info, (const char __user *)(uintptr_t)cmd.params, 0);
-    if (ret)
-        pr_err("insmod: load_module failed: %d\n", ret);
-    else
-        pr_info("insmod: module loaded\n");
-
+    vm_munmap(uaddr, len);
+out_free:
+    vfree(buf);
     return ret;
 }
