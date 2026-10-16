@@ -150,6 +150,10 @@ pub fn apply(module_id: &str, is_metamodule: bool, request: &Request) -> bool {
         println!("- Note: partition files are mounted on the next boot");
     }
 
+    if live_dir.join(defs::MODULE_PREINIT_DIR).is_dir() {
+        println!("- Note: preinit actions run from the next boot");
+    }
+
     if let Some(script) = run_script {
         // The installer usually runs in the manager's mount namespace; boot scripts run in
         // init's, so mounts made by the script must land there too
