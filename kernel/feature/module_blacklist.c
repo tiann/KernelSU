@@ -18,6 +18,14 @@
 // which flows in through ksu_config (boot-patch / boot-patch-v2) or the kernel
 // cmdline (built-in). Names use the kernel form (underscores, e.g.
 // `oplus_secure_guard`).
+//
+// The blacklist is only installed once second stage init starts. A blacklisted
+// module fails to load with EPERM, and first stage init treats any module in
+// modules.load that fails to load as fatal (LOG(FATAL), i.e. a bootloop)
+// unless it is listed in modules.blocklist. ksuinit adds the names to
+// modules.blocklist in the ramdisk instead, so first stage init skips them
+// cleanly; second stage loaders (e.g. vendor_dlkm modprobe) do not abort boot
+// on a failed module.
 
 static char block_modules[256];
 
@@ -43,15 +51,17 @@ static const struct kernel_param_ops block_modules_param_ops = {
 module_param_cb(block_modules, &block_modules_param_ops, NULL, 0);
 
 // Merge the configured names into the kernel's native module_blacklist.
-void __init ksu_module_blacklist_init(void)
+void ksu_module_blacklist_apply(void)
 {
+    static bool applied;
     char **native_blacklist;
     const char *existing;
     char *merged;
     size_t existing_len;
 
-    if (!block_modules[0])
+    if (applied || !block_modules[0])
         return;
+    applied = true;
 
     native_blacklist = (char **)find_kernel_symbol_exact("module_blacklist");
     if (!native_blacklist) {

@@ -1,3 +1,5 @@
+pub mod blocklist;
+
 use anyhow::{Context, Result, bail};
 use goblin::elf::{Elf, section_header, sym::Sym};
 use rustix::system::init_module;

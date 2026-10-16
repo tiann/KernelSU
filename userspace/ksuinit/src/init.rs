@@ -103,11 +103,18 @@ pub fn init() -> Result<()> {
     // This relies on the fact that we have /proc mounted
     unlimit_kmsg();
 
+    let params = std::fs::read("/ksu_config").unwrap_or_default();
+
+    // Before first stage init reads modules.blocklist, see blocklist.rs
+    ksuinit::blocklist::apply(&ksuinit::blocklist::block_modules_from_params(
+        &String::from_utf8_lossy(&params),
+    ));
+
     if ksuinit::has_kernelsu() {
         log::info!("KernelSU may be already loaded in kernel, skip!");
     } else {
         log::info!("Loading kernelsu.ko..");
-        if let Err(e) = load_module_from_path("/kernelsu.ko") {
+        if let Err(e) = load_module_from_path("/kernelsu.ko", params) {
             log::error!("Cannot load kernelsu.ko: {:?}", e);
         }
     }
@@ -126,10 +133,9 @@ pub fn init() -> Result<()> {
     Ok(())
 }
 
-fn load_module_from_path(path: &str) -> Result<()> {
+fn load_module_from_path(path: &str, params: Vec<u8>) -> Result<()> {
     anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
     let buffer = std::fs::read(path).with_context(|| format!("Cannot read file {}", path))?;
-    let params = std::fs::read("/ksu_config").unwrap_or_default();
     let params = unsafe { CString::from_vec_unchecked(params) };
     log::info!("load kernelsu with params {params:?}");
     ksuinit::load_module(&buffer, &params)

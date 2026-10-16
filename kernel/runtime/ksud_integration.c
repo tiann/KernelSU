@@ -26,6 +26,7 @@
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
 #include "policy/feature.h"
+#include "feature/module_blacklist.h"
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
@@ -169,6 +170,9 @@ void ksu_handle_execveat_ksud(const char *path, struct user_arg_ptr *argv)
             setup_ksu_cred();
             // after apply_kernelsu_rules, so that selinux_hide has its sepolicy backup
             ksu_feature_apply_forced();
+            // Not earlier: a blocked module failing to load in first stage
+            // init is fatal, ksuinit uses modules.blocklist for that instead.
+            ksu_module_blacklist_apply();
             init_second_stage_executed = true;
         }
     }
