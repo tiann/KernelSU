@@ -24,3 +24,4 @@ check_symbol
 ksu_uapi.h
 .clangd
 out
+preinit/runner.elf
