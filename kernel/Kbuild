@@ -48,6 +48,7 @@ kernelsu-objs += sulog/event.o
 kernelsu-objs += sulog/fd.o
 
 kernelsu-objs += supercall/dispatch.o
+kernelsu-objs += supercall/insmod.o
 kernelsu-objs += supercall/perm.o
 kernelsu-objs += supercall/supercall.o
 
@@ -90,6 +91,10 @@ endif
 
 ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
 
+# insmod supercall needs the kernel's private struct load_info, declared in the
+# in-tree kernel/module/internal.h (kernel/module-internal.h before 6.1).
+CFLAGS_supercall/insmod.o += -I$(srctree)
+
 # preinit runner: a static nolibc binary embedded into kernelsu, see preinit/.
 # It is built against the installed UAPI headers of the target kernel
 # (CONFIG_HEADERS_INSTALL, enabled by gki_defconfig).
@@ -101,6 +106,7 @@ kernelsu-objs += preinit/blob.o
 KSU_RUNNER_CFLAGS := $(CLANG_FLAGS) -std=gnu11 -Os -Wall \
 	-nostdinc -isystem $(shell $(CC) -print-file-name=include) \
 	-I$(KSU_KERNEL_DIR)/preinit/runner/nolibc -I$(KSU_UAPI_INC) \
+	-I$(KSU_KERNEL_DIR)/include \
 	-ffreestanding -fno-stack-protector -fno-pic -fno-pie \
 	-fno-asynchronous-unwind-tables -fno-unwind-tables \
 	-ffunction-sections -fdata-sections

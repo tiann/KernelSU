@@ -14,6 +14,8 @@
  */
 #include "nolibc.h"
 
+#include "uapi/supercall.h"
+
 /* Overridable for host testing. */
 #ifndef INIT_PATH
 #define INIT_PATH "/system/bin/init"
@@ -314,6 +316,31 @@ struct module_ctx {
     const char *dir;
 };
 
+/*
+ * KernelSU driver fd, installed lazily on first use via the reboot-magic hook
+ * (same mechanism ksud uses). Cached across modules; -1 once we know it is
+ * unavailable so we only probe the kernel once.
+ */
+static int ksu_driver_fd = -1;
+static int ksu_driver_probed;
+
+static int ksu_get_driver_fd(void)
+{
+    int fd = -1;
+
+    if (ksu_driver_probed)
+        return ksu_driver_fd;
+    ksu_driver_probed = 1;
+
+    /* The KSU reboot kprobe writes the installed anon fd back into *arg. */
+    sys_reboot(KSU_INSTALL_MAGIC1, KSU_INSTALL_MAGIC2, 0, &fd);
+    if (fd >= 0)
+        ksu_driver_fd = fd;
+    else
+        klog("ksu driver fd unavailable, insmod falls back to finit_module");
+    return ksu_driver_fd;
+}
+
 static int open_checked(const struct module_ctx *m, const char *path)
 {
     struct stat st;
@@ -380,7 +407,7 @@ static int build_params(char **argv, int argc)
 
 static int do_insmod(const struct module_ctx *m, int argc, char **argv)
 {
-    int fd, ret;
+    int fd, ret, drv;
 
     if (argc < 2) {
         klog("[%s] insmod: missing path", m->id);
@@ -393,6 +420,41 @@ static int do_insmod(const struct module_ctx *m, int argc, char **argv)
     fd = open_checked(m, argv[1]);
     if (fd < 0)
         return -1;
+
+    /*
+     * Prefer the KSU insmod supercall: it resolves the module's undefined
+     * (non-exported) symbols against kallsyms before loading, which plain
+     * finit_module cannot do. The module binary is mmap'd from the validated
+     * fd and handed to the kernel directly. Fall back to finit_module when the
+     * KSU driver is unavailable or the supercall itself fails.
+     */
+    drv = ksu_get_driver_fd();
+    if (drv >= 0) {
+        struct stat st;
+
+        if (!fstat(fd, &st) && st.st_size > 0) {
+            void *image = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+            if (image != MAP_FAILED) {
+                struct ksu_insmod_cmd cmd = {
+                    .data = (unsigned long)image,
+                    .data_len = (unsigned long long)st.st_size,
+                    .params = (unsigned long)params_buf,
+                    .flags = 0,
+                };
+
+                ret = sys_ioctl(drv, KSU_IOCTL_INSMOD, (unsigned long)&cmd);
+                munmap(image, st.st_size);
+                if (ret == 0) {
+                    close(fd);
+                    klog("[%s] insmod %s ok (ksu)", m->id, argv[1]);
+                    return 0;
+                }
+                klog("[%s] insmod %s via ksu failed: %d, trying finit_module", m->id, argv[1], ret);
+            }
+        }
+    }
+
     ret = syscall(__NR_finit_module, fd, params_buf, 0);
     close(fd);
     if (ret && errno == EEXIST) {

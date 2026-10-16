@@ -855,12 +855,18 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .handler = do_get_sulog_fd,
         .perm_check = only_root
     },
-    { 
-        .cmd = KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT, 
-        .name = "DISABLE_ESCAPE_TO_ROOT", 
-        .handler = do_disable_escape_to_root, 
+    {
+        .cmd = KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT,
+        .name = "DISABLE_ESCAPE_TO_ROOT",
+        .handler = do_disable_escape_to_root,
         .perm_check = only_root,
         .allow_su_session = true
+    },
+    {
+        .cmd = KSU_IOCTL_INSMOD,
+        .name = "INSMOD",
+        .handler = ksu_do_insmod,
+        .perm_check = only_root
     },
     {
         .cmd = 0,

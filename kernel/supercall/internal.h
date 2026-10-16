@@ -11,6 +11,8 @@ bool manager_or_root(void);
 bool always_allow(void);
 bool allowed_for_su(void);
 
+int ksu_do_insmod(void __user *arg);
+
 long ksu_supercall_handle_ioctl(const struct file *filp, unsigned int cmd, void __user *argp);
 void ksu_supercall_dump_commands(void);
 void ksu_supercall_cleanup_state(void);

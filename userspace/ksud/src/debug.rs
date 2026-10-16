@@ -55,12 +55,23 @@ pub fn insmod(module: &Path, params: &[String]) -> Result<()> {
     let module = module
         .canonicalize()
         .with_context(|| format!("resolve module path failed: {}", module.display()))?;
+    let cparams = CString::new(params.join(" "))?;
     let module_data =
         fs::read(&module).with_context(|| format!("read module failed: {}", module.display()))?;
-    let cparams = CString::new(params.join(" "))?;
 
-    ksuinit::load_module(&module_data, &cparams)
-        .with_context(|| format!("load module failed: {}", module.display()))?;
+    // KSU_IOCTL_INSMOD was introduced in UAPI v6. Prefer the in-kernel insmod
+    // supercall when the running kernel supports it (it takes the module binary
+    // and resolves non-exported symbols via kallsyms itself); otherwise fall
+    // back to the userspace loader.
+    const INSMOD_UAPI_VERSION: u32 = 6;
+    if ksucalls::get_info().uapi_version >= INSMOD_UAPI_VERSION {
+        ksucalls::insmod(&module_data, &cparams)
+            .with_context(|| format!("load module via supercall failed: {}", module.display()))?;
+    } else {
+        log::info!("kernel insmod supercall unsupported, using userspace loader");
+        ksuinit::load_module(&module_data, &cparams)
+            .with_context(|| format!("load module failed: {}", module.display()))?;
+    }
 
     println!("Loaded kernel module: {}", module.display());
     Ok(())

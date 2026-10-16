@@ -398,6 +398,22 @@ pub fn set_init_pgrp() -> Result<()> {
     Ok(())
 }
 
+/// Load a kernel module via the in-kernel insmod supercall.
+///
+/// The module binary is passed directly to the kernel, which resolves its
+/// undefined (non-exported) symbols against kallsyms before loading, so the
+/// module may reference non-exported symbols. `params` must be null-terminated.
+pub fn insmod(data: &[u8], params: &std::ffi::CStr) -> Result<()> {
+    let mut cmd = ksu_uapi::ksu_insmod_cmd {
+        data: data.as_ptr() as u64,
+        data_len: data.len() as u64,
+        params: params.as_ptr() as u64,
+        flags: 0,
+    };
+    ksuctl(ksu_uapi::KSU_IOCTL_INSMOD, &raw mut cmd)?;
+    Ok(())
+}
+
 pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {
     let result = ksuctl(
         ksu_uapi::KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT,
