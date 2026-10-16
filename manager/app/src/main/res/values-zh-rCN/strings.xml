@@ -78,6 +78,9 @@
     <string name="module_uninstall_failed">卸载失败：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
+    <string name="module_preinit_no_space">preinit 未生效：/metadata 空间不足</string>
+    <string name="module_preinit_error">preinit 未生效：preinit 目录无效</string>
+    <string name="module_preinit_bootloop">多次启动失败，preinit 已停用</string>
     <string name="show_system_apps">显示系统应用</string>
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>

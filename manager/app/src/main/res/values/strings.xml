@@ -91,6 +91,9 @@
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
+    <string name="module_preinit_no_space">preinit skipped: not enough space on /metadata</string>
+    <string name="module_preinit_error">preinit skipped: invalid preinit directory</string>
+    <string name="module_preinit_bootloop">preinit disabled after repeated boot failures</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
