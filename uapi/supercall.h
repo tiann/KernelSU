@@ -155,8 +155,11 @@ struct ksu_get_sulog_fd_cmd {
 };
 
 /*
- * Batch kernel symbol lookup. Returns the number of symbols found; the address
- * of a symbol that does not exist in the running kernel is set to 0.
+ * Batch kernel image symbol lookup. Returns the number of symbols found; the
+ * address of a symbol that does not exist in the running kernel is set to 0.
+ * Matches like ksuinit's /proc/kallsyms walk: a kernel symbol name is cut at
+ * its first '$', else at ".llvm.", and the first match in kallsyms order wins.
+ * Module symbols are never returned.
  */
 struct ksu_lookup_symbols_cmd {
     __aligned_u64 names; /* Input: user pointer to `count` user pointers to null-terminated names */
