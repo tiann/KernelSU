@@ -353,28 +353,34 @@ fn bind_symbol(
     Ok(())
 }
 
-/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
-/// then load it via init_module syscall.
-pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
-    let mut buffer = data.to_vec();
-    let (mut unresolved_symbols, ctx) = undefined_symbols(&buffer)?;
+/// Resolve `names` against /proc/kallsyms, one address per name. The first
+/// match in kallsyms order wins.
+pub fn resolve_kallsyms(names: &[&str]) -> Result<Vec<Option<u64>>> {
+    let mut addrs = vec![None; names.len()];
+    let mut pending: HashMap<&str, usize> = names
+        .iter()
+        .enumerate()
+        .map(|(i, name)| (*name, i))
+        .collect();
 
-    if !unresolved_symbols.is_empty() {
+    if !pending.is_empty() {
         for_each_kernel_symbols(|(symbol, addr)| {
-            if let Some(entry) = unresolved_symbols.remove(symbol) {
-                bind_symbol(&mut buffer, entry, *addr, ctx)?;
+            if let Some(i) = pending.remove(symbol.as_str()) {
+                addrs[i] = Some(*addr);
             }
 
-            Ok(!unresolved_symbols.is_empty())
+            Ok(!pending.is_empty())
         })
         .context("Cannot parse kallsyms")?;
     }
 
-    for name in unresolved_symbols.keys() {
-        log::warn!("Cannot find symbol: {}", name);
-    }
+    Ok(addrs)
+}
 
-    init_module_buffer(buffer, params)
+/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
+/// then load it via init_module syscall.
+pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
+    load_module_with_resolver(data, params, resolve_kallsyms)
 }
 
 /// Relocate undefined symbols in an ELF kernel module buffer with `resolve`,

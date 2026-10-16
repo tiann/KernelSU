@@ -290,10 +290,8 @@ pub fn sync(
         return Ok(());
     }
 
-    let preinit_dir = ksu_dir.join(defs::PREINIT_SUBDIR);
     let mut status = Vec::new();
     let mut candidates = Vec::new();
-    let mut changed = false;
     for (id, module_dir) in modules {
         let src = module_dir.join(defs::MODULE_PREINIT_DIR);
         if !src.is_dir() {
@@ -306,7 +304,7 @@ pub fn sync(
             Err(anyhow::anyhow!("{} not found", defs::PREINIT_CONF))
         };
         match scanned {
-            Ok(()) => candidates.push((id, src, entries)),
+            Ok(()) => candidates.push((id.clone(), src, entries)),
             Err(e) => status.push(Status {
                 id: id.clone(),
                 state: STATE_ERROR,
@@ -321,6 +319,41 @@ pub fn sync(
         return Ok(());
     }
 
+    let mut changed = false;
+    let result = sync_candidates(ksu_dir, con, &candidates, &mut status, &mut changed);
+    if let Err(e) = &result {
+        // Whatever was not decided yet will not run as expected
+        for (id, _, _) in &candidates {
+            if !status.iter().any(|s| &s.id == id) {
+                status.push(Status {
+                    id: id.clone(),
+                    state: STATE_ERROR,
+                    message: format!("{e:#}"),
+                });
+            }
+        }
+    }
+
+    // New content deserves a fresh set of attempts
+    if changed {
+        fs::remove_file(ksu_dir.join(defs::PREINIT_BOOTCOUNT_FILE)).ok();
+        sync_dir(ksu_dir);
+    }
+
+    status.sort_by(|a, b| a.id.cmp(&b.id));
+    write_status(&status);
+    result
+}
+
+fn sync_candidates(
+    ksu_dir: &Path,
+    con: &str,
+    candidates: &[(String, PathBuf, Vec<Entry>)],
+    status: &mut Vec<Status>,
+    changed: &mut bool,
+) -> Result<()> {
+    let preinit_dir = ksu_dir.join(defs::PREINIT_SUBDIR);
+
     // ksud runs with umask 0, tighten what was created by earlier versions
     secure(ksu_dir, 0o755, con)?;
     ensure_dir_exists(&preinit_dir)?;
@@ -329,29 +362,14 @@ pub fn sync(
     let manifest_path = preinit_dir.join(defs::PREINIT_MANIFEST_FILE);
     let old_manifest = read_manifest(&manifest_path);
 
-    // Free the space of modules that are gone and of interrupted syncs before copying anything
-    let wanted: BTreeSet<&str> = candidates.iter().map(|(id, _, _)| id.as_str()).collect();
-    for entry in fs::read_dir(&preinit_dir)?.flatten() {
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if name == defs::PREINIT_MANIFEST_FILE || wanted.contains(name.as_ref()) {
-            continue;
-        }
-        if remove_entry(&entry.path()) && !name.starts_with('.') {
-            info!("preinit: removed {name}");
-            changed = true;
-        }
-    }
-
+    // Pick the modules that fit, counting every existing copy as free
     let free = available(ksu_dir)? + disk_usage(&preinit_dir);
     let budget = LIMIT_TOTAL.min(free.saturating_sub(RESERVE));
     // preinit/ itself and the manifest
     let mut used = 2 * BLOCK;
-    let mut keep = BTreeSet::new();
-    let mut manifest = String::new();
-
+    let mut fit = Vec::new();
     for (id, src, entries) in candidates {
-        let need = usage(&entries);
+        let need = usage(entries);
         if used + need > budget {
             info!(
                 "preinit: {id} needs {need} bytes, {} left",
@@ -364,26 +382,38 @@ pub fn sync(
             });
             continue;
         }
+        used += need;
+        fit.push((id, src, entries, need));
+    }
 
+    // Free the space of modules that are gone, did not fit, or were interrupted before copying
+    let wanted: BTreeSet<&str> = fit.iter().map(|(id, ..)| id.as_str()).collect();
+    remove_unlisted(&preinit_dir, &wanted, changed)?;
+
+    let mut keep = BTreeSet::new();
+    let mut manifest = String::new();
+    for (id, src, entries, need) in fit {
         let lines: Vec<String> = entries.iter().map(|e| e.manifest_line(id)).collect();
         let dst = preinit_dir.join(id);
         let unchanged = dst.is_dir()
-            && (old_manifest.get(id.as_str()) == Some(&lines) || same_copy(&dst, &src, &entries));
+            && (old_manifest.get(id.as_str()) == Some(&lines) || same_copy(&dst, src, entries));
         if !unchanged {
             // The budget counts the old copy as free, but install() writes the new one first:
             // drop the old copy when both would cut into the reserve.
             if available(ksu_dir)? < need + RESERVE && dst.exists() {
                 remove_entry(&dst);
+                *changed = true;
             }
-            if available(ksu_dir)? < need + RESERVE {
+            let avail = available(ksu_dir)?;
+            if avail < need + RESERVE {
                 status.push(Status {
                     id: id.clone(),
                     state: STATE_NO_SPACE,
-                    message: format!("need {need}, available {}", budget.saturating_sub(used)),
+                    message: format!("need {need}, available {}", avail.saturating_sub(RESERVE)),
                 });
                 continue;
             }
-            if let Err(e) = install(&preinit_dir, id, &src, &entries, con) {
+            if let Err(e) = install(&preinit_dir, id, src, entries, con) {
                 warn!("preinit: install {id} failed: {e:#}");
                 status.push(Status {
                     id: id.clone(),
@@ -393,10 +423,9 @@ pub fn sync(
                 continue;
             }
             info!("preinit: synced {id}");
-            changed = true;
+            *changed = true;
         }
 
-        used += need;
         keep.insert(id.as_str());
         for line in lines {
             manifest.push_str(&line);
@@ -409,8 +438,20 @@ pub fn sync(
         });
     }
 
-    // Drop modules that did not fit or failed to install
-    for entry in fs::read_dir(&preinit_dir)?.flatten() {
+    // Drop modules that failed to install
+    remove_unlisted(&preinit_dir, &keep, changed)?;
+
+    write_atomic(&manifest_path, &manifest)?;
+    if let Err(e) = lsetfilecon(&manifest_path, con) {
+        warn!("{e:#}");
+    }
+    sync_dir(&preinit_dir);
+    Ok(())
+}
+
+/// Remove everything under `preinit_dir` except the manifest and the modules in `keep`.
+fn remove_unlisted(preinit_dir: &Path, keep: &BTreeSet<&str>, changed: &mut bool) -> Result<()> {
+    for entry in fs::read_dir(preinit_dir)?.flatten() {
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if name == defs::PREINIT_MANIFEST_FILE || keep.contains(name.as_ref()) {
@@ -418,23 +459,9 @@ pub fn sync(
         }
         if remove_entry(&entry.path()) && !name.starts_with('.') {
             info!("preinit: removed {name}");
-            changed = true;
+            *changed = true;
         }
     }
-
-    write_atomic(&manifest_path, &manifest)?;
-    if let Err(e) = lsetfilecon(&manifest_path, con) {
-        warn!("{e:#}");
-    }
-    sync_dir(&preinit_dir);
-
-    // New content deserves a fresh set of attempts
-    if changed {
-        fs::remove_file(ksu_dir.join(defs::PREINIT_BOOTCOUNT_FILE)).ok();
-    }
-
-    status.sort_by(|a, b| a.id.cmp(&b.id));
-    write_status(&status);
     Ok(())
 }
 
