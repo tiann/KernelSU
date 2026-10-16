@@ -292,7 +292,7 @@ ksud 会把每个已启用模块的整个 `preinit/` 目录复制到 `/metadata`
 
 | 动作 | 语法 | 语义 |
 |---|---|---|
-| `insmod` | `insmod <ko> [params...]` | 加载内核模块。会先用内核的 kallsyms 解析未定义符号，所以模块可以使用未导出的符号；该方式不可用时回退到 `finit_module`。多个参数用空格拼接 |
+| `insmod` | `insmod <ko> [params...]` | 加载内核模块。会先从内核 kallsyms 查询未定义符号并写入符号表，再用 `init_module` 加载，所以模块可以使用未导出的符号；不需要绑定符号的模块直接用 `finit_module` 加载。多个参数用空格拼接 |
 | `exec` | `exec [-t <ms>] <prog> [args...]` | 运行程序并等待其退出，退出码非 0 视为失败。默认 5000 ms 后被杀掉 |
 | `write` | `write <path> <content>` | 向已存在的文件写入 `content`，不追加换行，用于 procfs/sysfs |
 

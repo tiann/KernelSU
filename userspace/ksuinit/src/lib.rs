@@ -312,14 +312,15 @@ fn replace_module_vermagic(buffer: &mut Vec<u8>, required_vermagic: &str) -> Res
     Ok(())
 }
 
-/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
-/// then load it via init_module syscall.
-pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
-    let mut buffer = data.to_vec();
-    let elf = Elf::parse(&buffer)?;
+type UndefinedSymbols = HashMap<String, (Sym, usize)>;
+
+/// Collect the undefined symbols of an ELF kernel module, keyed by name, with
+/// the file offset of each symbol table entry.
+fn undefined_symbols(buffer: &[u8]) -> Result<(UndefinedSymbols, goblin::container::Ctx)> {
+    let elf = Elf::parse(buffer)?;
     let ctx = *elf.syms.ctx();
 
-    let mut unresolved_symbols: HashMap<String, (Sym, usize)> = HashMap::new();
+    let mut unresolved_symbols = HashMap::new();
     for (index, sym) in elf.syms.iter().enumerate() {
         if index == 0 {
             continue;
@@ -337,12 +338,31 @@ pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
         unresolved_symbols.insert(name.to_owned(), (sym, offset));
     }
 
+    Ok((unresolved_symbols, ctx))
+}
+
+fn bind_symbol(
+    buffer: &mut [u8],
+    (mut sym, offset): (Sym, usize),
+    addr: u64,
+    ctx: goblin::container::Ctx,
+) -> Result<()> {
+    sym.st_shndx = section_header::SHN_ABS as usize;
+    sym.st_value = addr;
+    buffer.pwrite_with(sym, offset, ctx)?;
+    Ok(())
+}
+
+/// Relocate undefined symbols in an ELF kernel module buffer using /proc/kallsyms,
+/// then load it via init_module syscall.
+pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
+    let mut buffer = data.to_vec();
+    let (mut unresolved_symbols, ctx) = undefined_symbols(&buffer)?;
+
     if !unresolved_symbols.is_empty() {
         for_each_kernel_symbols(|(symbol, addr)| {
-            if let Some((mut sym, offset)) = unresolved_symbols.remove(symbol) {
-                sym.st_shndx = section_header::SHN_ABS as usize;
-                sym.st_value = *addr;
-                buffer.pwrite_with(sym, offset, ctx)?;
+            if let Some(entry) = unresolved_symbols.remove(symbol) {
+                bind_symbol(&mut buffer, entry, *addr, ctx)?;
             }
 
             Ok(!unresolved_symbols.is_empty())
@@ -354,6 +374,45 @@ pub fn load_module(data: &[u8], params: &CStr) -> Result<()> {
         log::warn!("Cannot find symbol: {}", name);
     }
 
+    init_module_buffer(buffer, params)
+}
+
+/// Relocate undefined symbols in an ELF kernel module buffer with `resolve`,
+/// then load it via init_module syscall. `resolve` gets all undefined symbol
+/// names at once and returns one address per name; symbols it does not know
+/// are left undefined for the kernel to bind against its exports.
+pub fn load_module_with_resolver<F>(data: &[u8], params: &CStr, resolve: F) -> Result<()>
+where
+    F: FnOnce(&[&str]) -> Result<Vec<Option<u64>>>,
+{
+    let mut buffer = data.to_vec();
+    let (unresolved_symbols, ctx) = undefined_symbols(&buffer)?;
+
+    if !unresolved_symbols.is_empty() {
+        let names: Vec<&str> = unresolved_symbols.keys().map(String::as_str).collect();
+        let addrs = resolve(&names).context("Cannot resolve symbols")?;
+        if addrs.len() != names.len() {
+            bail!(
+                "Resolver returned {} addresses for {} symbols",
+                addrs.len(),
+                names.len()
+            );
+        }
+
+        for (name, addr) in names.iter().zip(addrs) {
+            match addr {
+                Some(addr) => bind_symbol(&mut buffer, unresolved_symbols[*name], addr, ctx)?,
+                None => log::warn!("Cannot find symbol: {}", name),
+            }
+        }
+    }
+
+    init_module_buffer(buffer, params)
+}
+
+/// Load a symbol-bound module image, retrying once with the kernel's vermagic
+/// when the first attempt is rejected over a vermagic mismatch.
+fn init_module_buffer(mut buffer: Vec<u8>, params: &CStr) -> Result<()> {
     let mut kmsg = match open_kmsg_at_end() {
         Ok(file) => Some(file),
         Err(error) => {

@@ -289,7 +289,7 @@ One action per line. Lines starting with `#` and empty lines are ignored. Argume
 
 | Action | Syntax | Meaning |
 |---|---|---|
-| `insmod` | `insmod <ko> [params...]` | Load a kernel module. Undefined symbols are resolved against the kernel's kallsyms first, so the module may use non-exported symbols; falls back to `finit_module` when that is unavailable. Parameters are joined with spaces |
+| `insmod` | `insmod <ko> [params...]` | Load a kernel module. Undefined symbols are looked up in the kernel's kallsyms and bound before `init_module`, so the module may use non-exported symbols; a module that needs no such binding is loaded with `finit_module`. Parameters are joined with spaces |
 | `exec` | `exec [-t <ms>] <prog> [args...]` | Run a program and wait for it. A non-zero exit status is a failure. It is killed after 5000 ms by default |
 | `write` | `write <path> <content>` | Write `content` to an existing file, without a trailing newline. Meant for procfs/sysfs |
 

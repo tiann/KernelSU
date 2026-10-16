@@ -142,8 +142,6 @@ fn init_driver_fd() -> Option<RawFd> {
 
 // ioctl wrapper using libc
 fn ksuctl<T>(request: u32, arg: *mut T) -> Result<i32> {
-    use std::io;
-
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     if fd < 0 {
         bail!("could not retrieve kernelsu driver fd")
@@ -398,20 +396,29 @@ pub fn set_init_pgrp() -> Result<()> {
     Ok(())
 }
 
-/// Load a kernel module via the in-kernel insmod supercall.
+/// Look up the addresses of kernel symbols, exported or not.
 ///
-/// The module binary is passed directly to the kernel, which resolves its
-/// undefined (non-exported) symbols against kallsyms before loading, so the
-/// module may reference non-exported symbols. `params` must be null-terminated.
-pub fn insmod(data: &[u8], params: &std::ffi::CStr) -> Result<()> {
-    let mut cmd = ksu_uapi::ksu_insmod_cmd {
-        data: data.as_ptr() as u64,
-        data_len: data.len() as u64,
-        params: params.as_ptr() as u64,
-        flags: 0,
-    };
-    ksuctl(ksu_uapi::KSU_IOCTL_INSMOD, &raw mut cmd)?;
-    Ok(())
+/// Returns one entry per name, `None` when the running kernel has no such
+/// symbol.
+pub fn lookup_symbols(names: &[&str]) -> Result<Vec<Option<u64>>> {
+    let mut result = Vec::with_capacity(names.len());
+    for chunk in names.chunks(ksu_uapi::KSU_LOOKUP_SYMBOLS_MAX as usize) {
+        let c_names = chunk
+            .iter()
+            .map(|name| std::ffi::CString::new(*name))
+            .collect::<Result<Vec<_>, _>>()?;
+        let ptrs: Vec<u64> = c_names.iter().map(|name| name.as_ptr() as u64).collect();
+        let mut addrs = vec![0u64; chunk.len()];
+        let mut cmd = ksu_uapi::ksu_lookup_symbols_cmd {
+            names: ptrs.as_ptr() as u64,
+            addrs: addrs.as_mut_ptr() as u64,
+            count: chunk.len() as u32,
+            flags: 0,
+        };
+        ksuctl(ksu_uapi::KSU_IOCTL_LOOKUP_SYMBOLS, &raw mut cmd)?;
+        result.extend(addrs.into_iter().map(|addr| (addr != 0).then_some(addr)));
+    }
+    Ok(result)
 }
 
 pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {

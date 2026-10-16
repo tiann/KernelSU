@@ -13,6 +13,7 @@
  * actions, never the boot.
  */
 #include "nolibc.h"
+#include <linux/elf.h>
 
 #include "uapi/supercall.h"
 
@@ -337,7 +338,7 @@ static int ksu_get_driver_fd(void)
     if (fd >= 0)
         ksu_driver_fd = fd;
     else
-        klog("ksu driver fd unavailable, insmod falls back to finit_module");
+        klog("ksu driver fd unavailable, insmod cannot bind non-exported symbols");
     return ksu_driver_fd;
 }
 
@@ -405,9 +406,117 @@ static int build_params(char **argv, int argc)
     return 0;
 }
 
+static bool range_ok(uint64_t off, uint64_t size, size_t len)
+{
+    return off <= len && size <= len - off;
+}
+
+#define LOOKUP_BATCH 256
+
+static Elf64_Sym *lookup_syms[LOOKUP_BATCH];
+static uint64_t lookup_names[LOOKUP_BATCH];
+static uint64_t lookup_addrs[LOOKUP_BATCH];
+
+/* Resolve the queued symbols in one supercall and bind the ones found. */
+static int flush_lookup(const struct module_ctx *m, const char *path, int drv, uint32_t *n, int *bound)
+{
+    struct ksu_lookup_symbols_cmd cmd = {
+        .names = (unsigned long)lookup_names,
+        .addrs = (unsigned long)lookup_addrs,
+        .count = *n,
+        .flags = 0,
+    };
+    uint32_t i;
+    /* sys_ioctl returns -errno directly, otherwise the number found */
+    int ret = sys_ioctl(drv, KSU_IOCTL_LOOKUP_SYMBOLS, (unsigned long)&cmd);
+
+    if (ret < 0) {
+        klog("[%s] insmod %s: symbol lookup failed: %d", m->id, path, -ret);
+        return -1;
+    }
+    for (i = 0; i < *n; i++) {
+        if (!lookup_addrs[i])
+            continue;
+        lookup_syms[i]->st_value = lookup_addrs[i];
+        lookup_syms[i]->st_shndx = SHN_ABS;
+    }
+    *bound += ret;
+    *n = 0;
+    return 0;
+}
+
+/*
+ * Bind the module's undefined symbols to their addresses in the running
+ * kernel, looked up through the KSU driver, so init_module accepts a module
+ * that references non-exported symbols. Symbols the kernel does not know are
+ * left undefined for init_module to resolve the regular (exported) way.
+ * Returns the number of bound symbols, or -1 for a malformed image or a
+ * failed lookup.
+ */
+static int bind_module_symbols(const struct module_ctx *m, const char *path, int drv, void *buf, size_t len)
+{
+    Elf64_Ehdr *eh = buf;
+    Elf64_Shdr *shdrs, *symsec = NULL, *strsec;
+    Elf64_Sym *syms;
+    const char *strtab;
+    size_t nsyms, strsz, i;
+    uint32_t nlookup = 0;
+    int bound = 0;
+
+    if (len < sizeof(*eh) || memcmp(eh->e_ident, ELFMAG, SELFMAG) || eh->e_ident[EI_CLASS] != ELFCLASS64 ||
+        eh->e_type != ET_REL || eh->e_shentsize != sizeof(Elf64_Shdr) ||
+        !range_ok(eh->e_shoff, (uint64_t)eh->e_shnum * sizeof(Elf64_Shdr), len)) {
+        klog("[%s] insmod %s: not an ELF64 relocatable object", m->id, path);
+        return -1;
+    }
+
+    shdrs = (Elf64_Shdr *)((char *)buf + eh->e_shoff);
+    for (i = 0; i < eh->e_shnum; i++) {
+        if (shdrs[i].sh_type == SHT_SYMTAB) {
+            symsec = &shdrs[i];
+            break;
+        }
+    }
+    if (!symsec || symsec->sh_entsize != sizeof(Elf64_Sym) || symsec->sh_size % sizeof(Elf64_Sym) ||
+        !range_ok(symsec->sh_offset, symsec->sh_size, len) || symsec->sh_link >= eh->e_shnum) {
+        klog("[%s] insmod %s: bad or missing symtab", m->id, path);
+        return -1;
+    }
+
+    strsec = &shdrs[symsec->sh_link];
+    strtab = (const char *)buf + strsec->sh_offset;
+    strsz = strsec->sh_size;
+    /* A trailing NUL guarantees every name starting inside the table ends there. */
+    if (strsec->sh_type != SHT_STRTAB || !strsz || !range_ok(strsec->sh_offset, strsz, len) ||
+        strtab[strsz - 1] != '\0') {
+        klog("[%s] insmod %s: bad symbol strtab", m->id, path);
+        return -1;
+    }
+
+    syms = (Elf64_Sym *)((char *)buf + symsec->sh_offset);
+    nsyms = symsec->sh_size / sizeof(Elf64_Sym);
+    /* Entry 0 is the reserved null symbol. */
+    for (i = 1; i < nsyms; i++) {
+        Elf64_Sym *sym = &syms[i];
+
+        if (sym->st_shndx != SHN_UNDEF || sym->st_name >= strsz || !strtab[sym->st_name])
+            continue;
+
+        lookup_syms[nlookup] = sym;
+        lookup_names[nlookup] = (unsigned long)(strtab + sym->st_name);
+        if (++nlookup == LOOKUP_BATCH && flush_lookup(m, path, drv, &nlookup, &bound))
+            return -1;
+    }
+    if (nlookup && flush_lookup(m, path, drv, &nlookup, &bound))
+        return -1;
+    return bound;
+}
+
 static int do_insmod(const struct module_ctx *m, int argc, char **argv)
 {
-    int fd, ret, drv;
+    struct stat st;
+    void *image;
+    int fd, ret, drv, bound;
 
     if (argc < 2) {
         klog("[%s] insmod: missing path", m->id);
@@ -422,49 +531,38 @@ static int do_insmod(const struct module_ctx *m, int argc, char **argv)
         return -1;
 
     /*
-     * Prefer the KSU insmod supercall: it resolves the module's undefined
-     * (non-exported) symbols against kallsyms before loading, which plain
-     * finit_module cannot do. The module binary is mmap'd from the validated
-     * fd and handed to the kernel directly. Fall back to finit_module only
-     * when the supercall is unusable, never after a load attempt, so a
-     * module's init does not run twice.
+     * Bind the module's non-exported symbols through the KSU symbol lookup
+     * supercall, then load the patched private copy with init_module. A
+     * module that needs no binding (or no driver fd) goes through plain
+     * finit_module on the validated fd.
      */
     drv = ksu_get_driver_fd();
-    if (drv >= 0) {
-        struct stat st;
-
-        if (!fstat(fd, &st) && st.st_size > 0) {
-            void *image = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-
-            if (image != MAP_FAILED) {
-                struct ksu_insmod_cmd cmd = {
-                    .data = (unsigned long)image,
-                    .data_len = (unsigned long long)st.st_size,
-                    .params = (unsigned long)params_buf,
-                    .flags = 0,
-                };
-
-                /* sys_ioctl returns -errno directly */
-                ret = sys_ioctl(drv, KSU_IOCTL_INSMOD, (unsigned long)&cmd);
-                munmap(image, st.st_size);
-                if (ret == 0 || ret == -EEXIST) {
-                    close(fd);
-                    klog("[%s] insmod %s %s (ksu)", m->id, argv[1], ret ? "already loaded" : "ok");
-                    return 0;
-                }
-                /* Unknown ioctl, not permitted, or rejected before loading */
-                if (ret != -ENOTTY && ret != -EPERM && ret != -ENOEXEC) {
-                    close(fd);
-                    klog("[%s] insmod %s failed: %d (ksu)", m->id, argv[1], -ret);
-                    return -1;
-                }
-                klog("[%s] insmod %s via ksu unavailable: %d, trying finit_module", m->id, argv[1], -ret);
-            }
+    if (drv >= 0 && !fstat(fd, &st) && st.st_size > 0) {
+        /* MAP_PRIVATE + PROT_WRITE: patches stay in our copy, never the file. */
+        image = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+        if (image == MAP_FAILED) {
+            klog("[%s] insmod %s: mmap failed: %d", m->id, argv[1], errno);
+            close(fd);
+            return -1;
         }
+        bound = bind_module_symbols(m, argv[1], drv, image, st.st_size);
+        if (bound < 0) {
+            munmap(image, st.st_size);
+            close(fd);
+            return -1;
+        }
+        if (bound > 0) {
+            ret = syscall(__NR_init_module, image, st.st_size, params_buf);
+            munmap(image, st.st_size);
+            close(fd);
+            goto out;
+        }
+        munmap(image, st.st_size);
     }
 
     ret = syscall(__NR_finit_module, fd, params_buf, 0);
     close(fd);
+out:
     if (ret && errno == EEXIST) {
         klog("[%s] insmod %s: already loaded", m->id, argv[1]);
         return 0;

@@ -52,11 +52,10 @@ pub fn set_manager(pkg: &str) -> Result<()> {
 }
 
 pub fn insmod(module: &Path, params: &[String]) -> Result<()> {
-    // KSU_IOCTL_INSMOD was introduced in UAPI v6. Prefer the in-kernel insmod
-    // supercall when the running kernel supports it (it takes the module binary
-    // and resolves non-exported symbols via kallsyms itself); otherwise fall
-    // back to the userspace loader.
-    const INSMOD_UAPI_VERSION: u32 = 6;
+    // KSU_IOCTL_LOOKUP_SYMBOLS was introduced in UAPI v6. Prefer resolving the
+    // module's undefined (non-exported) symbols through it; older kernels fall
+    // back to /proc/kallsyms.
+    const LOOKUP_SYMBOL_UAPI_VERSION: u32 = 6;
 
     let module = module
         .canonicalize()
@@ -65,14 +64,13 @@ pub fn insmod(module: &Path, params: &[String]) -> Result<()> {
     let module_data =
         fs::read(&module).with_context(|| format!("read module failed: {}", module.display()))?;
 
-    if ksucalls::get_info().uapi_version >= INSMOD_UAPI_VERSION {
-        ksucalls::insmod(&module_data, &cparams)
-            .with_context(|| format!("load module via supercall failed: {}", module.display()))?;
+    if ksucalls::get_info().uapi_version >= LOOKUP_SYMBOL_UAPI_VERSION {
+        ksuinit::load_module_with_resolver(&module_data, &cparams, ksucalls::lookup_symbols)
     } else {
-        log::info!("kernel insmod supercall unsupported, using userspace loader");
+        log::info!("kernel symbol lookup unsupported, using /proc/kallsyms");
         ksuinit::load_module(&module_data, &cparams)
-            .with_context(|| format!("load module failed: {}", module.display()))?;
     }
+    .with_context(|| format!("load module failed: {}", module.display()))?;
 
     println!("Loaded kernel module: {}", module.display());
     Ok(())

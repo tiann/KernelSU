@@ -1,5 +1,7 @@
 #include <linux/capability.h>
 #include <linux/cred.h>
+#include <linux/kallsyms.h>
+#include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
@@ -21,6 +23,7 @@
 #include "sulog/event.h"
 #include "sulog/fd.h"
 #include "supercall/supercall.h"
+#include "infra/symbol_resolver.h"
 
 static int do_grant_root(void __user *arg)
 {
@@ -713,6 +716,60 @@ static int do_disable_escape_to_root(void __user *arg)
     return 0;
 }
 
+/*
+ * Resolve symbols of the running kernel image, exported or not. Userspace
+ * uses this to bind a module's undefined symbols before init_module, so the
+ * kernel never parses the module ELF itself.
+ */
+static int do_lookup_symbols(void __user *arg)
+{
+    struct ksu_lookup_symbols_cmd cmd;
+    const u64 __user *names;
+    u64 __user *addrs;
+    char name[KSYM_NAME_LEN];
+    int found = 0;
+    u32 i;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd)))
+        return -EFAULT;
+
+    if (cmd.flags) {
+        pr_err("lookup_symbols: unsupported flags 0x%x\n", cmd.flags);
+        return -EINVAL;
+    }
+    if (!cmd.count || cmd.count > KSU_LOOKUP_SYMBOLS_MAX)
+        return -EINVAL;
+
+    names = (const u64 __user *)(uintptr_t)cmd.names;
+    addrs = (u64 __user *)(uintptr_t)cmd.addrs;
+    for (i = 0; i < cmd.count; i++) {
+        unsigned long addr = 0;
+        u64 uname;
+        long len;
+
+        if (get_user(uname, names + i))
+            return -EFAULT;
+
+        len = strncpy_from_user(name, (const char __user *)(uintptr_t)uname, sizeof(name));
+        if (len < 0)
+            return (int)len;
+        // An empty or overlong name cannot be a kernel symbol: report it missing.
+        if (len && len < sizeof(name))
+            addr = find_kernel_symbol_exact(name);
+        if (addr)
+            found++;
+
+        if (put_user((u64)addr, addrs + i))
+            return -EFAULT;
+
+        if (fatal_signal_pending(current))
+            return -EINTR;
+        cond_resched();
+    }
+
+    return found;
+}
+
 // IOCTL handlers mapping table
 // clang-format off
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
@@ -863,9 +920,9 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .allow_su_session = true
     },
     {
-        .cmd = KSU_IOCTL_INSMOD,
-        .name = "INSMOD",
-        .handler = ksu_do_insmod,
+        .cmd = KSU_IOCTL_LOOKUP_SYMBOLS,
+        .name = "LOOKUP_SYMBOLS",
+        .handler = do_lookup_symbols,
         .perm_check = only_root
     },
     {
