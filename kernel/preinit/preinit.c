@@ -56,6 +56,11 @@ void __init ksu_preinit_init(void)
     pr_info("preinit: runner staged (%zu bytes)\n", size);
 }
 
+bool ksu_preinit_enabled_param(void)
+{
+    return ksu_preinit_enabled;
+}
+
 void ksu_preinit_release(void)
 {
     struct file *file = xchg(&ksu_preinit_file, NULL);

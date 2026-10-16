@@ -82,9 +82,9 @@ KernelSU 模块就是一个放置在 `/data/adb/modules` 内且满足如下结�
 │   ├── system.prop         <--- 这个文件中指定的属性将会在系统启动时通过 resetprop 更改
 │   ├── sepolicy.rule       <--- 这个文件中的 SELinux 策略将会在系统启动时加载
 │   ├── initrc/             <--- 此目录下的 .rc 文件将在启动时注入 init.rc
-│   ├── preinit/            <--- preinit.conf 及其文件，在 SELinux 策略加载前执行
 │   │   ├── myservice.rc
 │   │   └── ...
+│   ├── preinit/            <--- preinit.conf 及其文件，在 SELinux 策略加载前执行
 │   │
 │   │      *** 自动生成的目录，不要手动创建或者修改！ ***
 │   │
@@ -339,7 +339,8 @@ ksud module preinit reset
 关机充电模式下不会执行 preinit；安全模式会禁用所有模块，下次开机时它们的 preinit 内容也会被移除。如果需要手动救砖，可以在 recovery 里删除 `/metadata/vold/ksu/preinit`（或 `/metadata/watchdog/ksu/preinit`、`/metadata/ksu/preinit`，以实际存在的为准），或者 `fastboot boot` 原厂镜像后删除。
 
 ::: tip
-- 在 **late-load 模式**下以及不使用两阶段 init 的设备（Android 10 以下）上，preinit **不可用**。
+- 在 **late-load 模式**下以及不使用两阶段 init 的设备（Android 10 之前以 system-as-root 出厂的设备）上，preinit **不可用**。
+- 当前内核不执行 preinit 时（late-load 模式、`preinit=0`，或内核编译时未包含 preinit），ksud 不会向 `/metadata` 拷贝任何内容，`ksud module preinit status` 会把这些模块标为 `unsupported`。
 - 可以通过 KernelSU 内核模块参数 `preinit=0` 彻底关闭 preinit，`ksud boot-patch` / `boot-patch-v2` 的 `--no-preinit` 选项会设置它。
 - 能写入 `/metadata` 就等于能在这么早的阶段执行代码，请只安装可信的模块。
 :::

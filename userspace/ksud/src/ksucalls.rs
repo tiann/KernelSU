@@ -183,6 +183,11 @@ pub fn is_lkm() -> bool {
     get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_LKM != 0
 }
 
+/// Whether the kernel runs module preinit actions on boot.
+pub fn is_preinit_supported() -> bool {
+    get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_PREINIT != 0
+}
+
 pub const fn uapi_version() -> u32 {
     ksu_uapi::KERNEL_SU_UAPI_VERSION
 }

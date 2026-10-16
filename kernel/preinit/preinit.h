@@ -15,6 +15,9 @@ bool ksu_preinit_handle_execve(const char __user **filename_user, const char __u
 
 // Drop the staged runner if selinux_setup was never seen.
 void ksu_preinit_release(void);
+
+// Whether the runner is built in and not disabled with preinit=0.
+bool ksu_preinit_enabled_param(void);
 #else
 static inline void ksu_preinit_init(void)
 {
@@ -30,6 +33,10 @@ static inline bool ksu_preinit_handle_execve(const char __user **filename_user,
 }
 static inline void ksu_preinit_release(void)
 {
+}
+static inline bool ksu_preinit_enabled_param(void)
+{
+    return false;
 }
 #endif
 

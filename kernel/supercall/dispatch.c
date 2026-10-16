@@ -25,6 +25,7 @@
 #include "sulog/fd.h"
 #include "supercall/supercall.h"
 #include "infra/symbol_resolver.h"
+#include "preinit/preinit.h"
 
 static int do_grant_root(void __user *arg)
 {
@@ -57,6 +58,10 @@ static int do_get_info(void __user *arg)
     }
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
+    }
+    // A late load never sees PID 1's selinux_setup, so preinit cannot run.
+    if (ksu_preinit_enabled_param() && !ksu_late_loaded) {
+        cmd.flags |= KSU_GET_INFO_FLAG_PREINIT;
     }
 #if KSU_IS_PR_BUILD
     cmd.flags |= KSU_GET_INFO_FLAG_PR_BUILD;

@@ -28,6 +28,7 @@ const STATE_OK: &str = "ok";
 const STATE_NO_SPACE: &str = "no_space";
 const STATE_ERROR: &str = "error";
 const STATE_BOOTLOOP: &str = "bootloop";
+const STATE_UNSUPPORTED: &str = "unsupported";
 
 /// A file or directory inside a module's preinit dir.
 struct Entry {
@@ -182,6 +183,26 @@ fn install(preinit_dir: &Path, id: &str, src: &Path, entries: &[Entry], con: &st
     Ok(())
 }
 
+/// Whether `dst` already holds exactly what `install` would copy from `src`: touching the module
+/// files (chmod, chcon) changes their ctime but must not count as new content.
+fn same_copy(dst: &Path, src: &Path, entries: &[Entry]) -> bool {
+    let mut existing = Vec::new();
+    if scan(dst, Path::new(""), &mut existing).is_err() || existing.len() != entries.len() {
+        return false;
+    }
+    entries.iter().zip(&existing).all(|(want, have)| {
+        want.rel == have.rel
+            && want.is_dir == have.is_dir
+            && want.mode & 0o755 == have.mode
+            && (want.is_dir
+                || (want.size == have.size
+                    && matches!(
+                        (fs::read(src.join(&want.rel)), fs::read(dst.join(&have.rel))),
+                        (Ok(a), Ok(b)) if a == b
+                    )))
+    })
+}
+
 fn read_manifest(path: &Path) -> HashMap<String, Vec<String>> {
     let mut manifest: HashMap<String, Vec<String>> = HashMap::new();
     let Ok(content) = fs::read_to_string(path) else {
@@ -218,6 +239,18 @@ fn write_status(status: &[Status]) {
     }
 }
 
+fn remove_entry(path: &Path) -> bool {
+    let removed = if path.is_dir() {
+        fs::remove_dir_all(path)
+    } else {
+        fs::remove_file(path)
+    };
+    if let Err(e) = &removed {
+        warn!("Failed to remove {}: {e}", path.display());
+    }
+    removed.is_ok()
+}
+
 fn remove_all(ksu_dir: &Path) {
     let preinit_dir = ksu_dir.join(defs::PREINIT_SUBDIR);
     if preinit_dir.exists()
@@ -235,14 +268,32 @@ pub fn sync(
     stale_ksu_dirs: &[&Path],
     modules: &BTreeMap<String, PathBuf>,
     con: &str,
+    supported: bool,
 ) -> Result<()> {
     for stale in stale_ksu_dirs {
         remove_all(stale);
     }
 
+    // Nothing would run the copies: keep /metadata clean and say why.
+    if !supported {
+        remove_all(ksu_dir);
+        let status: Vec<Status> = modules
+            .iter()
+            .filter(|(_, dir)| dir.join(defs::MODULE_PREINIT_DIR).is_dir())
+            .map(|(id, _)| Status {
+                id: id.clone(),
+                state: STATE_UNSUPPORTED,
+                message: "kernel does not run preinit".to_owned(),
+            })
+            .collect();
+        write_status(&status);
+        return Ok(());
+    }
+
     let preinit_dir = ksu_dir.join(defs::PREINIT_SUBDIR);
     let mut status = Vec::new();
     let mut candidates = Vec::new();
+    let mut changed = false;
     for (id, module_dir) in modules {
         let src = module_dir.join(defs::MODULE_PREINIT_DIR);
         if !src.is_dir() {
@@ -277,13 +328,27 @@ pub fn sync(
 
     let manifest_path = preinit_dir.join(defs::PREINIT_MANIFEST_FILE);
     let old_manifest = read_manifest(&manifest_path);
+
+    // Free the space of modules that are gone and of interrupted syncs before copying anything
+    let wanted: BTreeSet<&str> = candidates.iter().map(|(id, _, _)| id.as_str()).collect();
+    for entry in fs::read_dir(&preinit_dir)?.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name == defs::PREINIT_MANIFEST_FILE || wanted.contains(name.as_ref()) {
+            continue;
+        }
+        if remove_entry(&entry.path()) && !name.starts_with('.') {
+            info!("preinit: removed {name}");
+            changed = true;
+        }
+    }
+
     let free = available(ksu_dir)? + disk_usage(&preinit_dir);
     let budget = LIMIT_TOTAL.min(free.saturating_sub(RESERVE));
     // preinit/ itself and the manifest
     let mut used = 2 * BLOCK;
     let mut keep = BTreeSet::new();
     let mut manifest = String::new();
-    let mut changed = false;
 
     for (id, src, entries) in candidates {
         let need = usage(&entries);
@@ -301,9 +366,23 @@ pub fn sync(
         }
 
         let lines: Vec<String> = entries.iter().map(|e| e.manifest_line(id)).collect();
-        let unchanged =
-            old_manifest.get(id.as_str()) == Some(&lines) && preinit_dir.join(id).is_dir();
+        let dst = preinit_dir.join(id);
+        let unchanged = dst.is_dir()
+            && (old_manifest.get(id.as_str()) == Some(&lines) || same_copy(&dst, &src, &entries));
         if !unchanged {
+            // The budget counts the old copy as free, but install() writes the new one first:
+            // drop the old copy when both would cut into the reserve.
+            if available(ksu_dir)? < need + RESERVE && dst.exists() {
+                remove_entry(&dst);
+            }
+            if available(ksu_dir)? < need + RESERVE {
+                status.push(Status {
+                    id: id.clone(),
+                    state: STATE_NO_SPACE,
+                    message: format!("need {need}, available {}", budget.saturating_sub(used)),
+                });
+                continue;
+            }
             if let Err(e) = install(&preinit_dir, id, &src, &entries, con) {
                 warn!("preinit: install {id} failed: {e:#}");
                 status.push(Status {
@@ -330,22 +409,14 @@ pub fn sync(
         });
     }
 
-    // Drop modules that are gone, did not fit, and leftovers of interrupted syncs
+    // Drop modules that did not fit or failed to install
     for entry in fs::read_dir(&preinit_dir)?.flatten() {
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if name == defs::PREINIT_MANIFEST_FILE || keep.contains(name.as_ref()) {
             continue;
         }
-        let path = entry.path();
-        let removed = if path.is_dir() {
-            fs::remove_dir_all(&path)
-        } else {
-            fs::remove_file(&path)
-        };
-        if let Err(e) = removed {
-            warn!("Failed to remove {}: {e}", path.display());
-        } else if !name.starts_with('.') {
+        if remove_entry(&entry.path()) && !name.starts_with('.') {
             info!("preinit: removed {name}");
             changed = true;
         }

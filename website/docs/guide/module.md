@@ -76,9 +76,9 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 │   ├── system.prop         <--- Properties in this file will be loaded as system properties by resetprop
 │   ├── sepolicy.rule       <--- Additional custom sepolicy rules
 │   ├── initrc/             <--- .rc files in this directory will be injected into init.rc on boot
-│   ├── preinit/            <--- preinit.conf and its files, run before SELinux policy is loaded
 │   │   ├── myservice.rc
 │   │   └── ...
+│   ├── preinit/            <--- preinit.conf and its files, run before SELinux policy is loaded
 │   │
 │   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
 │   │
@@ -336,7 +336,8 @@ ksud module preinit reset
 preinit is also not run in charger mode, and safe mode disables all modules, which removes their preinit content for the next boot. To get out of a bootloop by hand, delete `/metadata/vold/ksu/preinit` (or `/metadata/watchdog/ksu/preinit`, `/metadata/ksu/preinit`, whichever exists) from recovery, or `fastboot boot` the stock image and delete it there.
 
 ::: tip
-- preinit is **not available** in **late-load mode** and on devices that do not use a two stage init (Android 10 and below).
+- preinit is **not available** in **late-load mode** and on devices that do not use a two stage init (devices launched with system-as-root before Android 10).
+- When the running kernel does not run preinit (late-load mode, `preinit=0`, or a kernel built without it), ksud copies nothing to `/metadata` and `ksud module preinit status` reports the modules as `unsupported`.
 - preinit can be disabled entirely with the `preinit=0` parameter of the KernelSU kernel module, which `ksud boot-patch` / `boot-patch-v2` set with `--no-preinit`.
 - Anyone who can write to `/metadata` can run code this early. Only install modules you trust.
 :::

@@ -10,7 +10,7 @@
 // 3: scoped su-session driver fd
 // 4: add KSU_GET_INFO_FLAG_BUNDLED
 // 5: add EVENT_SERVICES with a start/skip result
-// 6: add KSU_IOCTL_LOOKUP_SYMBOLS; modules.rc and preinit may live under /metadata/vold/ksu
+// 6: add KSU_IOCTL_LOOKUP_SYMBOLS and KSU_GET_INFO_FLAG_PREINIT; modules.rc and preinit may live under /metadata/vold/ksu
 static const __u32 KERNEL_SU_UAPI_VERSION = 6;
 
 /* Magic numbers for reboot hook to install fd */
@@ -31,6 +31,8 @@ static const __u32 KSU_GET_INFO_FLAG_MANAGER = (1U << 1);
 static const __u32 KSU_GET_INFO_FLAG_LATE_LOAD = (1U << 2);
 static const __u32 KSU_GET_INFO_FLAG_PR_BUILD = (1U << 3);
 static const __u32 KSU_GET_INFO_FLAG_BUNDLED = (1U << 4);
+/* The preinit runner will run module preinit actions on boot */
+static const __u32 KSU_GET_INFO_FLAG_PREINIT = (1U << 5);
 
 struct ksu_get_info_cmd {
     __u32 version; /* Output: KERNEL_SU_VERSION */

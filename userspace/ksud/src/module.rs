@@ -638,7 +638,13 @@ pub fn regenerate_preinit() -> Result<()> {
     }
 
     let stale_dirs: Vec<&Path> = stale_strs.iter().map(Path::new).collect();
-    let preinit = crate::preinit::sync(Path::new(preinit_str), &stale_dirs, &modules, con);
+    let preinit = crate::preinit::sync(
+        Path::new(preinit_str),
+        &stale_dirs,
+        &modules,
+        con,
+        crate::ksucalls::is_preinit_supported(),
+    );
     rc.and(preinit)
 }
 
