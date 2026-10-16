@@ -97,16 +97,24 @@ pub fn init() -> Result<()> {
 
     log::info!("Hello, KernelSU!");
 
-    // mount /proc to access kernel interface
-    let _dontdrop = prepare_mount();
-
-    // This relies on the fact that we have /proc mounted
-    unlimit_kmsg();
-
     if ksuinit::has_kernelsu() {
         log::info!("KernelSU may be already loaded in kernel, skip!");
+    } else if std::path::Path::new(LKMLOADER_PATH).exists() {
+        // lkmloader.ko resolves every symbol (including non-exported ones)
+        // by itself, so neither procfs, kptr tweak nor kallsyms is needed
+        log::info!("Loading kernelsu.ko via lkmloader.ko..");
+        if let Err(e) = load_module_via_lkmloader() {
+            log::error!("Cannot load kernelsu.ko via lkmloader: {:?}", e);
+        }
     } else {
         log::info!("Loading kernelsu.ko..");
+
+        // mount /proc to access kernel interface
+        let _dontdrop = prepare_mount();
+
+        // This relies on the fact that we have /proc mounted
+        unlimit_kmsg();
+
         if let Err(e) = load_module_from_path("/kernelsu.ko") {
             log::error!("Cannot load kernelsu.ko: {:?}", e);
         }
@@ -123,6 +131,40 @@ pub fn init() -> Result<()> {
     log::info!("init is {}", real_init);
     symlink(real_init, "/init")?;
 
+    Ok(())
+}
+
+const LKMLOADER_PATH: &str = "/lkmloader.ko";
+const KERNELSU_PARAMS: &str = "module_path=kernelsu.ko";
+
+/// Load kernelsu.ko through lkmloader.ko from the ramdisk, equivalent to
+/// `insmod lkmloader.ko module_path=kernelsu.ko`. lkmloader resolves all
+/// required symbols on its own, so the legacy procfs/kallsyms setup is
+/// deliberately skipped here.
+fn load_module_via_lkmloader() -> Result<()> {
+    anyhow::ensure!(rustix::process::getpid().is_init(), "Invalid process");
+    let buffer = std::fs::read(LKMLOADER_PATH)
+        .with_context(|| format!("Cannot read file {LKMLOADER_PATH}"))?;
+    // Forward the /ksu_config module params (allow_shell/norc/bundled) to
+    // kernelsu.ko through lkmloader's module_params passthrough. The legacy
+    // loading path passes them via init_module directly; without forwarding,
+    // the kernel module runs with defaults and the KSU module system
+    // cannot come up.
+    let mut insmod_params = String::from(KERNELSU_PARAMS);
+    if let Ok(ksu_config) = std::fs::read_to_string("/ksu_config") {
+        let ksu_config = ksu_config.trim_matches('\0').trim();
+        if !ksu_config.is_empty() {
+            insmod_params.push_str(&format!(" module_params=\"{ksu_config}\""));
+        }
+    }
+    let params = match CString::new(insmod_params) {
+        Ok(p) => p,
+        Err(_) => CString::new(KERNELSU_PARAMS).context("Invalid module params")?,
+    };
+    log::info!("insmod {LKMLOADER_PATH} {params:?}");
+    rustix::system::init_module(&buffer, &params)
+        .context("Cannot insmod lkmloader.ko")
+        .context("Cannot load kernelsu.ko via lkmloader")?;
     Ok(())
 }
 
