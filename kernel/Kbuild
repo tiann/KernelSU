@@ -1,7 +1,7 @@
 kernelsu-objs := core/init.o
 
 kernelsu-objs += feature/kernel_umount.o
-kernelsu-objs += feature/module_blacklist.o
+kernelsu-objs += feature/module_load_filter.o
 kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
 
