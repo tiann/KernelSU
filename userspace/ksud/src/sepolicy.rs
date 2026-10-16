@@ -132,6 +132,12 @@ struct GenFsCon<'a> {
     fs_context: &'a str,
 }
 
+#[derive(Debug, PartialEq, Eq, new)]
+struct CloneType<'a> {
+    src: &'a str,
+    dst: &'a str,
+}
+
 #[derive(Debug)]
 enum PolicyStatement<'a> {
     // "allow *source_type *target_type *class *perm_set"
@@ -167,6 +173,10 @@ enum PolicyStatement<'a> {
 
     // "genfscon fs_name partial_path fs_context"
     GenFsCon(GenFsCon<'a>),
+
+    // "copy_perm src dst"
+    // "clone_type dst src"
+    CloneType(CloneType<'a>),
 }
 
 impl<'a> SeObjectParser<'a> for NormalPerm<'a> {
@@ -329,6 +339,24 @@ impl<'a> SeObjectParser<'a> for GenFsCon<'a> {
     }
 }
 
+impl<'a> SeObjectParser<'a> for CloneType<'a> {
+    fn parse(input: &'a str) -> IResult<&'a str, Self>
+    where
+        Self: Sized,
+    {
+        let (input, op) = alt((tag("copy_perm"), tag("clone_type"))).parse(input)?;
+        let (input, _) = space1(input)?;
+        let (input, first) = parse_single_word(input)?;
+        let (input, _) = space1(input)?;
+        let (input, second) = parse_single_word(input)?;
+        if op == "copy_perm" {
+            Ok((input, CloneType::new(first, second)))
+        } else {
+            Ok((input, CloneType::new(second, first)))
+        }
+    }
+}
+
 impl<'a> PolicyStatement<'a> {
     fn parse(input: &'a str) -> IResult<&'a str, Self> {
         let (input, _) = space0(input)?;
@@ -342,6 +370,7 @@ impl<'a> PolicyStatement<'a> {
             map(TypeTransition::parse, PolicyStatement::TypeTransition),
             map(TypeChange::parse, PolicyStatement::TypeChange),
             map(GenFsCon::parse, PolicyStatement::GenFsCon),
+            map(CloneType::parse, PolicyStatement::CloneType),
         ))
         .parse(input)?;
         let (input, _) = space0(input)?;
@@ -641,7 +670,25 @@ impl<'a> TryFrom<&'a PolicyStatement<'a>> for Vec<AtomicStatement> {
             PolicyStatement::TypeTransition(perm) => perm.try_into(),
             PolicyStatement::TypeChange(perm) => perm.try_into(),
             PolicyStatement::GenFsCon(perm) => perm.try_into(),
+            PolicyStatement::CloneType(perm) => perm.try_into(),
         }
+    }
+}
+
+impl<'a> TryFrom<&'a CloneType<'a>> for Vec<AtomicStatement> {
+    type Error = anyhow::Error;
+    fn try_from(perm: &'a CloneType<'a>) -> Result<Self> {
+        Ok(vec![AtomicStatement {
+            cmd: crate::ksu_uapi::KSU_SEPOLICY_CMD_CLONE_TYPE,
+            subcmd: 0,
+            sepol1: perm.src.try_into()?,
+            sepol2: perm.dst.try_into()?,
+            sepol3: PolicyObject::None,
+            sepol4: PolicyObject::None,
+            sepol5: PolicyObject::None,
+            sepol6: PolicyObject::None,
+            sepol7: PolicyObject::None,
+        }])
     }
 }
 
@@ -658,6 +705,7 @@ const fn cmd_expected_argc(cmd: u32) -> Option<usize> {
             Some(2)
         }
         crate::ksu_uapi::KSU_SEPOLICY_CMD_GENFSCON => Some(3),
+        crate::ksu_uapi::KSU_SEPOLICY_CMD_CLONE_TYPE => Some(2),
         _ => None,
     }
 }
