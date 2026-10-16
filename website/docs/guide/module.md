@@ -289,7 +289,7 @@ One action per line. Lines starting with `#` and empty lines are ignored. Argume
 
 | Action | Syntax | Meaning |
 |---|---|---|
-| `insmod` | `insmod <ko> [params...]` | Load a kernel module with `finit_module`. Parameters are joined with spaces |
+| `insmod` | `insmod <ko> [params...]` | Load a kernel module. Undefined symbols are resolved against the kernel's kallsyms first, so the module may use non-exported symbols; falls back to `finit_module` when that is unavailable. Parameters are joined with spaces |
 | `exec` | `exec [-t <ms>] <prog> [args...]` | Run a program and wait for it. A non-zero exit status is a failure. It is killed after 5000 ms by default |
 | `write` | `write <path> <content>` | Write `content` to an existing file, without a trailing newline. Meant for procfs/sysfs |
 
@@ -333,7 +333,7 @@ Before running any action the runner increments a boot counter, which ksud clear
 ksud module preinit reset
 ```
 
-preinit is also not run in charger mode, and safe mode disables all modules, which removes their preinit content for the next boot. To get out of a bootloop by hand, delete `/metadata/watchdog/ksu/preinit` (or `/metadata/ksu/preinit`) from recovery, or `fastboot boot` the stock image and delete it there.
+preinit is also not run in charger mode, and safe mode disables all modules, which removes their preinit content for the next boot. To get out of a bootloop by hand, delete `/metadata/vold/ksu/preinit` (or `/metadata/watchdog/ksu/preinit`, `/metadata/ksu/preinit`, whichever exists) from recovery, or `fastboot boot` the stock image and delete it there.
 
 ::: tip
 - preinit is **not available** in **late-load mode** and on devices that do not use a two stage init (Android 10 and below).

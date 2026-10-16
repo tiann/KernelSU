@@ -292,7 +292,7 @@ ksud 会把每个已启用模块的整个 `preinit/` 目录复制到 `/metadata`
 
 | 动作 | 语法 | 语义 |
 |---|---|---|
-| `insmod` | `insmod <ko> [params...]` | 用 `finit_module` 加载内核模块，多个参数用空格拼接 |
+| `insmod` | `insmod <ko> [params...]` | 加载内核模块。会先用内核的 kallsyms 解析未定义符号，所以模块可以使用未导出的符号；该方式不可用时回退到 `finit_module`。多个参数用空格拼接 |
 | `exec` | `exec [-t <ms>] <prog> [args...]` | 运行程序并等待其退出，退出码非 0 视为失败。默认 5000 ms 后被杀掉 |
 | `write` | `write <path> <content>` | 向已存在的文件写入 `content`，不追加换行，用于 procfs/sysfs |
 
@@ -336,7 +336,7 @@ runner 执行任何动作前会把启动计数加 1，开机完成后由 ksud �
 ksud module preinit reset
 ```
 
-关机充电模式下不会执行 preinit；安全模式会禁用所有模块，下次开机时它们的 preinit 内容也会被移除。如果需要手动救砖，可以在 recovery 里删除 `/metadata/watchdog/ksu/preinit`（或 `/metadata/ksu/preinit`），或者 `fastboot boot` 原厂镜像后删除。
+关机充电模式下不会执行 preinit；安全模式会禁用所有模块，下次开机时它们的 preinit 内容也会被移除。如果需要手动救砖，可以在 recovery 里删除 `/metadata/vold/ksu/preinit`（或 `/metadata/watchdog/ksu/preinit`、`/metadata/ksu/preinit`，以实际存在的为准），或者 `fastboot boot` 原厂镜像后删除。
 
 ::: tip
 - 在 **late-load 模式**下以及不使用两阶段 init 的设备（Android 10 以下）上，preinit **不可用**。

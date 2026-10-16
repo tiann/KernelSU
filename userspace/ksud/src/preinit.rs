@@ -34,7 +34,8 @@ struct Entry {
     rel: PathBuf,
     is_dir: bool,
     size: u64,
-    mtime: (i64, i64),
+    // ctime, not mtime: extraction keeps the zip mtime but always sets ctime
+    ctime: (i64, i64),
     mode: u32,
 }
 
@@ -44,8 +45,8 @@ impl Entry {
             "{id}\t{}\t{}\t{}.{}\t{:o}\t{}",
             if self.is_dir { 'd' } else { 'f' },
             self.size,
-            self.mtime.0,
-            self.mtime.1,
+            self.ctime.0,
+            self.ctime.1,
             self.mode,
             self.rel.display()
         )
@@ -80,7 +81,7 @@ fn scan(root: &Path, rel: &Path, out: &mut Vec<Entry>) -> Result<()> {
             rel: rel.clone(),
             is_dir: file_type.is_dir(),
             size: if file_type.is_file() { meta.len() } else { 0 },
-            mtime: (meta.mtime(), meta.mtime_nsec()),
+            ctime: (meta.ctime(), meta.ctime_nsec()),
             mode: meta.mode() & 0o7777,
         });
         if file_type.is_dir() {
