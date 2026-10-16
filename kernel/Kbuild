@@ -113,7 +113,8 @@ quiet_cmd_ksu_runner = RUNNER  $@
 
 $(obj)/preinit/runner.elf: $(KSU_KERNEL_DIR)/preinit/runner/runner.c \
 		$(wildcard $(KSU_KERNEL_DIR)/preinit/runner/nolibc/*.h \
-			   $(KSU_KERNEL_DIR)/preinit/runner/nolibc/sys/*.h) FORCE
+			   $(KSU_KERNEL_DIR)/preinit/runner/nolibc/sys/*.h \
+			   $(KSU_KERNEL_DIR)/include/uapi/*.h) FORCE
 	$(call if_changed,ksu_runner)
 
 targets += preinit/runner.elf

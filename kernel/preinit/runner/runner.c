@@ -36,6 +36,9 @@
 #ifndef OWNER_UID
 #define OWNER_UID 0
 #endif
+#ifndef AT_EMPTY_PATH
+#define AT_EMPTY_PATH 0x1000
+#endif
 #define PREINIT_SUBDIR "preinit"
 #define CONF_NAME "preinit.conf"
 #define BOOTCOUNT_NAME ".preinit_bootcount"
@@ -668,7 +671,13 @@ static int wait_forward(const struct module_ctx *m, pid_t pid, int out_fd, long 
             if (exited)
                 break;
             kill(pid, SIGKILL);
-            waitpid(pid, &status, 0);
+            /*
+             * A child stuck in D state ignores SIGKILL: wait at most a
+             * second, PID 1 kills and reaps whatever is left at the end.
+             */
+            deadline = now_ms() + 1000;
+            while (waitpid(pid, &status, WNOHANG) == 0 && now_ms() < deadline)
+                sleep_ms(10);
             fwd_flush(&fwd);
             return -1;
         }
@@ -698,36 +707,41 @@ static int do_exec(const struct module_ctx *m, int argc, char **argv)
         klog("[%s] exec: missing program", m->id);
         return -1;
     }
+    /* Exec the checked file itself, not whatever the path resolves to later. */
     fd = open_checked(m, argv[idx]);
     if (fd < 0)
         return -1;
-    close(fd);
 
     snprintf(env_modid, sizeof(env_modid), "MODID=%s", m->id);
     snprintf(env_dir, sizeof(env_dir), "PREINIT_DIR=%s", m->dir);
 
     if (pipe2(pfd, O_CLOEXEC)) {
         klog("[%s] exec: pipe failed: %d", m->id, errno);
+        close(fd);
         return -1;
     }
     pid = fork();
     if (pid < 0) {
         klog("[%s] exec: fork failed: %d", m->id, errno);
+        close(fd);
         close(pfd[0]);
         close(pfd[1]);
         return -1;
     }
     if (pid == 0) {
-        fd = open("/dev/null", O_RDONLY | O_CLOEXEC);
-        if (fd >= 0)
-            dup2(fd, 0);
+        int nullfd = open("/dev/null", O_RDONLY | O_CLOEXEC);
+
+        if (nullfd >= 0)
+            dup2(nullfd, 0);
         else
             close(0);
         dup2(pfd[1], 1);
         dup2(pfd[1], 2);
-        execve(argv[idx], argv + idx, envp);
+        /* Static ELF only, so a close-on-exec fd is fine for AT_EMPTY_PATH. */
+        syscall(__NR_execveat, fd, "", argv + idx, envp, AT_EMPTY_PATH);
         _exit(127);
     }
+    close(fd);
     close(pfd[1]);
     status = wait_forward(m, pid, pfd[0], timeout);
     close(pfd[0]);
