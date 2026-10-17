@@ -473,6 +473,14 @@ static void ksu_install_rc_hook(struct file *file)
 
 static void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)
 {
+    /*
+     * init is the only reader of /system/etc/init/hw/init.rc; the proxy below
+     * exists to append our rc fragment to that single read. Return before
+     * fget() for every other task, so the system-wide read() path is untouched.
+     */
+    if (current->pid != 1)
+        return;
+
     struct file *file = fget(fd);
     if (!file) {
         return;
@@ -585,6 +593,10 @@ static long ksu_sys_read(const struct pt_regs *regs)
 static long (*orig_sys_fstat)(const struct pt_regs *regs);
 static long ksu_sys_fstat(const struct pt_regs *regs)
 {
+    // Same reasoning as ksu_handle_sys_read(): only init fstat()s init.rc.
+    if (current->pid != 1)
+        return orig_sys_fstat(regs);
+
     unsigned int fd = PT_REGS_SYSCALL_PARM1(regs);
     void __user *statbuf = (void __user *)PT_REGS_PARM2(regs);
     bool is_rc = false;
