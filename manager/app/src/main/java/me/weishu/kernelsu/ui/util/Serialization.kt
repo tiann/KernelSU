@@ -8,10 +8,12 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.modulerepo.RepoModuleArg
+import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.viewmodel.TemplateViewModel
 
 object FlashItSerializer : BaseParcelableSerializer<FlashIt>(FlashIt::class.java)
 object RepoModuleArgSerializer : BaseParcelableSerializer<RepoModuleArg>(RepoModuleArg::class.java)
+object ScriptRunArgSerializer : BaseParcelableSerializer<ScriptRunArg>(ScriptRunArg::class.java)
 object TemplateInfoSerializer : BaseParcelableSerializer<TemplateViewModel.TemplateInfo>(TemplateViewModel.TemplateInfo::class.java)
 
 open class BaseParcelableSerializer<T : Parcelable>(

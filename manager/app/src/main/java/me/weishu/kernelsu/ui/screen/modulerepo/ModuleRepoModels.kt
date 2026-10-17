@@ -20,4 +20,5 @@ data class RepoModuleArg(
     val latestVersionCode: Int,
     val latestReleaseTime: String,
     val metamodule: Boolean,
+    val script: Boolean = false,
 ) : Parcelable

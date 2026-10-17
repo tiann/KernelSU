@@ -12,6 +12,15 @@ import kotlinx.serialization.Serializable
 
 const val REGISTRY_API_SCHEMA_VERSION = 1
 
+/** `kind` of a registry entry: an installable module or a one-shot script run by the manager. */
+object RegistryKind {
+    const val MODULE = "module"
+    const val SCRIPT = "script"
+
+    /** Kinds this client understands; entries of any other kind are hidden. */
+    fun isKnown(kind: String): Boolean = kind == MODULE || kind == SCRIPT
+}
+
 @Serializable
 data class ApiIndex(
     val schemaVersion: Int,
@@ -44,6 +53,8 @@ data class ApiModuleSummary(
     val authors: List<ApiAuthor> = emptyList(),
     val tags: List<String> = emptyList(),
     val metamodule: Boolean = false,
+    /** [RegistryKind]; a missing value means a module. */
+    val kind: String = RegistryKind.MODULE,
     /** Content-hashed icon, "assets/{hash}.{ext}". */
     val icon: String? = null,
     val stable: ApiVersionRef,
@@ -119,6 +130,8 @@ data class ApiModuleDetail(
     val authors: List<ApiAuthor> = emptyList(),
     val tags: List<String> = emptyList(),
     val metamodule: Boolean = false,
+    /** [RegistryKind]; a missing value means a module. */
+    val kind: String = RegistryKind.MODULE,
     val icon: String? = null,
     val stable: ApiVersionRef,
     val stars: Int? = null,

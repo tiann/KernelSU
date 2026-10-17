@@ -16,6 +16,10 @@ KernelSU 的模組支援顯示互動介面，請參閱 [WebUI 文檔](module-web
 
 KernelSU 提供了一個內建的配置系統，允許模組儲存持久化或暫時的鍵值設定。詳情請參閱[模組配置文檔](module-config.md)。
 
+## 一次性腳本
+
+模組 ZIP 也可以是一次性腳本：KernelSU 管理器只執行它一次，而不是安裝它。詳情請參閱[一次性腳本文檔](module-script.md)。
+
 ## Busybox
 
 KernelSU 提供了一個完備的 BusyBox 二進位檔案 (包括完整的 SELinux 支援)。可執行檔位於 `/data/adb/ksu/bin/busybox`。

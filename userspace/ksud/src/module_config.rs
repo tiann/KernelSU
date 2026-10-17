@@ -149,7 +149,11 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
     let mut count_buf = [0u8; 4];
     file.read_exact(&mut count_buf)
         .with_context(|| "Failed to read count")?;
-    let count = u32::from_le_bytes(count_buf);
+    let count = u32::from_le_bytes(count_buf) as usize;
+
+    if count > MAX_CONFIG_COUNT {
+        bail!("Too many config entries: {count} (max: {MAX_CONFIG_COUNT})");
+    }
 
     // Read entries
     let mut config = HashMap::new();
@@ -159,6 +163,10 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
         file.read_exact(&mut key_len_buf)
             .with_context(|| format!("Failed to read key length for entry {i}"))?;
         let key_len = u32::from_le_bytes(key_len_buf) as usize;
+
+        if key_len > MAX_CONFIG_KEY_LEN {
+            bail!("Config key too long for entry {i}: {key_len} bytes (max: {MAX_CONFIG_KEY_LEN})");
+        }
 
         // Read key data
         let mut key_buf = vec![0u8; key_len];
@@ -172,6 +180,12 @@ pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<S
         file.read_exact(&mut value_len_buf)
             .with_context(|| format!("Failed to read value length for entry {i}"))?;
         let value_len = u32::from_le_bytes(value_len_buf) as usize;
+
+        if value_len > MAX_CONFIG_VALUE_LEN {
+            bail!(
+                "Config value too long for entry {i}: {value_len} bytes (max: {MAX_CONFIG_VALUE_LEN})"
+            );
+        }
 
         // Read value data
         let mut value_buf = vec![0u8; value_len];

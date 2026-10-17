@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -15,12 +16,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.core.net.toUri
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.launch
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
+import me.weishu.kernelsu.data.script.ScriptRepository
 import me.weishu.kernelsu.ksuApp
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.util.DownloadService
 import me.weishu.kernelsu.ui.util.getFileName
 import me.weishu.kernelsu.ui.webui.WebUIActivity
@@ -153,12 +157,23 @@ fun IntentDispatcher(intentChannel: ReceiveChannel<Intent>) {
     val isSafeMode = Natives.isSafeMode
     val isManager = Natives.isManager
     var pendingZipInstall by rememberSaveable(stateSaver = PendingAction.InstallModule.InstallModuleSaver) { mutableStateOf(null) }
+    val scope = rememberCoroutineScope()
+
+    // A one-shot script ZIP opens the run page, which also offers installing it as a module.
+    val openModuleZip: (Uri) -> Unit = { uri ->
+        scope.launch {
+            val script = ScriptRepository.peekOneshot(uri)
+            if (script != null) {
+                navigator.push(Route.ScriptRun(ScriptRunArg(uri, offerInstall = true, displayName = script.name)))
+            } else {
+                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
+            }
+        }
+    }
 
     val installDialog = rememberConfirmDialog(
         onConfirm = {
-            pendingZipInstall?.let { action ->
-                navigator.push(Route.Flash(FlashIt.FlashModules(listOf(action.uri))))
-            }
+            pendingZipInstall?.let { action -> openModuleZip(action.uri) }
             pendingZipInstall = null
         },
         onDismiss = { pendingZipInstall = null }
@@ -188,7 +203,7 @@ fun IntentDispatcher(intentChannel: ReceiveChannel<Intent>) {
                         )
                     )
                 } else {
-                    navigator.push(Route.Flash(FlashIt.FlashModules(listOf(action.uri))))
+                    openModuleZip(action.uri)
                 }
             }
 

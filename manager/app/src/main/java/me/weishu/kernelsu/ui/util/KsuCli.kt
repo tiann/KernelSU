@@ -33,6 +33,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipFile
 
 /**
  * @author weishu
@@ -239,10 +240,28 @@ fun flashModule(
         val cmd = "module install ${file.absolutePath}"
         val result = flashWithIO("${getKsuDaemonPath()} $cmd", onStdout, onStderr)
         Log.i("KernelSU", "install module $uri result: $result")
-        return FlashResult(result)
+        return FlashResult(result, result.isSuccess && moduleNeedsReboot(file))
     } finally {
         file.delete()
     }
+}
+
+private val MODULE_ID_REGEX = Regex("^[a-zA-Z][a-zA-Z0-9._-]+$")
+
+// A hot installed module goes live without leaving the "update" flag behind
+private fun moduleNeedsReboot(zip: File): Boolean {
+    val id = runCatching {
+        ZipFile(zip).use { archive ->
+            val entry = archive.getEntry("module.prop") ?: return@use null
+            archive.getInputStream(entry).bufferedReader().useLines { lines ->
+                lines.map { it.trim() }.firstOrNull { it.startsWith("id=") }?.substringAfter('=')?.trim()
+            }
+        }
+    }.getOrNull()
+    if (id == null || !MODULE_ID_REGEX.matches(id)) return true
+    val dir = "/data/adb/modules/$id"
+    // Any failure to check counts as needing a reboot
+    return !ShellUtils.fastCmdResult(getRootShell(), "[ -d $dir ] && [ ! -e $dir/update ]")
 }
 
 fun runModuleAction(
@@ -268,6 +287,38 @@ fun runModuleAction(
     Log.i("KernelSU", "Module runAction result: $result")
 
     return result.isSuccess
+}
+
+/**
+ * Runs a prepared one-shot script command (see ScriptCommand) in a new root shell in the
+ * global mount namespace, like a module action. Returns the exit code.
+ */
+fun runOneshotScript(
+    command: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): Int {
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStdout(s ?: "")
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    val result = withNewRootShell(true) {
+        newJob().add(command).to(stdoutCallback, stderrCallback).exec()
+    }
+    Log.i(TAG, "one-shot script exit code: ${result.code}")
+    return result.code
+}
+
+/** Removes a script's extraction directory, including files the script created as root. */
+fun removeAsRoot(path: String): Boolean {
+    val escaped = "'" + path.replace("'", "'\\''") + "'"
+    return ShellUtils.fastCmdResult(getRootShell(), "rm -rf $escaped")
 }
 
 fun restoreBoot(

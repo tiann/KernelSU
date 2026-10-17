@@ -87,6 +87,7 @@ import me.weishu.kernelsu.ui.component.miuix.SearchBox
 import me.weishu.kernelsu.ui.component.miuix.SearchPager
 import me.weishu.kernelsu.ui.component.miuix.deferredTopPadding
 import me.weishu.kernelsu.ui.screen.module.ExpandableDescriptionText
+import me.weishu.kernelsu.ui.screen.scriptrun.lastRunText
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
@@ -122,6 +123,7 @@ import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.FileDownloads
 import top.yukonga.miuix.kmp.icon.extended.HorizontalSplit
 import top.yukonga.miuix.kmp.icon.extended.Link
+import top.yukonga.miuix.kmp.icon.extended.Play
 import top.yukonga.miuix.kmp.icon.extended.Sort
 import top.yukonga.miuix.kmp.icon.extended.TopDownloads
 import top.yukonga.miuix.kmp.overlay.OverlayListPopup
@@ -291,10 +293,8 @@ fun ModuleRepoScreenMiuix(
                                             )
                                             RepoBadgesMiuix(
                                                 metamodule = module.metamodule,
-                                                installState = repoInstallState(
-                                                    state.installedVersions[module.moduleId],
-                                                    module.latestVersionCode
-                                                ),
+                                                isScript = module.isScript,
+                                                installState = repoInstallStateOf(module, state.installedVersions),
                                             )
                                         }
                                         RepoStarsMiuix(module.stars, Modifier.padding(start = 8.dp))
@@ -449,10 +449,8 @@ fun ModuleRepoScreenMiuix(
                                                 )
                                                 RepoBadgesMiuix(
                                                     metamodule = module.metamodule,
-                                                    installState = repoInstallState(
-                                                        state.installedVersions[module.moduleId],
-                                                        module.latestVersionCode
-                                                    ),
+                                                    isScript = module.isScript,
+                                                    installState = repoInstallStateOf(module, state.installedVersions),
                                                 )
                                             }
                                         }
@@ -585,11 +583,19 @@ private fun MiuixTag(text: String, background: Color, tint: Color) {
 @Composable
 private fun RepoBadgesMiuix(
     metamodule: Boolean,
+    isScript: Boolean,
     installState: RepoInstallState,
 ) {
     if (metamodule) {
         MiuixTag(
             text = "META",
+            background = colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+            tint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
+        )
+    }
+    if (isScript) {
+        MiuixTag(
+            text = stringResource(R.string.module_repo_script_badge),
             background = colorScheme.tertiaryContainer.copy(alpha = 0.6f),
             tint = colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
         )
@@ -914,6 +920,7 @@ fun ReleasesPage(
                         ReleaseZipRowMiuix(
                             release = rel,
                             canInstall = state.canInstall,
+                            isScript = state.isScript,
                             actionIconTint = actionIconTint,
                             secondaryContainer = secondaryContainer,
                             confirmTitle = confirmTitle,
@@ -946,6 +953,7 @@ fun ReleasesPage(
 private fun ReleaseZipRowMiuix(
     release: RepoRelease,
     canInstall: Boolean,
+    isScript: Boolean,
     actionIconTint: Color,
     secondaryContainer: Color,
     confirmTitle: String,
@@ -1006,7 +1014,7 @@ private fun ReleaseZipRowMiuix(
                         if (isDownloadAvailable(downloadedUri)) {
                             onInstallModule(downloadedUri)
                         } else {
-                            handle.downloadedUri = null
+                            handle.setDownloaded(null)
                         }
                     }
                 } else {
@@ -1019,14 +1027,20 @@ private fun ReleaseZipRowMiuix(
                     progress = handle.progress / 100f, size = 20.dp, strokeWidth = 2.dp
                 )
             } else {
-                val label = stringResource(if (downloadedUri != null) R.string.install else R.string.download)
+                val label = stringResource(
+                    when {
+                        downloadedUri == null -> R.string.download
+                        isScript -> R.string.script_run
+                        else -> R.string.install
+                    }
+                )
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         modifier = Modifier.size(20.dp),
-                        imageVector = MiuixIcons.FileDownloads,
+                        imageVector = if (downloadedUri != null && isScript) MiuixIcons.Play else MiuixIcons.FileDownloads,
                         tint = actionIconTint,
                         contentDescription = label
                     )
@@ -1148,6 +1162,13 @@ fun InfoPage(
                             text = stringResource(R.string.module_repo_not_in_index),
                             fontSize = 14.sp,
                             color = colorScheme.error,
+                        )
+                    }
+                    if (state.isScript) {
+                        Text(
+                            text = lastRunText(LocalContext.current, state.lastRun),
+                            fontSize = 14.sp,
+                            color = colorScheme.onSurfaceVariantSummary,
                         )
                     }
                     if (detail?.healthStale == true) {
@@ -1276,7 +1297,7 @@ fun ModuleRepoDetailScreenMiuix(
     val secondaryContainer = colorScheme.secondaryContainer.copy(alpha = 0.8f)
     val module = state.module
     val scope = rememberCoroutineScope()
-    val confirmTitle = stringResource(R.string.module_install)
+    val confirmTitle = stringResource(if (state.isScript) R.string.script_run_title else R.string.module_install)
     var pendingDownload by remember { mutableStateOf<(() -> Unit)?>(null) }
     val confirmDialog = rememberConfirmDialog(onConfirm = { pendingDownload?.invoke() })
 

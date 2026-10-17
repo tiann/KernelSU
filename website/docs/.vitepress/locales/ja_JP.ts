@@ -52,6 +52,7 @@ function sidebarGuide() {
         { text: 'モジュールのガイド', link: '/ja_JP/guide/module.md' },
         { text: 'メタモジュール', link: '/ja_JP/guide/metamodule.md' },
         { text: 'モジュール設定', link: '/ja_JP/guide/module-config.md' },
+        { text: 'ワンショットスクリプト', link: '/ja_JP/guide/module-script.md' },
         { text: 'ブートループからの復旧', link: '/ja_JP/guide/rescue-from-bootloop.md' },
         { text: 'x86_64 サポート', link: '/ja_JP/guide/x86_64-support' },
         { text: 'よくある質問', link: '/ja_JP/guide/faq' },

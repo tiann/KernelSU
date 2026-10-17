@@ -821,6 +821,14 @@ private fun ModuleItem(
                         backgroundColor = MaterialTheme.colorScheme.primary
                     )
                 }
+                module.preinitWarning()?.let {
+                    StatusTag(
+                        stringResource(it),
+                        modifier = Modifier.padding(bottom = 4.dp),
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                        backgroundColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                }
             }
 
             HorizontalDivider(thickness = Dp.Hairline)

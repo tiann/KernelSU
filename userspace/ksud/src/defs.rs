@@ -4,6 +4,7 @@ mod android {
     use std::time::Duration;
 
     pub const BOOT_STAGE_TIMEOUT: Duration = Duration::from_secs(35);
+    pub const HOT_INSTALL_SCRIPT_TIMEOUT: Duration = Duration::from_secs(30);
     pub const EMULATED_SOFT_REBOOT_TIMEOUT: Duration = Duration::from_secs(5);
     pub const WAITSYS_READY_TIMEOUT: Duration = Duration::from_secs(2);
     pub const WAITSYS_STOP_TIMEOUT: Duration = Duration::from_secs(5);
@@ -29,12 +30,23 @@ mod android {
     pub const MODULE_DIR: &str = concatcp!(ADB_DIR, "modules/");
     pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
     pub const METAMODULE_DIR: &str = concatcp!(ADB_DIR, "metamodule/");
+    // Replaced module dirs are parked here until the next boot
+    pub const HOT_INSTALL_TRASH_DIR: &str = concatcp!(WORKING_DIR, "hot_install_trash/");
 
-    // Prefer /metadata/watchdog/ when present, else /metadata
+    // Preferred first: /metadata/vold (root:root 0700) hides best and does not
+    // bump /metadata's nlink; else /metadata/watchdog (like Magisk); else /metadata.
+    pub const PREINIT_DIR_VOLD: &str = "/metadata/vold/ksu/";
     pub const PREINIT_DIR_WATCHDOG: &str = "/metadata/watchdog/ksu/";
     pub const PREINIT_DIR_DEFAULT: &str = "/metadata/ksu/";
+    pub const METADATA_FILE_CON: &str = "u:object_r:metadata_file:s0";
+    pub const VOLD_METADATA_FILE_CON: &str = "u:object_r:vold_metadata_file:s0";
     pub const MODULES_RC_FILE: &str = "modules.rc";
     pub const MODULES_RC_TMP_FILE: &str = ".modules.rc.tmp";
+    // Module preinit dirs are synced to PREINIT_DIR_*/preinit/<id>/ and run by the kernel's runner
+    pub const PREINIT_SUBDIR: &str = "preinit";
+    pub const PREINIT_MANIFEST_FILE: &str = ".manifest";
+    pub const PREINIT_BOOTCOUNT_FILE: &str = ".preinit_bootcount";
+    pub const PREINIT_STATUS_PATH: &str = concatcp!(WORKING_DIR, "preinit_status");
 
     pub const MODULE_WEB_DIR: &str = "webroot";
     pub const MODULE_ACTION_SH: &str = "action.sh";
@@ -42,6 +54,10 @@ mod android {
     pub const UPDATE_FILE_NAME: &str = "update";
     pub const REMOVE_FILE_NAME: &str = "remove";
     pub const MODULE_INIT_RC_DIR: &str = "initrc";
+    pub const MODULE_PREINIT_DIR: &str = "preinit";
+    pub const PREINIT_CONF: &str = "preinit.conf";
+    // Written by installer.sh when customize.sh requests a hot install
+    pub const HOT_INSTALL_MARKER: &str = ".ksu_hot_install";
 
     // Module config system
     pub const MODULE_CONFIG_DIR: &str = concatcp!(WORKING_DIR, "module_configs/");
