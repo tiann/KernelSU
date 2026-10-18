@@ -38,8 +38,11 @@ void __init ksu_preinit_init(void)
         pr_info("preinit: disabled\n");
         return;
     }
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+    file = shmem_file_setup("ksu_preinit", size, EMPTY_VMA_FLAGS);
+#else
     file = shmem_file_setup("ksu_preinit", size, 0);
+#endif
     if (IS_ERR(file)) {
         pr_err("preinit: shmem_file_setup failed: %ld\n", PTR_ERR(file));
         return;
