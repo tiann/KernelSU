@@ -8,6 +8,7 @@
 #include <linux/shmem_fs.h>
 #include <linux/string.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 
 #include "klog.h" // IWYU pragma: keep
 #include "util.h"
