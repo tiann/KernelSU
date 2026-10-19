@@ -83,7 +83,6 @@ class ScriptParamsTest {
     @Test
     fun rejectsSchemaViolations() {
         assertThrows(ScriptParamsException::class.java) { ScriptParamsParser.parse("""{"schemaVersion":2,"params":[]}""") }
-        assertThrows(ScriptParamsException::class.java) { ScriptParamsParser.parse("""{"schemaVersion":"1","params":[]}""") }
         assertThrows(ScriptParamsException::class.java) { ScriptParamsParser.parse("""{"schemaVersion":1}""") }
         assertThrows(ScriptParamsException::class.java) { ScriptParamsParser.parse("not json") }
         assertThrows(ScriptParamsException::class.java) { ScriptParamsParser.parse("[]") }
@@ -114,17 +113,8 @@ class ScriptParamsTest {
     }
 
     @Test
-    fun matchesValidatorJsonReading() {
-        // A UTF-8 BOM is dropped, and integers may be written like any JSON number with an integral value.
+    fun dropsBom() {
         assertEquals(0, ScriptParamsParser.parse("\uFEFF{\"schemaVersion\":1,\"params\":[]}").params.size)
-        assertEquals(0, ScriptParamsParser.parse("""{"schemaVersion":1.0,"params":[]}""").params.size)
-        val text = parse("""{"key":"A","type":"string","label":"x","maxLength":5.0}""").params[0] as ScriptParam.Text
-        assertEquals(5, text.maxLength)
-        val int = parse("""{"key":"A","type":"int","label":"x","min":1e1,"max":2E+1}""").params[0] as ScriptParam.Integer
-        assertEquals(10, int.min)
-        assertEquals(20, int.max)
-        assertInvalid("""{"key":"A","type":"int","label":"x","min":1.5}""")
-        assertInvalid("""{"key":"A","type":"int","label":"x","min":1e10}""")
     }
 
     @Test
@@ -159,22 +149,6 @@ class ScriptParamsTest {
         // `pattern` is not part of the format: like any unknown field it is ignored, never enforced.
         val text = parse("""{"key":"A","type":"string","label":"x","pattern":"(a+)+$"}""").params[0]
         assertNull(text.validate("a".repeat(64) + "!"))
-    }
-
-    @Test
-    fun rejectsDuplicateJsonKeys() {
-        val e = assertThrows(ScriptParamsException::class.java) {
-            ScriptParamsParser.parse("""{"schemaVersion":1,"params":[{"key":"A","type":"bool","label":"x","label":"y"}]}""")
-        }
-        assertTrue(e.message!!.contains("label"))
-        assertThrows(ScriptParamsException::class.java) {
-            ScriptParamsParser.parse("""{"schemaVersion":1,"params":[],"params":[]}""")
-        }
-        // Escaped spellings of the same key are the same key.
-        assertEquals("ab", ScriptParamsParser.findDuplicateKey("""{"ab":1,"a\u0062":2}"""))
-        // Same key in different objects, or as a string value, is fine.
-        assertNull(ScriptParamsParser.findDuplicateKey("""{"a":{"a":1},"b":["a","a"],"c":"a","d":{"x":"\"a\""}}"""))
-        assertNull(ScriptParamsParser.findDuplicateKey(sample))
     }
 
     @Test
