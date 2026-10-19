@@ -356,42 +356,14 @@ private fun writeLkmFile(lkm: LkmSelection): File? {
     return file
 }
 
-// A single module name as accepted by ksud's --block-module parser.
-private fun isValidBlockModuleName(name: String): Boolean =
-    name.isNotEmpty() && name.length <= 64 &&
-        name.all { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' || it == '_' }
-
-/** Parse the comma-separated block-modules field into the non-empty names. */
-fun parseBlockModules(input: String): List<String> =
-    input.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-
-// The kernel copies the block_modules= value into a 256-byte buffer, leaving
-// 255 bytes; a longer list would be silently truncated, leaving some modules
-// unblocked. Reject it here too.
-private const val MAX_BLOCK_MODULES_LEN = 255
-
-/** Whether every name in the block-modules field is valid (empty is valid). */
-fun isBlockModulesValid(input: String): Boolean {
-    val names = parseBlockModules(input)
-    return names.all(::isValidBlockModuleName) &&
-        names.joinToString(",").length <= MAX_BLOCK_MODULES_LEN
-}
-
 private fun bootPatchFlags(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
-    blockModules: String,
 ): String = buildString {
     if (allowShell) append(" --allow-shell")
     if (enableAdb) append(" --enable-adbd")
     if (forceBackup) append(" --backup")
-    // Names are validated in the UI before install; pass them through without
-    // mutating. Drop the flag entirely (never inject) if anything slips through.
-    val names = parseBlockModules(blockModules)
-    if (names.isNotEmpty() && names.all(::isValidBlockModuleName)) {
-        append(" --block-module ${names.joinToString(",")}")
-    }
 }
 
 fun installBoot(
@@ -402,7 +374,6 @@ fun installBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
-    blockModules: String,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -427,7 +398,7 @@ fun installBoot(
     } else {
         " -b ${bootFile.absolutePath}"
     }
-    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup, blockModules)
+    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup)
 
     if (ota) {
         cmd += " -u"
@@ -471,7 +442,6 @@ fun downloadBoot(
     allowShell: Boolean,
     enableAdb: Boolean,
     forceBackup: Boolean,
-    blockModules: String,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -528,7 +498,7 @@ fun downloadBoot(
     }
 
     var cmd = "${getKsuDaemonPath()} boot-patch -b ${bootFile.absolutePath}"
-    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup, blockModules)
+    cmd += bootPatchFlags(allowShell, enableAdb, forceBackup)
 
     val lkmFile = writeLkmFile(lkm)
     if (lkmFile != null) {
@@ -654,20 +624,6 @@ suspend fun getAvailablePartitions(): List<String> = withContext(Dispatchers.IO)
     val cmd = "boot-info available-partitions"
     val out = shell.newJob().add("${getKsuDaemonPath()} $cmd").to(ArrayList(), null).exec().out
     out.filter { it.isNotBlank() }.map { it.trim() }
-}
-
-// Known vendor anti-root kernel modules that `--block-module` is meant for.
-private val KNOWN_BLOCKABLE_MODULES = listOf(
-    "vr", "vklp", "oplus_secure_guard", "oplus_secure_guard_new", "mkp"
-)
-
-// Return the known anti-root modules currently loaded on this device (per
-// /proc/modules), so the install screen can pre-fill only the relevant ones.
-suspend fun getLoadedBlockableModules(): List<String> = withContext(Dispatchers.IO) {
-    val shell = getRootShell()
-    val out = shell.newJob().add("cat /proc/modules").to(ArrayList(), null).exec().out
-    val loaded = out.mapNotNull { it.trim().substringBefore(' ').takeIf(String::isNotBlank) }.toHashSet()
-    KNOWN_BLOCKABLE_MODULES.filter { it in loaded }
 }
 
 fun hasMagisk(): Boolean {

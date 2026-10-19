@@ -18,6 +18,10 @@
 // which flows in through ksu_config (boot-patch / boot-patch-v2) or the kernel
 // cmdline (built-in). Names use the kernel form (underscores, e.g.
 // `oplus_secure_guard`).
+//
+// Developer only: a blocked module fails to load with EPERM, which first stage
+// init treats as fatal for anything in modules.load / modules.load.recovery
+// that is not in modules.blocklist. Picking safe names is up to the user.
 
 static char block_modules[256];
 

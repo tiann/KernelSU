@@ -290,11 +290,6 @@
     <string name="allow_shell_summary">总是允许 adb shell 调用 SU 命令，非必要请勿开启！</string>
     <string name="enable_adb">启动时强制启用 ADB 调试</string>
     <string name="enable_adb_summary">强制允许 USB 调试并取消 adb 认证，非必要请勿开启！</string>
-    <string name="install_block_modules">屏蔽内核模块（风险）</string>
-    <string name="install_block_modules_warning">启动时阻止所列内核模块加载。屏蔽系统依赖的模块可能导致卡开机 logo 或反复重启（例如部分联发科机型上的 mkp）。请仅在确认这些模块在你的设备上可以安全屏蔽时启用。如无法开机，可通过 fastboot 刷回原厂 boot / init_boot 镜像恢复。</string>
-    <string name="install_block_modules_list">要屏蔽的模块</string>
-    <string name="install_block_modules_summary">以逗号分隔的模块名，启动时阻止其加载，例如 oplus_secure_guard。留空则不屏蔽任何模块。</string>
-    <string name="install_block_modules_invalid">模块名只能包含字母、数字和下划线，且每个不超过 64 个字符。</string>
     <string name="advanced_options">高级选项</string>
     <string name="expand">展开</string>
     <string name="download_channel_name">模块下载</string>

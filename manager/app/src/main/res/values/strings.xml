@@ -310,11 +310,6 @@
     <string name="allow_shell_summary">Always allow adb shell to call SU command. Do not enable this unless absolutely necessary.</string>
     <string name="enable_adb">Force enable adb on boot</string>
     <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
-    <string name="install_block_modules">Block kernel modules (risky)</string>
-    <string name="install_block_modules_warning">Stop the listed kernel modules from loading at boot. Blocking a module the system depends on can make the device hang on the boot logo or bootloop (e.g. MediaTek mkp on some devices). Only enable this if you know the modules are safe to block on your device. To recover, flash the stock boot / init_boot image with fastboot.</string>
-    <string name="install_block_modules_list">Modules to block</string>
-    <string name="install_block_modules_summary">Comma-separated module names to stop from loading at boot, e.g. oplus_secure_guard. Leave empty to block nothing.</string>
-    <string name="install_block_modules_invalid">Module names may contain only letters, digits and underscores, each at most 64 characters.</string>
     <string name="advanced_options">Advanced Options</string>
     <string name="expand">Expand</string>
     <string name="download_channel_name">Module Downloads</string>

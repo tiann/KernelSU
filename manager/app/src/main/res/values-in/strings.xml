@@ -305,11 +305,6 @@
     <string name="allow_shell_summary">Selalu izinkan ADB Shell untuk memanggil perintah SU. Jangan aktifkan ini kecuali benar-benar diperlukan.</string>
     <string name="enable_adb">Paksa aktif ADB saat boot</string>
     <string name="enable_adb_summary">Paksa aktif debugging USB dan nonaktifkan otentikasi ADB. Jangan aktifkan ini kecuali benar-benar diperlukan.</string>
-    <string name="install_block_modules">Blokir modul kernel (berisiko)</string>
-    <string name="install_block_modules_warning">Menghentikan pemuatan modul kernel yang terdaftar saat boot. Memblokir modul yang dibutuhkan oleh sistem dapat menyebabkan perangkat berhenti di logo boot atau bootloop (mis. MediaTek mkp pada beberapa perangkat). Aktifkan ini hanya jika Anda yakin modul tersebut aman untuk diblokir pada perangkat Anda. Untuk memulihkan, pasang image boot / init_boot bawaan menggunakan fastboot.</string>
-    <string name="install_block_modules_list">Modul yang akan diblokir</string>
-    <string name="install_block_modules_summary">Nama-nama modul yang dipisahkan koma untuk menghentikan pemuatan saat boot (mis. oplus_secure_guard). Biarkan kosong jika tidak ingin memblokir apa pun.</string>
-    <string name="install_block_modules_invalid">Nama modul hanya boleh berisi huruf, angka dan garis bawah, masing-masing maksimal 64 karakter.</string>
     <string name="advanced_options">Opsi lanjutan</string>
     <string name="expand">Perluas</string>
     <string name="download_channel_name">Unduhan modul</string>
