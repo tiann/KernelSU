@@ -531,8 +531,11 @@ pub struct KsuConfigArgs {
     #[arg(long, value_name = "FEATURE=VALUE", value_parser = parse_force_feature)]
     force_feature: Vec<(FeatureId, u64)>,
 
-    /// Block a kernel module from loading at boot by name, e.g.
+    /// [Developer only] Block a kernel module from loading at boot by name, e.g.
     /// `oplus_secure_guard`. Comma-separated and/or repeated. Omitting clears it.
+    /// Blocked modules fail to load with EPERM; blocking one that first stage
+    /// init loads (modules.load / modules.load.recovery) or that others depend
+    /// on can bootloop the device. You are on your own.
     #[arg(long = "block-module", value_name = "NAME", value_delimiter = ',', value_parser = parse_block_module)]
     block_module: Vec<String>,
 }
