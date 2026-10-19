@@ -142,6 +142,7 @@ import me.weishu.kernelsu.ui.component.material.TonalCard
 import me.weishu.kernelsu.ui.component.statustag.StatusTag
 import me.weishu.kernelsu.ui.theme.LocalModuleDescriptionMaxLines
 import me.weishu.kernelsu.ui.util.reboot
+import top.yukonga.miuix.kmp.nav.gesture.WindowNavigationEventBridge
 
 @SuppressLint("StringFormatInvalid")
 @Composable
@@ -563,6 +564,7 @@ private fun ModuleShortcutSheet(
             enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
         )
     ) {
+        WindowNavigationEventBridge()
         Column(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
