@@ -8,6 +8,7 @@
 #include <linux/shmem_fs.h>
 #include <linux/string.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 
 #include "klog.h" // IWYU pragma: keep
 #include "util.h"
@@ -38,8 +39,11 @@ void __init ksu_preinit_init(void)
         pr_info("preinit: disabled\n");
         return;
     }
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 19, 0)
+    file = shmem_file_setup("ksu_preinit", size, EMPTY_VMA_FLAGS);
+#else
     file = shmem_file_setup("ksu_preinit", size, 0);
+#endif
     if (IS_ERR(file)) {
         pr_err("preinit: shmem_file_setup failed: %ld\n", PTR_ERR(file));
         return;
