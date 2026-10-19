@@ -68,7 +68,6 @@ static inline void __user *userspace_stack_buffer(const void *d, size_t len)
 }
 
 #define ksu_close_fd(fd) ({ ksyscall(close, fd); })
-#define ksu_sys_setns(fd, flags) ({ ksyscall(setns, fd, flags); })
 
 static inline struct file *ksu_filp_open_nonotify(const char *path, int flags)
 {
