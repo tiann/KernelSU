@@ -27,15 +27,22 @@
 #define KSU_PATCH_TEXT_FLUSH_ICACHE 2
 
 unsigned long phys_from_virt(unsigned long addr, int *err);
-/* Uses private replacement pages for RO/NX kernel mappings, and the existing
+/* Low-level fixmap writer. Callers should normally use ksu_patch_memory(). */
+int ksu_patch_text(void *dst, void *src, size_t len, int flags);
+#ifdef CONFIG_ARM64
+/* ARM64 uses private replacement pages for RO/NX kernel mappings, and the
  * direct writer for RX/RW mappings. May sleep; patches and restores serialize.
  * RO mappings larger than 2 MiB return -E2BIG; contiguous groups are replaced
  * as a whole. A replacement is freed only after its entire contents match the
  * original page and the original descriptors have been restored on all CPUs.
  */
 int ksu_patch_memory(void *dst, void *src, size_t len, int flags);
-/* Low-level fixmap writer. Callers should normally use ksu_patch_memory(). */
-int ksu_patch_text(void *dst, void *src, size_t len, int flags);
+#else
+static inline int ksu_patch_memory(void *dst, void *src, size_t len, int flags)
+{
+    return ksu_patch_text(dst, src, len, flags);
+}
+#endif
 void *scan_call_to(void *start, size_t size, void *target);
 
 #endif

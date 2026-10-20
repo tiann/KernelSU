@@ -13,14 +13,13 @@
 #include <linux/vmalloc.h>
 #include <asm/tlbflush.h>
 
-#include "patch_memory.h"
+#include "../patch_memory.h"
 
 struct patch_mapping {
     unsigned long base;
     unsigned long size;
     void *entry;
     unsigned int count;
-    unsigned int napot_order;
     bool pmd;
     bool ro;
 };
@@ -49,28 +48,16 @@ static struct rb_root ro_pages = RB_ROOT;
 
 static bool mapping_is_ro(unsigned long value)
 {
-#ifdef CONFIG_ARM64
     /* PTE_WRITE is the DBM bit on hardware with dirty-bit management. A clean
      * writable mapping can also have PTE_RDONLY set; it must not be copied.
      */
     return (value & PTE_VALID) && (value & PTE_RDONLY) && !(value & PTE_WRITE) && (value & PTE_PXN) &&
            !(value & PTE_USER);
-#elif defined(CONFIG_X86_64)
-    return (value & _PAGE_PRESENT) && !(value & (_PAGE_RW | _PAGE_USER)) && (value & _PAGE_NX);
-#else
-    return (value & _PAGE_PRESENT) && (value & _PAGE_READ) && !(value & (_PAGE_WRITE | _PAGE_EXEC | _PAGE_USER));
-#endif
 }
 
 static bool table_leaf(unsigned long value)
 {
-#ifdef CONFIG_ARM64
     return (value & PMD_TYPE_MASK) == PMD_TYPE_SECT;
-#elif defined(CONFIG_X86_64)
-    return value & _PAGE_PSE;
-#else
-    return value & _PAGE_LEAF;
-#endif
 }
 
 static int describe_mapping(struct patch_mapping *map, unsigned long addr, void *entry, unsigned long value,
@@ -87,18 +74,10 @@ static int describe_mapping(struct patch_mapping *map, unsigned long addr, void 
     if (!map->ro)
         return 0;
 
-#ifdef CONFIG_ARM64
     if (value & PTE_CONT) {
         map->size = pmd ? CONT_PMD_SIZE : CONT_PTE_SIZE;
         map->count = map->size / size;
     }
-#elif defined(CONFIG_RISCV_ISA_SVNAPOT)
-    if (!pmd && pte_napot(__pte(value))) {
-        map->napot_order = napot_cont_order(__pte(value));
-        map->count = 1U << map->napot_order;
-        map->size = PAGE_SIZE << map->napot_order;
-    }
-#endif
     if (map->size > SZ_2M)
         return -E2BIG;
 
@@ -167,7 +146,7 @@ static void write_entry(const struct patch_mapping *map, unsigned int i, unsigne
     /* ARM64's newer set_pte() strips PTE_CONT. We update the whole contiguous
      * group, including the break-before-make sequence, ourselves.
      */
-#if defined(CONFIG_ARM64) && defined(CONFIG_ARM64_CONTPTE)
+#ifdef CONFIG_ARM64_CONTPTE
     __set_pte((pte_t *)map->entry + i, __pte(value));
 #else
     set_pte((pte_t *)map->entry + i, __pte(value));
@@ -187,32 +166,16 @@ static unsigned long replacement_entry(const struct ro_page *page, unsigned int 
     unsigned long value = page->saved[i];
     unsigned long pfn = page_to_pfn(page->pages) + i * (map->pmd ? PMD_SIZE : PAGE_SIZE) / PAGE_SIZE;
 
-#ifdef CONFIG_ARM64
     /* Use the architecture's address encoding, including 52-bit PA layouts,
      * to remove the old PFN without discarding descriptor attributes.
      */
     return (value ^ __phys_to_pte_val(__pte_to_phys(__pte(value)))) | __phys_to_pte_val(PFN_PHYS(pfn));
-#elif defined(CONFIG_X86_64)
-    unsigned long mask = map->pmd ? pmd_pfn_mask(__pmd(value)) : PTE_PFN_MASK;
-
-    return (value & ~mask) | (PFN_PHYS(pfn) & mask);
-#else
-    if (map->napot_order)
-        pfn = page_to_pfn(page->pages) | BIT(map->napot_order - 1);
-    return (value & ~_PAGE_PFN_MASK) | (pfn << _PAGE_PFN_SHIFT);
-#endif
 }
 
 static bool entry_matches(unsigned long a, unsigned long b)
 {
     /* Hardware may set access/dirty bits between preparation and stop_machine. */
-#ifdef CONFIG_ARM64
-    unsigned long volatile_bits = PTE_AF;
-#else
-    unsigned long volatile_bits = _PAGE_ACCESSED | _PAGE_DIRTY;
-#endif
-
-    return !((a ^ b) & ~volatile_bits);
+    return !((a ^ b) & ~PTE_AF);
 }
 
 static struct ro_page *find_ro_page(unsigned long addr)
@@ -263,8 +226,6 @@ static struct ro_page *alloc_ro_page(const struct patch_mapping *map)
     for (i = 0; i < map->count; i++) {
         unsigned long expected = first_pfn + i * (map->pmd ? PMD_SIZE : PAGE_SIZE) / PAGE_SIZE;
 
-        if (map->napot_order)
-            expected = first_pfn;
         if (!mapping_is_ro(page->saved[i]) || entry_pfn(map, page->saved[i]) != expected)
             goto fail;
     }
@@ -310,7 +271,6 @@ static int remap_cpu(void *data)
                 goto done;
             }
         }
-#ifdef CONFIG_ARM64
         /* Changing an output address requires break-before-make, including
          * every descriptor covered by a contiguous hint. TLBI is a hardware
          * broadcast here and does not require IPIs to the stopped CPUs.
@@ -318,7 +278,6 @@ static int remap_cpu(void *data)
         for (i = 0; i < map->count; i++)
             write_entry(map, i, 0);
         flush_tlb_kernel_range(map->base, map->base + map->size);
-#endif
         for (i = 0; i < map->count; i++)
             write_entry(map, i, info->restore ? page->saved[i] : replacement_entry(page, i));
         page->installed = !info->restore;
@@ -328,16 +287,10 @@ static int remap_cpu(void *data)
         while (atomic_read_acquire(&info->arrived) <= num_online_cpus())
             cpu_relax();
     }
-    /* Never use an IPI-based TLB shootdown inside stop_machine. Each CPU
-     * flushes locally and stop_machine waits for all of them before we free.
+    /* Synchronize every CPU after the broadcast TLBI and descriptor writes.
+     * stop_machine waits for all callbacks before we can free a replacement.
      */
-#ifdef CONFIG_X86_64
-    __flush_tlb_all();
-#elif defined(CONFIG_RISCV)
-    local_flush_tlb_all();
-#else
     isb();
-#endif
     return 0;
 }
 
