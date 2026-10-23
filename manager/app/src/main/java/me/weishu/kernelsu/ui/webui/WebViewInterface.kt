@@ -183,6 +183,11 @@ class WebViewInterface(private val state: WebUIState) {
     }
 
     @JavascriptInterface
+    fun setLightSystemBars(light: Boolean) {
+        state.applySystemBars(light)
+    }
+
+    @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
         val currentModuleInfo = JSONObject()

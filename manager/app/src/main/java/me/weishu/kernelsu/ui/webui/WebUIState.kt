@@ -9,6 +9,7 @@ import android.webkit.WebView
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.Shell
 import me.weishu.kernelsu.R
 
@@ -30,6 +31,7 @@ class WebUIState {
     var moduleName: String = ""
 
     var uiEvent by mutableStateOf<WebUIEvent>(WebUIEvent.Loading)
+    var lightSystemBarsOverride: Boolean? = null
     var isUrlLoaded = false
     var currentInsets: Insets = Insets(0, 0, 0, 0)
     var isInsetsEnabled by mutableStateOf(false)
@@ -68,6 +70,24 @@ class WebUIState {
 
     fun requestExit() {
         uiEvent = WebUIEvent.Close
+    }
+
+    fun applySystemBars(light: Boolean) {
+        lightSystemBarsOverride = light
+        val view = webView ?: return
+        view.post {
+            val activity = view.context as? Activity
+            activity?.let {
+                WindowInsetsControllerCompat(it.window, it.window.decorView).apply {
+                    isAppearanceLightStatusBars = light
+                    isAppearanceLightNavigationBars = light
+                }
+            }
+        }
+    }
+
+    fun reapplySystemBars() {
+        lightSystemBarsOverride?.let { applySystemBars(it) }
     }
 
     fun dispose(activity: Activity) {
