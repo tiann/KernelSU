@@ -19,8 +19,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.ui.util.AppIconCache
 import me.weishu.kernelsu.ui.util.createRootShell
@@ -37,6 +39,10 @@ private const val INTERNAL_BLOB_DOWNLOAD_HOST = "blob-download.kernelsu.internal
 
 private fun loadDownloadJs(context: Context): String {
     return context.assets.open("webview/download.js").bufferedReader(Charsets.UTF_8).use { it.readText() }
+}
+
+internal fun webUIApps(): List<AppInfo> = runBlocking {
+    SuperUserViewModel.loadApps(useCache = true).getOrNull()?.first.orEmpty()
 }
 
 fun Activity.setTaskDescription(label: String) {
@@ -79,7 +85,6 @@ internal suspend fun prepareWebView(
         webUIState.moduleName = moduleInfo.name
         webUIState.modDir = "/data/adb/modules/${moduleId}"
 
-        SuperUserViewModel.loadApps(useCache = true)
         val shell = createRootShell(true)
         webUIState.rootShell = shell
 
@@ -122,7 +127,7 @@ internal suspend fun prepareWebView(
                     if (url.scheme.equals(KSU_SCHEME, ignoreCase = true) && url.host.equals(ICON_HOST, ignoreCase = true)) {
                         val packageName = url.path?.substring(1)
                         if (!packageName.isNullOrEmpty()) {
-                            val appInfo = SuperUserViewModel.apps
+                            val appInfo = webUIApps()
                                 .find { it.packageName == packageName }
                                 ?.packageInfo?.applicationInfo
                             if (appInfo != null) {

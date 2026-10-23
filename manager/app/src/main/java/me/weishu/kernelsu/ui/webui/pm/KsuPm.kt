@@ -4,7 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.webkit.JavascriptInterface
 import androidx.core.content.pm.PackageInfoCompat
 import me.weishu.kernelsu.data.model.AppInfo
-import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
+import me.weishu.kernelsu.ui.webui.webUIApps
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -16,7 +16,7 @@ object KsuPm {
 
     @JavascriptInterface
     fun listPackages(type: String): String {
-        val packageNames = SuperUserViewModel.apps
+        val packageNames = webUIApps()
             .filter { appInfo ->
                 if (appInfo.special) return@filter false
                 val flags = appInfo.packageInfo.applicationInfo?.flags ?: 0
@@ -40,7 +40,7 @@ object KsuPm {
     @JavascriptInterface
     fun getPackagesInfo(packageNamesJson: String): String {
         val packageNames = JSONArray(packageNamesJson)
-        val appsByPackage = SuperUserViewModel.apps
+        val appsByPackage = webUIApps()
             .filterNot { it.special }
             .groupBy { it.packageName }
         val jsonArray = JSONArray()
