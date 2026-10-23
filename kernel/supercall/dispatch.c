@@ -59,6 +59,9 @@ static int do_get_info(void __user *arg)
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
     }
+    if (allow_shell) {
+        cmd.flags |= KSU_GET_INFO_FLAG_ALLOW_SHELL;
+    }
     // A late load never sees PID 1's selinux_setup, so preinit cannot run.
     if (ksu_preinit_enabled_param() && !ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_PREINIT;
@@ -93,6 +96,9 @@ static int do_get_info_legacy(void __user *arg)
     }
     if (ksu_late_loaded) {
         cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
+    }
+    if (allow_shell) {
+        cmd.flags |= KSU_GET_INFO_FLAG_ALLOW_SHELL;
     }
 #if KSU_IS_PR_BUILD
     cmd.flags |= KSU_GET_INFO_FLAG_PR_BUILD;
