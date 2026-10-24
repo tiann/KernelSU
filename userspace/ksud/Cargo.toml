@@ -30,7 +30,7 @@ rustix = { version = "1", features = [
     "all-apis",
 ] }
 android_logger = { version = "0.15", default-features = false }
-zip = { version = "8",  features = [
+zip = { version = "9",  features = [
     "deflate",
     "deflate64",
     "time",
