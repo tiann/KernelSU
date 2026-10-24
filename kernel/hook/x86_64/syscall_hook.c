@@ -43,7 +43,7 @@ static int patch_syscall_table(int nr, sys_call_ptr_t fn)
     pr_info("patch syscall %d, 0x%lx -> 0x%lx\n", nr, (unsigned long)READ_ONCE(ksu_syscall_table[nr]),
             (unsigned long)fn);
 
-    if (ksu_patch_text(&ksu_syscall_table[nr], &fn, sizeof(fn), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+    if (ksu_patch_memory(&ksu_syscall_table[nr], &fn, sizeof(fn), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
         pr_err("patch syscall %d failed\n", nr);
         return -EIO;
     }
@@ -284,7 +284,7 @@ static void patch_abs_jump(const char *sym, void **patch_addr, void *target, cha
         // clang-format on
         *((void **)(buf + 6)) = target;
         memcpy(backup, *patch_addr, sizeof(buf));
-        int ret = ksu_patch_text(*patch_addr, buf, sizeof(buf), KSU_PATCH_TEXT_FLUSH_ICACHE);
+        int ret = ksu_patch_memory(*patch_addr, buf, sizeof(buf), KSU_PATCH_TEXT_FLUSH_ICACHE);
         if (ret) {
             pr_err("patch %s err: %d\n", sym, ret);
             *patch_addr = NULL;
@@ -335,8 +335,8 @@ void __exit ksu_syscall_hook_exit(void)
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
     int ret;
     if (x64_sys_call_patch_addr) {
-        ret = ksu_patch_text((void *)x64_sys_call_patch_addr, x64_sys_call_patch_orig_insn,
-                             sizeof(x64_sys_call_patch_orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
+        ret = ksu_patch_memory((void *)x64_sys_call_patch_addr, x64_sys_call_patch_orig_insn,
+                               sizeof(x64_sys_call_patch_orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
         if (ret) {
             pr_err("restore x64_sys_call err: %d\n", ret);
         }
@@ -344,8 +344,8 @@ void __exit ksu_syscall_hook_exit(void)
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
     if (do_syscall_64_patch_addr) {
-        ret = ksu_patch_text((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn, sizeof(do_syscall_64_orig_insn),
-                             KSU_PATCH_TEXT_FLUSH_ICACHE);
+        ret = ksu_patch_memory((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn,
+                               sizeof(do_syscall_64_orig_insn), KSU_PATCH_TEXT_FLUSH_ICACHE);
         if (ret) {
             pr_err("restore x64_sys_call err: %d\n", ret);
         }
@@ -364,7 +364,7 @@ void __exit ksu_syscall_hook_exit(void)
         sys_call_ptr_t orig = hooked_entries[i].orig;
 
         pr_info("restore syscall %d to 0x%lx\n", nr, (unsigned long)orig);
-        if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+        if (ksu_patch_memory(&ksu_syscall_table[nr], &orig, sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
             pr_err("restore syscall %d failed\n", nr);
         }
     }
