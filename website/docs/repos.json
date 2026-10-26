@@ -740,5 +740,12 @@
         "kernel_name": "KernelSU_on_Huawei",
         "kernel_link": "https://github.com/xixiaobei-bei/KernelSU_on_Huawei",
         "devices": "All Huawei & Honor devices"
+    },
+    {
+        "maintainer": "agui4541",
+        "maintainer_link": "https://github.com/agui4541",
+        "kernel_name": "Archimedes-kernel-64",
+        "kernel_link": "https://github.com/agui4541/archimedes-kernel-64/tree/kernelsu",
+        "devices": "Xiaomi MiDrAi (Archimedes)"
     }
 ]
