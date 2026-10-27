@@ -6,16 +6,16 @@
         android:duration="250"
         android:interpolator="@android:interpolator/fast_out_slow_in"
         android:propertyName="translateX"
-        android:valueFrom="50"
-        android:valueTo="240"
+        android:valueFrom="36"
+        android:valueTo="53"
         android:valueType="floatType" />
 
     <objectAnimator
         android:duration="250"
         android:interpolator="@android:interpolator/fast_out_slow_in"
         android:propertyName="translateY"
-        android:valueFrom="50"
-        android:valueTo="240"
+        android:valueFrom="36"
+        android:valueTo="53"
         android:valueType="floatType" />
 
 </set>

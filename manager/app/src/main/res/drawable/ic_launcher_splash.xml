@@ -19,4 +19,7 @@
     <target
         android:name="square_b"
         android:animation="@animator/anim_square_path_rev" />
+    <target
+        android:name="logo_final"
+        android:animation="@animator/anim_logo_fade_in" />
 </animated-vector>
