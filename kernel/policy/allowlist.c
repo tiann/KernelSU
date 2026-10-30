@@ -73,18 +73,6 @@ static u16 allow_list_count = 0;
 
 void ksu_persistent_allow_list(void);
 
-void ksu_show_allow_list(void)
-{
-    int i;
-    struct perm_data *p = NULL;
-    pr_info("ksu_show_allow_list\n");
-    rcu_read_lock();
-    hash_for_each_rcu (allow_list, i, p, list) {
-        pr_info("uid :%d, allow: %d\n", p->profile.curr_uid, p->profile.allow_su);
-    }
-    rcu_read_unlock();
-}
-
 struct app_profile *ksu_get_app_profile(uid_t uid)
 {
     struct perm_data *p = NULL;
@@ -397,7 +385,6 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
     int iter;
     rcu_read_lock();
     hash_for_each_rcu (allow_list, iter, p, list) {
-        // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
         if (p->profile.allow_su == allow && !is_uid_manager(p->profile.curr_uid)) {
             if (j < length) {
                 array[j++] = p->profile.curr_uid;
@@ -445,9 +432,6 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 
     mutex_lock(&allowlist_mutex);
     hash_for_each (allow_list, i, p, list) {
-        pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.curr_uid,
-                p->profile.allow_su);
-
         kernel_write(fp, &p->profile, sizeof(p->profile), &off);
     }
     mutex_unlock(&allowlist_mutex);
@@ -571,14 +555,12 @@ void ksu_load_allow_list()
         pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
         ksu_set_app_profile(&profile);
     }
-    ksu_show_allow_list();
     filp_close(fp, 0);
     if (version < KSU_APP_PROFILE_VER)
         ksu_persistent_allow_list();
     return;
 
 exit:
-    ksu_show_allow_list();
     filp_close(fp, 0);
 }
 
@@ -602,7 +584,6 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
         bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID || uid == WEBVIEW_ZYGOTE_UID;
         if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
             modified = true;
-            pr_info("prune uid: %d, package: %s\n", uid, package);
             hlist_del_rcu(&np->list);
             put_perm_data(np);
             --allow_list_count;

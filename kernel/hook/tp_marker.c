@@ -7,7 +7,6 @@
 #include <linux/sched/task.h>
 
 #include "policy/allowlist.h"
-#include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 
 // Tracepoint registration count management
@@ -68,13 +67,11 @@ static void handle_process_mark(bool mark)
 void ksu_mark_all_process(void)
 {
     handle_process_mark(true);
-    pr_info("tp_marker: mark all user process done!\n");
 }
 
 void ksu_unmark_all_process(void)
 {
     handle_process_mark(false);
-    pr_info("tp_marker: unmark all user process done!\n");
 }
 
 void ksu_mark_running_process_locked(void)
@@ -95,10 +92,8 @@ void ksu_mark_running_process_locked(void)
         bool is_init = t->pid == 1;
         if (ksu_root_process || is_zygote_process || is_shell || is_init || ksu_is_allow_uid(uid)) {
             ksu_set_task_tracepoint_flag(t);
-            pr_info("tp_marker: mark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
         } else {
             ksu_clear_task_tracepoint_flag(t);
-            pr_info("tp_marker: unmark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
         }
         put_cred(cred);
     }
@@ -111,8 +106,6 @@ void ksu_mark_running_process(void)
     spin_lock_irqsave(&tracepoint_reg_lock, flags);
     if (tracepoint_reg_count <= 1) {
         ksu_mark_running_process_locked();
-    } else {
-        pr_info("tp_marker: not mark running process since syscall tracepoint is in use\n");
     }
     spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 }
@@ -156,10 +149,8 @@ int ksu_set_task_mark(pid_t pid, bool mark)
         rcu_read_unlock();
         if (mark) {
             ksu_set_task_tracepoint_flag(task);
-            pr_info("tp_marker: marked task pid=%d comm=%s\n", pid, task->comm);
         } else {
             ksu_clear_task_tracepoint_flag(task);
-            pr_info("tp_marker: unmarked task pid=%d comm=%s\n", pid, task->comm);
         }
         put_task_struct(task);
         ret = 0;
