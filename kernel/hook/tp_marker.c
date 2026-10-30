@@ -2,6 +2,7 @@
 
 #include "linux/cred.h"
 #include <linux/spinlock.h>
+#include <linux/string.h>
 #include <linux/version.h>
 #include <linux/sched/signal.h>
 #include <linux/sched/task.h>
@@ -77,6 +78,22 @@ void ksu_unmark_all_process(void)
     pr_info("tp_marker: unmark all user process done!\n");
 }
 
+static void log_process_mark(struct task_struct *task, int uid, bool mark)
+{
+    char comm[sizeof(task->comm)];
+    const char *action = mark ? "mark" : "unmark";
+
+    // Preserve the raw bytes so a missing NUL is not hidden by string copying.
+    memcpy(comm, task->comm, sizeof(comm));
+    if (!memchr(comm, '\0', sizeof(comm))) {
+        pr_warn("tp_marker: %s process: pid:%d, uid: %d, comm is not NUL-terminated, comm_hex:%*ph\n", action,
+                task->pid, uid, (int)sizeof(comm), comm);
+        return;
+    }
+
+    pr_info("tp_marker: %s process: pid:%d, uid: %d, comm:%s\n", action, task->pid, uid, comm);
+}
+
 void ksu_mark_running_process_locked(void)
 {
     struct task_struct *p, *t;
@@ -95,10 +112,10 @@ void ksu_mark_running_process_locked(void)
         bool is_init = t->pid == 1;
         if (ksu_root_process || is_zygote_process || is_shell || is_init || ksu_is_allow_uid(uid)) {
             ksu_set_task_tracepoint_flag(t);
-            // pr_info("tp_marker: mark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
+            log_process_mark(t, uid, true);
         } else {
             ksu_clear_task_tracepoint_flag(t);
-            // pr_info("tp_marker: unmark process: pid:%d, uid: %d, comm:%s\n", t->pid, uid, t->comm);
+            log_process_mark(t, uid, false);
         }
         put_cred(cred);
     }
