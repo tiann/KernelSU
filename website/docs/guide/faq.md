@@ -1,3 +1,7 @@
+---
+description: Answers to common KernelSU questions about device support, bootloader unlocking, modules, Zygisk and Xposed, Magisk compatibility, and older kernels.
+---
+
 # FAQ
 
 ## Does KernelSU support my device?

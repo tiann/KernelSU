@@ -1,3 +1,7 @@
+---
+description: Archived reference for building an Android GKI kernel with KernelSU built in. No longer maintained; build the LKM with Ylarod/ddk instead.
+---
+
 # How to build
 
 ::: warning

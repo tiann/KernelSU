@@ -1,3 +1,7 @@
+---
+description: Build a web interface for a KernelSU module with HTML, CSS, and JavaScript, using the webroot directory and the JavaScript API exposed by the manager.
+---
+
 # Module WebUI
 
 In addition to executing boot scripts and modifying system files, KernelSU modules can display user interfaces and interact directly with users.

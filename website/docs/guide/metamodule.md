@@ -1,3 +1,7 @@
+---
+description: Metamodules are pluggable KernelSU modules that control how regular modules are mounted and installed. Learn how to use one such as meta-overlayfs, or build your own.
+---
+
 # Metamodule
 
 Metamodules are a revolutionary feature in KernelSU that transfers critical module system capabilities from the core to pluggable modules. This architectural shift maintains KernelSU's stability and security while unleashing greater innovation potential for the module ecosystem.

@@ -1,3 +1,7 @@
+---
+description: App Profile restricts the uid, gid, groups, capabilities, and SELinux rules of root apps, and controls whether modules are unmounted for non-root apps.
+---
+
 # App Profile
 
 The App Profile is a mechanism provided by KernelSU for customizing the configuration of various apps.

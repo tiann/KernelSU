@@ -1,3 +1,7 @@
+---
+description: Archived guide to integrating KernelSU into non-GKI kernels via kprobe or manual source changes. Official non-GKI support ended in KernelSU v1.0.
+---
+
 # Integrate for non-GKI devices
 
 ::: warning

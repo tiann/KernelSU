@@ -1,3 +1,7 @@
+---
+description: Built-in key-value configuration for KernelSU modules, with persistent and temporary values managed through the ksud module config command.
+---
+
 # Module Configuration
 
 KernelSU provides a built-in configuration system that allows modules to store persistent or temporary key-value settings. Configurations are stored in a binary format at `/data/adb/ksu/module_configs/<module_id>/` with the following characteristics:
