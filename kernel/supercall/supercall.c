@@ -132,7 +132,6 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
         if (task_work_add(current, &tw->cb, TWA_RESUME)) {
             kfree(tw);
-            pr_warn("install fd add task_work failed\n");
         }
     }
 
