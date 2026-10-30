@@ -134,40 +134,54 @@ import { moduleInfo } from 'kernelsu';
 console.log(moduleInfo());
 ```
 
-### listPackages
+### pm
 
-List installed packages.
+Package-manager helpers, multi-user aware. A package installed for several users (e.g. `com.android.bluetooth` with uid `1002` for user 0 and `1001002` for user 10) is listed once by `pm.listPackages`, and yields one info entry per uid from `pm.getPackagesInfo`.
 
-Returns an array of package names.
+```javascript
+import { pm } from 'kernelsu';
+
+const packages = pm.listPackages('user');
+const infos = pm.getPackagesInfo(['com.android.settings', 'com.android.shell']);
+```
+
+#### pm.support
+
+`boolean` — whether the multi-user pm interface is available in the current environment. Evaluated once when the module loads.
+
+#### pm.version
+
+`number` — the pm API version provided by the manager (Kotlin side) through the `ksu.pm` bridge. `0` when the bridge is unavailable.
+
+#### pm.listPackages
+
+List installed package names, deduplicated across users.
+
+Returns an array of unique package names.
 
 - `type` `<string>` The type of packages to list: "user", "system", or "all".
 
 ```javascript
-import { listPackages } from 'kernelsu';
+import { pm } from 'kernelsu';
 // list user packages
-const packages = listPackages("user");
+const packages = pm.listPackages("user");
 ```
 
-- tips: when `listPackages` api is available, you can use ksu://icon/{packageName} to get app icon.
+- tips: when `pm.listPackages` api is available, you can use ksu://icon/{packageName} to get app icon.
 
 ``` javascript
 img.src = "ksu://icon/" + packageName;
 ```
 
-### getPackagesInfo
+#### pm.getPackagesInfo
 
-Get information for a list of packages.
+Get information for a list of packages, one entry per uid.
 
-Returns an array containing `PackagesInfo` objects for packages that were resolved. If a package is missing or inaccessible, the corresponding entry contains `packageName` and `error` instead.
+Returns a flat array: one entry per uid for each resolved package, following the input package order, with uids ascending within a package. If a package is missing or inaccessible, the corresponding entry contains `packageName` and `error` instead.
 
 - `packages` `<string[]>` The list of package names.
 
-```javascript
-import { getPackagesInfo } from 'kernelsu';
-const packages = getPackagesInfo(['com.android.settings', 'com.android.shell']);
-```
-
-#### PackagesInfo
+#### PackageInfoPerUid
 
 An object contains:
 
@@ -176,7 +190,8 @@ An object contains:
 - `versionCode` `<number>` Version code of the application.
 - `appLabel` `<string>` Display name of the application.
 - `isSystem` `<boolean | null>` Whether the application is a system app. `null` if application info is unavailable.
-- `uid` `<number | null>` UID of the application. `null` if application info is unavailable.
+- `uid` `<number | null>` UID of the application for one user, e.g. `1002` or `1001002`. `null` if application info is unavailable.
+- `userId` `<number | null>` User id the uid belongs to, i.e. `uid / 100000`. `null` if application info is unavailable.
 
 If a package could not be resolved, the returned object contains:
 

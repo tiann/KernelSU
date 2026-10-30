@@ -38,8 +38,8 @@ import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.resolveDownloadMimeType
 import me.weishu.kernelsu.ui.util.withNewRootShell
-import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.webui.file.KsuIO
+import me.weishu.kernelsu.ui.webui.pm.KsuPm
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -223,9 +223,10 @@ class WebViewInterface(private val state: WebUIState) {
         return currentModuleInfo.toString()
     }
 
+    @Deprecated("Use ksu.pm().listPackages() instead")
     @JavascriptInterface
     fun listPackages(type: String): String {
-        val packageNames = SuperUserViewModel.apps
+        val packageNames = webUIApps()
             .filter { appInfo ->
                 if (appInfo.special) return@filter false
                 val flags = appInfo.packageInfo.applicationInfo?.flags ?: 0
@@ -245,11 +246,12 @@ class WebViewInterface(private val state: WebUIState) {
         return jsonArray.toString()
     }
 
+    @Deprecated("Use ksu.pm().getPackagesInfo() instead")
     @JavascriptInterface
     fun getPackagesInfo(packageNamesJson: String): String {
         val packageNames = JSONArray(packageNamesJson)
         val jsonArray = JSONArray()
-        val appMap = SuperUserViewModel.apps.filterNot { it.special }.associateBy { it.packageName }
+        val appMap = webUIApps().filterNot { it.special }.associateBy { it.packageName }
         for (i in 0 until packageNames.length()) {
             val pkgName = packageNames.getString(i)
             val appInfo = appMap[pkgName]
@@ -281,6 +283,9 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun io() = KsuIO
+
+    @JavascriptInterface
+    fun pm() = KsuPm
 
     fun destroy() {
         KsuIO.destroy()
