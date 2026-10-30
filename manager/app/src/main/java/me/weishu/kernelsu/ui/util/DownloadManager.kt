@@ -25,6 +25,9 @@ object DownloadManager {
         val id: Int,
         val fileName: String,
         val url: String,
+        val targetPath: String? = null,
+        val mimeType: String? = null,
+        val completionAction: DownloadCompletionAction = DownloadCompletionAction.INSTALL_MODULE,
         val progress: Int = 0,
         val status: Status = Status.PENDING,
         val resultUri: Uri? = null,
@@ -42,16 +45,43 @@ object DownloadManager {
     private val completionCallbacks = ConcurrentHashMap<Int, (Uri) -> Unit>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    internal fun registerLocalSave(
+        fileName: String,
+        targetPath: String? = null,
+        mimeType: String? = null,
+        completionAction: DownloadCompletionAction = DownloadCompletionAction.OPEN_FILE,
+    ): Int {
+        val id = idCounter.incrementAndGet()
+        val state = DownloadState(
+            id = id,
+            fileName = fileName,
+            url = targetPath ?: fileName,
+            targetPath = targetPath,
+            mimeType = mimeType,
+            completionAction = completionAction,
+        )
+        _downloads.update { it + (id to state) }
+        return id
+    }
+
     fun enqueue(
         context: Context,
         url: String,
         fileName: String,
+        targetPath: String? = null,
+        mimeType: String? = null,
+        cookie: String? = null,
+        userAgent: String? = null,
+        completionAction: DownloadCompletionAction = DownloadCompletionAction.INSTALL_MODULE,
         onCompleted: ((Uri) -> Unit)? = null,
         expected: ExpectedFile? = null,
     ): Int {
         // Only share an in-flight download that is verified exactly like this request.
         val existing = _downloads.value.values.find {
-            (it.status == Status.PENDING || it.status == Status.DOWNLOADING) &&
+            it.fileName == fileName &&
+                it.targetPath == targetPath &&
+                it.completionAction == completionAction &&
+                (it.status == Status.PENDING || it.status == Status.DOWNLOADING) &&
                 canShareDownload(url, expected, it.url, it.expected)
         }
         if (existing != null) {
@@ -70,7 +100,15 @@ object DownloadManager {
         }
 
         val id = idCounter.incrementAndGet()
-        val state = DownloadState(id = id, fileName = fileName, url = url, expected = expected)
+        val state = DownloadState(
+            id = id,
+            fileName = fileName,
+            url = url,
+            targetPath = targetPath,
+            mimeType = mimeType,
+            completionAction = completionAction,
+            expected = expected,
+        )
         _downloads.update { it + (id to state) }
 
         if (expected != null && !RegistryUrls.isAllowedReleaseDownloadUrl(url)) {
@@ -91,6 +129,11 @@ object DownloadManager {
                 putExtra(DownloadService.EXTRA_EXPECTED_SIZE, expected.size)
                 putExtra(DownloadService.EXTRA_EXPECTED_SHA256, expected.sha256)
             }
+            putExtra(DownloadService.EXTRA_TARGET_PATH, targetPath)
+            putExtra(DownloadService.EXTRA_MIME_TYPE, mimeType)
+            putExtra(DownloadService.EXTRA_COOKIE, cookie)
+            putExtra(DownloadService.EXTRA_USER_AGENT, userAgent)
+            putExtra(DownloadService.EXTRA_COMPLETION_ACTION, completionAction.name)
         }
         ContextCompat.startForegroundService(context, intent)
 

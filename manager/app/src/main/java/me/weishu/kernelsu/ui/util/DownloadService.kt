@@ -36,7 +36,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.io.IOException
+import java.net.URLConnection
 import java.util.concurrent.ConcurrentHashMap
+
+enum class DownloadCompletionAction {
+    INSTALL_MODULE,
+    OPEN_FILE,
+}
+
+internal fun resolveDownloadMimeType(fileName: String, providedMimeType: String?): String =
+    providedMimeType?.trim()?.takeIf { it.isNotEmpty() }
+        ?: URLConnection.guessContentTypeFromName(fileName)
+        ?: "application/octet-stream"
 
 class DownloadService : Service() {
 
@@ -53,6 +64,12 @@ class DownloadService : Service() {
         const val EXTRA_MODULE_URI = "moduleUri"
         const val EXTRA_EXPECTED_SIZE = "expectedSize"
         const val EXTRA_EXPECTED_SHA256 = "expectedSha256"
+        const val EXTRA_TARGET_PATH = "targetPath"
+        const val EXTRA_MIME_TYPE = "mimeType"
+        const val EXTRA_COOKIE = "cookie"
+        const val EXTRA_USER_AGENT = "userAgent"
+        const val EXTRA_COMPLETION_ACTION = "completionAction"
+        const val EXTRA_DELETE_FILE_ON_DISMISS = "deleteFileOnDismiss"
 
         private const val COMPLETION_NOTIFICATION_ID_BASE = 100000
         private const val REGISTRY_DOWNLOAD_MAX_AGE_MS = 24L * 60 * 60 * 1000
@@ -77,6 +94,12 @@ class DownloadService : Service() {
                 val url = intent.getStringExtra(EXTRA_URL) ?: return START_NOT_STICKY
                 val fileName = intent.getStringExtra(EXTRA_FILE_NAME) ?: return START_NOT_STICKY
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
+                val mimeType = intent.getStringExtra(EXTRA_MIME_TYPE)
+                val cookie = intent.getStringExtra(EXTRA_COOKIE)
+                val userAgent = intent.getStringExtra(EXTRA_USER_AGENT)
+                val completionAction = intent.getStringExtra(EXTRA_COMPLETION_ACTION)
+                    ?.let { runCatching { DownloadCompletionAction.valueOf(it) }.getOrNull() }
+                    ?: DownloadCompletionAction.INSTALL_MODULE
                 if (downloadId == -1) return START_NOT_STICKY
 
                 val notification = buildProgressNotification(downloadId, fileName, 0)
@@ -92,7 +115,7 @@ class DownloadService : Service() {
                 val expectedSha256 = intent.getStringExtra(EXTRA_EXPECTED_SHA256)
                 val expectedSize = intent.getLongExtra(EXTRA_EXPECTED_SIZE, -1L)
                 val expected = expectedSha256?.let { ExpectedFile(expectedSize, it) }
-                startDownload(downloadId, url, fileName, expected)
+                startDownload(downloadId, url, fileName, mimeType, cookie, userAgent, completionAction, expected)
             }
 
             ACTION_CANCEL -> {
@@ -106,11 +129,12 @@ class DownloadService : Service() {
             ACTION_DISMISS_DOWNLOAD -> {
                 val downloadId = intent.getIntExtra(EXTRA_DOWNLOAD_ID, -1)
                 val uri = intent.getStringExtra(EXTRA_MODULE_URI)?.let(Uri::parse)
+                val deleteFileOnDismiss = intent.getBooleanExtra(EXTRA_DELETE_FILE_ON_DISMISS, true)
                 if (downloadId != -1) {
                     notificationManager.cancel(COMPLETION_NOTIFICATION_ID_BASE + downloadId)
                 }
                 serviceScope.launch {
-                    if (uri != null) deleteDownload(uri)
+                    if (deleteFileOnDismiss && uri != null) deleteDownload(uri)
                     stopForegroundIfIdle()
                 }
             }
@@ -136,7 +160,16 @@ class DownloadService : Service() {
         }
         .build()
 
-    private fun startDownload(id: Int, url: String, fileName: String, expected: ExpectedFile?) {
+    private fun startDownload(
+        id: Int,
+        url: String,
+        fileName: String,
+        mimeType: String?,
+        cookie: String?,
+        userAgent: String?,
+        completionAction: DownloadCompletionAction,
+        expected: ExpectedFile?,
+    ) {
         val job = serviceScope.launch(start = CoroutineStart.LAZY) {
             var pendingUri: Uri? = null
             var displayName = fileName
@@ -145,10 +178,14 @@ class DownloadService : Service() {
                     // Already stored under its final name: delete it if cancelled before completion.
                     downloadVerified(id, url, fileName, expected).also { pendingUri = it }
                 } else {
-                    val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).build())
+                    val call = ksuApp.okhttpClient.newCall(Request.Builder().url(url).apply {
+                        cookie?.takeIf { it.isNotEmpty() }?.let { addHeader("Cookie", it) }
+                        userAgent?.takeIf { it.isNotEmpty() }?.let { addHeader("User-Agent", it) }
+                    }.build())
                     activeCalls[id] = call
                     ensureActive()
-                    val published = call.execute().use { resp ->
+                    val published = call.execute()
+                        .use { resp ->
                         if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
                         val body = resp.body
                         val total = body.contentLength()
@@ -156,6 +193,7 @@ class DownloadService : Service() {
                         ensureActive()
                         val values = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                            put(MediaStore.Downloads.MIME_TYPE, resolveDownloadMimeType(fileName, mimeType))
                             put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
                             put(MediaStore.Downloads.IS_PENDING, 1)
                         }
@@ -204,7 +242,7 @@ class DownloadService : Service() {
                 notificationManager.cancel(id)
                 notificationManager.notify(
                     COMPLETION_NOTIFICATION_ID_BASE + id,
-                    buildCompletionNotification(id, displayName, uri)
+                    buildCompletionNotification(id, displayName, uri, mimeType, completionAction)
                 )
             } catch (e: CancellationException) {
                 throw e
@@ -321,7 +359,9 @@ class DownloadService : Service() {
     private fun buildCompletionNotification(
         id: Int,
         fileName: String,
-        uri: Uri
+        uri: Uri,
+        mimeType: String?,
+        completionAction: DownloadCompletionAction,
     ): android.app.Notification {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.download_complete_title))
@@ -329,32 +369,31 @@ class DownloadService : Service() {
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setAutoCancel(true)
 
-        // Add "Install" action button
-        val installIntent = Intent(this, MainActivity::class.java).apply {
-            action = ACTION_INSTALL_MODULE
-            putExtra(EXTRA_MODULE_URI, uri.toString())
-            putExtra(EXTRA_DOWNLOAD_ID, id)
-            putExtra(EXTRA_TOKEN, SettingsRepositoryImpl().intentToken)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        val primaryPendingIntent = when (completionAction) {
+            DownloadCompletionAction.INSTALL_MODULE -> PendingIntent.getActivity(
+                this, id, Intent(this, MainActivity::class.java).apply {
+                    action = ACTION_INSTALL_MODULE
+                    putExtra(EXTRA_MODULE_URI, uri.toString())
+                    putExtra(EXTRA_DOWNLOAD_ID, id)
+                    putExtra(EXTRA_TOKEN, SettingsRepositoryImpl().intentToken)
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also { builder.addAction(android.R.drawable.ic_menu_save, getString(R.string.download_install), it) }
+            DownloadCompletionAction.OPEN_FILE -> PendingIntent.getActivity(
+                this, id, Intent.createChooser(Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, resolveDownloadMimeType(fileName, mimeType))
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                }, getString(R.string.open)), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also { builder.addAction(android.R.drawable.ic_menu_view, getString(R.string.open), it) }
         }
-        val installPendingIntent = PendingIntent.getActivity(
-            this,
-            id,
-            installIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        builder.addAction(
-            android.R.drawable.ic_menu_save,
-            getString(R.string.download_install),
-            installPendingIntent
-        )
-        builder.setContentIntent(installPendingIntent)
+        builder.setContentIntent(primaryPendingIntent)
 
         // Add "Cancel" action button
         val dismissIntent = Intent(this, DownloadService::class.java).apply {
             action = ACTION_DISMISS_DOWNLOAD
             putExtra(EXTRA_DOWNLOAD_ID, id)
             putExtra(EXTRA_MODULE_URI, uri.toString())
+            putExtra(EXTRA_DELETE_FILE_ON_DISMISS, completionAction == DownloadCompletionAction.INSTALL_MODULE)
         }
         val dismissPendingIntent = PendingIntent.getService(
             this,
