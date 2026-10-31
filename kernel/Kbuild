@@ -12,6 +12,7 @@ kernelsu-objs += hook/syscall_hook_manager.o
 kernelsu-objs += hook/tp_marker.o
 ifeq ($(CONFIG_ARM64),y)
 kernelsu-objs += hook/arm64/patch_memory.o
+kernelsu-objs += hook/arm64/patch_rodata.o
 kernelsu-objs += hook/arm64/syscall_hook.o
 else ifeq ($(CONFIG_X86_64),y)
 kernelsu-objs += hook/x86_64/patch_memory.o

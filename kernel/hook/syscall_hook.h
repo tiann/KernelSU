@@ -35,7 +35,7 @@ void ksu_unregister_syscall_hook(int nr);
 bool ksu_has_syscall_hook(int nr);
 
 // --- Direct syscall table patching API (hook/unhook) ---
-// Directly overwrite syscall_table[@nr] with @fn using fixmap + stop_machine.
+// Overwrite syscall_table[@nr] with @fn; ARM64 replaces RO pages first.
 // Saves the original handler to *@old (if non-NULL) and records the entry
 // for restoration at module exit. Use this for boot-time hooks that replace
 // a real syscall entry (e.g. ksud hooking __NR_execve/__NR_read/__NR_fstat).
