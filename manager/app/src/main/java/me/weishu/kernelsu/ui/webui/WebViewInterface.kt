@@ -17,6 +17,7 @@ import android.util.Base64
 import android.util.Log
 import android.view.Window
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.pm.PackageInfoCompat
@@ -31,24 +32,42 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.model.AppInfo
 import me.weishu.kernelsu.ui.util.DownloadManager
 import me.weishu.kernelsu.ui.util.DownloadService
 import me.weishu.kernelsu.ui.util.createRootShell
 import me.weishu.kernelsu.ui.util.listModules
 import me.weishu.kernelsu.ui.util.resolveDownloadMimeType
 import me.weishu.kernelsu.ui.util.withNewRootShell
+import me.weishu.kernelsu.ui.viewmodel.SuperUserViewModel
 import me.weishu.kernelsu.ui.webui.file.KsuIO
 import me.weishu.kernelsu.ui.webui.pm.KsuPm
+import me.weishu.kernelsu.ui.webui.viewmodel.WebUIViewModel
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
-class WebViewInterface(private val state: WebUIState) {
-    private val webView get() = state.webView
-    private val modDir get() = state.modDir
+class WebViewInterface(
+    private val runtime: WebUIRuntime,
+    private val modDir: String,
+    private val viewModel: WebUIViewModel,
+) {
+
+    private fun postToWebView(action: (WebView) -> Unit) {
+        Handler(Looper.getMainLooper()).post {
+            runtime.webView?.let(action)
+        }
+    }
+
+    private fun evaluateJs(js: String) {
+        postToWebView { webView ->
+            webView.evaluateJavascript(js, null)
+        }
+    }
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -79,7 +98,7 @@ class WebViewInterface(private val state: WebUIState) {
     fun exec(
         cmd: String,
         options: String?,
-        callbackFunc: String
+        callbackFunc: String,
     ) {
         val finalCommand = StringBuilder()
         processOptions(finalCommand, options)
@@ -92,14 +111,12 @@ class WebViewInterface(private val state: WebUIState) {
         val stderr = result.err.joinToString(separator = "\n")
 
         val jsCode =
-            "javascript: (function() { try { ${callbackFunc}(${result.code}, ${
+            "(function() { try { ${callbackFunc}(${result.code}, ${
                 JSONObject.quote(
                     stdout
                 )
             }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
-        webView?.post {
-            webView?.loadUrl(jsCode)
-        }
+        evaluateJs(jsCode)
     }
 
     @JavascriptInterface
@@ -119,17 +136,16 @@ class WebViewInterface(private val state: WebUIState) {
         }
 
         val shell = createRootShell(true)
+        runtime.registerShell(shell)
 
         val emitData = fun(name: String, data: String) {
             val jsCode =
-                "javascript: (function() { try { ${callbackFunc}.${name}.emit('data', ${
+                "(function() { try { ${callbackFunc}.${name}.emit('data', ${
                     JSONObject.quote(
                         data
                     )
                 }); } catch(e) { console.error('emitData', e); } })();"
-            webView?.post {
-                webView?.loadUrl(jsCode)
-            }
+            evaluateJs(jsCode)
         }
 
         val stdout = object : CallbackList<String>(UiThreadHandler::runAndWait) {
@@ -151,41 +167,36 @@ class WebViewInterface(private val state: WebUIState) {
 
         completableFuture.thenAccept { result ->
             val emitExitCode =
-                $$"javascript: (function() { try { $${callbackFunc}.emit('exit', $${result.code}); } catch(e) { console.error(`emitExit error: ${e}`); } })();"
-            webView?.post {
-                webView?.loadUrl(emitExitCode)
-            }
+                $$"(function() { try { $${callbackFunc}.emit('exit', $${result.code}); } catch(e) { console.error(`emitExit error: ${e}`); } })();"
+            evaluateJs(emitExitCode)
 
             if (result.code != 0) {
                 val emitErrCode =
-                    "javascript: (function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
+                    "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
                         JSONObject.quote(
                             result.err.joinToString(
                                 "\n"
                             )
                         )
                     };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
-                webView?.post {
-                    webView?.loadUrl(emitErrCode)
-                }
+                evaluateJs(emitErrCode)
             }
         }.whenComplete { _, _ ->
+            runtime.unregisterShell(shell)
             runCatching { shell.close() }
         }
     }
 
     @JavascriptInterface
     fun toast(msg: String) {
-        webView?.post {
-            webView?.let { Toast.makeText(it.context, msg, Toast.LENGTH_SHORT).show() }
-        }
+        viewModel.toast(msg)
     }
 
     @JavascriptInterface
     fun fullScreen(enable: Boolean) {
-        val context = webView?.context
-        if (context is Activity) {
-            Handler(Looper.getMainLooper()).post {
+        postToWebView { webView ->
+            val context = webView.context
+            if (context is Activity) {
                 if (enable) {
                     hideSystemUI(context.window)
                 } else {
@@ -193,12 +204,11 @@ class WebViewInterface(private val state: WebUIState) {
                 }
             }
         }
-        enableEdgeToEdge(enable)
     }
 
     @JavascriptInterface
     fun enableEdgeToEdge(enable: Boolean = true) {
-        state.isInsetsEnabled = enable
+        viewModel.onEdgeToEdgeChanged(enable)
     }
 
     @JavascriptInterface
@@ -278,7 +288,7 @@ class WebViewInterface(private val state: WebUIState) {
 
     @JavascriptInterface
     fun exit() {
-        state.requestExit()
+        viewModel.exit()
     }
 
     @JavascriptInterface
@@ -292,9 +302,9 @@ class WebViewInterface(private val state: WebUIState) {
     }
 }
 
-class WebUIDownloadInterface(private val state: WebUIState) {
+class WebUIDownloadInterface(private val runtime: WebUIRuntime) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val webView get() = state.webView
+    private val webView get() = runtime.webView
 
     companion object {
         // Use a different notification ID range to avoid collision with DownloadService
@@ -500,6 +510,10 @@ class WebUIDownloadInterface(private val state: WebUIState) {
         .setSmallIcon(android.R.drawable.stat_notify_error)
         .setAutoCancel(true)
         .build()
+}
+
+internal fun webUIApps(): List<AppInfo> = runBlocking {
+    SuperUserViewModel.loadApps(useCache = true).getOrNull()?.first.orEmpty()
 }
 
 fun hideSystemUI(window: Window) =
