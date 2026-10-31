@@ -599,105 +599,105 @@ void ksu_selinux_hide_drop_backup_if_unused()
  */
 static int string_to_context_struct(struct policydb *pol, struct policydb *orig_pol, struct sidtab *sidtabp,
                                     struct sidtab *orig_sidtabp, char *scontext, const char *source, u32 source_len,
-                                    struct context *ctx, struct context *orig_ctx, u32 def_sid, int *orig_rc_p)
+                                    struct context *ctx, struct context *orig_ctx, u32 def_sid, bool reuse_context,
+                                    int *orig_rc_p)
 {
     struct role_datum *role, *orig_role;
     struct type_datum *typdatum, *orig_typdatum;
     struct user_datum *usrdatum, *orig_usrdatum;
-    char *scontextp, *p, oldc;
-    bool orig_valid = true;
+    char *user_name, *role_name, *type_name, *mls, *p;
+    char oldc;
     int rc = -EINVAL, orig_rc = -EINVAL;
 
     context_init(ctx);
     context_init(orig_ctx);
 
-    // split fields once
-    // look up both policies
-    scontextp = scontext;
+    /* Parse the security context. */
 
     /* Extract the user. */
-    p = scontextp;
+    user_name = scontext;
+    p = user_name;
     while (*p && *p != ':')
         p++;
-
-    if (*p == 0)
+    if (!*p)
         goto out;
+    *p++ = '\0';
 
-    *p++ = 0;
-
-    usrdatum = symtab_search(&pol->p_users, scontextp);
-    orig_usrdatum = symtab_search(&orig_pol->p_users, scontextp);
+    usrdatum = symtab_search(&pol->p_users, user_name);
     if (!usrdatum)
         goto out;
-
     ctx->user = usrdatum->value;
-    if (orig_usrdatum)
-        orig_ctx->user = orig_usrdatum->value;
-    else
-        orig_valid = false;
 
     /* Extract role. */
-    scontextp = p;
+    role_name = p;
     while (*p && *p != ':')
         p++;
-
-    if (*p == 0)
+    if (!*p)
         goto out;
+    *p++ = '\0';
 
-    *p++ = 0;
-
-    role = symtab_search(&pol->p_roles, scontextp);
-    orig_role = symtab_search(&orig_pol->p_roles, scontextp);
+    role = symtab_search(&pol->p_roles, role_name);
     if (!role)
         goto out;
     ctx->role = role->value;
-    if (orig_role)
-        orig_ctx->role = orig_role->value;
-    else
-        orig_valid = false;
 
     /* Extract type. */
-    scontextp = p;
+    type_name = p;
     while (*p && *p != ':')
         p++;
     oldc = *p;
-    *p++ = 0;
+    *p = '\0';
+    mls = oldc ? p + 1 : p;
 
-    typdatum = symtab_search(&pol->p_types, scontextp);
-    orig_typdatum = symtab_search(&orig_pol->p_types, scontextp);
+    typdatum = symtab_search(&pol->p_types, type_name);
     if (!typdatum || typdatum->attribute)
         goto out;
-
     ctx->type = typdatum->value;
-    if (orig_typdatum && !orig_typdatum->attribute)
-        orig_ctx->type = orig_typdatum->value;
-    else
-        orig_valid = false;
 
-    rc = mls_context_to_sid(pol, oldc, p, ctx, sidtabp, def_sid);
-    if (orig_valid) {
-        if (oldc) {
-            size_t offset = p - scontext;
-
-            // restore MLS suffix for live policy
-            memcpy(p, source + offset, source_len - offset);
-            p[source_len - offset] = '\0';
-        }
-        // validate live context with live policy
-        orig_rc = mls_context_to_sid(orig_pol, oldc, p, orig_ctx, orig_sidtabp, def_sid);
-        if (!orig_rc && !policydb_context_isvalid(orig_pol, orig_ctx))
-            orig_rc = -EINVAL;
-    }
-
+    rc = mls_context_to_sid(pol, oldc, mls, ctx, sidtabp, def_sid);
     if (!rc && !policydb_context_isvalid(pol, ctx))
         rc = -EINVAL;
+
+    // Reuse parsed fields without copying MLS bitmaps
+    if (reuse_context) {
+        orig_rc = rc;
+        if (!orig_rc && !policydb_context_isvalid(orig_pol, ctx))
+            orig_rc = -EINVAL;
+        goto out;
+    }
+
+    // A backup MLS error must not skip live MLS parsing
+    orig_usrdatum = symtab_search(&orig_pol->p_users, user_name);
+    if (!orig_usrdatum)
+        goto out;
+    orig_role = symtab_search(&orig_pol->p_roles, role_name);
+    if (!orig_role)
+        goto out;
+    orig_typdatum = symtab_search(&orig_pol->p_types, type_name);
+    if (!orig_typdatum || orig_typdatum->attribute)
+        goto out;
+
+    if (oldc) {
+        size_t offset = mls - scontext;
+
+        // Restore MLS suffix for live policy
+        memcpy(mls, source + offset, source_len - offset);
+        mls[source_len - offset] = '\0';
+    }
+    orig_ctx->user = orig_usrdatum->value;
+    orig_ctx->role = orig_role->value;
+    orig_ctx->type = orig_typdatum->value;
+    orig_rc = mls_context_to_sid(orig_pol, oldc, mls, orig_ctx, orig_sidtabp, def_sid);
+    if (!orig_rc && !policydb_context_isvalid(orig_pol, orig_ctx))
+        orig_rc = -EINVAL;
+
 out:
     if (rc) {
         context_destroy(ctx);
-        // ignore live result if backup fails
+        // Reject contexts that backup policy does not accept
         orig_rc = -EINVAL;
     }
-    if (rc || orig_rc)
+    if (orig_rc)
         context_destroy(orig_ctx);
     *orig_rc_p = orig_rc;
     return rc;
@@ -711,8 +711,9 @@ static int security_context_to_sid_with_policy(struct selinux_policy *policy, co
     struct sidtab *sidtab, *orig_sidtab;
     char *scontext2;
     struct context context, orig_context;
+    bool reuse_context;
     int rc = 0, orig_rc = -EINVAL;
-    u32 orig_sid;
+    u32 orig_sid = SECSID_NULL;
 
     /* An empty security context is never valid. */
     if (!scontext_len)
@@ -737,44 +738,39 @@ retry:
     orig_policydb = &orig_policy->policydb;
     orig_sidtab = orig_policy->sidtab;
 
-    // parse both policies together
-    orig_rc = -EINVAL;
+    // KSU keeps existing symbol IDs, while policy reload changes this sequence
+    reuse_context = policy->latest_granting == orig_policy->latest_granting && def_sid == SECSID_NULL;
     rc = string_to_context_struct(policydb, orig_policydb, sidtab, orig_sidtab, scontext2, scontext, scontext_len,
-                                  &context, &orig_context, def_sid, &orig_rc);
+                                  &context, &orig_context, def_sid, reuse_context, &orig_rc);
     if (rc)
         goto out_unlock;
 
     // update backup sidtab first
     rc = sidtab_context_to_sid(sidtab, &context, sid);
-    context_destroy(&context);
-    if (rc) {
-        if (!orig_rc)
+    if (!orig_rc) {
+        // Both SID tables copy the context when adding an entry
+        if (!rc)
+            orig_rc = sidtab_context_to_sid(orig_sidtab, reuse_context ? &context : &orig_context, &orig_sid);
+        if (!reuse_context)
             context_destroy(&orig_context);
-        // backup sidtab is not reloaded
-        orig_rc = rc;
-        goto out_unlock;
     }
-
-    if (orig_rc)
-        goto out_unlock;
-
-    // only sync valid contexts
-    // sync to live sidtab
-    orig_rc = sidtab_context_to_sid(orig_sidtab, &orig_context, &orig_sid);
-    context_destroy(&orig_context);
-    if (!orig_rc && orig_sid_p)
-        *orig_sid_p = orig_sid;
-    if (orig_rc == -ESTALE) {
+    context_destroy(&context);
+    if (!rc && orig_rc == -ESTALE) {
         // retry after live policy reload
         rcu_read_unlock();
         memcpy(scontext2, scontext, scontext_len);
         scontext2[scontext_len] = '\0';
         goto retry;
     }
+
 out_unlock:
     rcu_read_unlock();
+    if (rc)
+        orig_rc = rc;
     if (orig_rc_p)
         *orig_rc_p = orig_rc;
+    if (orig_sid_p && !orig_rc)
+        *orig_sid_p = orig_sid;
     kfree(scontext2);
     return rc;
 }
