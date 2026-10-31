@@ -538,12 +538,17 @@ int ksu_install_file_wrapper(int fd)
     struct inode *wrapper_inode = file_inode(wrapper_file);
     // libc's stdio relies on the fstat() result of the fd to determine its buffer type.
     wrapper_inode->i_mode = file_inode(orig_file)->i_mode;
-    struct inode_security_struct *wrapper_sec = selinux_inode(wrapper_inode);
-    // Use ksu_file_sid to bypass SELinux check.
-    // When we call `su` from terminal app, this is useful.
-    if (wrapper_sec) {
-        wrapper_sec->sid = ksu_file_sid;
+    // Use ksu_file_sid to bypass SELinux check
+
+    // We use ksu_selinux_inode and lookup btf to workaround 6.6's ABI changes
+    // See more: https://android.googlesource.com/kernel/common/+/41c5b269af8b1f0bffcab7766a793f294ae6764e
+    struct inode_security_struct *wrapper_sec = ksu_selinux_inode(wrapper_inode);
+    if (IS_ERR(wrapper_sec)) {
+        ret = PTR_ERR(wrapper_sec);
+        goto out_put_wrapper_file;
     }
+    if (wrapper_sec)
+        wrapper_sec->sid = ksu_file_sid;
     // Install open file operation for inode.
     wrapper_inode->i_fop = &ksu_file_wrapper_inode_fops;
 
