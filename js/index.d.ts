@@ -37,6 +37,8 @@ declare function fullScreen(isFullScreen: boolean);
 
 declare function enableEdgeToEdge(enable: boolean);
 
+declare function setLightSystemBars(light: boolean);
+
 declare function toast(message: string);
 
 declare function moduleInfo(): string;
@@ -184,6 +186,7 @@ export {
     spawn,
     fullScreen,
     enableEdgeToEdge,
+    setLightSystemBars,
     toast,
     moduleInfo,
     listPackages,

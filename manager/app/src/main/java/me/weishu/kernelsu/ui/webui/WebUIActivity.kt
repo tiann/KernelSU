@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +48,9 @@ class WebUIActivity : ComponentActivity() {
             val prefs = context.getSharedPreferences("settings", MODE_PRIVATE)
             val settingsRepo = remember { SettingsRepositoryImpl() }
             var appSettings by remember { mutableStateOf(ThemeController.getAppSettings()) }
+            val systemDarkTheme = isSystemInDarkTheme()
+            val darkTheme = appSettings.colorMode.isDark ||
+                (appSettings.colorMode.isSystem && systemDarkTheme)
             var uiModeValue by remember { mutableStateOf(settingsRepo.uiMode) }
             val uiMode = remember(uiModeValue) {
                 UiMode.fromValue(uiModeValue)
@@ -66,7 +70,7 @@ class WebUIActivity : ComponentActivity() {
 
             CompositionLocalProvider(LocalUiMode provides uiMode) {
                 KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
-                    MainContent(activity = this, onFinish = { finish() })
+                    MainContent(activity = this, darkTheme = darkTheme, onFinish = { finish() })
                 }
             }
         }
@@ -74,7 +78,7 @@ class WebUIActivity : ComponentActivity() {
 }
 
 @Composable
-private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
+private fun MainContent(activity: ComponentActivity, darkTheme: Boolean, onFinish: () -> Unit) {
     val moduleId = remember { activity.intent.data?.getQueryParameter("id") }
     val webUIState = remember { WebUIState() }
 
@@ -110,7 +114,7 @@ private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
         if (loading) {
             LoadingContent()
         } else {
-            WebUIScreen(webUIState = webUIState)
+            WebUIScreen(webUIState = webUIState, darkTheme = darkTheme)
         }
     }
 }
