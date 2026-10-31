@@ -20,6 +20,8 @@ sha1 = "0.11"
 base16ct = { version = "1.0", features = ["alloc"] }
 sha256 = "1"
 tempfile = "3"
+lz4 = "1"
+flate2 = "1"
 chrono = "0.4"
 regex-lite = "0.1"
 memmap2 = "0.9"
