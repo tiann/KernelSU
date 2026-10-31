@@ -40,6 +40,8 @@ static int ksu_wrapper_open(struct inode *ino, struct file *fp)
         filp_close(orig_file, current->files);
         return PTR_ERR(wrapper);
     }
+    // The wrapper holds its own reference to orig_file.
+    fput(orig_file);
     fp->private_data = wrapper;
     const struct file_operations *new_fops = fops_get(&wrapper->ops);
     replace_fops(fp, new_fops);
