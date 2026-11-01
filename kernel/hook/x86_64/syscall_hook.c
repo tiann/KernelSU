@@ -312,7 +312,9 @@ void __init __nocfi ksu_syscall_hook_init(void)
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
     patch_abs_jump("x64_sys_call", &x64_sys_call_patch_addr, my_x64_sys_call, x64_sys_call_patch_orig_insn);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
-    if (!x64_sys_call_patch_addr) {
+    // Before 5.16 always patch do_syscall_64 as well: such a kernel may have
+    // x64_sys_call backported without fb13b11d.
+    if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0) || !x64_sys_call_patch_addr) {
         syscall_enter_from_user_mode_fn = find_kernel_symbol_exact("syscall_enter_from_user_mode");
         syscall_exit_to_user_mode_fn = find_kernel_symbol_exact("syscall_exit_to_user_mode");
         pr_info("syscall_enter_from_user_mode: 0x%lx, syscall_exit_to_user_mode: 0x%lx\n",
