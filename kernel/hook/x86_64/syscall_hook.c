@@ -244,7 +244,9 @@ static __always_inline bool my_do_syscall_x64(struct pt_regs *regs, int nr)
 static void __nocfi my_do_syscall_64(struct pt_regs *regs, int nr)
 {
     nr = syscall_enter_from_user_mode_fn(regs, nr);
-    nr = syscall_get_nr(current, regs);
+    // Pick up the tracepoint's nr rewrite unless the syscall is skipped (-1, e.g. seccomp)
+    if (nr != -1)
+        nr = syscall_get_nr(current, regs);
 
     // AVD doesn't have x32 support after A13, we can ignore do_syscall_x32
 
