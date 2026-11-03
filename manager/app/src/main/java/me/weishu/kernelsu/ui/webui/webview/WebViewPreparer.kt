@@ -46,6 +46,13 @@ internal suspend fun prepareWebView(
     } ?: return
 
     val moduleDir = "/data/adb/modules/${moduleId}"
+
+    val iconUri = viewModel.state.value.moduleInfo?.webUiIconPath?.takeIf { it.isNotBlank() }?.let { "su:$it" }
+    val iconBitmap = withContext(Dispatchers.IO) {
+        Shortcut.loadShortcutBitmap(activity, iconUri)
+    }
+    activity.setTaskDescription(moduleName, iconBitmap)
+
     val shell = withContext(Dispatchers.IO) {
         // Create and register in the same block: withContext discards a result that arrives after
         // the caller was cancelled, and the shell would then have no owner to close it.
@@ -58,15 +65,9 @@ internal suspend fun prepareWebView(
         }
     } ?: return
 
-    val iconUri = viewModel.state.value.moduleInfo?.webUiIconPath?.takeIf { it.isNotBlank() }?.let { "su:$it" }
-    val iconBitmap = withContext(Dispatchers.IO) {
-        Shortcut.loadShortcutBitmap(activity, iconUri)
-    }
-    activity.setTaskDescription(moduleName, iconBitmap)
-
     val webView = createWebView(activity)
     val webViewAssetLoader = createAssetLoader(activity, moduleDir, shell, viewModel)
-    webView.webViewClient = WebUiClient(activity, webViewAssetLoader, viewModel)
+    webView.webViewClient = WebUiClient(activity, webViewAssetLoader, runtime, viewModel)
     webView.webChromeClient = WebUiChromeClient(runtime, viewModel)
     val webviewInterface = WebViewInterface(runtime, moduleDir, viewModel)
     val downloadInterface = WebUIDownloadInterface(runtime)

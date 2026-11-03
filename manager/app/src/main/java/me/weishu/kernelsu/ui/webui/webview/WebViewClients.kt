@@ -18,7 +18,6 @@ import androidx.webkit.WebViewAssetLoader
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.util.AppIconCache
 import me.weishu.kernelsu.ui.util.withMainUserUid
-import me.weishu.kernelsu.ui.webui.BlobDownloadHandler
 import me.weishu.kernelsu.ui.webui.WebUIRuntime
 import me.weishu.kernelsu.ui.webui.webUIApps
 import me.weishu.kernelsu.ui.webui.model.WebUIDialog
@@ -28,12 +27,22 @@ import me.weishu.kernelsu.ui.webui.viewmodel.WebUIViewModel
 internal class WebUiClient(
     private val activity: Activity,
     private val webViewAssetLoader: WebViewAssetLoader,
+    private val runtime: WebUIRuntime,
     private val viewModel: WebUIViewModel,
 ) : WebViewClient() {
 
     private val downloadJs: String by lazy { loadDownloadJs(activity) }
 
+    /**
+     * The renderer died; the page is gone with it, so the host cannot keep showing a blank
+     * WebView.
+     *
+     * Returning true means "handled", and the platform takes that as a promise that the app has
+     * already dropped the view - it must not be touched afterwards, or the process is killed for
+     * using a dead WebView. So the view is detached and destroyed here, and the screen closes.
+     */
     override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+        runtime.detachAndDestroy()
         viewModel.notifyError(activity.getString(R.string.webui_render_process_crashed))
         return true
     }
@@ -41,7 +50,7 @@ internal class WebUiClient(
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         val url = request.url
 
-        BlobDownloadHandler.shouldInterceptRequest(request)?.let { return it }
+        runtime.blobs.shouldInterceptRequest(request)?.let { return it }
 
         if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
             val packageName = url.path?.runCatching { substring(1) }?.getOrNull()
@@ -60,6 +69,11 @@ internal class WebUiClient(
             }
         }
         return webViewAssetLoader.shouldInterceptRequest(url)
+    }
+
+    override fun onPageCommitVisible(view: WebView?, url: String?) {
+        viewModel.onHomePageLoaded()
+        super.onPageCommitVisible(view, url)
     }
 
     override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
@@ -155,7 +169,7 @@ internal fun loadDownloadJs(context: Context): String {
     return context.assets.open("webview/download.js").bufferedReader(Charsets.UTF_8).use { it.readText() }
 }
 
-internal fun notFoundResponse(msg: String = "") = WebResourceResponse(
+internal fun notFoundResponse(msg: String) = WebResourceResponse(
     "text/plain", "utf-8", 404, "Not Found", CORS_HEADERS, java.io.ByteArrayInputStream(msg.toByteArray())
 )
 

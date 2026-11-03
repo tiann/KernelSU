@@ -370,7 +370,7 @@
     <string name="script_param_above_max">不能大于 %d</string>
     <string name="script_param_invalid">无效的值</string>
     <string name="webview_outdated_title">WebView 版本过低</string>
-    <string name="webview_outdated_message">当前系统的 Android System WebView 版本为 %1$d（最低要求：%2$d），已禁用边到边功能。请更新 WebView 以获得最佳体验。</string>
+    <string name="webview_outdated_message">当前 Android System WebView 版本 %1$d 低于 %2$d，inset 由应用处理，点击更新</string>
     <string name="webui_failed_to_open_link">未找到可打开此链接的应用：%s</string>
     <string name="webui_invalid_module_id">模块 ID 无效</string>
     <string name="webui_render_process_crashed">WebView 渲染进程已崩溃</string>
