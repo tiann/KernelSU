@@ -7,22 +7,21 @@ import com.topjohnwu.superuser.io.SuFileInputStream
 import java.io.BufferedInputStream
 import java.io.InputStream
 
-class FileInputStreamInterface {
+@Suppress("unused")
+class FileInputStreamInterface(private val io: KsuIO) {
     @JavascriptInterface
     fun open(path: String): String = runCatching {
-        if (!KsuIO.canOpenStream()) {
+        if (!io.canOpenStream()) {
             Log.w(TAG, "FileInputStream open rejected: too many open streams")
             return ""
         }
         val stream = ManagedInputStream(SuFileInputStream.open(path))
-        val id = java.util.UUID.randomUUID().toString()
-        KsuIO.openInputStreams[id] = stream
-        id
+        io.registerInput(stream)
     }.onFailure { Log.e(TAG, "FileInputStream open failed", it) }.getOrElse { "" }
 
     @JavascriptInterface
     fun read(id: String): String = runCatching {
-        val stream = KsuIO.openInputStreams[id] ?: return ""
+        val stream = io.input(id) ?: return ""
         val bytesRead = stream.readInto()
         if (bytesRead > 0) {
             Base64.encodeToString(stream.buffer(), 0, bytesRead, Base64.NO_WRAP)
@@ -33,7 +32,7 @@ class FileInputStreamInterface {
 
     @JavascriptInterface
     fun read(id: String, maxBytes: Int): String = runCatching {
-        val stream = KsuIO.openInputStreams[id] ?: return ""
+        val stream = io.input(id) ?: return ""
         val bytesRead = stream.readInto(maxBytes)
         if (bytesRead > 0) {
             Base64.encodeToString(stream.buffer(), 0, bytesRead, Base64.NO_WRAP)
@@ -44,13 +43,13 @@ class FileInputStreamInterface {
 
     @JavascriptInterface
     fun available(id: String): Int = runCatching {
-        val stream = KsuIO.openInputStreams[id] ?: return 0
+        val stream = io.input(id) ?: return 0
         stream.available()
     }.getOrDefault(0)
 
     @JavascriptInterface
     fun close(id: String): Boolean {
-        val stream = KsuIO.openInputStreams.remove(id) ?: return false
+        val stream = io.removeInput(id) ?: return false
         return runCatching {
             stream.close()
             true
@@ -61,16 +60,9 @@ class FileInputStreamInterface {
     }
 
     fun closeAll() {
-        while (true) {
-            val entry = KsuIO.openInputStreams.entries.firstOrNull() ?: break
-            val id = entry.key
-            val stream = entry.value
-            if (!KsuIO.openInputStreams.remove(id, stream)) {
-                continue
-            }
-            runCatching {
-                stream.close()
-            }.onFailure { Log.e(TAG, "closeAll failed for $id", it) }
+        io.pruneInputs { stream ->
+            runCatching { stream.close() }
+                .onFailure { Log.e(TAG, "closeAll failed", it) }
         }
     }
 }

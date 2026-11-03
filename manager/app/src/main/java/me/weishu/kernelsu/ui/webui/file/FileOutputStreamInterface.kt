@@ -5,21 +5,19 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import com.topjohnwu.superuser.io.SuFileOutputStream
 import java.io.BufferedOutputStream
-import java.util.UUID
 
-class FileOutputStreamInterface {
+@Suppress("unused")
+class FileOutputStreamInterface(private val io: KsuIO) {
     @JavascriptInterface
     fun open(path: String, append: Boolean): String = runCatching {
-        if (!KsuIO.canOpenStream()) {
+        if (!io.canOpenStream()) {
             Log.w(TAG, "FileOutputStream open rejected: too many open streams")
             return ""
         }
         val file = com.topjohnwu.superuser.io.SuFile(path)
         val fos = SuFileOutputStream.open(file, append)
         val bos = BufferedOutputStream(fos, 64 * 1024)
-        val id = UUID.randomUUID().toString()
-        KsuIO.openOutputStreams[id] = bos
-        id
+        io.registerOutput(bos)
     }.onFailure { Log.e(TAG, "FileOutputStream open failed", it) }.getOrElse { "" }
 
     @JavascriptInterface
@@ -27,14 +25,14 @@ class FileOutputStreamInterface {
 
     @JavascriptInterface
     fun writeByte(id: String, b: Int): Boolean = runCatching {
-        val bos = KsuIO.openOutputStreams[id] ?: return false
+        val bos = io.output(id) ?: return false
         synchronized(bos) { bos.write(b) }
         true
     }.onFailure { Log.e(TAG, "writeByte failed", it) }.getOrElse { false }
 
     @JavascriptInterface
     fun write(id: String, base64: String): Boolean = runCatching {
-        val bos = KsuIO.openOutputStreams[id] ?: return false
+        val bos = io.output(id) ?: return false
         val data = Base64.decode(base64, Base64.NO_WRAP)
         synchronized(bos) { bos.write(data) }
         true
@@ -42,14 +40,14 @@ class FileOutputStreamInterface {
 
     @JavascriptInterface
     fun flush(id: String): Boolean = runCatching {
-        val bos = KsuIO.openOutputStreams[id] ?: return false
+        val bos = io.output(id) ?: return false
         synchronized(bos) { bos.flush() }
         true
     }.onFailure { Log.e(TAG, "flush failed", it) }.getOrElse { false }
 
     @JavascriptInterface
     fun close(id: String): Boolean {
-        val bos = KsuIO.openOutputStreams.remove(id) ?: return false
+        val bos = io.removeOutput(id) ?: return false
         return runCatching {
             synchronized(bos) { bos.close() }
             true
@@ -57,16 +55,9 @@ class FileOutputStreamInterface {
     }
 
     fun closeAll() {
-        while (true) {
-            val entry = KsuIO.openOutputStreams.entries.firstOrNull() ?: break
-            val id = entry.key
-            val bos = entry.value
-            if (!KsuIO.openOutputStreams.remove(id, bos)) {
-                continue
-            }
-            runCatching {
-                synchronized(bos) { bos.close() }
-            }.onFailure { Log.e(TAG, "closeAll failed for $id", it) }
+        io.pruneOutputs { bos ->
+            runCatching { synchronized(bos) { bos.close() } }
+                .onFailure { Log.e(TAG, "closeAll failed", it) }
         }
     }
 }
