@@ -1,3 +1,7 @@
+---
+description: How to run KernelSU on x86_64 kernels where syscall table hardening breaks the KernelSU syscall hook, and how to choose between the supported fixes.
+---
+
 # x86_64 Support
 
 KernelSU fully supports the `x86_64` architecture. However, due to recent upstream kernel security changes, integrating KernelSU on modern `x86_64` kernels requires additional handling so our unified syscall dispatcher can function correctly.

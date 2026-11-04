@@ -1,3 +1,7 @@
+---
+description: Lesser-known KernelSU features, such as loading a custom shell rc file for su from /data/adb/ksu/.ksurc.
+---
+
 # Hidden features
 
 ## .ksurc
