@@ -1,4 +1,4 @@
----
+w---
 description: KernelSU is an open-source, kernel-based root solution for Android GKI devices. It grants root to permitted apps from kernel space and supports Magisk-style modules.
 ---
 
