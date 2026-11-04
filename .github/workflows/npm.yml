@@ -1,0 +1,62 @@
+name: Publish NPM package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'js/package.json'
+  pull_request:
+    paths:
+      - '.github/workflows/npm.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: js
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'latest'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Check if version changed
+        id: check_version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          PUBLISHED_VERSION=$(npm view "$PACKAGE_NAME" version 2>/dev/null || echo "none")
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Published version: $PUBLISHED_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Version changed from $PUBLISHED_VERSION to $CURRENT_VERSION"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Version $CURRENT_VERSION is already published on npm"
+          fi
+
+      - name: Install dependencies
+        if: github.event_name != 'pull_request' && steps.check_version.outputs.changed == 'true'
+        run: npm install
+
+      - name: Publish to NPM
+        if: github.event_name != 'pull_request' && steps.check_version.outputs.changed == 'true'
+        run: npm publish --provenance

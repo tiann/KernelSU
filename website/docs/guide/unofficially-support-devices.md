@@ -1,3 +1,7 @@
+---
+description: Archived list of community-maintained non-GKI kernel sources with KernelSU support. Not reviewed by KernelSU developers; use at your own risk.
+---
+
 # Unofficially supported devices
 
 ::: warning

@@ -1,3 +1,7 @@
+---
+description: Guide to developing KernelSU modules, including module layout, module.prop, the customize.sh installer, boot scripts, and late-load mode.
+---
+
 # Module guide
 
 KernelSU provides a module mechanism that achieves the effect of modifying the system directory while maintaining the integrity of the system partition. This mechanism is commonly known as "systemless".

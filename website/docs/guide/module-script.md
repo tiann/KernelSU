@@ -1,3 +1,7 @@
+---
+description: One-shot scripts are module-style ZIP files that the KernelSU manager runs once in a root shell instead of installing. Covers package layout, params.json, and publishing.
+---
+
 # One-shot scripts
 
 A one-shot script is a ZIP that the KernelSU manager **runs once** instead of installing. It is packaged like a module, but nothing stays on the device: the manager extracts the ZIP to a private directory, asks for the parameters it declares, shows the `action.sh` source and runs it in a root shell. Use it for tasks such as unlocking a hidden setting or exporting a log; anything that must run at boot or modify the system partitions should be a [module](module.md).

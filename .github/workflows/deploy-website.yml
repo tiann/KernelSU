@@ -37,7 +37,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: latest
+          node-version: lts/*
           cache: yarn # or pnpm / yarn
           cache-dependency-path: website/yarn.lock
       - name: Setup Pages
