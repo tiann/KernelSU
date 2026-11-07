@@ -410,7 +410,7 @@ static int ksu_selinux_hide_enable()
     pr_info("selinux_hide: context_write: 0x%lx [%pSb]\n", (unsigned long)*context_write, *context_write);
     write_op_fn my = my_write_context;
     orig_context_write = *context_write;
-    ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    ret = ksu_patch_memory(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
         goto unhook;
@@ -420,7 +420,7 @@ static int ksu_selinux_hide_enable()
     pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
     my = my_write_access;
     orig_access_write = *access_write;
-    ret = ksu_patch_text(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    ret = ksu_patch_memory(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
         goto unhook;
@@ -443,23 +443,24 @@ static void ksu_selinux_hide_unhook()
 {
     int ret;
     if (orig_context_write) {
-        ret =
-            ksu_patch_text(context_write, &orig_context_write, sizeof(orig_context_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        ret = ksu_patch_memory(context_write, &orig_context_write, sizeof(orig_context_write),
+                               KSU_PATCH_TEXT_FLUSH_DCACHE);
         orig_context_write = NULL;
         if (ret) {
             pr_err("selinux_hide: exit: patch_text context_write err: %d\n", ret);
         }
     }
     if (orig_access_write) {
-        ret = ksu_patch_text(access_write, &orig_access_write, sizeof(orig_access_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        ret =
+            ksu_patch_memory(access_write, &orig_access_write, sizeof(orig_access_write), KSU_PATCH_TEXT_FLUSH_DCACHE);
         orig_access_write = NULL;
         if (ret) {
             pr_err("selinux_hide: exit: patch_text access_write err: %d\n", ret);
         }
     }
     if (sel_open_handle_status_slot && orig_sel_open_handle_status) {
-        ret = ksu_patch_text(sel_open_handle_status_slot, &orig_sel_open_handle_status,
-                             sizeof(orig_sel_open_handle_status), KSU_PATCH_TEXT_FLUSH_DCACHE);
+        ret = ksu_patch_memory(sel_open_handle_status_slot, &orig_sel_open_handle_status,
+                               sizeof(orig_sel_open_handle_status), KSU_PATCH_TEXT_FLUSH_DCACHE);
         orig_sel_open_handle_status = NULL;
         if (ret) {
             pr_err("selinux_hide: exit: patch_text sel_open_handle_status err: %d\n", ret);
@@ -544,7 +545,7 @@ static void hook_selinux_status_open()
     }
     sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
     orig_sel_open_handle_status = *sel_open_handle_status_slot;
-    int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    int ret = ksu_patch_memory(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (ret) {
         pr_err("selinux_hide: init: patch_text sel_open_handle_status err: %d\n", ret);
         sel_open_handle_status_slot = NULL;

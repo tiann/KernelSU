@@ -66,7 +66,7 @@ static int ksu_lsm_hook_patch_slot(void **slot, void *value)
     void *patched = value;
     int ret;
 
-    ret = ksu_patch_text(slot, &patched, sizeof(patched), KSU_PATCH_TEXT_FLUSH_DCACHE);
+    ret = ksu_patch_memory(slot, &patched, sizeof(patched), KSU_PATCH_TEXT_FLUSH_DCACHE);
     if (!ret)
         smp_wmb();
 
