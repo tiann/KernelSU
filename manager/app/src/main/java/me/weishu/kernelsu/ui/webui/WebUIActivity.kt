@@ -26,8 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
 import me.weishu.kernelsu.ui.theme.ThemeController
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
@@ -47,27 +45,19 @@ class WebUIActivity : ComponentActivity() {
             val prefs = context.getSharedPreferences("settings", MODE_PRIVATE)
             val settingsRepo = remember { SettingsRepositoryImpl() }
             var appSettings by remember { mutableStateOf(ThemeController.getAppSettings()) }
-            var uiModeValue by remember { mutableStateOf(settingsRepo.uiMode) }
-            val uiMode = remember(uiModeValue) {
-                UiMode.fromValue(uiModeValue)
-            }
 
             DisposableEffect(prefs) {
                 val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                     if (key in listOf("color_mode", "key_color", "color_style", "color_spec")) {
                         appSettings = ThemeController.getAppSettings()
-                    } else if (key == "ui_mode") {
-                        uiModeValue = settingsRepo.uiMode
                     }
                 }
                 prefs.registerOnSharedPreferenceChangeListener(listener)
                 onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
             }
 
-            CompositionLocalProvider(LocalUiMode provides uiMode) {
-                KernelSUTheme(appSettings = appSettings, uiMode = uiMode) {
-                    MainContent(activity = this, onFinish = { finish() })
-                }
+            KernelSUTheme(appSettings = appSettings) {
+                MainContent(activity = this, onFinish = { finish() })
             }
         }
     }
@@ -117,25 +107,13 @@ private fun MainContent(activity: ComponentActivity, onFinish: () -> Unit) {
 
 @Composable
 private fun LoadingContent() {
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                InfiniteProgressIndicator()
-            }
-        }
-
-        UiMode.Material -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.material3.LoadingIndicator()
-            }
-        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.material3.LoadingIndicator()
     }
+
 }

@@ -1,5 +1,13 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
+import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Cottage
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
+import me.weishu.kernelsu.R
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -14,8 +22,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.util.shouldShowSplitPane
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
@@ -79,6 +85,16 @@ fun rememberMainPagerState(
     }
 }
 
+enum class BottomBarDestination(
+    @get:StringRes val label: Int,
+    val icon: ImageVector,
+) {
+    Home(R.string.home, Icons.Rounded.Cottage),
+    SuperUser(R.string.superuser, Icons.Rounded.Security),
+    Module(R.string.module, Icons.Rounded.Extension),
+    Setting(R.string.settings, Icons.Rounded.Settings)
+}
+
 @Immutable
 data class NavigationBadgeState(
     val superuserCount: Int = 0,
@@ -106,7 +122,7 @@ internal fun badgeFor(index: Int, state: NavigationBadgeState): NavBadge? = when
 
 @Composable
 fun useNavigationRail(enableFloatingBottomBar: Boolean): Boolean {
-    return shouldShowSplitPane() && !(LocalUiMode.current == UiMode.Miuix && enableFloatingBottomBar)
+    return shouldShowSplitPane()
 }
 
 @Composable
@@ -116,10 +132,7 @@ fun BottomBar(
     navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> BottomBarMiuix(blurBackdrop, backdrop, navigationBadge, modifier)
-        UiMode.Material -> BottomBarMaterial(navigationBadge)
-    }
+    BottomBarMaterial(navigationBadge)
 }
 
 @Composable
@@ -127,8 +140,5 @@ fun SideRail(
     navigationBadge: NavigationBadgeState,
     modifier: Modifier = Modifier,
 ) {
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> NavigationRailMiuix(navigationBadge, modifier)
-        UiMode.Material -> NavigationRailMaterial(navigationBadge, modifier)
-    }
+    NavigationRailMaterial(navigationBadge, modifier)
 }

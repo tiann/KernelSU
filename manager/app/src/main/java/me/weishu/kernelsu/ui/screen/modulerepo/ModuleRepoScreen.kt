@@ -38,8 +38,6 @@ import me.weishu.kernelsu.data.registry.RegistryUrls
 import me.weishu.kernelsu.data.script.ScriptRepository
 import me.weishu.kernelsu.data.script.ScriptRunRecord
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -98,10 +96,7 @@ fun ModuleRepoScreen() {
         },
     )
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> ModuleRepoScreenMiuix(state, actions)
-        UiMode.Material -> ModuleRepoScreenMaterial(state, actions)
-    }
+    ModuleRepoScreenMaterial(state, actions)
 }
 
 @Composable
@@ -157,10 +152,7 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         onRetry = { detailVm.load(module.moduleId, force = true) },
     )
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> ModuleRepoDetailScreenMiuix(state, actions)
-        UiMode.Material -> ModuleRepoDetailScreenMaterial(state, actions)
-    }
+    ModuleRepoDetailScreenMaterial(state, actions)
 }
 
 /** UI state of downloading one release ZIP. */

@@ -32,8 +32,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 
 @Composable
 fun rememberFileLauncher(webUIState: WebUIState): ActivityResultLauncher<Intent> {
@@ -127,10 +125,7 @@ fun WebUIScreen(webUIState: WebUIState) {
         }
     }
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> HandleWebUIEventMiuix(webUIState, fileLauncher)
-        UiMode.Material -> HandleWebUIEventMaterial(webUIState, fileLauncher)
-    }
+    HandleWebUIEventMaterial(webUIState, fileLauncher)
 
     HandleWebViewLifecycle(webUIState)
     HandleConfigurationChanges(webUIState)

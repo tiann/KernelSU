@@ -27,8 +27,6 @@ import me.weishu.kernelsu.data.script.ParamError
 import me.weishu.kernelsu.data.script.ScriptOutcome
 import me.weishu.kernelsu.data.script.ScriptParam
 import me.weishu.kernelsu.data.script.ScriptRunRecord
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
@@ -36,7 +34,6 @@ import me.weishu.kernelsu.ui.screen.executemoduleaction.ActionResultKind
 import me.weishu.kernelsu.ui.screen.executemoduleaction.ActionResultNotice
 import me.weishu.kernelsu.ui.screen.executemoduleaction.ExecuteModuleActionScreenActions
 import me.weishu.kernelsu.ui.screen.executemoduleaction.ExecuteModuleActionScreenMaterial
-import me.weishu.kernelsu.ui.screen.executemoduleaction.ExecuteModuleActionScreenMiuix
 import me.weishu.kernelsu.ui.screen.executemoduleaction.ExecuteModuleActionUiState
 import me.weishu.kernelsu.ui.screen.executemoduleaction.saveLog
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
@@ -53,7 +50,6 @@ import java.util.UUID
 fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
     val navigator = LocalNavigator.current
     val context = LocalContext.current
-    val uiMode = LocalUiMode.current
     val scope = rememberCoroutineScope()
     val viewModel = viewModel<ScriptRunViewModel>(key = "script-run-${arg.uri}-${arg.registryId}")
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -78,11 +74,8 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
         val snackbarHost = remember { SnackbarHostState() }
         val showMessage: (String) -> Unit = { message ->
             scope.launch {
-                if (uiMode == UiMode.Material) {
-                    snackbarHost.showSnackbar(message)
-                } else {
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                }
+                snackbarHost.showSnackbar(message)
+
             }
         }
         val finished = state.phase == ScriptRunPhase.FINISHED
@@ -115,10 +108,7 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
             onSaveLog = saveLog(viewModel.logContent, scope, "KernelSU_script_log") { showMessage(it) },
             onClose = { navigator.pop() },
         )
-        when (uiMode) {
-            UiMode.Miuix -> ExecuteModuleActionScreenMiuix(outputState, outputActions)
-            UiMode.Material -> ExecuteModuleActionScreenMaterial(outputState, outputActions, snackbarHost)
-        }
+        ExecuteModuleActionScreenMaterial(outputState, outputActions, snackbarHost)
         return
     }
 
@@ -139,10 +129,7 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
         },
     )
 
-    when (uiMode) {
-        UiMode.Miuix -> ScriptRunScreenMiuix(state, actions)
-        UiMode.Material -> ScriptRunScreenMaterial(state, actions)
-    }
+    ScriptRunScreenMaterial(state, actions)
 }
 
 @Composable
