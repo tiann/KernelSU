@@ -37,7 +37,7 @@ repo sync
 LTO=thin BUILD_CONFIG=common/build.config.gki.aarch64 build/build.sh
 ```
 
-不要忘记添加 `LTO=thin`, 否则，如果您的计算机内存小于 24GB，构建可能会失败.
+不要忘记添加 `LTO=thin`, 否则，如果您的计算机内存小于 24GB，构建可能会失败(在android14-6.1及更高版本,GKI上已禁用LTO,请不要使用)
 
 从 Android 13 开始，内核由 `bazel` 构建:
 
