@@ -33,6 +33,7 @@ static const __u32 KSU_GET_INFO_FLAG_PR_BUILD = (1U << 3);
 static const __u32 KSU_GET_INFO_FLAG_BUNDLED = (1U << 4);
 /* The preinit runner will run module preinit actions on boot */
 static const __u32 KSU_GET_INFO_FLAG_PREINIT = (1U << 5);
+static const __u32 KSU_GET_INFO_FLAG_ALLOW_SHELL = (1U << 7);
 
 struct ksu_get_info_cmd {
     __u32 version; /* Output: KERNEL_SU_VERSION */
