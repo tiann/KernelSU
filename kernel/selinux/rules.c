@@ -14,6 +14,7 @@
 #include "ss/services.h"
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "xfrm.h"
+#include "feature/selinux_hide.h"
 
 struct selinux_policy *backup_sepolicy;
 
@@ -31,12 +32,12 @@ static void reset_avc_cache(u32 seqno)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
     avc_ss_reset(seqno);
-    selnl_notify_policyload(seqno);
+    ksu_selinux_hide_notify_policyload(seqno);
     selinux_status_update_policyload(seqno);
 #else
     struct selinux_avc *avc = selinux_state.avc;
     avc_ss_reset(avc, seqno);
-    selnl_notify_policyload(seqno);
+    ksu_selinux_hide_notify_policyload(seqno);
     selinux_status_update_policyload(&selinux_state, seqno);
 #endif
     selinux_xfrm_notify_policyload();
