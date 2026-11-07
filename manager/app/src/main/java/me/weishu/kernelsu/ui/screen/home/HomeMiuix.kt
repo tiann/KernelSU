@@ -155,9 +155,11 @@ fun HomePagerMiuix(
                         }
                         if (state.showLkmUpdate) {
                             WarningCard(
-                                message = stringResource(R.string.home_lkm_update_available),
+                                message = stringResource(
+                                    id = if (state.canInstallKernelUpdate) R.string.home_lkm_update_available else R.string.home_lkm_update_available_jailbreak
+                                ),
                                 level = WarningLevel.Notice,
-                                onClick = actions.onInstallClick,
+                                onClick = if (state.canInstallKernelUpdate) actions.onInstallClick else null
                             )
                         }
                         if (state.showRootWarning) {
