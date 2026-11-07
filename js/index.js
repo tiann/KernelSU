@@ -115,6 +115,10 @@ export function enableEdgeToEdge(enable) {
   ksu.enableEdgeToEdge(enable);
 }
 
+export function setLightSystemBars(light) {
+  ksu.setLightSystemBars(light);
+}
+
 export function toast(message) {
   ksu.toast(message);
 }
