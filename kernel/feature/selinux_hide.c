@@ -805,8 +805,8 @@ out_unlock:
 /*
  * Caveat:  Mutates scontext.
  */
-static int live_string_to_context_struct(struct policydb *pol, struct policydb *backup_pol, struct sidtab *sidtabp,
-                                         char *scontext, struct context *ctx, u32 policy_generation, u32 def_sid)
+static int backup_string_to_context_struct(struct policydb *pol, struct policydb *live_pol, struct sidtab *sidtabp,
+                                           char *scontext, struct context *ctx, u32 policy_generation, u32 def_sid)
 {
     struct role_datum *role;
     struct type_datum *typdatum;
@@ -859,18 +859,16 @@ static int live_string_to_context_struct(struct policydb *pol, struct policydb *
     oldc = *p;
     *p++ = 0;
 
+    // ksu types fail like unknown types
     typdatum = symtab_search(&pol->p_types, scontextp);
     if (!typdatum || typdatum->attribute)
         goto out;
 
-    // ksu types fail like unknown types
-    type_is_original = ksu_type_is_original(pol, policy_generation, typdatum->value);
-    if (type_is_original < 0) {
+    type_is_original = ksu_type_is_original(live_pol, policy_generation, typdatum->value);
+    if (type_is_original <= 0) {
         rc = -EAGAIN;
         goto out;
     }
-    if (!type_is_original)
-        goto out;
 
     ctx->type = typdatum->value;
 
@@ -881,7 +879,7 @@ static int live_string_to_context_struct(struct policydb *pol, struct policydb *
     /* Check the validity of the new context. */
     // user, role and original type values are the same in both policies
     rc = -EINVAL;
-    if (!policydb_context_isvalid(backup_pol, ctx) || !policydb_context_isvalid(pol, ctx))
+    if (!policydb_context_isvalid(pol, ctx) || !policydb_context_isvalid(live_pol, ctx))
         goto out;
     rc = 0;
 out:
@@ -912,8 +910,8 @@ static int security_context_to_sid_live(const char *scontext, u32 scontext_len, 
 retry:
     rcu_read_lock();
     policy = rcu_dereference(selinux_state.policy);
-    rc = live_string_to_context_struct(&policy->policydb, &backup_sepolicy->policydb, policy->sidtab, scontext2,
-                                       &context, policy->latest_granting, SECSID_NULL);
+    rc = backup_string_to_context_struct(&backup_sepolicy->policydb, &policy->policydb, backup_sepolicy->sidtab,
+                                         scontext2, &context, policy->latest_granting, SECSID_NULL);
     if (rc)
         goto out_unlock;
 
