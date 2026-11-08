@@ -5,10 +5,18 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowInsetsControllerCompat
+import me.weishu.kernelsu.ui.theme.engine.LocalSygiTheme
+import me.weishu.kernelsu.ui.theme.engine.SygiThemeManager
+import me.weishu.kernelsu.ui.theme.engine.sygiShapes
+import me.weishu.kernelsu.ui.theme.engine.withSygi
+import me.weishu.kernelsu.ui.theme.engine.withSygiOverrides
 import me.weishu.kernelsu.ui.webui.MonetColorsProvider
 
 @Composable
@@ -39,14 +47,19 @@ fun MaterialKernelSUTheme(
     }
 
     val animatedColorScheme = colorScheme.animateAsState()
+    val pack by SygiThemeManager.active.collectAsState()
+    val themedColorScheme = animatedColorScheme.withSygiOverrides(pack, darkTheme, amoledMode)
 
     MaterialExpressiveTheme(
-        colorScheme = animatedColorScheme,
+        colorScheme = themedColorScheme,
         motionScheme = MotionScheme.expressive(),
-        typography = Typography,
+        shapes = sygiShapes(pack),
+        typography = Typography.withSygi(pack),
         content = {
             MonetColorsProvider.UpdateCss(colorScheme)
-            content()
+            CompositionLocalProvider(LocalSygiTheme provides pack) {
+                content()
+            }
         }
     )
 }

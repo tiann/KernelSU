@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="nav_corner">40dp</dimen>
+    <dimen name="nav_item_size">56dp</dimen>
+    <dimen name="nav_padding">7dp</dimen>
+</resources>

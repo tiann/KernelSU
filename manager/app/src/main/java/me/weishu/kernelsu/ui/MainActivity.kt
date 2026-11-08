@@ -85,6 +85,8 @@ import me.weishu.kernelsu.ui.screen.superuser.SuperUserPager
 import me.weishu.kernelsu.ui.screen.template.AppProfileTemplateScreen
 import me.weishu.kernelsu.ui.screen.templateeditor.TemplateEditorScreen
 import me.weishu.kernelsu.ui.theme.KernelSUTheme
+import me.weishu.kernelsu.ui.theme.engine.SygiThemeManager
+import me.weishu.kernelsu.ui.screen.themes.ThemesScreen
 import me.weishu.kernelsu.ui.theme.LocalColorMode
 import me.weishu.kernelsu.ui.theme.LocalEnableBlur
 import me.weishu.kernelsu.ui.theme.LocalEnableFloatingBottomBar
@@ -128,6 +130,8 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition {
             !contentReady || SystemClock.uptimeMillis() - splashStartedAt < splashAnimationDurationMs
         }
+
+        SygiThemeManager.init()
 
         val isManager = Natives.isManager
         if (isManager && Natives.kernelUAPIVersion == Natives.managerUAPIVersion) install()
@@ -219,6 +223,7 @@ class MainActivity : ComponentActivity() {
                             entry<Route.About>(swipeDismiss = swipeDismiss) { AboutScreen() }
                             entry<Route.Sulog>(swipeDismiss = swipeDismiss) { SulogScreen() }
                             entry<Route.ColorPalette>(swipeDismiss = swipeDismiss) { ColorPaletteScreen() }
+                            entry<Route.Themes>(swipeDismiss = swipeDismiss) { ThemesScreen() }
                             entry<Route.AppProfileTemplate>(swipeDismiss = swipeDismiss) { AppProfileTemplateScreen() }
                             entry<Route.TemplateEditor>(swipeDismiss = swipeDismiss) { key -> TemplateEditorScreen(key.template, key.readOnly) }
                             entry<Route.AppProfile>(swipeDismiss = swipeDismiss) { key -> AppProfileScreen(key.uid) }
@@ -258,6 +263,10 @@ class MainActivity : ComponentActivity() {
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ) { navDisplay() }
                     SideEffect { contentReady = true }
+                    LaunchedEffect(Unit) {
+                        kotlinx.coroutines.delay(2000)
+                        SygiThemeManager.onStartupSucceeded()
+                    }
                 }
             }
         }

@@ -44,6 +44,7 @@ fun SettingPager(
         onSetCheckUpdate = viewModel::setCheckUpdate,
         onSetCheckModuleUpdate = viewModel::setCheckModuleUpdate,
         onOpenTheme = { navigator.push(Route.ColorPalette) },
+        onOpenThemes = { navigator.push(Route.Themes) },
         onOpenProfileTemplate = { navigator.push(Route.AppProfileTemplate) },
         onSetSuCompatMode = viewModel::setSuCompatMode,
         onSetKernelUmountEnabled = viewModel::setKernelUmountEnabled,

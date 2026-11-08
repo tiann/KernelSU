@@ -375,4 +375,15 @@
     <string name="script_param_below_min">Must be at least %d</string>
     <string name="script_param_above_max">Must be at most %d</string>
     <string name="script_param_invalid">Invalid value</string>
+    <string name="sygi_themes">Themes</string>
+    <string name="sygi_themes_summary">Import and apply SygiSU theme packs</string>
+    <string name="sygi_themes_default">SygiSU (default)</string>
+    <string name="sygi_themes_default_summary">The built-in look</string>
+    <string name="sygi_themes_import">Import theme (.zip)</string>
+    <string name="sygi_themes_imported">Theme imported: %1$s</string>
+    <string name="sygi_themes_import_failed">Import failed: %1$s</string>
+    <string name="sygi_themes_applied">Theme applied</string>
+    <string name="sygi_themes_delete">Delete theme</string>
+    <string name="sygi_themes_empty">No imported themes yet. Import a .zip theme pack to restyle the whole app.</string>
+    <string name="sygi_themes_hint">Theme packs only contain colors, fonts, icons and images. They can never run code. If a theme ever crashes the app twice, SygiSU reverts to the default look automatically.</string>
 </resources>

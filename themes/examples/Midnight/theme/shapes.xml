@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <corner name="small" dp="14"/>
+    <corner name="medium" dp="22"/>
+    <corner name="large" dp="30"/>
+    <corner name="extraLarge" dp="40"/>
+</resources>

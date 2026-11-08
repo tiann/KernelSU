@@ -136,6 +136,20 @@ fun SettingPagerMaterial(
                             }
                         )
                     }
+                    add {
+                        SegmentedListItem(
+                            onClick = actions.onOpenThemes,
+                            headlineContent = { Text(stringResource(id = R.string.sygi_themes)) },
+                            supportingContent = { Text(stringResource(id = R.string.sygi_themes_summary)) },
+                            leadingContent = { Icon(Icons.Filled.Palette, stringResource(id = R.string.sygi_themes)) },
+                            trailingContent = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    null
+                                )
+                            }
+                        )
+                    }
                 }
             )
 

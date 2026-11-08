@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Add a font in fonts/ and a line like: <font name="default" file="fonts/MyFont.ttf"/> -->
+    <text role="titleLarge" size="24" weight="700"/>
+    <text role="titleMedium" size="17" weight="600"/>
+</resources>
