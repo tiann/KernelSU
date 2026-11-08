@@ -54,17 +54,19 @@ import me.weishu.kernelsu.ui.LocalMainPagerState
 @Composable
 fun BottomBarMaterial(navigationBadge: NavigationBadgeState) {
     val fullFeatured = Natives.isFullFeatured()
-    if (!fullFeatured) return
 
     val mainPagerState = LocalMainPagerState.current
 
     // Icon ids are what theme packs override: icons/home.png, superuser.png, module.png, settings.png
-    val items = listOf(
+    // Pager page indices: 0 home, 1 superuser, 2 module, 3 settings.
+    // Without a working kernel only Home and Settings are shown, so Themes stays reachable.
+    val allItems = listOf(
         Triple("home", R.string.home, Icons.Filled.Home),
         Triple("superuser", R.string.superuser, Icons.Filled.Shield),
         Triple("module", R.string.module, Icons.Filled.Extension),
         Triple("settings", R.string.settings, Icons.Filled.Settings)
     )
+    val visible = if (fullFeatured) allItems.indices.toList() else listOf(0, 3)
 
     Box(
         modifier = Modifier
@@ -91,7 +93,8 @@ fun BottomBarMaterial(navigationBadge: NavigationBadgeState) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                items.forEachIndexed { index, (id, label, fallback) ->
+                visible.forEach { index ->
+                    val (id, label, fallback) = allItems[index]
                     val selected = mainPagerState.selectedPage == index
                     val tint = if (sygiInt("icons_use_original_colors", 0) == 1) Color.Unspecified
                     else if (selected) MaterialTheme.colorScheme.onSecondaryContainer

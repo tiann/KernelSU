@@ -48,7 +48,6 @@ fun NavigationRailMaterial(
     modifier: Modifier = Modifier,
 ) {
     val fullFeatured = Natives.isFullFeatured()
-    if (!fullFeatured) return
 
     val mainPagerState = LocalMainPagerState.current
 
@@ -103,7 +102,9 @@ fun NavigationRailMaterial(
             }
         },
     ) {
+        // Without a working kernel only Home (0) and Settings (3) are shown, so Themes stays reachable.
         items.forEachIndexed { index, (label, selectedIcon, unselectedIcon) ->
+            if (!fullFeatured && index != 0 && index != 3) return@forEachIndexed
             val selected = mainPagerState.selectedPage == index
             WideNavigationRailItem(
                 railExpanded = expanded,
