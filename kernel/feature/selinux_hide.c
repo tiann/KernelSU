@@ -881,7 +881,7 @@ static int live_string_to_context_struct(struct policydb *pol, struct policydb *
     /* Check the validity of the new context. */
     // user, role and original type values are the same in both policies
     rc = -EINVAL;
-    if (!policydb_context_isvalid(backup_pol, ctx))
+    if (!policydb_context_isvalid(backup_pol, ctx) || !policydb_context_isvalid(pol, ctx))
         goto out;
     rc = 0;
 out:
