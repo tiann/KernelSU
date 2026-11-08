@@ -67,6 +67,7 @@ static int security_context_to_sid_with_policy(struct selinux_policy *policy, co
                                                u32 *sid, u32 def_sid, gfp_t gfp_flags, u32 *orig_sid_p, int *orig_rc_p);
 static int security_sid_to_context_with_policy(struct selinux_policy *policy, u32 sid, char **scontext,
                                                u32 *scontext_len);
+static int security_context_to_sid_live(const char *scontext, u32 scontext_len, u32 *sid);
 static void security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
                                                  struct av_decision *avd);
 static void (*security_dump_masked_av_fn)(struct policydb *policydb, struct context *scontext, struct context *tcontext,
@@ -249,16 +250,22 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (error)
         return error;
 
-    /* Keep every non-empty value on the backup validation path */
-    if (size && str[0]) {
+    /* Obtain a SID for the context, if one was specified. */
+    if (size && str[0] && str[0] != '\n') {
         if (str[size - 1] == '\n') {
             str[size - 1] = 0;
             size--;
         }
-        error2 = security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL, GFP_KERNEL,
-                                                     &sid, &error);
-        if (error2 || error)
-            return error2 ?: error;
+        error = security_context_to_sid_live(value, size, &sid);
+        if (error == -EAGAIN) {
+            // stale type mark, use the dual parse
+            error2 = security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL,
+                                                         GFP_KERNEL, &sid, &error);
+            if (error2 || error)
+                return error2 ?: error;
+        } else if (error) {
+            return error;
+        }
     }
 
     new = prepare_creds();
@@ -791,6 +798,139 @@ out_unlock:
     rcu_read_unlock();
     if (orig_rc_p)
         *orig_rc_p = orig_rc;
+    kfree(scontext2);
+    return rc;
+}
+
+/*
+ * Caveat:  Mutates scontext.
+ */
+static int live_string_to_context_struct(struct policydb *pol, struct policydb *backup_pol, struct sidtab *sidtabp,
+                                         char *scontext, struct context *ctx, u32 policy_generation, u32 def_sid)
+{
+    struct role_datum *role;
+    struct type_datum *typdatum;
+    struct user_datum *usrdatum;
+    char *scontextp, *p, oldc;
+    int rc = 0, type_is_original;
+
+    context_init(ctx);
+
+    /* Parse the security context. */
+
+    rc = -EINVAL;
+    scontextp = scontext;
+
+    /* Extract the user. */
+    p = scontextp;
+    while (*p && *p != ':')
+        p++;
+
+    if (*p == 0)
+        goto out;
+
+    *p++ = 0;
+
+    usrdatum = symtab_search(&pol->p_users, scontextp);
+    if (!usrdatum)
+        goto out;
+
+    ctx->user = usrdatum->value;
+
+    /* Extract role. */
+    scontextp = p;
+    while (*p && *p != ':')
+        p++;
+
+    if (*p == 0)
+        goto out;
+
+    *p++ = 0;
+
+    role = symtab_search(&pol->p_roles, scontextp);
+    if (!role)
+        goto out;
+    ctx->role = role->value;
+
+    /* Extract type. */
+    scontextp = p;
+    while (*p && *p != ':')
+        p++;
+    oldc = *p;
+    *p++ = 0;
+
+    typdatum = symtab_search(&pol->p_types, scontextp);
+    if (!typdatum || typdatum->attribute)
+        goto out;
+
+    // ksu types fail like unknown types
+    type_is_original = ksu_type_is_original(pol, policy_generation, typdatum->value);
+    if (type_is_original < 0) {
+        rc = -EAGAIN;
+        goto out;
+    }
+    if (!type_is_original)
+        goto out;
+
+    ctx->type = typdatum->value;
+
+    rc = mls_context_to_sid(pol, oldc, p, ctx, sidtabp, def_sid);
+    if (rc)
+        goto out;
+
+    /* Check the validity of the new context. */
+    // user, role and original type values are the same in both policies
+    rc = -EINVAL;
+    if (!policydb_context_isvalid(backup_pol, ctx))
+        goto out;
+    rc = 0;
+out:
+    if (rc)
+        context_destroy(ctx);
+    return rc;
+}
+
+// parse once like security_context_to_sid(), -EAGAIN if the type mark is stale
+static int security_context_to_sid_live(const char *scontext, u32 scontext_len, u32 *sid)
+{
+    struct selinux_policy *policy;
+    struct context context;
+    char *scontext2;
+    u32 backup_sid;
+    int rc;
+
+    /* An empty security context is never valid. */
+    if (!scontext_len)
+        return -EINVAL;
+
+    /* Copy the string to allow changes and ensure a NUL terminator */
+    scontext2 = kmemdup_nul(scontext, scontext_len, GFP_KERNEL);
+    if (!scontext2)
+        return -ENOMEM;
+
+    *sid = SECSID_NULL;
+retry:
+    rcu_read_lock();
+    policy = rcu_dereference(selinux_state.policy);
+    rc = live_string_to_context_struct(&policy->policydb, &backup_sepolicy->policydb, policy->sidtab, scontext2,
+                                       &context, policy->latest_granting, SECSID_NULL);
+    if (rc)
+        goto out_unlock;
+
+    // update backup sidtab first
+    rc = sidtab_context_to_sid(backup_sepolicy->sidtab, &context, &backup_sid);
+    if (!rc)
+        rc = sidtab_context_to_sid(policy->sidtab, &context, sid);
+    context_destroy(&context);
+    if (rc == -ESTALE) {
+        // retry after live policy reload
+        rcu_read_unlock();
+        memcpy(scontext2, scontext, scontext_len);
+        scontext2[scontext_len] = '\0';
+        goto retry;
+    }
+out_unlock:
+    rcu_read_unlock();
     kfree(scontext2);
     return rc;
 }
