@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui.screen.about
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.dropUnlessResumed
@@ -9,10 +10,12 @@ import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
+import me.weishu.kernelsu.ui.util.openUriSafely
 
 @Composable
 fun AboutScreen() {
     val navigator = LocalNavigator.current
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val htmlString = stringResource(
         id = R.string.about_source_code,
@@ -27,7 +30,7 @@ fun AboutScreen() {
     )
     val actions = AboutScreenActions(
         onBack = dropUnlessResumed { navigator.pop() },
-        onOpenLink = uriHandler::openUri,
+        onOpenLink = { url -> openUriSafely(context, uriHandler, url) },
     )
 
     when (LocalUiMode.current) {

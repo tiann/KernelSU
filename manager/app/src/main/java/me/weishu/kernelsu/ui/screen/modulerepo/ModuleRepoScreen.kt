@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,6 +47,7 @@ import me.weishu.kernelsu.ui.screen.flash.FlashIt
 import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.util.DownloadManager
 import me.weishu.kernelsu.ui.util.download
+import me.weishu.kernelsu.ui.util.openUriSafely
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoDetailViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleRepoViewModel
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -107,6 +109,7 @@ fun ModuleRepoScreen() {
 @Composable
 fun ModuleRepoDetailScreen(module: RepoModuleArg) {
     val navigator = LocalNavigator.current
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val detailVm = viewModel<ModuleRepoDetailViewModel>(key = "module-repo-detail-${module.moduleId}")
     val detailState by detailVm.state.collectAsStateWithLifecycle()
@@ -141,7 +144,9 @@ fun ModuleRepoDetailScreen(module: RepoModuleArg) {
         installedVersionCode = installedVersionCode,
     )
     // Only web links leave the app; registry documents are validated, this is defence in depth.
-    val openUrl: (String) -> Unit = { url -> if (RegistryUrls.isWebUrl(url)) uriHandler.openUri(url) }
+    val openUrl: (String) -> Unit = { url ->
+        if (RegistryUrls.isWebUrl(url)) openUriSafely(context, uriHandler, url)
+    }
     val actions = ModuleRepoDetailActions(
         onBack = { navigator.pop() },
         onOpenWebUrl = { state.webUrl.takeIf { it.isNotEmpty() }?.let(openUrl) },
