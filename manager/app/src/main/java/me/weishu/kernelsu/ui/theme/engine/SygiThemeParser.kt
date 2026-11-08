@@ -8,7 +8,7 @@ import java.io.File
 /**
  * Reads a theme folder (already extracted and validated by [SygiThemeImporter]).
  *
- * theme/*.xml files use Android's resources style:
+ * XML files inside theme/ use Android's resources style:
  *   <color name="primary">#RRGGBB</color>      (colors_light.xml, colors_dark.xml, colors_amoled.xml, colors_any.xml)
  *   <dimen name="nav_corner">32dp</dimen>
  *   <integer name="icons_use_original_colors">1</integer>
