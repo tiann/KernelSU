@@ -80,12 +80,14 @@ In LKM mode, the original kernel of the device won't be replaced, but the loadab
 2. It's more convenient to upgrade and OTA. When upgrading KernelSU, you can directly install it in the manager without flashing manually. After the system OTA, you can directly install it to the second slot without manual flashing.
 3. Suitable for some special scenarios. For example, LKM can also be loaded with temporary root permissions. Since it doesn't need to replace the boot partition, it won't trigger AVB and won't cause the device to be bricked.
 4. LKM can be temporarily uninstalled. If you want to temporarily disable root access, you can uninstall LKM. This process doesn't require flashing partitions, or even rebooting the device. If you want to enable root again, just reboot the device.
+5. For Samsung devices, kernel needs to be rebuilded from matching source code provided by Samsung Open Source, with these configs disabled to allow KernelSU to load as LKM:
+CONFIG_UH, CONFIG_UH_RKP, CONFIG_UH_LKMAUTH, CONFIG_UH_LKM_BLOCK, CONFIG_RKP, CONFIG_RKP_CFP_JOPP, CONFIG_RKP_CFP_ROPP, CONFIG_RKP_CFP, CONFIG_SECURITY_DEFEX, CONFIG_PROCA, CONFIG_FIVE, CONFIG_KDP, CONFIG_KDP_NS, CONFIG_KNOX_NCM
 
 ### GKI mode {#gki-mode}
 
 Historically, GKI mode replaced the original kernel with a compatible Generic Kernel Image. KernelSU no longer publishes or officially supports ready-to-flash GKI images. The historical advantages of this mode were:
 
-1. Strong universality, suitable for most devices. For example, Samsung has enabled KNOX devices, and LKM mode cannot work. There are also some niche modified devices that can only use GKI mode.
+1. Strong universality, suitable for most devices. For example, for KNOX enabled Samsung devices, LKM mode cannot work with stock kernel. There are also some niche modified devices that can only use GKI mode.
 2. Can be used without relying on official firmware, and there is no need to wait for official firmware updates, as long as the KMI is consistent, it can be used.
 
 ### Which one to choose? {#which-one}
