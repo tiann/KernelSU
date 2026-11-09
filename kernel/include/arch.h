@@ -6,6 +6,9 @@
 #if defined(__aarch64__)
 
 #define __PT_PARM1_REG regs[0]
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+#define __PT_SYSCALL_PARM1_REG orig_x0
+#endif
 #define __PT_PARM2_REG regs[1]
 #define __PT_PARM3_REG regs[2]
 #define __PT_SYSCALL_PARM4_REG regs[3]
