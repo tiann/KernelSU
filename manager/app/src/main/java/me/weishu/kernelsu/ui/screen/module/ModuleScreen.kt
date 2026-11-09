@@ -24,12 +24,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.weishu.kernelsu.R
+import me.weishu.kernelsu.data.script.ScriptRepository
 import me.weishu.kernelsu.ui.LocalUiMode
 import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.SearchStatus
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Route
 import me.weishu.kernelsu.ui.screen.flash.FlashIt
+import me.weishu.kernelsu.ui.screen.modulerepo.downloadFailureMessage
+import me.weishu.kernelsu.ui.screen.scriptrun.ScriptRunArg
 import me.weishu.kernelsu.ui.util.download
 import me.weishu.kernelsu.ui.util.module.Shortcut
 import me.weishu.kernelsu.ui.viewmodel.ModuleViewModel
@@ -121,6 +124,14 @@ fun ModulePager(
                 download(
                     url = request.downloadUrl,
                     fileName = request.fileName,
+                    // Registry releases are size + SHA-256 checked, kept app-private and
+                    // re-verified by the flash step; other updateJson sources are unchanged.
+                    expected = request.expected,
+                    onFailed = { failed ->
+                        viewModel.emitEffect(
+                            ModuleEffect.Toast(downloadFailureMessage(context, failed, request.fileName))
+                        )
+                    },
                     onDownloaded = { uri ->
                         if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                             navigator.push(Route.Flash(FlashIt.FlashModules(listOf(uri))))
@@ -163,7 +174,20 @@ fun ModulePager(
             viewModel.undoUninstallModule(module)
         },
         onOpenFlash = { uris ->
-            if (uris.isNotEmpty()) {
+            if (uris.size == 1) {
+                // A one-shot script ZIP is offered to be run instead (or installed anyway).
+                scope.launch {
+                    val script = ScriptRepository.peekOneshot(uris.first())
+                    if (script != null) {
+                        navigator.push(
+                            Route.ScriptRun(ScriptRunArg(uris.first(), offerInstall = true, displayName = script.name))
+                        )
+                    } else {
+                        navigator.push(Route.Flash(FlashIt.FlashModules(uris)))
+                    }
+                    viewModel.markNeedRefresh()
+                }
+            } else if (uris.isNotEmpty()) {
                 navigator.push(Route.Flash(FlashIt.FlashModules(uris)))
                 viewModel.markNeedRefresh()
             }

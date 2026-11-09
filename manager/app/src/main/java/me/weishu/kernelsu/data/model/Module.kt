@@ -19,4 +19,6 @@ data class Module(
     val metamodule: Boolean,
     val actionIconPath: String?,
     val webUiIconPath: String?,
+    // preinit state for the next boot: "", "ok", "no_space", "error" or "bootloop"
+    val preinit: String = "",
 )

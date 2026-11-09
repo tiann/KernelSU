@@ -16,6 +16,10 @@ Modul KernelSU mendukung tampilan antarmuka dan interaksi dengan pengguna. Lihat
 
 KernelSU menyediakan sistem konfigurasi bawaan yang memungkinkan modul menyimpan pengaturan key-value persisten atau sementara. Untuk detail lebih lanjut, lihat [dokumentasi Konfigurasi Modul](module-config.md).
 
+## Skrip Sekali Jalan
+
+ZIP modul juga dapat berupa skrip sekali jalan yang dijalankan satu kali oleh manajer KernelSU alih-alih dipasang. Untuk detail lebih lanjut, lihat [dokumentasi Skrip Sekali Jalan](module-script.md).
+
 ## Busybox
 
 KernelSU dikirimkan dengan fitur biner BusyBox yang lengkap (termasuk dukungan penuh SELinux). Eksekusi terletak di `/data/adb/ksu/bin/busybox`. BusyBox KernelSU mendukung "Mode Shell Standalone Shell" yang dapat dialihkan waktu proses. Apa yang dimaksud dengan mode mandiri ini adalah bahwa ketika dijalankan di shell `ash` dari BusyBox, setiap perintah akan langsung menggunakan applet di dalam BusyBox, terlepas dari apa yang ditetapkan sebagai `PATH`. Misalnya, perintah seperti `ls`, `rm`, `chmod` **TIDAK** akan menggunakan apa yang ada di `PATH` (dalam kasus Android secara default akan menjadi `/system/bin/ls`, ` /system/bin/rm`, dan `/system/bin/chmod` masing-masing), tetapi akan langsung memanggil applet BusyBox internal. Ini memastikan bahwa skrip selalu berjalan di lingkungan yang dapat diprediksi dan selalu memiliki rangkaian perintah lengkap, apa pun versi Android yang menjalankannya. Untuk memaksa perintah _not_ menggunakan BusyBox, Anda harus memanggil yang dapat dieksekusi dengan path lengkap.

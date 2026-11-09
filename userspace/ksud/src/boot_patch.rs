@@ -17,6 +17,7 @@ use memmap2::{Mmap, MmapOptions};
 use regex_lite::Regex;
 
 use crate::assets;
+use crate::feature_id::{FeatureId, parse_feature_id};
 
 #[cfg(target_os = "android")]
 mod android {
@@ -485,9 +486,8 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = None)]
     pub cmdline: Option<String>,
 
-    /// Always allow shell to get root permission
-    #[arg(long, default_value = "false")]
-    allow_shell: bool,
+    #[command(flatten)]
+    config: KsuConfigArgs,
 
     /// Force enable adbd and disable adbd auth
     #[arg(long, default_value = "false")]
@@ -501,10 +501,6 @@ pub struct BootPatchArgs {
     #[arg(long, default_value = "false")]
     no_install: bool,
 
-    /// Do not load custom rc
-    #[arg(long, default_value = "false")]
-    no_custom_rc: bool,
-
     #[cfg(not(target_os = "android"))]
     #[arg(long, default_value = "aarch64")]
     arch: String,
@@ -512,6 +508,120 @@ pub struct BootPatchArgs {
     /// Patching ramdisk instead of boot image. This is used for AVD ramdisk
     #[arg(long, default_value = "false")]
     ramdisk: bool,
+}
+
+/// KernelSU module params, stored in ramdisk `/ksu_config` (boot-patch) or the
+/// injected capsule (boot-patch-v2).
+#[derive(clap::Args, Debug, Default)]
+pub struct KsuConfigArgs {
+    /// Always allow shell to get root permission
+    #[arg(long, default_value = "false")]
+    allow_shell: bool,
+
+    /// Do not load custom rc
+    #[arg(long, default_value = "false")]
+    no_custom_rc: bool,
+
+    /// Do not run module preinit actions
+    #[arg(long, default_value = "false")]
+    no_preinit: bool,
+
+    /// Force a kernel feature to a value at boot, e.g. `su_compat=0`.
+    /// Forced features can not be changed or loaded by userspace. Can be repeated.
+    #[arg(long, value_name = "FEATURE=VALUE", value_parser = parse_force_feature)]
+    force_feature: Vec<(FeatureId, u64)>,
+
+    /// [Developer only] Block a kernel module from loading at boot by name, e.g.
+    /// `oplus_secure_guard`. Comma-separated and/or repeated. Omitting clears it.
+    /// Blocked modules fail to load with EPERM; blocking one that first stage
+    /// init loads (modules.load / modules.load.recovery) or that others depend
+    /// on can bootloop the device. You are on your own.
+    #[arg(long = "block-module", value_name = "NAME", value_delimiter = ',', value_parser = parse_block_module)]
+    block_module: Vec<String>,
+}
+
+/// Max length of the `block_modules=` value. The kernel copies it into a
+/// 256-byte buffer, leaving 255 bytes for the value; anything longer is
+/// silently truncated there, so reject it on the host instead.
+const MAX_BLOCK_MODULES_LEN: usize = 255;
+
+impl KsuConfigArgs {
+    /// Validate options whose full value is only known after joining. Call
+    /// before `apply` so the user gets an error instead of the kernel silently
+    /// truncating an over-long list (which would leave some modules unblocked).
+    pub fn validate(&self) -> Result<()> {
+        if !self.block_module.is_empty() {
+            let len = self.block_module.join(",").len();
+            ensure!(
+                len <= MAX_BLOCK_MODULES_LEN,
+                "block-module list is too long ({len} bytes, max {MAX_BLOCK_MODULES_LEN}); block fewer modules"
+            );
+        }
+        Ok(())
+    }
+
+    /// Set the full state of these options in `config`, other entries are kept.
+    pub fn apply(&self, config: &mut Vec<String>) {
+        set_config_flag(config, "no custom rc", "norc=1", self.no_custom_rc);
+        set_config_flag(config, "allow shell", "allow_shell=1", self.allow_shell);
+        set_config_flag(config, "no preinit", "preinit=0", self.no_preinit);
+
+        config.retain(|v| !v.starts_with("force_feature="));
+        if !self.force_feature.is_empty() {
+            let mut entries = Vec::with_capacity(self.force_feature.len());
+            for (feature_id, value) in &self.force_feature {
+                println!("- Forcing feature {} to {value}", feature_id.name());
+                entries.push(format!("{}:{value}", feature_id.name()));
+            }
+            config.push(format!("force_feature={}", entries.join(",")));
+        }
+
+        config.retain(|v| !v.starts_with("block_modules="));
+        if !self.block_module.is_empty() {
+            let list = self.block_module.join(",");
+            println!("- Blocking modules: {list}");
+            config.push(format!("block_modules={list}"));
+        }
+    }
+}
+
+/// Validate a single module name for the `--block-module` option. The kernel
+/// `block_modules` buffer holds 255 bytes, so keep names well within that.
+fn parse_block_module(s: &str) -> Result<String> {
+    ensure!(!s.is_empty(), "module name must not be empty");
+    ensure!(
+        s.len() <= 64,
+        "module name '{s}' is too long (max 64 bytes)"
+    );
+    ensure!(
+        s.bytes().all(|ch| ch.is_ascii_alphanumeric() || ch == b'_'),
+        "invalid module name '{s}': only letters, digits and '_' are allowed"
+    );
+    Ok(s.to_owned())
+}
+
+fn set_config_flag(config: &mut Vec<String>, name: &str, value: &str, add: bool) {
+    let has_value = config.iter().any(|v| v == value);
+
+    if add {
+        println!("- Adding {name} config");
+        if !has_value {
+            config.push(value.to_owned());
+        }
+    } else if has_value {
+        println!("- Removing {name} config");
+        config.retain(|v| v != value);
+    }
+}
+
+fn parse_force_feature(s: &str) -> Result<(FeatureId, u64)> {
+    let (name, value) = s
+        .split_once('=')
+        .context("expected FEATURE=VALUE, e.g. su_compat=0")?;
+    let value = value
+        .parse()
+        .with_context(|| format!("invalid value for feature {name}: {value}"))?;
+    Ok((parse_feature_id(name)?, value))
 }
 
 pub fn patch(args: BootPatchArgs) -> Result<()> {
@@ -525,7 +635,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             kmi,
             out_name,
             cmdline,
-            allow_shell,
+            config,
             enable_adbd,
             adb_debug_prop,
             no_install,
@@ -537,7 +647,6 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             backup,
             #[cfg(target_os = "android")]
             partition,
-            no_custom_rc,
             #[cfg(not(target_os = "android"))]
             arch,
             ramdisk,
@@ -735,24 +844,10 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             .map(|v| v.split(' ').map(std::borrow::ToOwned::to_owned).collect())
             .unwrap_or_default();
 
-        let mut apply_config = |name: &str, value: &str, add: bool| {
-            let has_value = ksu_config.iter().any(|v| v == value);
-
-            if add {
-                println!("- Adding {name} config");
-                if !has_value {
-                    ksu_config.push(value.to_owned());
-                }
-            } else if has_value {
-                println!("- Removing {name} config");
-                ksu_config.retain(|v| v != value);
-            }
-        };
-
-        apply_config("no custom rc", "norc=1", no_custom_rc);
-        apply_config("allow shell", "allow_shell=1", allow_shell);
+        config.validate()?;
+        config.apply(&mut ksu_config);
         if let Some(bundled) = bundled_lkm {
-            apply_config("bundled LKM", "bundled=1", bundled);
+            set_config_flag(&mut ksu_config, "bundled LKM", "bundled=1", bundled);
         }
 
         if ksu_config.is_empty() {
@@ -1039,4 +1134,98 @@ fn rebuild_without_ksu(
     let mut buf = Cursor::new(Vec::<u8>::with_capacity(boot_image.get_size()));
     patcher.patch(&mut buf)?;
     Ok(buf.into_inner())
+}
+
+#[cfg(test)]
+mod block_modules_tests {
+    use super::*;
+
+    #[test]
+    fn parse_block_module_accepts_valid_names() {
+        assert_eq!(
+            parse_block_module("oplus_secure_guard").unwrap(),
+            "oplus_secure_guard"
+        );
+        assert_eq!(parse_block_module("vr").unwrap(), "vr");
+        assert_eq!(parse_block_module("mkp0").unwrap(), "mkp0");
+    }
+
+    #[test]
+    fn parse_block_module_rejects_invalid_names() {
+        assert!(parse_block_module("").is_err());
+        assert!(parse_block_module("bad-name").is_err());
+        assert!(parse_block_module("a b").is_err());
+        assert!(parse_block_module(&"a".repeat(65)).is_err());
+    }
+
+    #[test]
+    fn apply_writes_and_clears_block_modules() {
+        let args = KsuConfigArgs {
+            block_module: vec!["vr".to_owned(), "vklp".to_owned()],
+            ..Default::default()
+        };
+        // Unrelated entries are preserved; apply() only owns the keys it manages.
+        let mut config = vec!["bundled=1".to_owned()];
+        args.apply(&mut config);
+        assert!(config.contains(&"block_modules=vr,vklp".to_owned()));
+        assert!(config.contains(&"bundled=1".to_owned()));
+
+        // Omitting the option removes a previously written entry.
+        let empty = KsuConfigArgs::default();
+        empty.apply(&mut config);
+        assert!(!config.iter().any(|v| v.starts_with("block_modules=")));
+    }
+
+    #[test]
+    fn apply_replaces_existing_block_modules() {
+        let args = KsuConfigArgs {
+            block_module: vec!["vr".to_owned()],
+            ..Default::default()
+        };
+        let mut config = vec!["block_modules=old,stale".to_owned()];
+        args.apply(&mut config);
+        assert_eq!(
+            config
+                .iter()
+                .filter(|v| v.starts_with("block_modules="))
+                .count(),
+            1
+        );
+        assert!(config.contains(&"block_modules=vr".to_owned()));
+    }
+
+    #[test]
+    fn apply_keeps_sibling_keys_with_shared_prefix() {
+        // A key that merely starts with "block_modules" but is not the exact
+        // "block_modules=" entry must not be dropped by retain().
+        let args = KsuConfigArgs {
+            block_module: vec!["vr".to_owned()],
+            ..Default::default()
+        };
+        let mut config = vec!["block_modules_foo=1".to_owned()];
+        args.apply(&mut config);
+        assert!(config.contains(&"block_modules_foo=1".to_owned()));
+        assert!(config.contains(&"block_modules=vr".to_owned()));
+    }
+
+    #[test]
+    fn validate_rejects_overlong_list() {
+        // Many valid names whose joined length exceeds the kernel's 255-byte
+        // value budget must be rejected rather than silently truncated.
+        let names: Vec<String> = (0..30).map(|i| format!("module_name_{i:03}")).collect();
+        assert!(names.join(",").len() > MAX_BLOCK_MODULES_LEN);
+        let args = KsuConfigArgs {
+            block_module: names,
+            ..Default::default()
+        };
+        assert!(args.validate().is_err());
+
+        // A short list is accepted.
+        let ok = KsuConfigArgs {
+            block_module: vec!["vr".to_owned(), "mkp".to_owned()],
+            ..Default::default()
+        };
+        assert!(ok.validate().is_ok());
+        assert!(KsuConfigArgs::default().validate().is_ok());
+    }
 }

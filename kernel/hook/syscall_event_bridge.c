@@ -4,6 +4,7 @@
 #include "linux/printk.h"
 #include "selinux/selinux.h"
 #include <asm/syscall.h>
+#include <linux/fcntl.h>
 #include <linux/ptrace.h>
 #include <linux/static_key.h>
 
@@ -18,6 +19,7 @@
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
 #include "feature/adb_root.h"
+#include "preinit/preinit.h"
 
 static int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
@@ -37,11 +39,9 @@ static int ksu_handle_init_mark_tracker(const char __user **filename_user)
 
     path[sizeof(path) - 1] = '\0';
     if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
-        pr_info("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
         escape_to_root_for_init();
     } else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL &&
                       strstr(path, "/stub_zygote") == NULL)) {
-        pr_info("hook_manager: unmark %d exec %s\n", current->pid, path);
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
@@ -88,6 +88,15 @@ static long __nocfi ksu_hook_execve_common(int orig_nr, const struct pt_regs *re
             ksu_execve_hook_ksud(regs);
         }
     }
+
+    /*
+     * Newer Android releases' init execs selinux_setup with execveat()
+     * rather than execve(). Only an AT_EMPTY_PATH exec of an fd has no
+     * path for preinit to swap.
+     */
+    if (unlikely(current->pid == 1) && (!execveat || !(PT_REGS_PARM5(regs) & AT_EMPTY_PATH)) &&
+        ksu_preinit_handle_execve(filename_user, argv_user, orig_nr, (struct pt_regs *)regs, &ret))
+        return ret;
 
     if (current_euid().val == 0)
         pending_root_execve = ksu_sulog_capture_root_execve(*filename_user, argv_user, GFP_KERNEL);

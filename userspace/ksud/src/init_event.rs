@@ -6,6 +6,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use log::{error, info, warn};
+use prop_rs_android::sys_prop;
 use std::{path::Path, time::Instant};
 
 const DYNAMIC_PARTITIONS_PROP: &str = "ro.boot.dynamic_partitions";
@@ -45,26 +46,29 @@ pub fn on_post_fs_data() -> Result<()> {
         return Ok(());
     }
 
+    // Finalize early input and apply forced features before checking for rescue.
+    ksucalls::report_post_fs_data();
+
     match ksucalls::check_kernel_fastbootd() {
-        Ok(true) => {
-            if crate::feature::is_fastbootd_rescue_enabled_in_config() {
-                match request_fastbootd_reboot() {
-                    Ok(()) => return Ok(()),
-                    Err(error) => {
-                        error!("fastbootd rescue failed, continue normal boot: {error:#}");
-                    }
+        Ok(true) => match crate::feature::is_fastbootd_rescue_enabled() {
+            Ok(true) => match request_fastbootd_reboot() {
+                Ok(()) => return Ok(()),
+                Err(error) => {
+                    error!("fastbootd rescue failed, continue normal boot: {error:#}");
                 }
-            } else {
+            },
+            Ok(false) => {
                 warn!("fastbootd rescue requested while disabled, continue normal boot");
             }
-        }
+            Err(error) => {
+                error!("failed to read fastbootd rescue state, continue normal boot: {error:#}");
+            }
+        },
         Ok(false) => {}
         Err(error) => {
             error!("failed to check fastbootd rescue request, continue normal boot: {error:#}");
         }
     }
-
-    ksucalls::report_post_fs_data();
 
     utils::umask(0);
 
@@ -99,6 +103,8 @@ pub fn on_post_fs_data() -> Result<()> {
 
     assets::ensure_binaries(true).with_context(|| "Failed to extract bin assets")?;
 
+    crate::hot_install::clean_trash();
+
     // if we are in safe mode, we should disable all modules
     if safe_mode {
         warn!("safe mode, skip post-fs-data scripts and disable all modules!");
@@ -116,11 +122,11 @@ pub fn on_post_fs_data() -> Result<()> {
         warn!("prune modules failed: {e}");
     }
 
-    // Refresh /metadata/watchdog/ksu/modules.rc so the next boot's kernel hook sees the
+    // Refresh /metadata/watchdog/ksu/{modules.rc,preinit/} so the next boot's kernel hook sees the
     // current module set. Acts as a safety net when state was changed outside
     // of ksud's normal mutation commands.
-    if let Err(e) = crate::module::regenerate_preinit_rc() {
-        warn!("regenerate preinit rc failed: {e}");
+    if let Err(e) = crate::module::regenerate_preinit() {
+        warn!("regenerate preinit failed: {e:#}");
     }
 
     if let Err(e) = restorecon::restorecon() {
@@ -135,6 +141,8 @@ pub fn on_post_fs_data() -> Result<()> {
     if let Err(e) = crate::profile::apply_sepolies() {
         warn!("apply root profile sepolicy failed: {e}");
     }
+
+    crate::feature::init_forced_features();
 
     // load feature config
     if is_safe_mode() {
@@ -228,6 +236,8 @@ pub fn on_boot_completed() {
 
     ksucalls::report_boot_complete();
     info!("on_boot_completed triggered!");
+
+    crate::preinit::on_boot_completed();
 
     run_stage("boot-completed", ScriptWait::NoWait);
 }

@@ -54,6 +54,7 @@ function sidebarGuide() {
           { text: 'Metamódulo', link: '/pt_BR/guide/metamodule.md' },
           { text: 'Módulo WebUI', link: '/pt_BR/guide/module-webui.md' },
           { text: 'Configuração de Módulo', link: '/pt_BR/guide/module-config.md' },
+          { text: 'Scripts de Execução Única', link: '/pt_BR/guide/module-script.md' },
           { text: 'Perfil do Aplicativo', link: '/pt_BR/guide/app-profile.md' },
           { text: 'Resgate do bootloop', link: '/pt_BR/guide/rescue-from-bootloop.md' },
           { text: 'Suporte a x86_64', link: '/pt_BR/guide/x86_64-support' },

@@ -233,6 +233,8 @@ done
 
 **注意**: 安装元模块本身时**不会**调用此脚本。
 
+**热安装**: `metainstall.sh` 返回后，KernelSU 会自行处理[热安装](module.md#hot-install)请求。如果你的元模块自己实现了热安装，请在 `KSU_HAS_HOT_INSTALL` 为 `true` 时跳过。
+
 #### 3. metauninstall.sh - 清理钩子
 
 **目的**: 卸载常规模块时清理资源。

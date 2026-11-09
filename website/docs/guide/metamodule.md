@@ -1,3 +1,7 @@
+---
+description: Metamodules are pluggable KernelSU modules that control how regular modules are mounted and installed. Learn how to use one such as meta-overlayfs, or build your own.
+---
+
 # Metamodule
 
 Metamodules are a revolutionary feature in KernelSU that transfers critical module system capabilities from the core to pluggable modules. This architectural shift maintains KernelSU's stability and security while unleashing greater innovation potential for the module ecosystem.
@@ -235,6 +239,8 @@ This script inherits all variables and functions from the built-in `install.sh`:
 - Initialize module-specific resources
 
 **Note**: This script is **NOT** called when installing the metamodule itself.
+
+**Hot install**: KernelSU applies [hot install](module.md#hot-install) requests itself after `metainstall.sh` returns. If your metamodule implements its own hot install, skip it when `KSU_HAS_HOT_INSTALL` is `true`.
 
 #### 3. metauninstall.sh - Cleanup Hook
 

@@ -24,6 +24,7 @@
 #include "policy/allowlist.h"
 #include "manager/manager_identity.h"
 #include "infra/su_mount_ns.h"
+#include "feature/shell_su_adb_only.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 4 // u32
@@ -71,18 +72,6 @@ static u16 allow_list_count = 0;
 #define KERNEL_SU_ALLOWLIST "/data/adb/ksu/.allowlist"
 
 void ksu_persistent_allow_list(void);
-
-void ksu_show_allow_list(void)
-{
-    int i;
-    struct perm_data *p = NULL;
-    pr_info("ksu_show_allow_list\n");
-    rcu_read_lock();
-    hash_for_each_rcu (allow_list, i, p, list) {
-        pr_info("uid :%d, allow: %d\n", p->profile.curr_uid, p->profile.allow_su);
-    }
-    rcu_read_unlock();
-}
 
 struct app_profile *ksu_get_app_profile(uid_t uid)
 {
@@ -281,13 +270,21 @@ bool __ksu_is_allow_uid(uid_t uid)
     return false;
 }
 
-bool __ksu_is_allow_uid_for_current(uid_t uid)
+bool ksu_is_uid_granted_root(uid_t uid)
 {
     if (unlikely(uid == 0)) {
         // already root, but only allow our domain.
         return is_ksu_domain();
     }
     return __ksu_is_allow_uid(uid);
+}
+
+bool __ksu_is_allow_uid_for_current(uid_t uid)
+{
+    if (unlikely(uid == SHELL_UID) && !ksu_shell_su_allowed_for_current()) {
+        return false;
+    }
+    return ksu_is_uid_granted_root(uid);
 }
 
 bool ksu_uid_should_umount(uid_t uid)
@@ -388,7 +385,6 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
     int iter;
     rcu_read_lock();
     hash_for_each_rcu (allow_list, iter, p, list) {
-        // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
         if (p->profile.allow_su == allow && !is_uid_manager(p->profile.curr_uid)) {
             if (j < length) {
                 array[j++] = p->profile.curr_uid;
@@ -436,9 +432,6 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 
     mutex_lock(&allowlist_mutex);
     hash_for_each (allow_list, i, p, list) {
-        pr_info("save allow list, name: %s uid :%d, allow: %d\n", p->profile.key, p->profile.curr_uid,
-                p->profile.allow_su);
-
         kernel_write(fp, &p->profile, sizeof(p->profile), &off);
     }
     mutex_unlock(&allowlist_mutex);
@@ -562,14 +555,12 @@ void ksu_load_allow_list()
         pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
         ksu_set_app_profile(&profile);
     }
-    ksu_show_allow_list();
     filp_close(fp, 0);
     if (version < KSU_APP_PROFILE_VER)
         ksu_persistent_allow_list();
     return;
 
 exit:
-    ksu_show_allow_list();
     filp_close(fp, 0);
 }
 
@@ -593,7 +584,6 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *), void *data
         bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID || uid == WEBVIEW_ZYGOTE_UID;
         if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
             modified = true;
-            pr_info("prune uid: %d, package: %s\n", uid, package);
             hlist_del_rcu(&np->list);
             put_perm_data(np);
             --allow_list_count;

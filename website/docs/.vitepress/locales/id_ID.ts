@@ -52,6 +52,7 @@ function sidebarGuide() {
           { text: 'Petunjuk module', link: '/id_ID/guide/module.md' },
           { text: 'Metamodule', link: '/id_ID/guide/metamodule.md' },
           { text: 'Konfigurasi Modul', link: '/id_ID/guide/module-config.md' },
+          { text: 'Skrip Sekali Jalan', link: '/id_ID/guide/module-script.md' },
           { text: 'Antisipasi dari bootloop', link: '/id_ID/guide/rescue-from-bootloop.md' },
           { text: 'Dukungan x86_64', link: '/id_ID/guide/x86_64-support' },
           { text: 'FAQ', link: '/id_ID/guide/faq' },

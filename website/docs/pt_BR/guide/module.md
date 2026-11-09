@@ -16,6 +16,10 @@ Os módulos do KernelSU suportam a exibição de interfaces e a interação com 
 
 O KernelSU fornece um sistema de configuração integrado que permite que os módulos armazenem configurações de chave-valor persistentes ou temporárias. Para mais detalhes, consulte a [documentação de Configuração de Módulo](module-config.md).
 
+## Scripts de execução única
+
+Um ZIP de módulo também pode ser um script de execução única, que o gerenciador do KernelSU executa uma vez em vez de instalar. Para mais detalhes, consulte a [documentação de Scripts de Execução Única](module-script.md).
+
 ## BusyBox
 
 O KernelSU vem com um recurso binário BusyBox completo (incluindo suporte completo ao SELinux). O executável está localizado em `/data/adb/ksu/bin/busybox`. O BusyBox do KernelSU suporta "ASH Standalone Shell Mode" alternável em tempo de execução. O que este Modo Autônomo significa é que ao executar no shell `ash` do BusyBox, cada comando usará diretamente o miniaplicativo dentro do BusyBox, independentemente do que estiver definido em `PATH`. Por exemplo, comandos como `ls`, `rm`, `chmod` **NÃO** usarão o que está em `PATH` (no caso do Android, por padrão será `/system/bin/ls`, `/system/bin/rm` e `/system/bin/chmod` respectivamente), mas em vez disso chamará diretamente os miniaplicativos internos do BusyBox. Isso garante que os scripts sempre sejam executados em um ambiente previsível e sempre tenham o conjunto completo de comandos, independentemente da versão do Android em que estão sendo executados. Para forçar um comando a **NÃO** usar o BusyBox, você deve chamar o executável com caminhos completos.

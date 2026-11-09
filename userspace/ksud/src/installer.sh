@@ -7,6 +7,9 @@
 
 umask 022
 
+# customize.sh may set MODULE_HOT_INSTALL_REQUEST=true to skip the reboot
+export KSU_HAS_HOT_INSTALL=true
+
 ui_print() {
   if $BOOTMODE; then
     echo "$1"
@@ -449,6 +452,13 @@ install_module() {
     rm -rf $NVBASE/modules/$MODID/remove 2>/dev/null
     rm -rf $NVBASE/modules/$MODID/disable 2>/dev/null
     cp -af $MODPATH/module.prop $NVBASE/modules/$MODID/module.prop
+
+    # Tell ksud to apply the module right away
+    if [ "$MODULE_HOT_INSTALL_REQUEST" = "true" ]; then
+      echo "$MODULE_HOT_RUN_SCRIPT" > $MODPATH/.ksu_hot_install
+    else
+      rm -f $MODPATH/.ksu_hot_install
+    fi
   fi
 
   # Remove stuff that doesn't belong to modules and clean up any empty directories

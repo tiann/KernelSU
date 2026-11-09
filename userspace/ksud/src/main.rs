@@ -23,6 +23,9 @@ mod debug;
 mod defs;
 #[cfg(target_os = "android")]
 mod feature;
+mod feature_id;
+#[cfg(target_os = "android")]
+mod hot_install;
 #[cfg(target_os = "android")]
 mod init_event;
 #[cfg(target_os = "android")]
@@ -39,6 +42,8 @@ mod metamodule;
 mod module;
 #[cfg(target_os = "android")]
 mod module_config;
+#[cfg(target_os = "android")]
+mod preinit;
 #[cfg(target_os = "android")]
 mod profile;
 #[cfg(target_os = "android")]

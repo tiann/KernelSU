@@ -54,6 +54,7 @@ function sidebarGuide() {
           { text: '元模块', link: '/zh_CN/guide/metamodule.md' },
           { text: '模块 Web 界面', link: '/zh_CN/guide/module-webui.md' },
           { text: '模块配置', link: '/zh_CN/guide/module-config.md' },
+          { text: '一次性脚本', link: '/zh_CN/guide/module-script.md' },
           { text: 'App Profile', link: '/zh_CN/guide/app-profile.md' },
           { text: '救砖', link: '/zh_CN/guide/rescue-from-bootloop.md' },
           { text: 'x86_64 支持', link: '/zh_CN/guide/x86_64-support' },

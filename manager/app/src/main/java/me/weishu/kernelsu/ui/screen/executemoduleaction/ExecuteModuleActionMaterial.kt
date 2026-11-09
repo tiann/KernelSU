@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.captionBar
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
@@ -24,6 +25,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -93,7 +96,7 @@ fun ExecuteModuleActionScreenMaterial(
         },
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.action)) },
+                title = { Text(state.title ?: stringResource(R.string.action)) },
                 colors = expressiveTopAppBarColors(),
                 navigationIcon = {
                     TopBarBackButton(onClick = actions.onBack)
@@ -150,11 +153,34 @@ fun ExecuteModuleActionScreenMaterial(
                 style = MaterialTheme.typography.bodySmall,
                 fontFamily = FontFamily.Monospace,
             )
+            state.resultNotice?.let { ResultNoticeMaterial(it) }
             Spacer(
                 Modifier.height(
                     16.dp + navBars.calculateBottomPadding() + captionBar.calculateBottomPadding()
                 )
             )
         }
+    }
+}
+
+@Composable
+private fun ResultNoticeMaterial(notice: ActionResultNotice) {
+    val colors = MaterialTheme.colorScheme
+    val (container, content) = when (notice.kind) {
+        ActionResultKind.SUCCESS -> colors.secondaryContainer to colors.onSecondaryContainer
+        ActionResultKind.NOT_APPLICABLE -> colors.tertiaryContainer to colors.onTertiaryContainer
+        ActionResultKind.FAILURE -> colors.errorContainer to colors.onErrorContainer
+    }
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = container, contentColor = content),
+    ) {
+        Text(
+            text = notice.text,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }

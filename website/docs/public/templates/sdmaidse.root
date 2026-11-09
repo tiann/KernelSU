@@ -1,0 +1,58 @@
+[
+  {
+    "id": "sdmaid.root",
+    "name": "SD Maid SE",
+    "author": "github@rsp4jack",
+    "description": "Basic permissions to ensure SD Maid SE to work properly.",
+    "namespace": "GLOBAL",
+    "uid": 0,
+    "gid": 0,
+    "groups": [
+      "ROOT"
+    ],
+    "capabilities": [
+      "CAP_DAC_OVERRIDE",
+      "CAP_DAC_READ_SEARCH",
+      "CAP_FOWNER",
+      "CAP_SYS_PTRACE",
+      "CAP_SYS_ADMIN"
+    ],
+    "context": "u:r:ksu:s0",
+    "rules": [
+      ""
+    ],
+    "locales": {
+      "zh_CN": {
+        "name": "SD Maid SE",
+        "description": "确保 SD Maid SE 正常运行的基本权限。"
+      },
+      "zh_TW": {
+        "name": "SD Maid SE",
+        "description": "確保 SD Maid SE 正常運作的基本權限。"
+      },
+      "bn": {
+        "name": "SD Maid SE",
+        "description": "SD Maid SE সঠিকভাবে কাজ করার জন্য প্রয়োজনীয় মৌলিক অনুমতি।"
+      },
+      "tr": {
+        "name": "SD Maid SE",
+        "description": "SD Maid SE'nin düzgün çalışmasını sağlamak için temel izinler."
+      },
+      "pt_BR": {
+        "name": "SD Maid SE",
+        "description": "Permissões básicas para garantir que o SD Maid SE funcione corretamente."
+      },
+      "ja": {
+        "name": "SD Maid SE",
+        "description": "SD Maid SE が正常に動作するための基本権限。"
+      },
+      "it_IT": {
+        "name": "SD Maid SE",
+        "description": "Autorizzazioni di base per garantire il corretto funzionamento di SD Maid SE."
+      }
+    },
+    "flags": [
+      "NO_NEW_PRIVS"
+    ]
+  }
+]

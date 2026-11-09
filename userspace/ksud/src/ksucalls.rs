@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 
 use crate::ksu_uapi;
 use std::cell::Cell;
@@ -142,8 +142,6 @@ fn init_driver_fd() -> Option<RawFd> {
 
 // ioctl wrapper using libc
 fn ksuctl<T>(request: u32, arg: *mut T) -> Result<i32> {
-    use std::io;
-
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     if fd < 0 {
         bail!("could not retrieve kernelsu driver fd")
@@ -151,7 +149,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> Result<i32> {
     unsafe {
         let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
         if ret < 0 {
-            bail!("ksuctl failed: {}", io::Error::last_os_error())
+            return Err(io::Error::last_os_error()).context("ksuctl failed");
         }
         Ok(ret)
     }
@@ -183,6 +181,11 @@ pub fn is_late_load() -> bool {
 
 pub fn is_lkm() -> bool {
     get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_LKM != 0
+}
+
+/// Whether the kernel runs module preinit actions on boot.
+pub fn is_preinit_supported() -> bool {
+    get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_PREINIT != 0
 }
 
 pub const fn uapi_version() -> u32 {
@@ -251,11 +254,18 @@ pub fn check_kernel_safemode() -> bool {
 ///
 /// Returns an error when the KernelSU ioctl fails for reasons other than an
 /// older kernel not supporting this additive command.
-pub fn check_kernel_fastbootd() -> std::io::Result<bool> {
+pub fn check_kernel_fastbootd() -> Result<bool> {
     let mut cmd = ksu_uapi::ksu_check_fastbootd_cmd { requested: 0 };
     match ksuctl(ksu_uapi::KSU_IOCTL_CHECK_FASTBOOTD, &raw mut cmd) {
         Ok(_) => Ok(cmd.requested != 0),
-        Err(error) if error.raw_os_error() == Some(libc::ENOTTY) => Ok(false),
+        Err(error)
+            if error
+                .downcast_ref::<io::Error>()
+                .and_then(io::Error::raw_os_error)
+                == Some(libc::ENOTTY) =>
+        {
+            Ok(false)
+        }
         Err(error) => Err(error),
     }
 }
@@ -269,16 +279,29 @@ pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> Result<i32> {
     ksuctl(ksu_uapi::KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FeatureState {
+    pub value: u64,
+    pub supported: bool,
+    /// Forced by boot config (ksu_config), the kernel refuses to change it
+    pub forced: bool,
+}
+
 /// Get feature value and support status from kernel
-/// Returns (value, supported)
-pub fn get_feature(feature_id: u32) -> Result<(u64, bool)> {
+pub fn get_feature(feature_id: u32) -> Result<FeatureState> {
     let mut cmd = ksu_uapi::ksu_get_feature_cmd {
         feature_id,
         value: 0,
         supported: 0,
     };
     ksuctl(ksu_uapi::KSU_IOCTL_GET_FEATURE, &raw mut cmd)?;
-    Ok((cmd.value, cmd.supported != 0))
+    let flags = u32::from(cmd.supported);
+    Ok(FeatureState {
+        value: cmd.value,
+        // older kernels report 1 for supported, matching the flag
+        supported: flags & ksu_uapi::KSU_FEATURE_FLAG_SUPPORTED != 0,
+        forced: flags & ksu_uapi::KSU_FEATURE_FLAG_FORCED != 0,
+    })
 }
 
 /// Set feature value in kernel
@@ -398,6 +421,31 @@ pub fn set_init_pgrp() -> Result<()> {
         std::ptr::null_mut::<u8>(),
     )?;
     Ok(())
+}
+
+/// Look up the addresses of kernel symbols, exported or not.
+///
+/// Returns one entry per name, `None` when the running kernel has no such
+/// symbol.
+pub fn lookup_symbols(names: &[&str]) -> Result<Vec<Option<u64>>> {
+    let mut result = Vec::with_capacity(names.len());
+    for chunk in names.chunks(ksu_uapi::KSU_LOOKUP_SYMBOLS_MAX as usize) {
+        let c_names = chunk
+            .iter()
+            .map(|name| std::ffi::CString::new(*name))
+            .collect::<Result<Vec<_>, _>>()?;
+        let ptrs: Vec<u64> = c_names.iter().map(|name| name.as_ptr() as u64).collect();
+        let mut addrs = vec![0u64; chunk.len()];
+        let mut cmd = ksu_uapi::ksu_lookup_symbols_cmd {
+            names: ptrs.as_ptr() as u64,
+            addrs: addrs.as_mut_ptr() as u64,
+            count: chunk.len() as u32,
+            flags: 0,
+        };
+        ksuctl(ksu_uapi::KSU_IOCTL_LOOKUP_SYMBOLS, &raw mut cmd)?;
+        result.extend(addrs.into_iter().map(|addr| (addr != 0).then_some(addr)));
+    }
+    Ok(result)
 }
 
 pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {

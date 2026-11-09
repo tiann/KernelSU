@@ -81,6 +81,8 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
 
     utils::install(None, None).context("Failed to install ksud")?;
 
+    crate::hot_install::clean_trash();
+
     // 5. Handle module updates
     if let Err(e) = handle_updated_modules() {
         warn!("handle updated modules failed: {e}");
@@ -104,6 +106,7 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
     }
 
     // 7. Initialize features
+    crate::feature::init_forced_features();
     if let Err(e) = crate::feature::init_features() {
         warn!("init features failed: {e}");
     }

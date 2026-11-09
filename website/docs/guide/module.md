@@ -1,3 +1,7 @@
+---
+description: Guide to developing KernelSU modules, including module layout, module.prop, the customize.sh installer, boot scripts, and late-load mode.
+---
+
 # Module guide
 
 KernelSU provides a module mechanism that achieves the effect of modifying the system directory while maintaining the integrity of the system partition. This mechanism is commonly known as "systemless".
@@ -15,6 +19,10 @@ KernelSU's modules support displaying interfaces and interacting with users. For
 ## Module Configuration
 
 KernelSU provides a built-in configuration system that allows modules to store persistent or temporary key-value settings. For more details, refer to the [Module Configuration documentation](module-config.md).
+
+## One-shot Scripts
+
+A module ZIP can also be a one-shot script that the KernelSU manager runs once instead of installing. For more details, refer to the [One-shot Scripts documentation](module-script.md).
 
 ## BusyBox
 
@@ -74,6 +82,7 @@ A KernelSU module is a folder placed in `/data/adb/modules` with the structure b
 │   ├── initrc/             <--- .rc files in this directory will be injected into init.rc on boot
 │   │   ├── myservice.rc
 │   │   └── ...
+│   ├── preinit/            <--- preinit.conf and its files, run before SELinux policy is loaded
 │   │
 │   │      *** Auto Generated, DO NOT MANUALLY CREATE OR MODIFY ***
 │   │
@@ -263,6 +272,80 @@ ksud initrc refresh
 - Module RC injection can be disabled by passing the `--no-custom-rc` parameter when patching the image with ksud.
 :::
 
+### preinit {#preinit}
+
+A module can run a few actions **before the SELinux policy is loaded and before init.rc is parsed**, for example to load a kernel module, run a static program or write procfs/sysfs. Put them in a `preinit/` directory described by `preinit/preinit.conf`:
+
+```txt
+/data/adb/modules/<MODID>/
+├── preinit/
+│   ├── preinit.conf
+│   ├── kmod/foo.ko
+│   └── bin/fixup
+└── ...
+```
+
+ksud copies the whole `preinit/` directory of every enabled module to the `/metadata` partition. On the next boot a runner embedded in the KernelSU kernel module executes the actions when first stage init hands over to `/system/bin/init selinux_setup`. At this point `/metadata`, `/system` and `/vendor` are mounted and `/proc`, `/sys` and `/dev` are available, but there is no policy, no property service and no ueventd yet. Modules are processed in alphabetical order of module ID.
+
+#### preinit.conf
+
+One action per line. Lines starting with `#` and empty lines are ignored. Arguments are separated by blanks; use double quotes to keep blanks in an argument and `\"` / `\\` for a literal quote or backslash. Variables are **not** expanded. Relative paths are relative to the module's preinit directory. Lines are at most 4 KB and the file at most 64 KB.
+
+| Action | Syntax | Meaning |
+|---|---|---|
+| `insmod` | `insmod <ko> [params...]` | Load a kernel module. Undefined symbols are looked up in the kernel's kallsyms and bound before `init_module`, so the module may use non-exported symbols; a module that needs no such binding is loaded with `finit_module`. Parameters are joined with spaces |
+| `exec` | `exec [-t <ms>] <prog> [args...]` | Run a program and wait for it. A non-zero exit status is a failure. It is killed after 5000 ms by default |
+| `write` | `write <path> <content>` | Write `content` to an existing file, without a trailing newline. Meant for procfs/sysfs |
+
+Append `?` to an action to ignore its failure. Any other failing action stops the rest of **this** module; the next module still runs.
+
+```txt
+# preinit/preinit.conf
+insmod   kmod/foo.ko  debug=1 name="a b"
+insmod?  kmod/optional.ko
+exec -t 10000  bin/fixup --flag
+write    /proc/sys/kernel/printk_devkmsg on
+```
+
+Programs started by `exec` run as root with full capabilities and no SELinux restriction. Their working directory is the module's preinit directory, stdin is `/dev/null` and stdout/stderr are forwarded to the kernel log line by line with a `ksu_preinit[<MODID>]:` prefix. The environment contains only `KSU=true`, `KSU_PREINIT=1`, `MODID`, `PREINIT_DIR` and `PATH=/system/bin:/vendor/bin`.
+
+::: warning LIMITATIONS
+- There is no shell: only **statically linked** programs work, `/apex` is not mounted yet.
+- `/dev` only contains the nodes created by first stage init; ueventd is not running.
+- The firmware loader has no userspace fallback, firmware must be loadable directly from `/vendor/firmware` and similar paths.
+- Properties can neither be read nor set.
+- Only the vendor modules of first stage are loaded. A `.ko` that depends on symbols from vendor_dlkm (loaded in second stage) fails to load.
+- Nothing may keep running: all processes left over when preinit ends are killed. The whole preinit stage is limited to 30 seconds.
+- Changes take effect on the **next boot**; a hot install does not run preinit.
+- The directory and `preinit.conf` (and the `.ko` / program files used) must be owned by root and not writable by group or others. ksud takes care of this when copying.
+- ksud keeps the permission bits of each file (minus group/other write). The installer sets module files to `0644`, so programs run by `exec` need `set_perm $MODPATH/preinit/bin/xxx 0 0 0755` in `customize.sh`.
+:::
+
+#### Space on /metadata
+
+`/metadata` is small (often around 10 MB) and also holds encryption keys and OTA state. ksud therefore keeps at least 8 MB free and uses at most 4 MB for preinit. Modules are copied in alphabetical order of module ID; a module that does not fit is skipped entirely, and the installer prints a warning. Check the result with:
+
+```sh
+ksud module preinit status
+```
+
+#### Bootloop protection
+
+Before running any action the runner increments a boot counter, which ksud clears when boot completes. After 3 boots in a row that did not complete, preinit is skipped and stays disabled until the preinit content of a module changes or you run:
+
+```sh
+ksud module preinit reset
+```
+
+preinit is also not run in charger mode, and safe mode disables all modules, which removes their preinit content for the next boot. To get out of a bootloop by hand, delete `/metadata/vold/ksu/preinit` (or `/metadata/watchdog/ksu/preinit`, `/metadata/ksu/preinit`, whichever exists) from recovery, or `fastboot boot` the stock image and delete it there.
+
+::: tip
+- preinit is **not available** in **late-load mode** and on devices that do not use a two stage init (devices launched with system-as-root before Android 10).
+- When the running kernel does not run preinit (late-load mode, `preinit=0`, or a kernel built without it), ksud copies nothing to `/metadata` and `ksud module preinit status` reports the modules as `unsupported`.
+- preinit can be disabled entirely with the `preinit=0` parameter of the KernelSU kernel module, which `ksud boot-patch` / `boot-patch-v2` set with `--no-preinit`.
+- Anyone who can write to `/metadata` can run code this early. Only install modules you trust.
+:::
+
 ## Module installer
 
 A KernelSU module installer is a KernelSU module packaged in a ZIP file that can be flashed in the KernelSU manager. The simplest KernelSU module installer is just a KernelSU module packed as a ZIP file.
@@ -305,6 +388,7 @@ The `customize.sh` script runs in KernelSU's BusyBox `ash` shell with Standalone
 - `KSU_UAPI_VER` (int): the UAPI version of KernelSU userspace (ksud) (e.g., `2`). This version is incremented when there are breaking changes in the kernel driver, and can be used by modules to check compatibility.
 - `KSU_RUNTIME_MODE` (string): the current KernelSU runtime mode. Possible values are `built-in` (a.k.a. GKI mode, compiled into the kernel), `lkm` (loaded as a kernel module at boot), or `late-load` (loaded as a kernel module after boot).
 - `KSU_LATE_LOAD` (int?): if KernelSU is late-loaded after boot, this variable is set to `1`; otherwise it is not set.
+- `KSU_HAS_HOT_INSTALL` (bool): `true` if the installer supports [hot install](#hot-install).
 
 ::: warning
 In KernelSU, `MAGISK_VER_CODE` is always `25200`, and `MAGISK_VER` is always `v25.2`. Please don't use these two variables to determine whether KernelSU is running or not.
@@ -335,6 +419,43 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
     for all directories in <directory> (including itself), it will call:
        set_perm dir owner group dirpermission context
 ```
+
+### Hot install {#hot-install}
+
+By default, a newly installed or updated module is staged in `/data/adb/modules_update` and only takes effect after a reboot. If your module does not depend on anything that only happens at boot, `customize.sh` can ask KernelSU to apply it right away:
+
+```sh
+# customize.sh
+export MODULE_HOT_INSTALL_REQUEST=true
+# Optional: a script in your module to run once the new version is live
+export MODULE_HOT_RUN_SCRIPT=hotinstall.sh
+```
+
+The request is evaluated at install time, so the module decides whether a reboot is needed, for example by only requesting a hot install when the new version does not change its `system` files.
+
+Once the installer (including `customize.sh` and a metamodule's `metainstall.sh`) finishes successfully, KernelSU:
+
+1. Replaces `/data/adb/modules/<id>` with the new version. The old directory is moved aside and only deleted on the next boot, so processes and mounts still using the old version keep working until then.
+2. Loads the module's `sepolicy.rule`. Rules are only ever added, so rules dropped by the new version stay active until the next reboot.
+3. Runs `MODULE_HOT_RUN_SCRIPT`, a path relative to the module directory, the same way as boot scripts: in the global mount namespace, with the script's directory as the working directory. Its output is shown in the installer, stdin is `/dev/null` and `SIGPIPE` is ignored, so background processes are not killed when the installer goes away. The installer waits up to 30 seconds for it; start long-running services in the background. If the script does not exist it is skipped.
+4. Leaves no `update` flag behind, so the manager does not ask for a reboot.
+
+The module stays hot installed even if loading `sepolicy.rule` fails or the script fails or times out; check the installer output.
+
+Like any install, this enables the module even if the previous version was disabled.
+
+Effective immediately: the module files themselves, WebUI, `action.sh` and the information in `module.prop`.
+
+Only applied on the next boot: files under `system` and the other partition directories (mounted by the metamodule), `system.prop`, `initrc`, `preinit`, and the `post-fs-data.sh`, `post-mount.sh`, `service.sh` and `boot-completed.sh` stages. They are **not** run during a hot install, but keep running on every boot as usual. If you need their effect now, do it in `MODULE_HOT_RUN_SCRIPT`, e.g. by starting your service or calling `resetprop`.
+
+The old version is not stopped for you, and `uninstall.sh` is not run on updates. If your module runs a daemon, `MODULE_HOT_RUN_SCRIPT` should stop the old instance before starting the new one.
+
+KernelSU falls back to applying the module on the next reboot, and prints the reason, when:
+
+- The module being installed is a metamodule.
+- The device is in safe mode.
+- `MODULE_HOT_RUN_SCRIPT` is not a relative path to a file inside the module (symlinks pointing outside the module are rejected).
+- The module directory cannot be replaced.
 
 ## Boot scripts
 
@@ -380,6 +501,7 @@ load kernel:
     - GKI mode: stock init
     - LKM mode: exec ksuinit, insmod kernelsu.ko, exec stock init
 mount /dev, /dev/pts, /proc, /sys, etc.
+  *preinit: before loading SELinux policy, the kernel runs modules' preinit.conf
 property-init -> read default props
 read init.rc
   *initrc injection: Kernel hook appends KernelSU core RC and module modules.rc to init.rc
@@ -451,6 +573,7 @@ Since the system is already fully running, certain boot-time mechanisms are unav
 |----------|:---:|:---:|
 | Kernel module loaded by init (PID 1) | Yes | No (loaded after boot) |
 | initrc injection (module `.rc` files to init.rc) | Yes | Unavailable |
+| preinit (module `preinit/preinit.conf`) | Yes | Unavailable |
 | kprobe hooks for ksud (execve/read/fstat/input) | Yes | Skipped |
 | Safe mode detection (volume key) | Yes | Always disabled |
 | Boot log capture (logcat/dmesg) | Yes | Skipped |

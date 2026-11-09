@@ -25,6 +25,9 @@ import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.model.Module
 import me.weishu.kernelsu.data.model.ModuleUpdateInfo
+import me.weishu.kernelsu.data.registry.UpdateVerification
+import me.weishu.kernelsu.data.repository.ModuleRepoRepository
+import me.weishu.kernelsu.data.repository.ModuleRepoRepositoryImpl
 import me.weishu.kernelsu.data.repository.ModuleRepository
 import me.weishu.kernelsu.data.repository.ModuleRepositoryImpl
 import me.weishu.kernelsu.data.repository.SettingsRepository
@@ -37,8 +40,6 @@ import me.weishu.kernelsu.ui.screen.module.ModuleEffect
 import me.weishu.kernelsu.ui.screen.module.ModuleUiState
 import me.weishu.kernelsu.ui.util.PinyinUtil
 import me.weishu.kernelsu.ui.util.hasMagisk
-import me.weishu.kernelsu.ui.util.module.fetchModuleDetail
-import me.weishu.kernelsu.ui.util.module.fetchReleaseDescriptionHtml
 import okhttp3.Request
 import java.text.Collator
 import java.util.Locale
@@ -49,7 +50,8 @@ import me.weishu.kernelsu.ui.util.uninstallModule as uninstallModuleUtil
 
 class ModuleViewModel(
     private val repo: ModuleRepository = ModuleRepositoryImpl(),
-    private val settingsRepo: SettingsRepository = SettingsRepositoryImpl()
+    private val settingsRepo: SettingsRepository = SettingsRepositoryImpl(),
+    private val registryRepo: ModuleRepoRepository = ModuleRepoRepositoryImpl(),
 ) : ViewModel() {
 
     companion object {
@@ -344,7 +346,18 @@ class ModuleViewModel(
 
     fun requestUpdateConfirmation(module: Module, updateInfo: ModuleUpdateInfo) {
         viewModelScope.launch {
-            val dialogState = buildUpdateConfirmDialogState(module, updateInfo)
+            val verification = registryRepo.resolveUpdate(
+                moduleId = module.id,
+                updateJsonUrl = module.updateJson,
+                zipUrl = updateInfo.downloadUrl,
+                versionCode = updateInfo.versionCode,
+            )
+            if (verification is UpdateVerification.Rejected) {
+                Log.w(TAG, "refusing update of ${module.id}: ${verification.reason}")
+                emitEffect(ModuleEffect.Toast(ksuApp.getString(R.string.module_update_unverifiable, module.name)))
+                return@launch
+            }
+            val dialogState = buildUpdateConfirmDialogState(module, updateInfo, verification)
             _uiState.update { it.copy(confirmDialogState = dialogState) }
         }
     }
@@ -432,59 +445,71 @@ class ModuleViewModel(
     private suspend fun buildUpdateConfirmDialogState(
         module: Module,
         updateInfo: ModuleUpdateInfo,
+        verification: UpdateVerification,
     ): ModuleConfirmDialogState {
         val res = ksuApp.resources
         val changelogUrl = updateInfo.changelog
 
         var changelog = ""
         var html = false
+        // Registry-hosted content is always shown in the restricted (JavaScript-off) renderer.
+        var restricted = false
 
-        if (changelogUrl.isNotBlank()) {
-            withContext(Dispatchers.IO) {
-                if (changelogUrl.startsWith("#") && changelogUrl.contains('@')) {
-                    val parts = changelogUrl.substring(1).split('@', limit = 2)
-                    if (parts.size == 2) {
-                        fetchReleaseDescriptionHtml(parts[0], parts[1])?.let {
-                            changelog = it
-                            html = true
-                        }
+        withContext(Dispatchers.IO) {
+            if (verification is UpdateVerification.Registry) {
+                // A registry release: only ever show the registry's own release notes.
+                verification.release.changelogHtml?.takeIf { it.isNotBlank() }?.let {
+                    changelog = it
+                    html = true
+                    restricted = true
+                }
+                if (changelog.isBlank() && registryRepo.isRegistryUrl(changelogUrl)) {
+                    registryRepo.fetchRegistryText(changelogUrl)?.let {
+                        changelog = it
+                        restricted = true
                     }
                 }
-
-                if (changelog.isBlank()) {
-                    changelog = runCatching {
-                        ksuApp.okhttpClient.newCall(
-                            Request.Builder().url(changelogUrl).build()
-                        ).execute().body.string()
-                    }.getOrDefault("")
-                }
+                return@withContext
             }
-        }
-
-        if (changelog.isBlank()) {
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    val latestTag = fetchModuleDetail(module.id)?.latestTag.orEmpty()
-                    if (latestTag.isNotBlank()) {
-                        fetchReleaseDescriptionHtml(module.id, latestTag)?.let {
-                            changelog = it
-                            html = true
-                        }
+            if (changelogUrl.isBlank()) return@withContext
+            if (changelogUrl.startsWith("#") && changelogUrl.contains('@')) {
+                val parts = changelogUrl.substring(1).split('@', limit = 2)
+                if (parts.size == 2) {
+                    registryRepo.fetchChangelogHtml(parts[0], parts[1])?.let {
+                        changelog = it
+                        html = true
+                        restricted = true
                     }
                 }
+                return@withContext
             }
+            if (registryRepo.isRegistryUrl(changelogUrl)) {
+                registryRepo.fetchRegistryText(changelogUrl)?.let {
+                    changelog = it
+                    restricted = true
+                }
+                return@withContext
+            }
+            changelog = runCatching {
+                ksuApp.okhttpClient.newCall(
+                    Request.Builder().url(changelogUrl).build()
+                ).execute().use { it.body.string() }
+            }.getOrDefault("")
         }
 
+        val registry = verification as? UpdateVerification.Registry
         return ModuleConfirmDialogState(
             request = ModuleConfirmRequest.Update(
                 module = module,
-                downloadUrl = updateInfo.downloadUrl,
+                downloadUrl = registry?.zipUrl ?: updateInfo.downloadUrl,
                 fileName = "${module.name}-${updateInfo.version}.zip",
+                expected = registry?.expected,
             ),
             title = if (changelog.isNotBlank()) res.getString(R.string.module_changelog) else res.getString(R.string.module_update),
             content = changelog.ifBlank { res.getString(R.string.module_start_downloading).format(module.name) },
             markdown = changelog.isNotBlank() && !html,
-            html = html,
+            html = changelog.isNotBlank() && html,
+            restricted = changelog.isNotBlank() && restricted,
             confirm = res.getString(R.string.module_update),
         )
     }

@@ -16,6 +16,10 @@ KernelSU 的模块支持显示界面并与用户交互，请参阅 [WebUI 文档
 
 KernelSU 提供了一个内置的配置系统，允许模块存储持久化或临时的键值设置。详情请参阅[模块配置文档](module-config.md)。
 
+## 一次性脚本
+
+模块 ZIP 也可以是一次性脚本：KernelSU 管理器只运行它一次，而不是安装它。详情请参阅[一次性脚本文档](module-script.md)。
+
 ## Busybox
 
 KernelSU 提供了一个功能完备的 BusyBox 二进制文件（包括完整的 SELinux 支持）。可执行文件位于 `/data/adb/ksu/bin/busybox`。
@@ -80,6 +84,7 @@ KernelSU 模块就是一个放置在 `/data/adb/modules` 内且满足如下结�
 │   ├── initrc/             <--- 此目录下的 .rc 文件将在启动时注入 init.rc
 │   │   ├── myservice.rc
 │   │   └── ...
+│   ├── preinit/            <--- preinit.conf 及其文件，在 SELinux 策略加载前执行
 │   │
 │   │      *** 自动生成的目录，不要手动创建或者修改！ ***
 │   │
@@ -266,6 +271,80 @@ ksud initrc refresh
 - 可以在 ksud 修补镜像的时候传入参数`--no-custom-rc` 禁用模块 RC 注入。
 :::
 
+### preinit {#preinit}
+
+模块可以在 **SELinux 策略加载之前、init 解析 init.rc 之前**执行一些操作，比如加载内核模块、运行静态程序、写 procfs/sysfs。把这些操作放在 `preinit/` 目录里，由 `preinit/preinit.conf` 描述：
+
+```txt
+/data/adb/modules/<MODID>/
+├── preinit/
+│   ├── preinit.conf
+│   ├── kmod/foo.ko
+│   └── bin/fixup
+└── ...
+```
+
+ksud 会把每个已启用模块的整个 `preinit/` 目录复制到 `/metadata` 分区。下次开机时，KernelSU 内核模块里内嵌的 runner 会在 first stage init 执行 `/system/bin/init selinux_setup` 的时候运行这些操作。此时 `/metadata`、`/system`、`/vendor` 已经挂载，`/proc`、`/sys`、`/dev` 可用，但还没有任何策略，property service 和 ueventd 也都没有运行。模块按模块 ID 的字母顺序处理。
+
+#### preinit.conf
+
+每行一个动作。`#` 开头的行和空行会被忽略。参数之间用空白分隔；用双引号保留参数中的空白，用 `\"`、`\\` 表示引号和反斜杠本身。**不做**任何变量展开。相对路径以模块的 preinit 目录为基准。单行最长 4 KB，整个文件最大 64 KB。
+
+| 动作 | 语法 | 语义 |
+|---|---|---|
+| `insmod` | `insmod <ko> [params...]` | 加载内核模块。会先从内核 kallsyms 查询未定义符号并写入符号表，再用 `init_module` 加载，所以模块可以使用未导出的符号；不需要绑定符号的模块直接用 `finit_module` 加载。多个参数用空格拼接 |
+| `exec` | `exec [-t <ms>] <prog> [args...]` | 运行程序并等待其退出，退出码非 0 视为失败。默认 5000 ms 后被杀掉 |
+| `write` | `write <path> <content>` | 向已存在的文件写入 `content`，不追加换行，用于 procfs/sysfs |
+
+动作名加 `?` 后缀表示失败可忽略。其他动作失败时会中止**当前模块**剩余的动作，后面的模块照常执行。
+
+```txt
+# preinit/preinit.conf
+insmod   kmod/foo.ko  debug=1 name="a b"
+insmod?  kmod/optional.ko
+exec -t 10000  bin/fixup --flag
+write    /proc/sys/kernel/printk_devkmsg on
+```
+
+`exec` 启动的程序以 root 运行，拥有完整的 capabilities，不受 SELinux 约束。工作目录是模块的 preinit 目录，stdin 接 `/dev/null`，stdout/stderr 按行转发到内核日志，带 `ksu_preinit[<MODID>]:` 前缀。环境变量只有 `KSU=true`、`KSU_PREINIT=1`、`MODID`、`PREINIT_DIR` 和 `PATH=/system/bin:/vendor/bin`。
+
+::: warning 限制
+- 没有 shell：只能使用**静态链接**的程序，因为 `/apex` 还没有挂载。
+- `/dev` 下只有 first stage init 创建的节点，ueventd 没有运行。
+- 固件加载没有用户态回退，固件只能由内核直接从 `/vendor/firmware` 等路径加载。
+- 不能读写属性。
+- 只有 first stage 的 vendor 模块已经加载，依赖 vendor_dlkm（second stage 才加载）中符号的 `.ko` 会加载失败。
+- 不允许常驻：preinit 结束时残留的进程都会被杀掉。整个 preinit 阶段最多 30 秒。
+- 改动在**下次开机**生效，热安装不会执行 preinit。
+- 目录和 `preinit.conf`（以及用到的 `.ko`、程序文件）的属主必须是 root，且 group/other 不可写。ksud 复制时会自动处理。
+- ksud 复制时保留文件原有的权限位（去掉 group/other 写权限）。安装器会把模块文件设为 `0644`，所以 `exec` 要运行的程序需要在 `customize.sh` 里 `set_perm $MODPATH/preinit/bin/xxx 0 0 0755`。
+:::
+
+#### /metadata 空间
+
+`/metadata` 很小（通常只有 10 MB 左右），里面还放着加密密钥和 OTA 状态。因此 ksud 至少保留 8 MB 空闲空间，preinit 最多占用 4 MB。模块按 ID 字母顺序依次复制，放不下的模块会被整个跳过，安装时也会给出提示。可以用下面的命令查看结果：
+
+```sh
+ksud module preinit status
+```
+
+#### 防砖
+
+runner 执行任何动作前会把启动计数加 1，开机完成后由 ksud 清零。连续 3 次开机没有完成时，preinit 会被跳过，并保持禁用，直到某个模块的 preinit 内容发生变化，或者手动执行：
+
+```sh
+ksud module preinit reset
+```
+
+关机充电模式下不会执行 preinit；安全模式会禁用所有模块，下次开机时它们的 preinit 内容也会被移除。如果需要手动救砖，可以在 recovery 里删除 `/metadata/vold/ksu/preinit`（或 `/metadata/watchdog/ksu/preinit`、`/metadata/ksu/preinit`，以实际存在的为准），或者 `fastboot boot` 原厂镜像后删除。
+
+::: tip
+- 在 **late-load 模式**下以及不使用两阶段 init 的设备（Android 10 之前以 system-as-root 出厂的设备）上，preinit **不可用**。
+- 当前内核不执行 preinit 时（late-load 模式、`preinit=0`，或内核编译时未包含 preinit），ksud 不会向 `/metadata` 拷贝任何内容，`ksud module preinit status` 会把这些模块标为 `unsupported`。
+- 可以通过 KernelSU 内核模块参数 `preinit=0` 彻底关闭 preinit，`ksud boot-patch` / `boot-patch-v2` 的 `--no-preinit` 选项会设置它。
+- 能写入 `/metadata` 就等于能在这么早的阶段执行代码，请只安装可信的模块。
+:::
+
 ## 模块安装包 {#module-installer}
 
 KernelSU 的模块安装包就是一个可以通过 KernelSU 管理器 APP 刷入的 zip 文件，此 zip 文件的格式如下：
@@ -308,6 +387,7 @@ KernelSU 模块不支持在 Recovery 中安装！！
 - `KSU_UAPI_VER` (int): KernelSU 用户空间 (ksud) 的 UAPI 版本号 (如：`2`)。当内核驱动发生破坏性更改时此版本号会递增，模块可据此判断兼容性。
 - `KSU_RUNTIME_MODE` (string): KernelSU 当前的运行模式。可能的值为 `built-in`（即 GKI 模式，编译进内核）、`lkm`（开机时作为内核模块加载）或 `late-load`（开机后作为内核模块加载）。
 - `KSU_LATE_LOAD` (int?): 如果 KernelSU 是在开机后延迟加载的，此变量的值为 `1`，否则不设置此变量。
+- `KSU_HAS_HOT_INSTALL` (bool): 安装程序支持[热安装](#hot-install)时为 `true`。
 
 ::: warning
 `MAGISK_VER_CODE` 在 KernelSU 中永远为 `25200`，`MAGISK_VER` 则为 `v25.2`，请不要通过这两个变量来判断是否是 KernelSU！
@@ -339,6 +419,43 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
        set_perm dir owner group dirpermission context
 ```
 
+### 热安装 {#hot-install}
+
+默认情况下，新安装或更新的模块会被放在 `/data/adb/modules_update` 中，重启后才会生效。如果你的模块不依赖只在开机时才会进行的操作，可以在 `customize.sh` 中请求 KernelSU 立即应用：
+
+```sh
+# customize.sh
+export MODULE_HOT_INSTALL_REQUEST=true
+# 可选：新版本生效后要执行的模块内脚本
+export MODULE_HOT_RUN_SCRIPT=hotinstall.sh
+```
+
+这个请求在安装时判断，因此由模块自己决定是否需要重启，例如只在新版本没有改动 `system` 下的文件时才请求热安装。
+
+安装脚本（包括 `customize.sh` 和元模块的 `metainstall.sh`）成功结束后，KernelSU 会：
+
+1. 用新版本替换 `/data/adb/modules/<id>`。旧目录会被移走，下次开机时才删除，因此仍在使用旧版本的进程和挂载在此之前可以继续工作。
+2. 加载模块的 `sepolicy.rule`。规则只会增加，新版本删掉的规则在重启前仍然有效。
+3. 执行 `MODULE_HOT_RUN_SCRIPT`（相对于模块目录的路径），方式与启动脚本相同：运行在全局 mount 命名空间中，工作目录为脚本所在目录。脚本输出会显示在安装界面中，stdin 为 `/dev/null`，并忽略 `SIGPIPE`，因此安装程序退出后后台进程不会被杀掉。安装程序最多等待 30 秒，长期运行的服务请放到后台启动。脚本不存在时会跳过。
+4. 不留下 `update` 标记，管理器不会提示重启。
+
+即使 `sepolicy.rule` 加载失败、脚本执行失败或超时，模块仍视为热安装成功，请留意安装输出。
+
+和普通安装一样，即使旧版本处于禁用状态，安装后模块也会被启用。
+
+立即生效：模块文件本身、WebUI、`action.sh` 以及 `module.prop` 中的信息。
+
+下次开机才生效：`system` 及其他分区目录下的文件（由元模块挂载）、`system.prop`、`initrc`、`preinit`，以及 `post-fs-data.sh`、`post-mount.sh`、`service.sh`、`boot-completed.sh` 这几个阶段。热安装时**不会**执行它们，但之后每次开机仍会照常执行。如果需要它们立即生效，请在 `MODULE_HOT_RUN_SCRIPT` 中处理，例如启动你的服务或调用 `resetprop`。
+
+KernelSU 不会替你停止旧版本，更新时也不会执行 `uninstall.sh`。如果你的模块运行了守护进程，`MODULE_HOT_RUN_SCRIPT` 应先停止旧实例再启动新实例。
+
+以下情况 KernelSU 会回退为重启后生效，并打印原因：
+
+- 正在安装的是元模块。
+- 设备处于安全模式。
+- `MODULE_HOT_RUN_SCRIPT` 不是指向模块内文件的相对路径（指向模块外的符号链接会被拒绝）。
+- 无法替换模块目录。
+
 ## 启动脚本 {#boot-scripts}
 
 在 KernelSU 中，根据脚本运行模式的不同分为两种：post-fs-data 模式和 late_start 服务模式。
@@ -365,7 +482,7 @@ set_perm_recursive <directory> <owner> <group> <dirpermission> <filepermission> 
 - 模块脚本
   - 放置在模块自己的文件夹中。
   - 只有当模块被启用时才会执行。
-  - `post-fs-data.sh` 以 post-fs-data 模式运行，`post-mount.sh` 以 post-mount 模式运行，而 `service.sh` 则以 late_start 服务模式运行，`boot-completed` 在 Android 系统启动完毕后以服务模式运行。
+  - `post-fs-data.sh` 以 post-fs-data 模式运行，`post-mount.sh` 以 post-mount 模式运行，而 `service.sh` 则以 late_start 服务模式运行，`boot-completed.sh` 在 Android 系统启动完毕后以服务模式运行。
 
 所有启动脚本都将在 KernelSU 的 BusyBox ash shell 中运行，并启用“独立模式”。
 
@@ -385,6 +502,7 @@ load kernel:
     - GKI mode: stock init
     - LKM mode: exec ksuinit, insmod kernelsu.ko, exec stock init
 mount /dev, /dev/pts, /proc, /sys, etc.
+  *preinit: before loading SELinux policy, the kernel runs modules' preinit.conf
 property-init -> read default props
 read init.rc
   *initrc injection: Kernel hook appends KernelSU core RC and module modules.rc to init.rc
@@ -453,6 +571,7 @@ start user apps (autostart)
 |------|:---:|:---:|
 | 内核模块由 init (PID 1) 加载 | 是 | 否（启动后加载） |
 | initrc 注入（模块 `.rc` 文件注入 init.rc） | 是 | 不可用 |
+| preinit（模块 `preinit/preinit.conf`） | 是 | 不可用 |
 | ksud 的 kprobe 钩子 (execve/read/fstat/input) | 是 | 跳过 |
 | 安全模式检测（音量键） | 是 | 始终禁用 |
 | 启动日志抓取 (logcat/dmesg) | 是 | 跳过 |

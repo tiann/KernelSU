@@ -1,3 +1,7 @@
+---
+description: How to recover an Android device from a bootloop caused by flashing a KernelSU boot image or by installing a broken module.
+---
+
 # Rescue from bootloop
 
 When updating a device, situations may arise where the device becomes "bricked". In theory, if you only use fastboot to flash the boot partition or install incompatible modules that cause the device to fail during boot, it can be restored through appropriate operations. This document aims to provide emergency methods to help you recover a "bricked" device.
