@@ -267,6 +267,10 @@ private fun moduleNeedsReboot(zip: File): Boolean {
 fun runModuleAction(
     moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
+    if (!MODULE_ID_REGEX.matches(moduleId)) {
+        Log.e(TAG, "runModuleAction: rejecting invalid module id: $moduleId")
+        return false
+    }
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
         override fun onAddElement(s: String?) {
             onStdout(s ?: "")
@@ -280,7 +284,7 @@ fun runModuleAction(
     }
 
     val result = withNewRootShell(true) {
-        newJob().add("${getKsuDaemonPath()} module action $moduleId")
+        newJob().add("${getKsuDaemonPath()} module action '$moduleId'")
             .to(stdoutCallback, stderrCallback).exec()
     }
 
