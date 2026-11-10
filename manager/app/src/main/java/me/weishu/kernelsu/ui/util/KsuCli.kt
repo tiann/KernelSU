@@ -45,6 +45,9 @@ private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
 }
 
+// Signle-quote a value for safe interpolation
+private fun String.shellQuote(): String = "'" + replace("'", "'\\''") + "'"
+
 data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
     constructor(result: Shell.Result, showReboot: Boolean) : this(result.code, result.err.joinToString("\n"), showReboot)
     constructor(result: Shell.Result) : this(result, result.isSuccess)
@@ -321,8 +324,7 @@ fun runOneshotScript(
 
 /** Removes a script's extraction directory, including files the script created as root. */
 fun removeAsRoot(path: String): Boolean {
-    val escaped = "'" + path.replace("'", "'\\''") + "'"
-    return ShellUtils.fastCmdResult(getRootShell(), "rm -rf $escaped")
+    return ShellUtils.fastCmdResult(getRootShell(), "rm -rf ${path.shellQuote()}")
 }
 
 fun restoreBoot(
@@ -643,7 +645,7 @@ fun isSepolicyValid(rules: String?): Boolean {
     }
     val shell = getRootShell()
     val result =
-        shell.newJob().add("${getKsuDaemonPath()} sepolicy check '$rules'").to(ArrayList(), null)
+        shell.newJob().add("${getKsuDaemonPath()} sepolicy check ${rules.shellQuote()}").to(ArrayList(), null)
             .exec()
     return result.isSuccess
 }
@@ -651,7 +653,7 @@ fun isSepolicyValid(rules: String?): Boolean {
 fun getSepolicy(pkg: String): String {
     val shell = getRootShell()
     val result =
-        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy $pkg").to(ArrayList(), null)
+        shell.newJob().add("${getKsuDaemonPath()} profile get-sepolicy ${pkg.shellQuote()}").to(ArrayList(), null)
             .exec()
     Log.i(TAG, "code: ${result.code}, out: ${result.out}, err: ${result.err}")
     return result.out.joinToString("\n")
@@ -659,7 +661,7 @@ fun getSepolicy(pkg: String): String {
 
 fun setSepolicy(pkg: String, rules: String): Boolean {
     val shell = getRootShell()
-    val result = shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy $pkg '$rules'")
+    val result = shell.newJob().add("${getKsuDaemonPath()} profile set-sepolicy ${pkg.shellQuote()} ${rules.shellQuote()}")
         .to(ArrayList(), null).exec()
     Log.i(TAG, "set sepolicy result: ${result.code}")
     return result.isSuccess
@@ -673,21 +675,21 @@ fun listAppProfileTemplates(): List<String> {
 
 fun getAppProfileTemplate(id: String): String {
     val shell = getRootShell()
-    return shell.newJob().add("${getKsuDaemonPath()} profile get-template '${id}'")
+    return shell.newJob().add("${getKsuDaemonPath()} profile get-template ${id.shellQuote()}")
         .to(ArrayList(), null).exec().out.joinToString("\n")
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {
     val shell = getRootShell()
     val escapedTemplate = template.replace("'", "'\\''")
-    val cmd = """${getKsuDaemonPath()} profile set-template "$id" '$escapedTemplate'"""
+    val cmd = """${getKsuDaemonPath()} profile set-template ${id.shellQuote()} ${escapedTemplate.shellQuote()}"""
     return shell.newJob().add(cmd)
         .to(ArrayList(), null).exec().isSuccess
 }
 
 fun deleteAppProfileTemplate(id: String): Boolean {
     val shell = getRootShell()
-    return shell.newJob().add("${getKsuDaemonPath()} profile delete-template '${id}'")
+    return shell.newJob().add("${getKsuDaemonPath()} profile delete-template ${id.shellQuote()}")
         .to(ArrayList(), null).exec().isSuccess
 }
 
