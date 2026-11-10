@@ -45,7 +45,7 @@ private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
 }
 
-// Signle-quote a value for safe interpolation
+// Single-quote a value for safe interpolation
 private fun String.shellQuote(): String = "'" + replace("'", "'\\''") + "'"
 
 data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
