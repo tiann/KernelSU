@@ -39,6 +39,28 @@ fail:
     pr_err("vmlinux BTF (%d) unreadable!\n", ret);
     return ret;
 }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 13, 0)
+static u32 superblock_blob_offset;
+
+int ksu_selinux_superblock_init(void)
+{
+    struct ksu_btf_field field;
+    s32 offset;
+    int ret;
+
+    ret = ksu_btf_field("lsm_blob_sizes", "lbs_superblock", BTF_KIND_INT, sizeof(int), &field);
+    if (ret)
+        return ret;
+    ret = copy_from_kernel_nofault(&offset, (const char *)&selinux_blob_sizes + field.offset, sizeof(offset));
+    if (ret)
+        return ret;
+    if (offset < 0 || offset % __alignof__(struct superblock_security_struct))
+        return -EINVAL;
+    superblock_blob_offset = offset;
+    return 0;
+}
+#endif
 #endif
 
 struct inode_security_struct *ksu_selinux_inode(const struct inode *inode)
@@ -56,5 +78,16 @@ struct inode_security_struct *ksu_selinux_inode(const struct inode *inode)
     return security;
 #else
     return selinux_inode(inode);
+#endif
+}
+
+struct superblock_security_struct *ksu_selinux_superblock(const struct super_block *sb)
+{
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 13, 0)
+    return sb->s_security;
+#elif defined(MODULE) && defined(CONFIG_DEBUG_INFO_BTF)
+    return (void *)((char *)sb->s_security + superblock_blob_offset);
+#else
+    return selinux_superblock(sb);
 #endif
 }

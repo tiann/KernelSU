@@ -44,10 +44,23 @@ struct inode;
 struct inode_security_struct;
 struct inode_security_struct *ksu_selinux_inode(const struct inode *inode);
 
+struct super_block;
+struct superblock_security_struct;
+struct superblock_security_struct *ksu_selinux_superblock(const struct super_block *sb);
+
 #if defined(MODULE) && defined(CONFIG_DEBUG_INFO_BTF)
 int __init ksu_selinux_inode_init(void);
 #else
 static inline int ksu_selinux_inode_init(void)
+{
+    return 0;
+}
+#endif
+
+#if defined(MODULE) && defined(CONFIG_DEBUG_INFO_BTF) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 13, 0)
+int ksu_selinux_superblock_init(void);
+#else
+static inline int ksu_selinux_superblock_init(void)
 {
     return 0;
 }
