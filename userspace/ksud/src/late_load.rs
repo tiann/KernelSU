@@ -58,11 +58,10 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
 
         // 4. Load kernelsu.ko from memory with manual relocation
         info!("Loading kernelsu.ko for KMI {kmi}...");
-        // bundled flag is meaningless in jailbreak mode since we can't flash boot to update it.
         let params = if allow_shell {
-            cstr!("allow_shell=1")
+            cstr!("allow_shell=1 bundled=1")
         } else {
-            cstr!("")
+            cstr!("bundled=1")
         };
         ksuinit::load_module(&ko_data, params).context("Failed to load kernelsu.ko")?;
         info!("kernelsu.ko loaded successfully!");
