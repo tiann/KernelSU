@@ -52,7 +52,7 @@ fun rememberFileLauncher(webUIState: WebUIState): ActivityResultLauncher<Intent>
 }
 
 @Composable
-fun WebUIScreen(webUIState: WebUIState) {
+fun WebUIScreen(webUIState: WebUIState, darkTheme: Boolean) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val drawingInsets = WindowInsets.safeDrawing
@@ -78,6 +78,10 @@ fun WebUIScreen(webUIState: WebUIState) {
                 webUIState.webView?.evaluateJavascript(newInsets.js, null)
             }
         }
+    }
+
+    LaunchedEffect(darkTheme) {
+        webUIState.reapplySystemBars()
     }
 
     BackHandler(enabled = webUIState.webCanGoBack) {
@@ -143,7 +147,10 @@ private fun HandleWebViewLifecycle(webUIState: WebUIState) {
     DisposableEffect(lifecycleOwner, webUIState) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> webUIState.webView?.onResume()
+                Lifecycle.Event.ON_RESUME -> {
+                    webUIState.webView?.onResume()
+                    webUIState.reapplySystemBars()
+                }
                 Lifecycle.Event.ON_PAUSE -> webUIState.webView?.onPause()
                 else -> {}
             }
