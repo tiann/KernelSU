@@ -4,11 +4,13 @@
 #include "util.h"
 #include <linux/err.h>
 #include <linux/fs.h>
+#include <linux/fs_struct.h>
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/workqueue.h>
 
 #include "policy/allowlist.h"
 #include "manager/apk_sign.h"
@@ -360,6 +362,25 @@ out_revert_cred:
     mutex_unlock(&throne_tracker_mutex);
 }
 
+static void throne_tracker_workfn(struct work_struct *work)
+{
+    (void)work;
+
+    // kworker runs in nullfs since 7.3+
+#ifdef scoped_with_init_fs
+    scoped_with_init_fs() { track_throne(false); }
+#else
+    track_throne(false);
+#endif
+}
+
+static DECLARE_WORK(throne_tracker_work, throne_tracker_workfn);
+
+void track_throne_async(void)
+{
+    queue_work(system_unbound_wq, &throne_tracker_work);
+}
+
 void __init ksu_throne_tracker_init()
 {
     // nothing to do
@@ -367,5 +388,5 @@ void __init ksu_throne_tracker_init()
 
 void __exit ksu_throne_tracker_exit()
 {
-    // nothing to do
+    cancel_work_sync(&throne_tracker_work);
 }
