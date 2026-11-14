@@ -16,6 +16,9 @@
 #include <net/genetlink.h>
 #include <linux/moduleparam.h>
 #include <linux/mutex.h>
+#include <linux/selinux_netlink.h>
+#include <net/netlink.h>
+#include <net/sock.h>
 // security/selinux/include/security.h
 #include <security.h>
 #include <ss/context.h>
@@ -34,6 +37,11 @@
 static DEFINE_MUTEX(selinux_hide_mutex);
 static bool ksu_selinux_hide_enabled __read_mostly = false;
 static bool ksu_selinux_hide_running __read_mostly = false;
+
+/* Optional: some ACK branches do not provide filtered broadcasts. */
+static struct sock **selnl_slot __ro_after_init;
+static int (*broadcast_filtered_fn)(struct sock *, struct sk_buff *, u32, u32, gfp_t,
+                                    int (*)(struct sock *, struct sk_buff *, void *), void *) __ro_after_init;
 
 enum sel_inos {
     SEL_ROOT_INO = 2,
@@ -389,6 +397,60 @@ static int my_sel_open_handle_status(struct inode *inode, struct file *filp)
 
 static void hook_selinux_status_open();
 static void ksu_selinux_hide_unhook();
+
+static int filter_policyload(struct sock *sk, struct sk_buff *skb, void *data)
+{
+    /* Match the app UID boundary using the recipient, not the publisher. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+    return __kuid_val(sk_uid(sk)) >= 10000;
+#else
+    return __kuid_val(sock_i_uid(sk)) >= 10000;
+#endif
+}
+
+/* Only KSU publications use this path; stock SELinux notifications are unchanged. */
+void __nocfi ksu_selinux_hide_notify_policyload(u32 seqno)
+{
+    struct sock *sk;
+    struct sk_buff *skb;
+    struct nlmsghdr *nlh;
+    struct selnl_msg_policyload *msg;
+
+    /* Keep one notification consistent with feature enable/disable. */
+    mutex_lock(&selinux_hide_mutex);
+    if (!ksu_selinux_hide_running || !READ_ONCE(fake_status) || !orig_sel_open_handle_status || !selnl_slot ||
+        !broadcast_filtered_fn) {
+        goto notify_all;
+    }
+    sk = READ_ONCE(*selnl_slot);
+    if (!sk)
+        goto notify_all;
+
+    skb = nlmsg_new(sizeof(*msg), GFP_USER);
+    if (!skb)
+        goto oom;
+    nlh = nlmsg_put(skb, 0, 0, SELNL_MSG_POLICYLOAD, sizeof(*msg), 0);
+    if (!nlh) {
+        kfree_skb(skb);
+        goto oom;
+    }
+    msg = nlmsg_data(nlh);
+    msg->seqno = seqno;
+    NETLINK_CB(skb).dst_group = SELNLGRP_AVC;
+
+    /* The callback runs synchronously; netlink retains each recipient socket. */
+    broadcast_filtered_fn(sk, skb, 0, SELNLGRP_AVC, GFP_USER, filter_policyload, NULL);
+    goto out;
+
+notify_all:
+    selnl_notify_policyload(seqno);
+    goto out;
+oom:
+    pr_err("selinux_hide: OOM sending policy-load notification\n");
+out:
+    mutex_unlock(&selinux_hide_mutex);
+}
+
 static int ksu_selinux_hide_enable()
 {
     int ret;
@@ -561,6 +623,14 @@ static void hook_selinux_status_open()
 
 void __init ksu_selinux_hide_init()
 {
+    selnl_slot = ksu_resolve_symbol_for_functable_hook("selnl");
+    broadcast_filtered_fn = ksu_resolve_symbol_for_functable_hook("netlink_broadcast_filtered");
+    if (!selnl_slot || !broadcast_filtered_fn) {
+        pr_warn("selinux_hide: policy-load notification filtering unavailable "
+                "(selnl: %s, netlink_broadcast_filtered: %s)\n",
+                selnl_slot ? "found" : "missing", broadcast_filtered_fn ? "found" : "missing");
+    }
+
     if (ksu_register_feature_handler(&selinux_hide_handler)) {
         pr_err("Failed to register selinux_hide feature handler\n");
     }
