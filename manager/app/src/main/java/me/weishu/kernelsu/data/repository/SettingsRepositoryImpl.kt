@@ -225,6 +225,16 @@ class SettingsRepositoryImpl : SettingsRepository {
             false
         }
 
+    override suspend fun getFastbootdRescueStatus(): String = getFeatureStatus("fastbootd_rescue")
+
+    override suspend fun getFastbootdRescuePersistValue(): Long? =
+        getFeaturePersistValue("fastbootd_rescue")
+
+    override suspend fun getFastbootdRescueValue(): Long? = getFeatureValue("fastbootd_rescue")
+
+    override fun setFastbootdRescueEnabled(enabled: Boolean): Boolean =
+        execKsud("feature set fastbootd_rescue ${if (enabled) 1 else 0}", true)
+
     override suspend fun getShellSuAdbOnlyStatus(): String = getFeatureStatus("shell_su_adb_only")
 
     override suspend fun getShellSuAdbOnlyPersistValue(): Long? = getFeaturePersistValue("shell_su_adb_only")

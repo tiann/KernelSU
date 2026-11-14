@@ -14,16 +14,18 @@ pub enum FeatureId {
     SelinuxHide = 4,
     // 5 was webview_zygote_umount (v3.3.0), keep it unused so stale configs don't apply
     ShellSuAdbOnly = 6,
+    FastbootdRescue = 7,
 }
 
 impl FeatureId {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::SuCompat,
         Self::KernelUmount,
         Self::Sulog,
         Self::AdbRoot,
         Self::SelinuxHide,
         Self::ShellSuAdbOnly,
+        Self::FastbootdRescue,
     ];
 
     pub const fn from_u32(id: u32) -> Option<Self> {
@@ -34,6 +36,7 @@ impl FeatureId {
             3 => Some(Self::AdbRoot),
             4 => Some(Self::SelinuxHide),
             6 => Some(Self::ShellSuAdbOnly),
+            7 => Some(Self::FastbootdRescue),
             _ => None,
         }
     }
@@ -46,6 +49,7 @@ impl FeatureId {
             Self::AdbRoot => "adb_root",
             Self::SelinuxHide => "selinux_hide",
             Self::ShellSuAdbOnly => "shell_su_adb_only",
+            Self::FastbootdRescue => "fastbootd_rescue",
         }
     }
 
@@ -67,7 +71,14 @@ impl FeatureId {
             Self::ShellSuAdbOnly => {
                 "Shell SU ADB Only - when shell is granted root, additionally require the process to be spawned by adbd or a KernelSU root process (ksu domain)"
             }
+            Self::FastbootdRescue => {
+                "Fastbootd Rescue - enter fastbootd after three volume-up presses during boot"
+            }
         }
+    }
+
+    pub const fn is_module_manageable(self) -> bool {
+        !matches!(self, Self::FastbootdRescue)
     }
 }
 
@@ -79,6 +90,7 @@ pub fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "adb_root" | "3" => Ok(FeatureId::AdbRoot),
         "selinux_hide" | "4" => Ok(FeatureId::SelinuxHide),
         "shell_su_adb_only" | "6" => Ok(FeatureId::ShellSuAdbOnly),
+        "fastbootd_rescue" | "7" => Ok(FeatureId::FastbootdRescue),
         _ => bail!("Unknown feature: {name}"),
     }
 }

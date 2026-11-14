@@ -91,6 +91,25 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
     Ok(features)
 }
 
+pub fn is_fastbootd_rescue_enabled() -> Result<bool> {
+    let id = FeatureId::FastbootdRescue as u32;
+    let state = crate::ksucalls::get_feature(id)
+        .context("Failed to read fastbootd rescue feature state")?;
+    if state.forced {
+        return Ok(state.value != 0);
+    }
+
+    let features = match load_binary_config() {
+        Ok(features) => features,
+        Err(error) => {
+            log::warn!("failed to read fastbootd rescue config, keep rescue enabled: {error:#}");
+            return Ok(true);
+        }
+    };
+
+    Ok(features.get(&id).is_none_or(|value| *value != 0))
+}
+
 pub fn save_binary_config(features: &HashMap<u32, u64>) -> Result<()> {
     crate::utils::ensure_dir_exists(Path::new(defs::WORKING_DIR))?;
 
@@ -219,7 +238,9 @@ pub fn set_feature(id: &str, value: u64) -> Result<()> {
     }
 
     // Check if this feature is managed by any module
-    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+    if feature_id.is_module_manageable()
+        && let Ok(managed_features_map) = crate::module::get_managed_features()
+    {
         // Find which modules manage this feature
         let managing_modules: Vec<&String> = managed_features_map
             .iter()
@@ -291,7 +312,11 @@ pub fn list_features() {
             "DISABLED".to_string()
         };
 
-        let managed_by = feature_to_modules.get(feature_id.name());
+        let managed_by = if feature_id.is_module_manageable() {
+            feature_to_modules.get(feature_id.name())
+        } else {
+            None
+        };
         let managed_mark = if state.forced {
             " [FORCED]"
         } else if managed_by.is_some() {
@@ -368,9 +393,10 @@ pub fn check_feature(id: &str) -> Result<()> {
 
     // Check if this feature is managed by any module
     let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
-    let is_managed = managed_features_map
-        .values()
-        .any(|features| features.iter().any(|f| f == feature_id.name()));
+    let is_managed = feature_id.is_module_manageable()
+        && managed_features_map
+            .values()
+            .any(|features| features.iter().any(|f| f == feature_id.name()));
 
     if is_managed {
         println!("managed");
@@ -430,6 +456,13 @@ pub fn init_features() -> Result<()> {
 
                 for feature_name in feature_list {
                     if let Ok(feature_id) = parse_feature_id(feature_name) {
+                        if !feature_id.is_module_manageable() {
+                            log::warn!(
+                                "  - Feature '{feature_name}' does not support module management, ignoring module '{module_id}'",
+                            );
+                            continue;
+                        }
+
                         let feature_id_u32 = feature_id as u32;
                         // Remove managed features from config, let modules control them
                         if features.remove(&feature_id_u32).is_some() {

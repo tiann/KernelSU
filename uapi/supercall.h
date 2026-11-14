@@ -76,6 +76,10 @@ struct ksu_check_safemode_cmd {
     __u8 in_safe_mode; /* Output: true if in safe mode, false otherwise */
 };
 
+struct ksu_check_fastbootd_cmd {
+    __u8 requested; /* Output: true if fastbootd rescue was requested */
+};
+
 /* deprecated */
 struct ksu_get_allow_list_cmd {
     __u32 uids[128]; /* Output: array of allowed/denied UIDs */
@@ -205,5 +209,6 @@ static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
 static const __u32 KSU_IOCTL_GET_SULOG_FD = _IOW('K', 20, struct ksu_get_sulog_fd_cmd);
 static const __u32 KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT = _IO('K', 21);
 static const __u32 KSU_IOCTL_LOOKUP_SYMBOLS = _IOW('K', 22, struct ksu_lookup_symbols_cmd);
+static const __u32 KSU_IOCTL_CHECK_FASTBOOTD = _IOC(_IOC_READ, 'K', 23, 0);
 
 #endif
