@@ -17,10 +17,17 @@ import java.util.concurrent.TimeUnit
 /**
  * Handles blob downloads by spooling chunks to a temporary file before WebView
  * requests the generated internal URL.
+ *
+ * One instance per WebUI window. As a process-wide `object` its [cleanup] emptied every pending
+ * download in the app, so closing one module's page destroyed another's in-flight download. The
+ * blob URL carries the id and each window registers only its own ids, so scoping it to the window
+ * is enough - no change to the JavaScript side.
  */
-object BlobDownloadHandler {
-    private const val BLOB_DOWNLOAD_HOST = "blob-download.kernelsu.internal"
-    private const val STALE_THRESHOLD_MS = 5 * 60 * 1000L
+class BlobDownloadHandler {
+    companion object {
+        private const val BLOB_DOWNLOAD_HOST = "blob-download.kernelsu.internal"
+        private const val STALE_THRESHOLD_MS = 5 * 60 * 1000L
+    }
 
     private val pendingDownloads = ConcurrentHashMap<String, PendingDownload>()
     @Volatile
