@@ -15,38 +15,38 @@ fn profile_path(dir: &str, name: &str) -> Result<PathBuf> {
     Ok(Path::new(dir).join(name))
 }
 
-pub fn set_sepolicy(pkg: String, policy: String) -> Result<()> {
-    let policy_file = profile_path(defs::PROFILE_SELINUX_DIR, &pkg)?;
+pub fn set_sepolicy(pkg: &str, policy: String) -> Result<()> {
+    let policy_file = profile_path(defs::PROFILE_SELINUX_DIR, pkg)?;
     ensure_dir_exists(defs::PROFILE_SELINUX_DIR)?;
     std::fs::write(&policy_file, policy)?;
     sepolicy::apply_file(&policy_file)?;
     Ok(())
 }
 
-pub fn get_sepolicy(pkg: String) -> Result<()> {
-    let policy_file = profile_path(defs::PROFILE_SELINUX_DIR, &pkg)?;
+pub fn get_sepolicy(pkg: &str) -> Result<()> {
+    let policy_file = profile_path(defs::PROFILE_SELINUX_DIR, pkg)?;
     let policy = std::fs::read_to_string(policy_file)?;
     println!("{policy}");
     Ok(())
 }
 
 // ksud doesn't guarteen the correctness of template, it just save
-pub fn set_template(id: String, template: String) -> Result<()> {
-    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, &id)?;
+pub fn set_template(id: &str, template: String) -> Result<()> {
+    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, id)?;
     ensure_dir_exists(defs::PROFILE_TEMPLATE_DIR)?;
     std::fs::write(template_file, template)?;
     Ok(())
 }
 
-pub fn get_template(id: String) -> Result<()> {
-    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, &id)?;
+pub fn get_template(id: &str) -> Result<()> {
+    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, id)?;
     let template = std::fs::read_to_string(template_file)?;
     println!("{template}");
     Ok(())
 }
 
-pub fn delete_template(id: String) -> Result<()> {
-    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, &id)?;
+pub fn delete_template(id: &str) -> Result<()> {
+    let template_file = profile_path(defs::PROFILE_TEMPLATE_DIR, id)?;
     std::fs::remove_file(template_file)?;
     Ok(())
 }

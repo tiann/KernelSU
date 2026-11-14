@@ -690,13 +690,13 @@ pub fn run() -> Result<()> {
         }
         Commands::Sulogd => sulog::run_sulogd(),
         Commands::Profile { command } => match command {
-            Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
+            Profile::GetSepolicy { package } => crate::profile::get_sepolicy(&package),
             Profile::SetSepolicy { package, policy } => {
-                crate::profile::set_sepolicy(package, policy)
+                crate::profile::set_sepolicy(&package, policy)
             }
-            Profile::GetTemplate { id } => crate::profile::get_template(id),
-            Profile::SetTemplate { id, template } => crate::profile::set_template(id, template),
-            Profile::DeleteTemplate { id } => crate::profile::delete_template(id),
+            Profile::GetTemplate { id } => crate::profile::get_template(&id),
+            Profile::SetTemplate { id, template } => crate::profile::set_template(&id, template),
+            Profile::DeleteTemplate { id } => crate::profile::delete_template(&id),
             Profile::ListTemplates => crate::profile::list_templates(),
         },
 
