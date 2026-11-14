@@ -133,6 +133,10 @@ bool is_late_load_mode() {
     return false;
 }
 
+bool is_shell_root_forced() {
+    return (get_info().flags & KSU_GET_INFO_FLAG_ALLOW_SHELL) != 0;
+}
+
 bool is_manager() {
     auto info = get_info();
     if (info.version > 0) {

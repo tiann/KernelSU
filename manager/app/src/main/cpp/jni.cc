@@ -71,6 +71,12 @@ Java_me_weishu_kernelsu_Natives_isLateLoadMode(JNIEnv *env, jclass clazz) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
+Java_me_weishu_kernelsu_Natives_isShellRootForced(JNIEnv *env, jclass clazz) {
+    return is_shell_root_forced();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
 Java_me_weishu_kernelsu_Natives_isManager(JNIEnv *env, jclass clazz) {
     return is_manager();
 }
@@ -181,6 +187,11 @@ Java_me_weishu_kernelsu_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
 
     env->SetObjectField(obj, keyField, env->NewStringUTF(profile.key));
     env->SetIntField(obj, currentUidField, profile.curr_uid);
+
+    if (uid == 2000 && is_shell_root_forced()) {
+        env->SetBooleanField(obj, allowSuField, true);
+        return obj;
+    }
 
     if (useDefaultProfile) {
         // no profile found, so just use default profile:
