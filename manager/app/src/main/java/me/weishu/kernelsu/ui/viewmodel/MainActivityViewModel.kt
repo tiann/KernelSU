@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import me.weishu.kernelsu.data.repository.SettingsRepository
 import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.ThemeController
 
 class MainActivityViewModel(
@@ -53,7 +52,6 @@ class MainActivityViewModel(
             enableSwipeDismiss = settingRepo.enableSwipeDismiss,
             pagerInterceptionMode = settingRepo.pagerInterceptionMode,
             moduleDescriptionMaxLines = settingRepo.moduleDescriptionMaxLines,
-            uiMode = UiMode.fromValue(settingRepo.uiMode),
         )
     }
 

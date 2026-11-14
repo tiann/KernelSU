@@ -1,6 +1,29 @@
 package me.weishu.kernelsu.ui.component.bottombar
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.dp
+import me.weishu.kernelsu.ui.theme.engine.sygiDp
+import me.weishu.kernelsu.ui.theme.engine.sygiIconPainter
+import me.weishu.kernelsu.ui.theme.engine.sygiInt
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.only
@@ -18,14 +41,12 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ShortNavigationBar
-import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.ui.LocalMainPagerState
@@ -33,47 +54,70 @@ import me.weishu.kernelsu.ui.LocalMainPagerState
 @Composable
 fun BottomBarMaterial(navigationBadge: NavigationBadgeState) {
     val fullFeatured = Natives.isFullFeatured()
-    if (!fullFeatured) return
 
     val mainPagerState = LocalMainPagerState.current
 
-    val items = listOf(
-        Triple(R.string.home, Icons.Filled.Home, Icons.Outlined.Home),
-        Triple(R.string.superuser, Icons.Filled.Shield, Icons.Outlined.Shield),
-        Triple(R.string.module, Icons.Filled.Extension, Icons.Outlined.Extension),
-        Triple(R.string.settings, Icons.Filled.Settings, Icons.Outlined.Settings)
+    // Icon ids are what theme packs override: icons/home.png, superuser.png, module.png, settings.png
+    // Pager page indices: 0 home, 1 superuser, 2 module, 3 settings.
+    // Without a working kernel only Home and Settings are shown, so Themes stays reachable.
+    val allItems = listOf(
+        Triple("home", R.string.home, Icons.Filled.Home),
+        Triple("superuser", R.string.superuser, Icons.Filled.Shield),
+        Triple("module", R.string.module, Icons.Filled.Extension),
+        Triple("settings", R.string.settings, Icons.Filled.Settings)
     )
+    val visible = if (fullFeatured) allItems.indices.toList() else listOf(0, 3)
 
-    ShortNavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-        )
-    ) {
-        items.forEachIndexed { index, (label, selectedIcon, unselectedIcon) ->
-            val selected = mainPagerState.selectedPage == index
-            ShortNavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (!selected) {
-                        mainPagerState.animateToPage(index)
-                    }
-                },
-                icon = {
-                    NavigationIconWithBadge(
-                        icon = if (selected) selectedIcon else unselectedIcon,
-                        contentDescription = stringResource(label),
-                        badge = badgeFor(index, navigationBadge),
-                    )
-                },
-                label = {
-                    Text(
-                        stringResource(label),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(
+                WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                )
             )
+            .padding(horizontal = 24.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Floating pill: corner radius, height and spacing can all be changed by a theme pack
+        // (dimens: nav_corner, nav_item_size, nav_padding).
+        Surface(
+            shape = RoundedCornerShape(sygiDp("nav_corner", 36.dp)),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 3.dp,
+            shadowElevation = 10.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        ) {
+            Row(
+                modifier = Modifier.padding(sygiDp("nav_padding", 6.dp)),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                visible.forEach { index ->
+                    val (id, label, fallback) = allItems[index]
+                    val selected = mainPagerState.selectedPage == index
+                    val tint = if (sygiInt("icons_use_original_colors", 0) == 1) Color.Unspecified
+                    else if (selected) MaterialTheme.colorScheme.onSecondaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                    Box(
+                        modifier = Modifier
+                            .size(sygiDp("nav_item_size", 54.dp))
+                            .clip(CircleShape)
+                            .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent)
+                            .clickable {
+                                if (!selected) mainPagerState.animateToPage(index)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NavigationIconWithBadge(
+                            painter = sygiIconPainter(id, fallback),
+                            contentDescription = stringResource(label),
+                            badge = badgeFor(index, navigationBadge),
+                            tint = tint,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -83,6 +127,20 @@ internal fun NavigationIconWithBadge(
     icon: ImageVector,
     contentDescription: String?,
     badge: NavBadge?,
+) {
+    NavigationIconWithBadge(
+        painter = rememberVectorPainter(icon),
+        contentDescription = contentDescription,
+        badge = badge,
+    )
+}
+
+@Composable
+internal fun NavigationIconWithBadge(
+    painter: Painter,
+    contentDescription: String?,
+    badge: NavBadge?,
+    tint: Color = LocalContentColor.current,
 ) {
     if (badge != null) {
         BadgedBox(
@@ -101,9 +159,9 @@ internal fun NavigationIconWithBadge(
                 }
             }
         ) {
-            Icon(icon, contentDescription)
+            Icon(painter, contentDescription, tint = tint)
         }
     } else {
-        Icon(icon, contentDescription)
+        Icon(painter, contentDescription, tint = tint)
     }
 }

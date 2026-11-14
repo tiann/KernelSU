@@ -30,8 +30,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import me.weishu.kernelsu.data.registry.RegistryUrls
 import me.weishu.kernelsu.ksuApp
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.theme.isInDarkTheme
 import me.weishu.kernelsu.ui.util.adjustLightnessArgb
 import me.weishu.kernelsu.ui.util.cssColorFromArgb
@@ -506,37 +504,10 @@ private data class MarkdownColors(
 
 @Composable
 private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color?): MarkdownColors {
-    val uiMode = LocalUiMode.current
-
-    return when (uiMode) {
-        UiMode.Material -> {
-            MarkdownColors(
-                bgCode = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerHigh.toArgb()),
-                bgRowAlt = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerLow.toArgb()),
-                fgDefault = cssColorFromArgb(MaterialTheme.colorScheme.onSurface.toArgb()),
-                fgLink = cssColorFromArgb(MaterialTheme.colorScheme.primary.toArgb())
-            )
-        }
-
-        UiMode.Miuix -> {
-            val bgArgb = containerColor?.toArgb() ?: MiuixTheme.colorScheme.surfaceContainer.toArgb()
-            val bgLuminance = relativeLuminance(bgArgb)
-
-            fun makeVariant(delta: Float, ratio: Double): Int {
-                val candidate = adjustLightnessArgb(bgArgb, delta)
-                val madeLighter = delta > 0f
-                return ensureVisibleByMix(bgArgb, candidate, ratio, madeLighter)
-            }
-
-            val codeDelta = if (bgLuminance > 0.6) -0.05f else 0.05f
-            val rowAltDelta = if (bgLuminance > 0.6) -0.02f else 0.02f
-
-            MarkdownColors(
-                bgCode = cssColorFromArgb(makeVariant(codeDelta, 1.1)),
-                bgRowAlt = cssColorFromArgb(makeVariant(rowAltDelta, 1.05)),
-                fgDefault = cssColorFromArgb(MiuixTheme.colorScheme.onSurface.toArgb()),
-                fgLink = cssColorFromArgb(MiuixTheme.colorScheme.primary.toArgb())
-            )
-        }
-    }
+    return MarkdownColors(
+        bgCode = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerHigh.toArgb()),
+        bgRowAlt = cssColorFromArgb(MaterialTheme.colorScheme.surfaceContainerLow.toArgb()),
+        fgDefault = cssColorFromArgb(MaterialTheme.colorScheme.onSurface.toArgb()),
+        fgLink = cssColorFromArgb(MaterialTheme.colorScheme.primary.toArgb())
+    )
 }

@@ -22,8 +22,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.material.ExpressiveDialog
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -36,10 +34,7 @@ fun DownloadDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> DownloadDialogMiuix(show, onConfirm, onDismiss)
-        UiMode.Material -> DownloadDialogMaterial(show, onConfirm, onDismiss)
-    }
+    DownloadDialogMaterial(show, onConfirm, onDismiss)
 }
 
 @Composable

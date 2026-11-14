@@ -19,8 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator
 
 @Composable
@@ -29,7 +27,6 @@ fun MarkdownContent(
     isMarkdown: Boolean,
     restrictedBaseUrl: String? = null,
 ) {
-    val uiMode = LocalUiMode.current
     var loaded by remember(content, isMarkdown) { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if (loaded) 1f else 0f,
@@ -41,14 +38,9 @@ fun MarkdownContent(
         animationSpec = tween(durationMillis = 150),
         label = "MarkdownContentPlaceholderAlpha",
     )
-    val containerColor = when (uiMode) {
-        UiMode.Material -> MaterialTheme.colorScheme.surfaceContainerHigh
-        UiMode.Miuix -> null
-    }
+    val containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .let { if (uiMode == UiMode.Miuix) it.animateContentSize(animationSpec = tween(durationMillis = 300)) else it }
+        modifier = Modifier.fillMaxWidth()
     ) {
         Box(
             modifier = Modifier
@@ -71,10 +63,7 @@ fun MarkdownContent(
                     .graphicsLayer { this.alpha = placeholderAlpha },
                 contentAlignment = Alignment.Center,
             ) {
-                when (LocalUiMode.current) {
-                    UiMode.Material -> LoadingIndicator()
-                    UiMode.Miuix -> InfiniteProgressIndicator()
-                }
+                LoadingIndicator()
             }
         }
     }

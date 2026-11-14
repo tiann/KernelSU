@@ -9,8 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import me.weishu.kernelsu.Natives
 import me.weishu.kernelsu.R
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.dialog.rememberConfirmDialog
 import me.weishu.kernelsu.ui.util.reboot
 
@@ -59,8 +57,5 @@ fun rememberRebootAction(): (String) -> Unit {
 
 @Composable
 fun RebootListPopup() {
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> RebootListPopupMiuix()
-        UiMode.Material -> RebootListPopupMaterial()
-    }
+    RebootListPopupMaterial()
 }

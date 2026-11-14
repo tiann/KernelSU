@@ -10,8 +10,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import me.weishu.kernelsu.KernelSUApplication
-import me.weishu.kernelsu.ui.LocalUiMode
-import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.viewmodel.SettingsViewModel
@@ -62,8 +60,5 @@ fun ColorPaletteScreen() {
         onSetModuleDescriptionMaxLines = viewModel::setModuleDescriptionMaxLines,
     )
 
-    when (LocalUiMode.current) {
-        UiMode.Miuix -> ColorPaletteScreenMiuix(state, actions)
-        UiMode.Material -> ColorPaletteScreenMaterial(state, actions)
-    }
+    ColorPaletteScreenMaterial(state, actions)
 }

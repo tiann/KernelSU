@@ -87,14 +87,12 @@ class SettingsViewModel(
                 repo.getShellSuAdbOnlyPersistValue() == 1L
             }
             val isDefaultUmountModules = repo.isDefaultUmountModules()
-            val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
             val useSoftReboot = repo.useSoftReboot
             val isLateLoadMode = Natives.isLateLoadMode
 
             _uiState.update {
                 it.copy(
-                    uiMode = uiMode,
                     checkUpdate = checkUpdate,
                     checkModuleUpdate = checkModuleUpdate,
                     themeMode = themeMode,
@@ -140,50 +138,14 @@ class SettingsViewModel(
         _uiState.update { it.copy(checkUpdate = enabled) }
     }
 
-    fun setUiMode(mode: String) {
-        val oldMode = repo.uiMode
-        val currentThemeMode = repo.themeMode
-
-        val newThemeMode = when (oldMode) {
-            "material" if mode == "miuix" -> {
-                val colorMode = ColorMode.fromValue(currentThemeMode)
-                val baseMode = if (colorMode == ColorMode.DARK_AMOLED) 2 else currentThemeMode
-                if (repo.miuixMonet && !colorMode.isMonet) {
-                    ColorMode.fromValue(baseMode).toMonetMode()
-                } else if (!repo.miuixMonet && colorMode.isMonet) {
-                    ColorMode.fromValue(baseMode).toNonMonetMode()
-                } else baseMode
-            }
-
-            "miuix" if mode == "material" -> {
-                val colorMode = ColorMode.fromValue(currentThemeMode)
-                if (colorMode.isMonet) {
-                    colorMode.toNonMonetMode()
-                } else currentThemeMode
-            }
-
-            else -> currentThemeMode
-        }
-
-        repo.uiMode = mode
-        repo.themeMode = newThemeMode
-        _uiState.update { it.copy(uiMode = mode, themeMode = newThemeMode) }
-    }
-
     fun setCheckModuleUpdate(enabled: Boolean) {
         repo.checkModuleUpdate = enabled
         _uiState.update { it.copy(checkModuleUpdate = enabled) }
     }
 
     fun setThemeMode(mode: Int) {
-        val currentUiMode = repo.uiMode
-        val effectiveMode = if (currentUiMode == "miuix" && _uiState.value.miuixMonet) {
-            mode + 3
-        } else {
-            mode
-        }
-        repo.themeMode = effectiveMode
-        _uiState.update { it.copy(themeMode = effectiveMode) }
+        repo.themeMode = mode
+        _uiState.update { it.copy(themeMode = mode) }
     }
 
     fun setColorMode(mode: ColorMode) {
