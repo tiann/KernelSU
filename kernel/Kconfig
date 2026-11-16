@@ -44,3 +44,4 @@ config KSU_X86_PATCH_SYSCALL_DISPATCHER
 	  replacement for a kernel source code patch, and is useful for x86_64 LKM mode.
 
 endmenu
+# ci-baseline trigger  
