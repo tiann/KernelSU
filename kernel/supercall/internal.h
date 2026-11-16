@@ -7,6 +7,7 @@
 
 bool only_manager(void);
 bool only_root(void);
+bool require_load_policy_perm(void);
 bool manager_or_root(void);
 bool always_allow(void);
 bool allowed_for_su(void);

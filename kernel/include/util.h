@@ -12,6 +12,7 @@
 #include <linux/uaccess.h>
 
 #include "arch.h"
+#include "avc.h"
 
 #if defined(__aarch64__)
 #define KSU_SYS_PREFIX(name) __arm64_sys_##name
@@ -88,5 +89,11 @@ static inline struct file *ksu_filp_open_nonotify(const char *path, int flags)
     path_put(&p);
     return f;
 }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#define ksu_avc_has_perm_compat(...) avc_has_perm(__VA_ARGS__)
+#else
+#define ksu_avc_has_perm_compat(...) avc_has_perm(&selinux_state, __VA_ARGS__)
+#endif
 
 #endif
