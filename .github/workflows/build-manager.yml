@@ -36,6 +36,21 @@ on:
       - 'Cargo.lock'
       - 'Cargo.toml'
   workflow_call:
+    secrets:
+      KEYSTORE:
+        required: false
+      KEYSTORE_PASSWORD:
+        required: false
+      KEY_ALIAS:
+        required: false
+      KEY_PASSWORD:
+        required: false
+      BOT_TOKEN:
+        required: false
+      CHAT_ID:
+        required: false
+      MESSAGE_THREAD_ID:
+        required: false
 
 jobs:
   generate-key:
@@ -99,7 +114,6 @@ jobs:
     with:
       expected_size: ${{ needs.generate-key.outputs.expected_size || '' }}
       expected_hash: ${{ needs.generate-key.outputs.expected_hash || '' }}
-    secrets: inherit
 
   build-ksuinit:
     uses: ./.github/workflows/ksuinit.yml

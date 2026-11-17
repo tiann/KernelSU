@@ -8,7 +8,14 @@ on:
 jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
-    secrets: inherit
+    secrets:
+      KEYSTORE: ${{ secrets.KEYSTORE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CHAT_ID: ${{ secrets.CHAT_ID }}
+      MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
   release:
     needs:
       - build-manager
