@@ -52,6 +52,9 @@ on:
       MESSAGE_THREAD_ID:
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   generate-key:
     runs-on: ubuntu-latest

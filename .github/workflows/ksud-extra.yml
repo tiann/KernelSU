@@ -17,6 +17,8 @@ on:
         required: false
         type: boolean
         default: false
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ${{ inputs.os }}

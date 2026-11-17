@@ -16,6 +16,9 @@ on:
       - '.github/workflows/shellcheck.yml'
       - '**/*.sh'
 
+permissions:
+  contents: read
+
 jobs:
   shellcheck:
     runs-on: ubuntu-latest

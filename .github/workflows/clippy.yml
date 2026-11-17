@@ -16,6 +16,9 @@ on:
       - '.github/workflows/clippy.yml'
       - 'userspace/**'
 
+permissions:
+  contents: read
+
 env:
   RUSTFLAGS: '-Dwarnings'
 

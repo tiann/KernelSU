@@ -28,6 +28,9 @@ on:
         default: ''
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build-kernelsu-ko:
     name: Build kernelsu.ko for ${{ inputs.kmi }}

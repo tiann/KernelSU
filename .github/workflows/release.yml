@@ -5,6 +5,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-manager:
     uses: ./.github/workflows/build-manager.yml
@@ -20,6 +23,8 @@ jobs:
     needs:
       - build-manager
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # action-gh-release creates the release and uploads its files
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v8
