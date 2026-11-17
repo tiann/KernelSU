@@ -12,6 +12,10 @@ on:
         required: false
         default: '20260828'
         type: string
+      ddk_sha256:
+        description: 'sha256 digest of the ddk-min image for this KMI and DDK release'
+        required: true
+        type: string
       package_name:
         description: 'package name of manager'
         required: false
@@ -36,7 +40,7 @@ jobs:
     name: Build kernelsu.ko for ${{ inputs.kmi }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}
+      image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}@sha256:${{ inputs.ddk_sha256 }}
       options: --privileged
 
     steps:
