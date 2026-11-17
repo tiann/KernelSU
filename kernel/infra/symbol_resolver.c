@@ -49,7 +49,7 @@ static int (*kallsyms_on_each_match_symbol_fn)(int (*fn)(void *, unsigned long),
 static int find_kernel_symbol_exact_cb(void *data, unsigned long addr)
 {
     *(unsigned long *)data = addr;
-    return 0;
+    return 1;
 }
 #endif
 
