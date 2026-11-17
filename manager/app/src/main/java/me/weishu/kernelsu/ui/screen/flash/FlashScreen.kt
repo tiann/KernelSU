@@ -35,6 +35,7 @@ fun FlashScreen(flashIt: FlashIt, onBackEnabledChange: (Boolean) -> Unit) {
     val logContent = remember { StringBuilder() }
     var showRebootAction by rememberSaveable { mutableStateOf(false) }
     var flashingStatus by rememberSaveable { mutableStateOf(FlashingStatus.FLASHING) }
+    var actionInProgress by rememberSaveable { mutableStateOf(false) }
     val needJailbreakWarning = flashIt is FlashIt.FlashBoot && Natives.isLateLoadMode
     // Soft reboot keeps the jailbreak and still applies modules
     val softReboot = flashIt is FlashIt.FlashModules && isSoftRebootPreferred()
@@ -76,17 +77,20 @@ fun FlashScreen(flashIt: FlashIt, onBackEnabledChange: (Boolean) -> Unit) {
         flashingStatus = flashingStatus,
         showJailbreakWarning = needJailbreakWarning && !flashingEnabled,
         rebootLabelRes = if (softReboot) R.string.reboot_soft else R.string.reboot,
+        actionInProgress = actionInProgress,
     )
     val actions = FlashScreenActions(
         onBack = dropUnlessResumed { if (backEnabled) navigator.pop() },
         onSaveLog = saveLog(logContent, scope) { showMessage(it) },
         onReboot = {
+            actionInProgress = true
             scope.launch {
                 withContext(Dispatchers.IO) {
                     reboot(if (softReboot) "soft_reboot" else "")
                 }
             }
         },
+        onClose = dropUnlessResumed { navigator.pop() },
         onConfirmJailbreakWarning = { flashingEnabled = true },
         onDismissJailbreakWarning = dropUnlessResumed { navigator.pop() },
     )
