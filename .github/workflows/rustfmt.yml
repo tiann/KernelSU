@@ -27,9 +27,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
+      - name: Install nightly rustfmt
+        run: rustup toolchain install nightly --profile minimal --component rustfmt
 
       - name: Run rustfmt
-        run: cargo fmt --all --check
+        run: cargo +nightly fmt --all --check
