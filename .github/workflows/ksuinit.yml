@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
         persist-credentials: false
@@ -23,12 +23,12 @@ jobs:
         rustup target add aarch64-linux-android
         rustup target add x86_64-linux-android
 
-    - uses: nttld/setup-ndk@v1
+    - uses: nttld/setup-ndk@v1.6.0
       id: setup-ndk
       with:
         ndk-version: r29
 
-    - uses: Swatinem/rust-cache@v2
+    - uses: Swatinem/rust-cache@v2.9.3
       with:
         workspaces: . -> target
         cache-targets: false
@@ -44,7 +44,7 @@ jobs:
         cargo build --package ksuinit --target=aarch64-linux-android --release
 
     - name: Upload ksuinit artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: ksuinit-aarch64
         path: target/aarch64-linux-android/release/ksuinit
@@ -60,7 +60,7 @@ jobs:
         cargo build --package ksuinit --target=x86_64-linux-android --release
 
     - name: Upload x64 ksuinit artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: ksuinit-x86_64
         path: target/x86_64-linux-android/release/ksuinit
@@ -68,7 +68,7 @@ jobs:
   build-riscv64:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
         persist-credentials: false
@@ -76,12 +76,12 @@ jobs:
     - name: Setup Rust
       run: rustup toolchain install nightly-2026-09-23 --profile minimal --component rust-src
 
-    - uses: nttld/setup-ndk@v1
+    - uses: nttld/setup-ndk@v1.6.0
       id: setup-ndk
       with:
         ndk-version: r29
 
-    - uses: Swatinem/rust-cache@v2
+    - uses: Swatinem/rust-cache@v2.9.3
       with:
         workspaces: . -> target
         cache-targets: false
@@ -96,7 +96,7 @@ jobs:
         cargo +nightly-2026-09-23 build --config .github/riscv64-cargo.toml -Z build-std=std,panic_abort --package ksuinit --target=riscv64-linux-android --release
 
     - name: Upload RISC-V ksuinit artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: ksuinit-riscv64
         path: target/riscv64-linux-android/release/ksuinit

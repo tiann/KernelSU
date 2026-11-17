@@ -45,7 +45,7 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v7
+      uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0 # Kbuild derives KSU_VERSION from the commit count
         persist-credentials: false
@@ -94,7 +94,7 @@ jobs:
         echo "Size after stripping: $(du -h "$OUT_DIR/$OUTPUT_NAME" | cut -f1)"
 
     - name: Upload kernelsu.ko artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: aarch64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/aarch64/${{ inputs.kmi }}_kernelsu.ko
@@ -178,7 +178,7 @@ jobs:
         echo "Size after stripping: $(du -h "$OUT_DIR/$OUTPUT_NAME" | cut -f1)"
         
     - name: Upload x64 kernelsu.ko artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: x86_64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/x86_64/${{ inputs.kmi }}_kernelsu.ko

@@ -27,7 +27,7 @@ jobs:
       contents: write # action-gh-release creates the release and uploads its files
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
 
       - name: Rename ksud
         run: |
@@ -74,7 +74,7 @@ jobs:
         run: ls -R
 
       - name: release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v3.0.4
         with:
           files: |
             manager/*.apk
