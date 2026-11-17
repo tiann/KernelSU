@@ -42,6 +42,9 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
+      with:
+        fetch-depth: 0 # Kbuild derives KSU_VERSION from the commit count
+        persist-credentials: false
 
     - name: Build kernelsu.ko
       env:

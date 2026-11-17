@@ -15,6 +15,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
         
     - name: Setup rustup
       run: |
@@ -70,6 +71,7 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Setup Rust
       run: rustup toolchain install nightly-2026-09-23 --profile minimal --component rust-src
