@@ -60,10 +60,13 @@ fun ColorPaletteScreen() {
         onSetPagerInterceptionMode = viewModel::setPagerInterceptionMode,
         onSetPageScale = viewModel::setPageScale,
         onSetModuleDescriptionMaxLines = viewModel::setModuleDescriptionMaxLines,
+        onTryMochi = { viewModel.setUiMode(UiMode.Mochi.value) },
+        onSetUiMode = viewModel::setUiMode,
     )
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> ColorPaletteScreenMiuix(state, actions)
         UiMode.Material -> ColorPaletteScreenMaterial(state, actions)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ThemeMochi(state, actions)
     }
 }

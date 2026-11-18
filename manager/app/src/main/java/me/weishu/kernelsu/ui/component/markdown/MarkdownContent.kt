@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import ui.feice.mochi.effect.mask.mochiScrollFadeMask
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -30,6 +31,14 @@ fun MarkdownContent(
     restrictedBaseUrl: String? = null,
 ) {
     val uiMode = LocalUiMode.current
+    if (uiMode == UiMode.Mochi) {
+        // No WebView here: inside the glass sampling layer it crashes the render thread on Vulkan devices.
+        val scroll = rememberScrollState()
+        Box(Modifier.fillMaxWidth().mochiScrollFadeMask(scroll).verticalScroll(scroll)) {
+            me.weishu.kernelsu.ui.mochi.MochiRichText(content = content, isMarkdown = isMarkdown)
+        }
+        return
+    }
     var loaded by remember(content, isMarkdown) { mutableStateOf(false) }
     val alpha by animateFloatAsState(
         targetValue = if (loaded) 1f else 0f,
@@ -44,6 +53,8 @@ fun MarkdownContent(
     val containerColor = when (uiMode) {
         UiMode.Material -> MaterialTheme.colorScheme.surfaceContainerHigh
         UiMode.Miuix -> null
+        // The Mochi dialog draws its own background.
+        UiMode.Mochi -> androidx.compose.ui.graphics.Color.Transparent
     }
     Box(
         modifier = Modifier
@@ -74,6 +85,7 @@ fun MarkdownContent(
                 when (LocalUiMode.current) {
                     UiMode.Material -> LoadingIndicator()
                     UiMode.Miuix -> InfiniteProgressIndicator()
+                    UiMode.Mochi -> ui.feice.mochi.basic.MochiActivityIndicator(size = 24.dp)
                 }
             }
         }

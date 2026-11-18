@@ -114,6 +114,8 @@ fun InstallScreen() {
         scope.launch {
             if (uiMode == UiMode.Material) {
                 snackbarHost.showSnackbar(message)
+            } else if (uiMode == UiMode.Mochi) {
+                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
             } else {
                 miuixSnackbarHost.showSnackbar(message)
             }
@@ -291,5 +293,6 @@ fun InstallScreen() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> InstallScreenMiuix(state, actions, miuixSnackbarHost)
         UiMode.Material -> InstallScreenMaterial(state, actions, snackbarHost)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.InstallScreenMochi(state, actions)
     }
 }

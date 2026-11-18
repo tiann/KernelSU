@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mochi_new_ui_title">Mochi UI</string>
+    <string name="mochi_new_ui_summary">Liquid glass tab bar and iOS-style lists. You can switch back in UI Style at any time.</string>
+    <string name="mochi_section_appearance">Appearance</string>
+    <string name="mochi_section_colors">Colors</string>
+    <string name="mochi_section_seed">Theme color</string>
+    <string name="mochi_section_materials">Materials</string>
+    <string name="mochi_section_navigation">Navigation</string>
+    <string name="mochi_section_layout">Layout</string>
+    <string name="mochi_style">Style</string>
+    <string name="mochi_style_ios">iOS</string>
+    <string name="mochi_style_mochi">Mochi</string>
+    <string name="mochi_dark_mode">Dark mode</string>
+    <string name="mochi_wallpaper_colors">Wallpaper colors</string>
+    <string name="mochi_wallpaper_colors_summary">Generate colors from the system wallpaper</string>
+    <string name="mochi_palette_style">Palette style</string>
+    <string name="mochi_seed_footer">Picking a swatch turns off wallpaper colors.</string>
+    <string name="mochi_glass">Liquid glass</string>
+    <string name="mochi_glass_summary">Tab bar, top bar buttons, menus and sheets</string>
+    <string name="mochi_glass_warning_title">Turn on liquid glass?</string>
+    <string name="mochi_glass_warning_message">Glass samples the page behind it every frame, which uses more GPU and battery.</string>
+    <string name="mochi_glass_enable">Turn on</string>
+    <string name="mochi_blur">Blur effects</string>
+    <string name="mochi_blur_summary">Blur content under the top bar</string>
+    <string name="mochi_ui_mode_footer">Miuix and Material keep their own theme settings.</string>
+    <string name="mochi_search_apps">Search apps</string>
+    <string name="mochi_search_modules">Search modules</string>
+    <string name="mochi_no_results">No results</string>
+    <string name="mochi_more">More</string>
+    <string name="mochi_about_project">Mochi UI component library</string>
+    <string name="mochi_about_project_summary">The interface is built with mochi-compose</string>
+    <string name="mochi_home_details">Details</string>
+    <string name="mochi_home_support_short">Donate to support the developer</string>
+    <string name="mochi_home_learn_short">Installation and module development</string>
+    <string name="mochi_su_section_root">Root granted</string>
+    <string name="mochi_su_section_custom">Custom profile</string>
+    <string name="mochi_su_section_others">Other apps</string>
+</resources>

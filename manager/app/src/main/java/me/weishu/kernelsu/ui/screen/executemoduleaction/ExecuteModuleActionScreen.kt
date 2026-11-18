@@ -79,5 +79,6 @@ fun ExecuteModuleActionScreen(moduleId: String, fromShortcut: Boolean = false) {
     when (uiMode) {
         UiMode.Miuix -> ExecuteModuleActionScreenMiuix(state, actions)
         UiMode.Material -> ExecuteModuleActionScreenMaterial(state, actions, snackbarHost)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ExecuteModuleActionScreenMochi(state, actions)
     }
 }

@@ -25,7 +25,7 @@ fun TemplateEditorScreen(template: TemplateViewModel.TemplateInfo, readOnly: Boo
     val context = LocalContext.current
     val uiMode = LocalUiMode.current
     val isCreation = template.id.isBlank()
-    val autoSave = uiMode == UiMode.Miuix && !isCreation
+    val autoSave = (uiMode == UiMode.Miuix || uiMode == UiMode.Mochi) && !isCreation
 
     var currentTemplate by rememberSaveable { mutableStateOf(template) }
     var idErrorHint by remember { mutableStateOf("") }
@@ -64,7 +64,7 @@ fun TemplateEditorScreen(template: TemplateViewModel.TemplateInfo, readOnly: Boo
     )
 
     fun saveCurrentTemplate() {
-        if (uiMode == UiMode.Miuix) {
+        if (uiMode == UiMode.Miuix || uiMode == UiMode.Mochi) {
             when (idCheck(currentTemplate.id)) {
                 1 -> {
                     showToast(idConflictError)
@@ -133,6 +133,8 @@ fun TemplateEditorScreen(template: TemplateViewModel.TemplateInfo, readOnly: Boo
             state = uiState,
             actions = actions,
         )
+
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.TemplateEditorScreenMochi(state = uiState, actions = actions)
 
         UiMode.Material -> TemplateEditorScreenMaterial(
             state = uiState,

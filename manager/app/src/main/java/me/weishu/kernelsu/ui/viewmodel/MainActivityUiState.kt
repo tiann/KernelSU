@@ -13,6 +13,7 @@ data class MainActivityUiState(
     val enableFloatingBottomBarBlur: Boolean,
     val enableNavigationBadge: Boolean,
     val enableSwipeDismiss: Boolean,
+    val enablePredictiveBack: Boolean = false,
     val pagerInterceptionMode: Int,
     val moduleDescriptionMaxLines: Int = 4,
     val uiMode: UiMode,
