@@ -1,6 +1,7 @@
 package me.weishu.kernelsu.ui
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.IBinder
@@ -8,6 +9,7 @@ import android.os.UserManager
 import android.util.Log
 import com.topjohnwu.superuser.ipc.RootService
 import me.weishu.kernelsu.IKsuInterface
+import me.weishu.kernelsu.data.model.WEBVIEW_ZYGOTE_UID
 import rikka.parcelablelist.ParcelableListSlice
 
 /**
@@ -52,11 +54,19 @@ class KsuService : RootService() {
         }
     }
 
-    private fun getInstalledPackagesAll(flags: Int): ArrayList<PackageInfo> {
+    private fun loadPackagesForAppList(): ArrayList<PackageInfo> {
         val packages = ArrayList<PackageInfo>()
         for (userId in getAllUserIds()) {
-            Log.i(TAG, "getInstalledPackagesAll: $userId")
-            packages.addAll(getInstalledPackagesAsUser(flags, userId))
+            Log.i(TAG, "Loading app list for user $userId")
+            getInstalledPackagesAsUser(PackageManager.GET_META_DATA, userId).filterTo(packages) { pkg ->
+                val app = pkg.applicationInfo ?: return@filterTo false
+                // HyperOS apps can run without declaring Android bytecode.
+                val hasCode = (app.flags and ApplicationInfo.FLAG_HAS_CODE) != 0 ||
+                        app.metaData?.getBoolean("hyperos_package") == true
+                // The app list only needs the metadata here, before parceling.
+                app.metaData = null
+                app.uid != WEBVIEW_ZYGOTE_UID && hasCode
+            }
         }
         return packages
     }
@@ -78,9 +88,9 @@ class KsuService : RootService() {
     }
 
     private inner class Stub : IKsuInterface.Stub() {
-        override fun getPackages(flags: Int): ParcelableListSlice<PackageInfo> {
-            val list = getInstalledPackagesAll(flags)
-            Log.i(TAG, "getPackages: ${list.size}")
+        override fun getPackagesForAppList(): ParcelableListSlice<PackageInfo> {
+            val list = loadPackagesForAppList()
+            Log.i(TAG, "getPackagesForAppList: ${list.size}")
             return ParcelableListSlice(list)
         }
 

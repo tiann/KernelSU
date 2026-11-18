@@ -69,18 +69,14 @@ class SuperUserRepositoryImpl : SuperUserRepository {
                 }
 
                 val slice = try {
-                    iface.getPackages(0)
+                    iface.packagesForAppList
                 } catch (_: Exception) {
                     iface = reconnect()
-                    iface.getPackages(0)
+                    iface.packagesForAppList
                 }
 
                 val packages = slice.list
-                val newApps = packages.filter {
-                    val ai = it.applicationInfo ?: return@filter false
-                    ai.uid != WEBVIEW_ZYGOTE_UID &&
-                            (ai.flags and ApplicationInfo.FLAG_HAS_CODE) != 0
-                }.map {
+                val newApps = packages.map {
                     val appInfo = it.applicationInfo!!
                     val profile = Natives.getAppProfile(it.packageName, appInfo.uid)
                     AppInfo(
