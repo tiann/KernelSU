@@ -230,8 +230,27 @@ def collect_existing_ksud_arches(apk_path: Path) -> List[str]:
     return arches
 
 
-def strip_binary(src: Path, strip_tool: Path, tmp_dir: Path) -> bytes:
-    dst = tmp_dir / src.name
+def lib_zip_template(zin: ZipFile) -> Optional[ZipInfo]:
+    """取一条既有 `lib/<abi>/*.so` 作为新条目的样板。
+
+    注入的 libksud.so 必须和 APK 里其它原生库用同一种存放方式：`jniLibs.useLegacyPackaging`
+    打开时是压缩存放，关掉时是 STORED + 按页对齐（zipalign -P 16 只对 STORED 条目生效，
+    `extractNativeLibs="false"` 也要求未压缩才能直接 mmap）。
+    """
+    for info in zin.infolist():
+        name = info.filename
+        if name.startswith("lib/") and name.endswith(".so"):
+            parts = name.split("/")
+            if len(parts) >= 3 and parts[1]:
+                return info
+    return None
+
+
+def strip_binary(src: Path, strip_tool: Path, tmp_dir: Path, arch: str) -> bytes:
+    """在按架构分开的子目录里 strip，多个架构不会抢同一个临时文件。"""
+    work = tmp_dir / arch
+    work.mkdir(parents=True, exist_ok=True)
+    dst = work / src.name
     shutil.copy2(src, dst)
     run_cmd([str(strip_tool), "--strip-all", str(dst)], "strip failed")
     return dst.read_bytes()
@@ -248,11 +267,12 @@ def repack_apk(
         ksud_bytes_by_arch: Dict[str, bytes] = {}
         for arch, ksud_path in ksud_by_arch.items():
             if strip_tool is not None:
-                ksud_bytes_by_arch[arch] = strip_binary(ksud_path, strip_tool, Path(tmp_dir))
+                ksud_bytes_by_arch[arch] = strip_binary(ksud_path, strip_tool, Path(tmp_dir), arch)
             else:
                 ksud_bytes_by_arch[arch] = ksud_path.read_bytes()
 
         with ZipFile(apk_path, "r") as zin, ZipFile(out_unsigned_path, "w") as zout:
+            lib_template = lib_zip_template(zin)
             for info in zin.infolist():
                 name = info.filename
 
@@ -285,8 +305,14 @@ def repack_apk(
                     continue
                 lib_path = f"lib/{arch}/libksud.so"
                 entry = ZipInfo(filename=lib_path)
-                entry.compress_type = ZIP_DEFLATED
-                zout.writestr(entry, ksud_bytes)
+                if lib_template is not None:
+                    # 跟随 APK 自己的打包方式，保证与 zipalign / extractNativeLibs 一致
+                    entry.compress_type = lib_template.compress_type
+                    entry.date_time = lib_template.date_time
+                else:
+                    entry.compress_type = ZIP_DEFLATED
+                entry.external_attr = 0o644 << 16
+                zout.writestr(entry, ksud_bytes, compress_type=entry.compress_type)
 
 
 def assert_required_libs(apk_path: Path, arch_filters: List[str]) -> None:
