@@ -75,7 +75,7 @@
     <string name="module_install">Pasang</string>
     <string name="install">Pasang</string>
     <string name="reboot">Mulai ulang</string>
-    <string name="settings">Setelan</string>
+    <string name="settings">Pengaturan</string>
     <string name="reboot_soft">Mulai ulang lunak</string>
     <string name="reboot_userspace">Mulai ulang ruang pengguna</string>
     <string name="reboot_recovery">Mulai ulang ke Recovery</string>
@@ -287,9 +287,9 @@
     <string name="module_shortcut_created">Pintasan dibuat di layar utama</string>
     <string name="module_shortcut_updated">Pintasan diperbarui</string>
     <string name="module_shortcut_delete">Hapus pintasan</string>
-    <string name="module_shortcut_permission_tip_xiaomi">Harap aktifkan izin \"Kelola pintasan layar utama\" untuk aplikasi ini di setelan Xiaomi.</string>
-    <string name="module_shortcut_permission_tip_oppo">Harap aktifkan izin \"Buat pintasan layar utama\" untuk aplikasi ini di setelan OPPO.</string>
-    <string name="module_shortcut_permission_tip_default">Jika pembuatan pintasan gagal, harap aktifkan izin pintasan layar utama untuk aplikasi ini di setelan sistem.</string>
+    <string name="module_shortcut_permission_tip_xiaomi">Harap aktifkan izin \"Kelola pintasan layar utama\" untuk aplikasi ini di pengaturan Xiaomi.</string>
+    <string name="module_shortcut_permission_tip_oppo">Harap aktifkan izin \"Buat pintasan layar utama\" untuk aplikasi ini di pengaturan OPPO.</string>
+    <string name="module_shortcut_permission_tip_default">Jika pembuatan pintasan gagal, harap aktifkan izin pintasan layar utama untuk aplikasi ini di pengaturan sistem.</string>
     <string name="no_such_module">Modul %s tidak tersedia</string>
     <string name="module_unavailable">Modul %s dinonaktifkan, diperbarui, atau menunggu dihapus</string>
     <string name="select_file_tip_nogki">Silakan pilih berkas image perangkat GKI yang ingin Anda tambal!</string>
