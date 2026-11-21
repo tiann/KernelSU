@@ -16,6 +16,9 @@ on:
       - '.github/workflows/clippy.yml'
       - 'userspace/**'
 
+permissions:
+  contents: read
+
 env:
   RUSTFLAGS: '-Dwarnings'
 
@@ -23,15 +26,17 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - run: rustup update stable
       
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2.9.3
         with:
           workspaces: userspace/ksud
 
-      - uses: nttld/setup-ndk@v1
+      - uses: nttld/setup-ndk@v1.6.0
         id: setup-ndk
         with:
           ndk-version: r29
