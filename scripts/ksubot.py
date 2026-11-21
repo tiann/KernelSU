@@ -38,7 +38,7 @@ if 'commits' in GITHUB_EVENT:
         i -= 1
     commit_message = f'```\n{commit_message.strip()}\n```'
 elif 'head_commit' in GITHUB_EVENT:
-    msg = GITHUB_EVENT["head_commt"]["msg"]
+    msg = GITHUB_EVENT['head_commit']['message']
     if len(msg) > 256:
         msg = msg[:253] + '...'
     commit_message = f'```\n{msg.strip()}\n```\n'
