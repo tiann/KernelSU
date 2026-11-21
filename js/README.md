@@ -115,6 +115,23 @@ import { enableEdgeToEdge } from 'kernelsu';
 enableEdgeToEdge(true);
 ```
 
+### setLightSystemBars
+
+Request light (dark icons) or dark (light icons) status and navigation bars together.
+
+```javascript
+import { setLightSystemBars } from 'kernelsu';
+setLightSystemBars(true);
+```
+
+Not available on older managers or in browser previews. Guard the bridge with:
+
+```javascript
+if (typeof ksu !== 'undefined' && typeof ksu.setLightSystemBars === 'function') {
+  ksu.setLightSystemBars(true);
+}
+```
+
 ### toast
 
 Show a toast message.
