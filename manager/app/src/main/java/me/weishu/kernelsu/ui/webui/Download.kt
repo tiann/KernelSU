@@ -1,16 +1,9 @@
 package me.weishu.kernelsu.ui.webui
 
-import java.io.File
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 
 private const val DEFAULT_WEBUI_DOWNLOAD_NAME = "download.bin"
-
-internal fun resolveWebUIDownloadFile(downloadsDir: File, requestedFileName: String?): File {
-    val fileName = sanitizeWebUIDownloadFileName(requestedFileName)
-    return File(downloadsDir, fileName)
-}
 
 internal fun sanitizeWebUIDownloadFileName(requestedFileName: String?): String {
     val trimmed = requestedFileName?.trim().orEmpty()
@@ -26,18 +19,6 @@ internal fun sanitizeWebUIDownloadFileName(requestedFileName: String?): String {
     }
 
     return candidate
-}
-
-internal fun writeWebUIDownload(
-    target: File,
-    source: InputStream,
-    outputStreamFactory: (File) -> OutputStream = ::FileOutputStream,
-    onBytesWritten: (Long) -> Unit = {},
-): Long {
-    target.parentFile?.mkdirs()
-    return outputStreamFactory(target).use { output ->
-        writeWebUIDownload(source, output, onBytesWritten)
-    }
 }
 
 internal fun writeWebUIDownload(

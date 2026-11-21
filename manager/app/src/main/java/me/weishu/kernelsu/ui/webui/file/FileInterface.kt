@@ -6,7 +6,8 @@ import com.topjohnwu.superuser.io.SuFile
 import org.json.JSONArray
 import java.io.BufferedOutputStream
 
-class FileInterface(private val path: String) {
+@Suppress("unused")
+class FileInterface(private val path: String, private val io: KsuIO) {
     private val suFile: SuFile = SuFile(path)
 
     @JavascriptInterface
@@ -135,28 +136,23 @@ class FileInterface(private val path: String) {
     @JavascriptInterface
     fun newInputStream(): String {
         return runCatching {
-            if (!KsuIO.canOpenStream()) {
+            if (!io.canOpenStream()) {
                 Log.w(TAG, "newInputStream rejected: too many open streams")
                 return ""
             }
-            val stream = ManagedInputStream(suFile.newInputStream())
-            val id = java.util.UUID.randomUUID().toString()
-            KsuIO.openInputStreams[id] = stream
-            id
+            io.registerInput(ManagedInputStream(suFile.newInputStream()))
         }.onFailure { Log.e(TAG, "newInputStream failed", it) }.getOrElse { "" }
     }
 
     @JavascriptInterface
     fun newOutputStream(append: Boolean): String {
         return runCatching {
-            if (!KsuIO.canOpenStream()) {
+            if (!io.canOpenStream()) {
                 Log.w(TAG, "newOutputStream rejected: too many open streams")
                 return ""
             }
             val stream = suFile.newOutputStream(append)
-            val id = java.util.UUID.randomUUID().toString()
-            KsuIO.openOutputStreams[id] = BufferedOutputStream(stream, ManagedInputStream.MAX_CHUNK_SIZE)
-            id
+            io.registerOutput(BufferedOutputStream(stream, ManagedInputStream.MAX_CHUNK_SIZE))
         }.onFailure { Log.e(TAG, "newOutputStream failed", it) }.getOrElse { "" }
     }
 
