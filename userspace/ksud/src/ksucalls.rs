@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 
 use crate::ksu_uapi;
 use std::cell::Cell;
@@ -149,7 +149,7 @@ fn ksuctl<T>(request: u32, arg: *mut T) -> Result<i32> {
     unsafe {
         let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
         if ret < 0 {
-            bail!("ksuctl failed: {}", io::Error::last_os_error())
+            return Err(io::Error::last_os_error()).context("ksuctl failed");
         }
         Ok(ret)
     }
@@ -246,6 +246,28 @@ pub fn check_kernel_safemode() -> bool {
     let mut cmd = ksu_uapi::ksu_check_safemode_cmd { in_safe_mode: 0 };
     let _ = ksuctl(ksu_uapi::KSU_IOCTL_CHECK_SAFEMODE, &raw mut cmd);
     cmd.in_safe_mode != 0
+}
+
+/// Checks whether the kernel requested a fastbootd rescue reboot.
+///
+/// # Errors
+///
+/// Returns an error when the KernelSU ioctl fails for reasons other than an
+/// older kernel not supporting this additive command.
+pub fn check_kernel_fastbootd() -> Result<bool> {
+    let mut cmd = ksu_uapi::ksu_check_fastbootd_cmd { requested: 0 };
+    match ksuctl(ksu_uapi::KSU_IOCTL_CHECK_FASTBOOTD, &raw mut cmd) {
+        Ok(_) => Ok(cmd.requested != 0),
+        Err(error)
+            if error
+                .downcast_ref::<io::Error>()
+                .and_then(io::Error::raw_os_error)
+                == Some(libc::ENOTTY) =>
+        {
+            Ok(false)
+        }
+        Err(error) => Err(error),
+    }
 }
 
 pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> Result<i32> {

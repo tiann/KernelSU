@@ -86,6 +86,12 @@ class SettingsViewModel(
             } else {
                 repo.getShellSuAdbOnlyPersistValue() == 1L
             }
+            val fastbootdRescueStatus = repo.getFastbootdRescueStatus()
+            val isFastbootdRescueEnabled = when (fastbootdRescueStatus) {
+                "forced" -> (repo.getFastbootdRescueValue() ?: 0L) != 0L
+                "supported" -> (repo.getFastbootdRescuePersistValue() ?: 1L) != 0L
+                else -> false
+            }
             val isDefaultUmountModules = repo.isDefaultUmountModules()
             val uiMode = repo.uiMode
             val autoJailbreak = repo.autoJailbreak
@@ -119,6 +125,8 @@ class SettingsViewModel(
                     isAdbRootEnabled = isAdbRootEnabled,
                     shellSuAdbOnlyStatus = shellSuAdbOnlyStatus,
                     isShellSuAdbOnlyEnabled = isShellSuAdbOnlyEnabled,
+                    fastbootdRescueStatus = fastbootdRescueStatus,
+                    isFastbootdRescueEnabled = isFastbootdRescueEnabled,
                     kernelUmountStatus = kernelUmountStatus,
                     isKernelUmountEnabled = isKernelUmountEnabled,
                     selinuxHideStatus = selinuxHideStatus,
@@ -337,6 +345,15 @@ class SettingsViewModel(
     fun setUseSoftReboot(enabled: Boolean) {
         repo.useSoftReboot = enabled
         _uiState.update { it.copy(useSoftReboot = enabled) }
+    }
+
+    fun setFastbootdRescueEnabled(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (repo.setFastbootdRescueEnabled(enabled)) {
+                repo.execKsudFeatureSave()
+                _uiState.update { it.copy(isFastbootdRescueEnabled = enabled) }
+            }
+        }
     }
 
     fun setSulogEnabled(enabled: Boolean) {
