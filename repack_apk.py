@@ -351,14 +351,7 @@ def do_repack(args: argparse.Namespace) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     output_name = cfg.get("output_name") or apk.stem
-    unsigned_path = out_dir / f"{output_name}-repack-unsigned.apk"
-    aligned_path = out_dir / f"{output_name}-repack-aligned.apk"
     signed_path = out_dir / f"{output_name}.apk"
-
-    # Clean stale outputs before repacking.
-    for stale in (unsigned_path, aligned_path, signed_path):
-        if stale.exists():
-            stale.unlink()
 
     # Resolve strip tool.
     do_strip: bool = bool(cfg.get("strip", False))
@@ -370,7 +363,16 @@ def do_repack(args: argparse.Namespace) -> int:
         else:
             print(f"[INFO] Strip tool: {strip_tool}")
 
-    try:
+    # Intermediates live in a directory of their own, and the signed APK is written
+    # to a temporary name and renamed into place. A run that fails - no zipalign, no
+    # keystore, apksigner error - therefore leaves the APK from the previous
+    # successful run untouched instead of deleting it first and dying halfway.
+    with tempfile.TemporaryDirectory(prefix=".repack-", dir=out_dir) as work_dir:
+        work = Path(work_dir)
+        unsigned_path = work / f"{output_name}-repack-unsigned.apk"
+        aligned_path = work / f"{output_name}-repack-aligned.apk"
+        signed_staged_path = work / f"{output_name}.apk"
+
         repack_apk(apk, unsigned_path, arch_filters, ksud_by_arch, strip_tool)
         assert_required_libs(unsigned_path, arch_filters)
 
@@ -410,16 +412,12 @@ def do_repack(args: argparse.Namespace) -> int:
                 "--key-pass",
                 f"pass:{signing['key_pass']}",
                 "--out",
-                str(signed_path),
+                str(signed_staged_path),
                 str(aligned_path),
             ],
             "apksigner failed",
         )
-    finally:
-        # Remove intermediate files regardless of success/failure.
-        for tmp in (unsigned_path, aligned_path):
-            if tmp.exists():
-                tmp.unlink()
+        os.replace(signed_staged_path, signed_path)
 
     print(f"Input APK : {apk}")
     if ksud_by_arch:
