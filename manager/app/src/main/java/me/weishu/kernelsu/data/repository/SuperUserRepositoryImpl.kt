@@ -29,6 +29,7 @@ class SuperUserRepositoryImpl : SuperUserRepository {
 
     companion object {
         private const val TAG = "SuperUserRepository"
+        private val hyperOsAppList = HyperOsAppList()
     }
 
     override suspend fun getAppList(): Result<Pair<List<AppInfo>, List<Int>>> = withContext(Dispatchers.IO) {
@@ -68,19 +69,16 @@ class SuperUserRepositoryImpl : SuperUserRepository {
                     iface.userIds
                 }
 
-                val slice = try {
-                    iface.getPackages(0)
-                } catch (_: Exception) {
-                    iface = reconnect()
-                    iface.getPackages(0)
+                val packages = hyperOsAppList.load { readMetadata ->
+                    try {
+                        iface.getPackagesForAppList(readMetadata).list
+                    } catch (_: Exception) {
+                        iface = reconnect()
+                        iface.getPackagesForAppList(readMetadata).list
+                    }
                 }
 
-                val packages = slice.list
-                val newApps = packages.filter {
-                    val ai = it.applicationInfo ?: return@filter false
-                    ai.uid != WEBVIEW_ZYGOTE_UID &&
-                            (ai.flags and ApplicationInfo.FLAG_HAS_CODE) != 0
-                }.map {
+                val newApps = packages.map {
                     val appInfo = it.applicationInfo!!
                     val profile = Natives.getAppProfile(it.packageName, appInfo.uid)
                     AppInfo(
