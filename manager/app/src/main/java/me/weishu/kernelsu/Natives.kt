@@ -50,6 +50,9 @@ object Natives {
     val isLateLoadMode: Boolean
         external get
 
+    val isShellRootForced: Boolean
+        external get
+
     val isManager: Boolean
         external get
 

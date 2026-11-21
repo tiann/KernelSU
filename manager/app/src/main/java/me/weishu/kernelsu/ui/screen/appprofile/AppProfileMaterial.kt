@@ -160,6 +160,7 @@ private fun AppProfileInner(
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = !isSpecialApp && profile.allowSu
+    val isRootForced = appUid == 2000 && Natives.isShellRootForced
     val userId = appUid / 100000
     val appId = appUid % 100000
 
@@ -233,6 +234,7 @@ private fun AppProfileInner(
                         icon = Icons.Filled.Security,
                         title = stringResource(id = R.string.superuser),
                         checked = isRootGranted,
+                        enabled = !isRootForced,
                         onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
                     )
                 }
@@ -251,7 +253,7 @@ private fun AppProfileInner(
                 modifier = Modifier.padding(bottom = 6.dp + 48.dp + 6.dp /* SnackBar height */)
             ) {
                 if (current) {
-                    ProfileBox(mode, true) {
+                    ProfileBox(mode, true, enabled = !isRootForced) {
                         // template mode shouldn't change profile here!
                         if (it == Mode.Default || it == Mode.Custom) {
                             onProfileChange(
@@ -397,6 +399,7 @@ private fun TopBar(
 private fun ProfileBox(
     mode: Mode,
     hasTemplate: Boolean,
+    enabled: Boolean = true,
     onModeChange: (Mode) -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -421,7 +424,7 @@ private fun ProfileBox(
                         onModeChange(m)
                     }
                 },
-                enabled = if (m == Mode.Template) hasTemplate else true,
+                enabled = enabled && (m != Mode.Template || hasTemplate),
                 modifier = Modifier
                     .weight(1f)
                     .semantics { role = Role.RadioButton },
