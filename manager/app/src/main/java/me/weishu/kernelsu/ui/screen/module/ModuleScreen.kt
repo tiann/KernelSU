@@ -206,6 +206,13 @@ fun ModulePager(
             bottomInnerPadding = bottomInnerPadding,
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ModulePagerMochi(
+            uiState = rawUiState,
+            confirmDialogState = rawUiState.confirmDialogState,
+            moduleEvent = viewModel.moduleEvent,
+            actions = actions,
+        )
+
         UiMode.Material -> ModulePagerMaterial(
             uiState = rawUiState,
             confirmDialogState = rawUiState.confirmDialogState,

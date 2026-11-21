@@ -86,6 +86,8 @@ fun HomePager(
             bottomInnerPadding = bottomInnerPadding,
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.HomePagerMochi(state = uiState, actions = actions)
+
         UiMode.Material -> HomePagerMaterial(
             state = uiState,
             actions = actions,

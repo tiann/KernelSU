@@ -24,6 +24,7 @@ fun SettingPager(
     isCurrentPage: Boolean = true,
 ) {
     val viewModel = viewModel<SettingsViewModel>()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val latestIsCurrentPage by rememberUpdatedState(isCurrentPage)
     val initialResumeHandled = rememberSaveable { mutableStateOf(false) }
@@ -47,7 +48,8 @@ fun SettingPager(
         onSetCheckModuleUpdate = viewModel::setCheckModuleUpdate,
         onOpenTheme = { navigator.push(Route.ColorPalette) },
         onSetUiModeIndex = { index ->
-            viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
+            me.weishu.kernelsu.ui.mochi.MochiNews.markSeen(context)
+            viewModel.setUiMode(UiMode.entries.getOrElse(index) { UiMode.Miuix }.value)
         },
         onOpenProfileTemplate = { navigator.push(Route.AppProfileTemplate) },
         onSetSuCompatMode = viewModel::setSuCompatMode,
@@ -66,5 +68,6 @@ fun SettingPager(
     when (LocalUiMode.current) {
         UiMode.Miuix -> SettingPagerMiuix(uiState, actions, bottomInnerPadding)
         UiMode.Material -> SettingPagerMaterial(uiState, actions, bottomInnerPadding)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.SettingPagerMochi(uiState, actions)
     }
 }

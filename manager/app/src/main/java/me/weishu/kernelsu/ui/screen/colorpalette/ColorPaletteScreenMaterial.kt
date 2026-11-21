@@ -44,6 +44,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.filled.Brightness1
+import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.Brightness3
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Brightness7
@@ -138,6 +139,20 @@ fun ColorPaletteScreenMaterial(
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(13.dp)
         ) {
+            item {
+                SegmentedColumn(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    content = listOf {
+                        me.weishu.kernelsu.ui.component.material.SegmentedListItem(
+                            onClick = actions.onTryMochi,
+                            headlineContent = { Text(stringResource(R.string.mochi_new_ui_title)) },
+                            supportingContent = { Text(stringResource(R.string.mochi_new_ui_summary)) },
+                            leadingContent = { Icon(Icons.Filled.Brush, null) },
+                        )
+                    }
+                )
+            }
+
             item {
                 ThemePreviewCard(
                     keyColor = currentKeyColor,

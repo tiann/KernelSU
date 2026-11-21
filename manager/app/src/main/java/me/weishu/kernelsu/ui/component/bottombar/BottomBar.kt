@@ -84,9 +84,11 @@ data class NavigationBadgeState(
     val superuserCount: Int = 0,
     val moduleEnabledCount: Int = 0,
     val moduleUpdatableCount: Int = 0,
+    /** Dot on the settings tab until the user has seen the Mochi UI. */
+    val settingsDot: Boolean = false,
 )
 
-internal enum class BadgeTone { Alert, Accent }
+internal enum class BadgeTone { Alert, Accent, Dot }
 
 @Immutable
 internal data class NavBadge(val count: Int, val tone: BadgeTone)
@@ -100,6 +102,9 @@ internal fun badgeFor(index: Int, state: NavigationBadgeState): NavBadge? = when
         state.moduleEnabledCount > 0 -> NavBadge(state.moduleEnabledCount, BadgeTone.Accent)
         else -> null
     }
+
+    BottomBarDestination.Setting.ordinal ->
+        if (state.settingsDot) NavBadge(0, BadgeTone.Dot) else null
 
     else -> null
 }
@@ -117,7 +122,7 @@ fun BottomBar(
     modifier: Modifier = Modifier,
 ) {
     when (LocalUiMode.current) {
-        UiMode.Miuix -> BottomBarMiuix(blurBackdrop, backdrop, navigationBadge, modifier)
+        UiMode.Miuix, UiMode.Mochi -> BottomBarMiuix(blurBackdrop, backdrop, navigationBadge, modifier)
         UiMode.Material -> BottomBarMaterial(navigationBadge)
     }
 }
@@ -128,7 +133,7 @@ fun SideRail(
     modifier: Modifier = Modifier,
 ) {
     when (LocalUiMode.current) {
-        UiMode.Miuix -> NavigationRailMiuix(navigationBadge, modifier)
+        UiMode.Miuix, UiMode.Mochi -> NavigationRailMiuix(navigationBadge, modifier)
         UiMode.Material -> NavigationRailMaterial(navigationBadge, modifier)
     }
 }

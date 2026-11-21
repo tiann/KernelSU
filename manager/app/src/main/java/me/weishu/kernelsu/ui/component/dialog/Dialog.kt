@@ -311,6 +311,7 @@ fun rememberLoadingDialog(): LoadingDialogHandle {
     when (LocalUiMode.current) {
         UiMode.Miuix -> LoadingDialogMiuix(visible)
         UiMode.Material -> LoadingDialogMaterial(visible)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.LoadingDialogMochi(visible)
     }
 
     return remember {
@@ -337,6 +338,13 @@ private fun rememberConfirmDialog(visuals: ConfirmDialogVisuals, callback: Confi
 
     when (LocalUiMode.current) {
         UiMode.Miuix -> ConfirmDialogMiuix(
+            handle.visuals,
+            confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
+            dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },
+            showDialog = visible
+        )
+
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ConfirmDialogMochi(
             handle.visuals,
             confirm = { coroutineScope.launch { resultChannel.send(ConfirmResult.Confirmed) } },
             dismiss = { coroutineScope.launch { resultChannel.send(ConfirmResult.Canceled) } },

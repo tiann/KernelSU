@@ -1,5 +1,8 @@
 package me.weishu.kernelsu.ui
 
+import me.weishu.kernelsu.data.repository.SettingsRepositoryImpl
+import me.weishu.kernelsu.KernelSUApplication
+import android.os.Build
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -69,6 +72,9 @@ import me.weishu.kernelsu.ui.component.bottombar.SideRail
 import me.weishu.kernelsu.ui.component.bottombar.rememberMainPagerState
 import me.weishu.kernelsu.ui.component.bottombar.useNavigationRail
 import me.weishu.kernelsu.ui.navigation3.IntentDispatcher
+import me.weishu.kernelsu.ui.mochi.MochiBackGuard
+import me.weishu.kernelsu.ui.mochi.MochiKsuNavHost
+import me.weishu.kernelsu.ui.mochi.MochiMainScreen
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
 import me.weishu.kernelsu.ui.navigation3.Navigator
 import me.weishu.kernelsu.ui.navigation3.Route
@@ -160,6 +166,19 @@ class MainActivity : ComponentActivity() {
                 )
                 window.isNavigationBarContrastEnforced = false
                 onDispose { }
+            }
+
+            // Switching UI mode may need a different predictive back flag, which only applies after recreate.
+            var lastUiMode by rememberSaveable { mutableStateOf(uiMode) }
+            LaunchedEffect(uiMode) {
+                if (uiMode == lastUiMode) return@LaunchedEffect
+                lastUiMode = uiMode
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return@LaunchedEffect
+                val want = SettingsRepositoryImpl().enablePredictiveBack
+                if (KernelSUApplication.appliedPredictiveBack != want) {
+                    KernelSUApplication.setEnableOnBackInvokedCallback(applicationInfo, want)
+                    recreate()
+                }
             }
 
             val navigator = rememberNavigator(Route.Main)
@@ -278,6 +297,42 @@ class MainActivity : ComponentActivity() {
                         ) { navDisplay() }
 
                         UiMode.Miuix -> Scaffold { navDisplay() }
+
+                        UiMode.Mochi -> MochiKsuNavHost(
+                            navigator = navigator,
+                            predictiveBack = uiState.enablePredictiveBack,
+                        ) { key ->
+                            when (key) {
+                                is Route.About -> AboutScreen()
+                                is Route.Sulog -> SulogScreen()
+                                is Route.ColorPalette -> ColorPaletteScreen()
+                                is Route.AppProfileTemplate -> AppProfileTemplateScreen()
+                                is Route.TemplateEditor -> TemplateEditorScreen(key.template, key.readOnly)
+                                is Route.AppProfile -> AppProfileScreen(key.uid)
+                                is Route.ModuleRepo -> ModuleRepoScreen()
+                                is Route.ModuleRepoDetail -> ModuleRepoDetailScreen(key.module)
+                                is Route.Install -> InstallScreen()
+                                is Route.Flash -> {
+                                    var backEnabled by remember(key) { mutableStateOf(false) }
+                                    MochiBackGuard(backEnabled) {
+                                        FlashScreen(key.flashIt, onBackEnabledChange = { backEnabled = it })
+                                    }
+                                }
+
+                                is Route.ExecuteModuleAction -> ExecuteModuleActionScreen(key.moduleId, key.fromShortcut)
+                                is Route.ScriptRun -> {
+                                    var backEnabled by remember(key) { mutableStateOf(true) }
+                                    MochiBackGuard(backEnabled) {
+                                        ScriptRunScreen(key.arg, onBackEnabledChange = { backEnabled = it })
+                                    }
+                                }
+
+                                else -> MochiMainScreen(
+                                    initialPage = selectedMainPage,
+                                    onPageChanged = viewModel::setSelectedMainPage,
+                                )
+                            }
+                        }
                     }
                     SideEffect { contentReady = true }
                 }
@@ -363,19 +418,21 @@ fun MainScreen(
         superuserCount = if (badgeEnabled) withContext(Dispatchers.IO) { getSuperuserCount() } else 0
     }
 
+    val newUiDot = me.weishu.kernelsu.ui.mochi.MochiNews.unseen(LocalContext.current)
     val navigationBadge = if (badgeEnabled) {
         NavigationBadgeState(
             superuserCount = superuserCount,
             moduleEnabledCount = moduleUiState.modules.count { it.enabled },
             moduleUpdatableCount = moduleUiState.updateInfo.count { it.value.downloadUrl.isNotBlank() },
+            settingsDot = newUiDot,
         )
     } else {
-        NavigationBadgeState()
+        NavigationBadgeState(settingsDot = newUiDot)
     }
     val uiMode = LocalUiMode.current
     val surfaceColor = when (uiMode) {
         UiMode.Material -> MaterialTheme.colorScheme.surface // Blur is not used in Material, this is just a placeholder
-        UiMode.Miuix -> MiuixTheme.colorScheme.surface
+        UiMode.Miuix, UiMode.Mochi -> MiuixTheme.colorScheme.surface
     }
     val blurBackdrop = rememberBlurBackdrop(enableBlur)
 
@@ -459,7 +516,7 @@ fun MainScreen(
                     }
                 }
 
-                UiMode.Miuix -> Scaffold { _ ->
+                UiMode.Miuix, UiMode.Mochi -> Scaffold { _ ->
                     Row {
                         SideRail(navigationBadge)
                         Box(
@@ -494,7 +551,7 @@ fun MainScreen(
                     pagerContent(innerPadding.calculateBottomPadding())
                 }
 
-                UiMode.Miuix -> Scaffold(bottomBar = bottomBar) { innerPadding ->
+                UiMode.Miuix, UiMode.Mochi -> Scaffold(bottomBar = bottomBar) { innerPadding ->
                     pagerContent(innerPadding.calculateBottomPadding())
                 }
             }

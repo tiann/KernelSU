@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuOpen
 import androidx.compose.material.icons.rounded.AspectRatio
+import androidx.compose.material.icons.rounded.Brush
 import androidx.compose.material.icons.rounded.BlurOn
 import androidx.compose.material.icons.rounded.CallToAction
 import androidx.compose.material.icons.rounded.Colorize
@@ -153,6 +154,23 @@ fun ColorPaletteScreenMiuix(
                 contentPadding = innerPadding,
                 overscrollEffect = null,
             ) {
+                item {
+                    Card(modifier = Modifier.padding(top = 12.dp).fillMaxWidth()) {
+                        ArrowPreference(
+                            title = stringResource(R.string.mochi_new_ui_title),
+                            summary = stringResource(R.string.mochi_new_ui_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.Brush,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = null,
+                                    tint = colorScheme.onBackground
+                                )
+                            },
+                            onClick = actions.onTryMochi,
+                        )
+                    }
+                }
                 item {
                     Spacer(modifier = Modifier.height(32.dp))
                     ThemePreviewCardMiuix(

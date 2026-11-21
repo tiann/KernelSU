@@ -518,6 +518,16 @@ private fun getMarkdownColors(containerColor: androidx.compose.ui.graphics.Color
             )
         }
 
+        UiMode.Mochi -> {
+            val cs = ui.feice.mochi.theme.MochiTheme.colorScheme
+            MarkdownColors(
+                bgCode = cssColorFromArgb(cs.surfaceContainerHigh.toArgb()),
+                bgRowAlt = cssColorFromArgb(cs.surfaceContainerLow.toArgb()),
+                fgDefault = cssColorFromArgb(cs.onSurface.toArgb()),
+                fgLink = cssColorFromArgb(cs.primary.toArgb())
+            )
+        }
+
         UiMode.Miuix -> {
             val bgArgb = containerColor?.toArgb() ?: MiuixTheme.colorScheme.surfaceContainer.toArgb()
             val bgLuminance = relativeLuminance(bgArgb)

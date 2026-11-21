@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -154,14 +155,23 @@ fun SettingPagerMiuix(
                             summary = stringResource(id = R.string.settings_ui_mode_summary),
                             items = UiMode.entries.map { it.name },
                             startAction = {
-                                Icon(
-                                    Icons.Rounded.DisplaySettings,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.settings_ui_mode),
-                                    tint = colorScheme.onBackground
-                                )
+                                // The dropdown title only takes a string, so the dot goes on the icon
+                                androidx.compose.foundation.layout.Box(Modifier.padding(end = 6.dp)) {
+                                    Icon(
+                                        Icons.Rounded.DisplaySettings,
+                                        contentDescription = stringResource(id = R.string.settings_ui_mode),
+                                        tint = colorScheme.onBackground
+                                    )
+                                    if (me.weishu.kernelsu.ui.mochi.MochiNews.unseen(androidx.compose.ui.platform.LocalContext.current)) {
+                                        me.weishu.kernelsu.ui.mochi.NewUiDot(
+                                            Modifier
+                                                .align(androidx.compose.ui.Alignment.TopEnd)
+                                                .offset(x = 2.dp, y = (-2).dp)
+                                        )
+                                    }
+                                }
                             },
-                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
+                            selectedIndex = UiMode.entries.indexOf(UiMode.fromValue(uiState.uiMode)),
                             onSelectedIndexChange = actions.onSetUiModeIndex
                         )
                         ArrowPreference(

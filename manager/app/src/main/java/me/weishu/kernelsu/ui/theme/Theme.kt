@@ -117,6 +117,12 @@ fun KernelSUTheme(
             appSettings = appSettings,
             content = content
         )
+
+        UiMode.Mochi -> {
+            val colorMode = appSettings.colorMode
+            val dark = colorMode.isDark || (colorMode.isSystem && isSystemInDarkTheme())
+            me.weishu.kernelsu.ui.mochi.MochiKsuTheme(dark = dark, content = content)
+        }
     }
 }
 

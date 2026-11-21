@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mochi_new_ui_title">Mochi 界面</string>
+    <string name="mochi_new_ui_summary">液态玻璃标签栏和 iOS 样式的列表。随时可以在「界面风格」里换回来。</string>
+    <string name="mochi_section_appearance">外观</string>
+    <string name="mochi_section_colors">配色</string>
+    <string name="mochi_section_seed">主题色</string>
+    <string name="mochi_section_materials">材质</string>
+    <string name="mochi_section_navigation">导航</string>
+    <string name="mochi_section_layout">布局</string>
+    <string name="mochi_style">风格</string>
+    <string name="mochi_style_ios">iOS</string>
+    <string name="mochi_style_mochi">Mochi</string>
+    <string name="mochi_dark_mode">深色模式</string>
+    <string name="mochi_wallpaper_colors">壁纸取色</string>
+    <string name="mochi_wallpaper_colors_summary">用系统壁纸生成配色</string>
+    <string name="mochi_palette_style">取色算法</string>
+    <string name="mochi_seed_footer">选了色块后关闭壁纸取色。</string>
+    <string name="mochi_glass">液态玻璃</string>
+    <string name="mochi_glass_summary">标签栏、顶栏按钮、菜单和面板</string>
+    <string name="mochi_glass_warning_title">打开液态玻璃？</string>
+    <string name="mochi_glass_warning_message">玻璃每一帧都要取样后面的页面，会多占用 GPU，更耗电。</string>
+    <string name="mochi_glass_enable">打开</string>
+    <string name="mochi_blur">模糊效果</string>
+    <string name="mochi_blur_summary">顶栏下面的内容模糊</string>
+    <string name="mochi_ui_mode_footer">Miuix 和 Material 各有自己的主题设置。</string>
+    <string name="mochi_search_apps">搜索应用</string>
+    <string name="mochi_search_modules">搜索模块</string>
+    <string name="mochi_no_results">没有结果</string>
+    <string name="mochi_more">更多</string>
+    <string name="mochi_about_project">Mochi 界面组件库</string>
+    <string name="mochi_about_project_summary">当前界面基于 mochi-compose 构建</string>
+    <string name="mochi_home_details">详细信息</string>
+    <string name="mochi_home_support_short">捐赠支持开发者</string>
+    <string name="mochi_home_learn_short">安装和模块开发</string>
+    <string name="mochi_su_section_root">已授予 Root</string>
+    <string name="mochi_su_section_custom">已自定义配置</string>
+    <string name="mochi_su_section_others">其他应用</string>
+</resources>

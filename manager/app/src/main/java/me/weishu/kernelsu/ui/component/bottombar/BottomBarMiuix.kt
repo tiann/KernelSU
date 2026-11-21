@@ -167,5 +167,9 @@ internal fun navigationBadgeFor(
                 }
             }
         }
+
+        BadgeTone.Dot -> {
+            { me.weishu.kernelsu.ui.mochi.NewUiDot() }
+        }
     }
 }
