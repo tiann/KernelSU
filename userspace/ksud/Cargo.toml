@@ -10,7 +10,6 @@ anyhow.workspace = true
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
 log.workspace = true
-env_logger = { version = "0.11", default-features = false }
 rust-embed = { version = "8", features = [
     "debug-embed",
     "compression", # must clean build after updating binaries
@@ -24,6 +23,9 @@ chrono = "0.4"
 regex-lite = "0.1"
 memmap2 = "0.9"
 android-bootimg = { git = "https://github.com/5ec1cff/android_bootimg", rev = "150425b027c76ea104c82e408571651f2181b2c2" }
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+env_logger = { version = "0.11", default-features = false }
 
 [target.'cfg(target_os = "android")'.dependencies]
 rustix = { version = "1", features = [

@@ -215,10 +215,15 @@ static long my_x64_sys_call(const struct pt_regs *regs, unsigned int nr)
     return ksu_syscall_table[nr](regs);
 }
 
-// avd 13-5.15 missing this commit:
+// Kernels without x64_sys_call may also miss this commit (both landed in 6.9
+// and were backported to GKI branches later), e.g. avd 13-5.15 and
+// avd 14-6.1.23, so the syscall nr rewritten by the sys_enter tracepoint is
+// never re-read:
 // https://github.com/torvalds/linux/commit/fb13b11d53875e28e7fbf0c26b288e4ea676aa9f
-// we need to patch the whole do_syscall_64
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
+// Patch the whole do_syscall_64 instead when x64_sys_call is not available.
+// Limited to < 6.7: since 6.7 do_syscall_64 returns bool (SYSRET vs IRET),
+// which this replacement does not implement.
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
 static void *do_syscall_64_patch_addr;
 static char do_syscall_64_orig_insn[14];
 
@@ -244,7 +249,9 @@ static __always_inline bool my_do_syscall_x64(struct pt_regs *regs, int nr)
 static void __nocfi my_do_syscall_64(struct pt_regs *regs, int nr)
 {
     nr = syscall_enter_from_user_mode_fn(regs, nr);
-    nr = syscall_get_nr(current, regs);
+    // Pick up the tracepoint's nr rewrite unless the syscall is skipped (-1, e.g. seccomp)
+    if (nr != -1)
+        nr = syscall_get_nr(current, regs);
 
     // AVD doesn't have x32 support after A13, we can ignore do_syscall_x32
 
@@ -306,13 +313,17 @@ void __init __nocfi ksu_syscall_hook_init(void)
 
 #ifdef CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER
     patch_abs_jump("x64_sys_call", &x64_sys_call_patch_addr, my_x64_sys_call, x64_sys_call_patch_orig_insn);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
-    syscall_enter_from_user_mode_fn = find_kernel_symbol_exact("syscall_enter_from_user_mode");
-    syscall_exit_to_user_mode_fn = find_kernel_symbol_exact("syscall_exit_to_user_mode");
-    pr_info("syscall_enter_from_user_mode: 0x%lx, syscall_exit_to_user_mode: 0x%lx\n",
-            (unsigned long)syscall_enter_from_user_mode_fn, (unsigned long)syscall_exit_to_user_mode_fn);
-    if (syscall_enter_from_user_mode_fn && syscall_exit_to_user_mode_fn) {
-        patch_abs_jump("do_syscall_64", &do_syscall_64_patch_addr, my_do_syscall_64, do_syscall_64_orig_insn);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0) && !defined(CONFIG_X86_X32_ABI)
+    // Before 5.16 always patch do_syscall_64 as well: such a kernel may have
+    // x64_sys_call backported without fb13b11d.
+    if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0) || !x64_sys_call_patch_addr) {
+        syscall_enter_from_user_mode_fn = find_kernel_symbol_exact("syscall_enter_from_user_mode");
+        syscall_exit_to_user_mode_fn = find_kernel_symbol_exact("syscall_exit_to_user_mode");
+        pr_info("syscall_enter_from_user_mode: 0x%lx, syscall_exit_to_user_mode: 0x%lx\n",
+                (unsigned long)syscall_enter_from_user_mode_fn, (unsigned long)syscall_exit_to_user_mode_fn);
+        if (syscall_enter_from_user_mode_fn && syscall_exit_to_user_mode_fn) {
+            patch_abs_jump("do_syscall_64", &do_syscall_64_patch_addr, my_do_syscall_64, do_syscall_64_orig_insn);
+        }
     }
 #endif
 #endif
@@ -342,7 +353,7 @@ void __exit ksu_syscall_hook_exit(void)
         }
     }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 16, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0) && !defined(CONFIG_X86_X32_ABI)
     if (do_syscall_64_patch_addr) {
         ret = ksu_patch_text((void *)do_syscall_64_patch_addr, do_syscall_64_orig_insn, sizeof(do_syscall_64_orig_insn),
                              KSU_PATCH_TEXT_FLUSH_ICACHE);
