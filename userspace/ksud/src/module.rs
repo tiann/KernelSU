@@ -925,6 +925,8 @@ pub fn enable_module(id: &str) -> Result<()> {
 }
 
 pub fn disable_module(id: &str) -> Result<()> {
+    validate_module_id(id)?;
+
     let module_path = Path::new(defs::MODULE_DIR).join(id);
     ensure!(module_path.exists(), "Module {id} not found");
 
