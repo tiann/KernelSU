@@ -332,6 +332,8 @@ pub fn delete_config_value(module_id: &str, key: &str, config_type: ConfigType) 
 
 /// Clear all config values
 pub fn clear_config(module_id: &str, config_type: ConfigType) -> Result<()> {
+    crate::module::validate_module_id(module_id)?;
+
     let config_path = get_config_path(module_id, config_type);
 
     if config_path.exists() {
