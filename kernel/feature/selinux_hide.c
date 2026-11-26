@@ -72,11 +72,11 @@ typedef ssize_t (*write_op_fn)(struct file *, char *, size_t);
 
 static write_op_fn *selinux_write_op;
 
-static int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len,
-                                               u32 *sid, u32 def_sid, gfp_t gfp_flags, u32 *orig_sid_p, int *orig_rc_p);
+static int security_context_to_struct_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len,
+                                                  struct context *context, u32 def_sid, gfp_t gfp_flags);
 static void *(*orig_symtab_search)(struct symtab *, const char *);
-static void security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
-                                                 struct av_decision *avd);
+static void security_compute_av_user_with_policy(struct selinux_policy *policy, struct context *scontext,
+                                                 struct context *tcontext, u16 tclass, struct av_decision *avd);
 static void (*security_dump_masked_av_fn)(struct policydb *policydb, struct context *scontext, struct context *tcontext,
                                           u16 tclass, u32 permissions, const char *reason) = NULL;
 static void (*context_struct_compute_av_fn)(struct policydb *policydb, struct context *scontext,
@@ -219,11 +219,14 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
         return orig_access_write(file, buf, size);
     }
     char *scon = NULL, *tcon = NULL;
-    u32 ssid, tsid, sconlen, tconlen;
+    u32 sconlen, tconlen;
     u16 tclass;
+    struct context scontext, tcontext;
     struct av_decision avd;
     ssize_t length;
 
+    context_init(&scontext);
+    context_init(&tcontext);
     length = ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__COMPUTE_AV, NULL);
     if (length)
         goto out;
@@ -245,25 +248,25 @@ static ssize_t my_write_access(struct file *file, char *buf, size_t size)
     sconlen = strlen(scon);
     tconlen = strlen(tcon);
 
-    length =
-        security_context_to_sid_with_policy(backup_sepolicy, scon, sconlen, &ssid, SECSID_NULL, GFP_KERNEL, NULL, NULL);
+    length = security_context_to_struct_with_policy(backup_sepolicy, scon, sconlen, &scontext, SECSID_NULL, GFP_KERNEL);
     if (length) {
         goto out;
     }
 
-    length =
-        security_context_to_sid_with_policy(backup_sepolicy, tcon, tconlen, &tsid, SECSID_NULL, GFP_KERNEL, NULL, NULL);
+    length = security_context_to_struct_with_policy(backup_sepolicy, tcon, tconlen, &tcontext, SECSID_NULL, GFP_KERNEL);
     if (length) {
         goto out;
     }
 
-    security_compute_av_user_with_policy(backup_sepolicy, ssid, tsid, tclass, &avd);
+    security_compute_av_user_with_policy(backup_sepolicy, &scontext, &tcontext, tclass, &avd);
 
     // stock reads 1; a loader load_policy may have bumped the backup before we load
     avd.seqno = 1;
     length = scnprintf(buf, SIMPLE_TRANSACTION_LIMIT, "%x %x %x %x %u %x", avd.allowed, 0xffffffff, avd.auditallow,
                        avd.auditdeny, avd.seqno, avd.flags);
 out:
+    context_destroy(&tcontext);
+    context_destroy(&scontext);
     kfree(tcon);
     kfree(scon);
     return length;
@@ -766,16 +769,17 @@ out:
     return rc;
 }
 
-static int security_context_to_sid_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len,
-                                               u32 *sid, u32 def_sid, gfp_t gfp_flags, u32 *orig_sid_p, int *orig_rc_p)
+// Keep /access checks from adding SIDs to either policy
+// Caller frees context after computing access
+static int security_context_to_struct_with_policy(struct selinux_policy *policy, const char *scontext, u32 scontext_len,
+                                                  struct context *context, u32 def_sid, gfp_t gfp_flags)
 {
     struct selinux_policy *orig_policy;
     struct policydb *policydb, *orig_policydb;
     struct sidtab *sidtab, *orig_sidtab;
     char *scontext2;
-    struct context context, orig_context;
+    struct context orig_context;
     int rc = 0, orig_rc = -EINVAL;
-    u32 orig_sid;
 
     /* An empty security context is never valid. */
     if (!scontext_len)
@@ -786,13 +790,6 @@ static int security_context_to_sid_with_policy(struct selinux_policy *policy, co
     if (!scontext2)
         return -ENOMEM;
 
-    // removed: if (!selinux_initialized())
-    *sid = SECSID_NULL;
-    if (orig_sid_p)
-        *orig_sid_p = SECSID_NULL;
-
-    // removed: if (force)
-retry:
     rcu_read_lock();
     policydb = &policy->policydb;
     sidtab = policy->sidtab;
@@ -803,41 +800,16 @@ retry:
     // parse both policies together
     orig_rc = -EINVAL;
     rc = string_to_context_struct(policydb, orig_policydb, sidtab, orig_sidtab, scontext2, scontext, scontext_len,
-                                  &context, &orig_context, orig_policy->latest_granting, def_sid, &orig_rc);
+                                  context, &orig_context, orig_policy->latest_granting, def_sid, &orig_rc);
     if (rc)
         goto out_unlock;
-
-    // update backup sidtab first
-    rc = sidtab_context_to_sid(sidtab, &context, sid);
-    context_destroy(&context);
-    if (rc) {
-        if (!orig_rc)
-            context_destroy(&orig_context);
-        // backup sidtab is not reloaded
-        orig_rc = rc;
-        goto out_unlock;
-    }
 
     if (orig_rc)
         goto out_unlock;
 
-    // only sync valid contexts
-    // sync to live sidtab
-    orig_rc = sidtab_context_to_sid(orig_sidtab, &orig_context, &orig_sid);
     context_destroy(&orig_context);
-    if (!orig_rc && orig_sid_p)
-        *orig_sid_p = orig_sid;
-    if (orig_rc == -ESTALE) {
-        // retry after live policy reload
-        rcu_read_unlock();
-        memcpy(scontext2, scontext, scontext_len);
-        scontext2[scontext_len] = '\0';
-        goto retry;
-    }
 out_unlock:
     rcu_read_unlock();
-    if (orig_rc_p)
-        *orig_rc_p = orig_rc;
     kfree(scontext2);
     return rc;
 }
@@ -1183,35 +1155,20 @@ static void context_struct_compute_av(struct policydb *policydb, struct context 
     type_attribute_bounds_av(policydb, scontext, tcontext, tclass, avd);
 }
 
-static void __nocfi security_compute_av_user_with_policy(struct selinux_policy *policy, u32 ssid, u32 tsid, u16 tclass,
-                                                         struct av_decision *avd)
+static void __nocfi security_compute_av_user_with_policy(struct selinux_policy *policy, struct context *scontext,
+                                                         struct context *tcontext, u16 tclass, struct av_decision *avd)
 {
     struct policydb *policydb;
-    struct sidtab *sidtab;
-    struct context *scontext = NULL, *tcontext = NULL;
 
     // remove: rcu lock
     avd_init(policy, avd);
     // remove: if (!selinux_initialized())
 
     policydb = &policy->policydb;
-    sidtab = policy->sidtab;
-
-    scontext = sidtab_search(sidtab, ssid);
-    if (!scontext) {
-        pr_err("SELinux: %s:  unrecognized SID %d\n", __func__, ssid);
-        goto out;
-    }
 
     /* permissive domain? */
     if (ebitmap_get_bit(&policydb->permissive_map, scontext->type))
         avd->flags |= AVD_FLAGS_PERMISSIVE;
-
-    tcontext = sidtab_search(sidtab, tsid);
-    if (!tcontext) {
-        pr_err("SELinux: %s:  unrecognized SID %d\n", __func__, tsid);
-        goto out;
-    }
 
     if (unlikely(!tclass)) {
         if (policydb->allow_unknown)
