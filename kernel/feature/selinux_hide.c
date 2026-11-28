@@ -249,7 +249,6 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (likely(current_uid().val < 10000))
         goto call_orig;
 
-    
     if (name[0] != 'c' || strcmp(name, "current"))
         goto call_orig;
 
@@ -258,11 +257,11 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (error)
         return error;
 
-    
     new = prepare_creds();
     if (!new)
         return -ENOMEM;
 
+    /* Obtain a SID for the context, if one was specified. */
     if (size && str[0] && str[0] != '\n') {
         if (str[size - 1] == '\n') {
             str[size - 1] = 0;
@@ -270,6 +269,7 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         }
         error = security_context_to_sid_live(value, size, &sid);
         if (error == -EAGAIN) {
+            // stale type mark, use the dual parse
             error2 = security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL,
                                                          GFP_ATOMIC, &sid, &error);
             if (error2) {
@@ -286,6 +286,10 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (sid == 0)
         goto abort_change;
 
+    if (!current_is_single_threaded()) {
+        error = ksu_security_bounded_transition_compat(tsec->sid, sid);
+        if (error)
+            goto abort_change;
     }
 
     /* Check permissions for the transition. */
@@ -294,7 +298,7 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         goto abort_change;
 
     /* Check for ptracing, and update the task SID if ok.
-        Otherwise, leave SID unchanged and fail. */
+       Otherwise, leave SID unchanged and fail. */
     ptsid = ptrace_parent_sid();
     if (ptsid != 0) {
         error = ksu_avc_has_perm_compat(ptsid, sid, SECCLASS_PROCESS, PROCESS__PTRACE, NULL);
@@ -314,6 +318,7 @@ abort_change:
 call_orig:
     return ((setprocattr_fn)selinux_setprocattr_hook.original)(name, value, size);
 }
+
 
 static int (*inode_doinit_with_dentry_fn)(struct inode *inode, struct dentry *dentry);
 static struct ksu_lsm_hook selinux_inode_setxattr_hook;
