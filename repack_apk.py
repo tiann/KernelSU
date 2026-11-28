@@ -86,9 +86,24 @@ def normalize_arch_values(values: Iterable[str]) -> List[str]:
     return out
 
 
+_PRERELEASE_TAG = re.compile(r"[-_.]?(?:alpha|beta|rc|pre|preview|snapshot)", re.IGNORECASE)
+
+
 def version_key(version: str) -> Tuple[int, ...]:
-    nums = re.findall(r"\d+", version)
-    return tuple(int(n) for n in nums) if nums else (0,)
+    """Sort key for SDK build-tools and NDK directory names.
+
+    Preview directories sit next to the release they precede - `35.0.0-rc1` next to
+    `35.0.0`. Pulling every digit out of the name (the old behaviour) reads the preview
+    as one version higher than the release, so `find_android_tool()` handed `zipalign`
+    and `apksigner` from an rc directory to a release build. Strip the pre-release tag
+    first and rank a preview below the matching release.
+    """
+    text = str(version)
+    match = _PRERELEASE_TAG.search(text)
+    numeric = text[: match.start()] if match else text
+    nums = re.findall(r"\d+", numeric)
+    base = tuple(int(n) for n in nums) if nums else (0,)
+    return base + (0,) if match else base + (1,)
 
 
 def find_strip_tool() -> Optional[Path]:
