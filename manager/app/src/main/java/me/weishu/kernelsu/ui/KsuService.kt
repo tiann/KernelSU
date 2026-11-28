@@ -1,13 +1,18 @@
 package me.weishu.kernelsu.ui
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.os.IBinder
 import android.os.UserManager
 import android.util.Log
 import com.topjohnwu.superuser.ipc.RootService
 import me.weishu.kernelsu.IKsuInterface
+import me.weishu.kernelsu.data.model.HYPEROS_PACKAGE
+import me.weishu.kernelsu.data.model.WEBVIEW_ZYGOTE_UID
+import me.weishu.kernelsu.ui.util.isHyperOS
 import rikka.parcelablelist.ParcelableListSlice
 
 /**
@@ -52,11 +57,23 @@ class KsuService : RootService() {
         }
     }
 
-    private fun getInstalledPackagesAll(flags: Int): ArrayList<PackageInfo> {
+    private fun loadPackagesForAppList(readHyperOsMetadata: Boolean): ArrayList<PackageInfo> {
         val packages = ArrayList<PackageInfo>()
+        val hyperOs = isHyperOS()
+        val flags = if (hyperOs && readHyperOsMetadata) PackageManager.GET_META_DATA else 0
         for (userId in getAllUserIds()) {
-            Log.i(TAG, "getInstalledPackagesAll: $userId")
-            packages.addAll(getInstalledPackagesAsUser(flags, userId))
+            Log.i(TAG, "Loading app list for user $userId")
+            getInstalledPackagesAsUser(flags, userId).filterTo(packages) { pkg ->
+                val app = pkg.applicationInfo ?: return@filterTo false
+                val hasCode = (app.flags and ApplicationInfo.FLAG_HAS_CODE) != 0
+                if (flags == PackageManager.GET_META_DATA) {
+                    // Only this flag is needed by the Manager. Keep other metadata out of Binder.
+                    app.metaData = if (!hasCode && app.metaData?.getBoolean(HYPEROS_PACKAGE) == true) {
+                        Bundle(1).apply { putBoolean(HYPEROS_PACKAGE, true) }
+                    } else null
+                }
+                app.uid != WEBVIEW_ZYGOTE_UID && (hasCode || hyperOs)
+            }
         }
         return packages
     }
@@ -78,9 +95,9 @@ class KsuService : RootService() {
     }
 
     private inner class Stub : IKsuInterface.Stub() {
-        override fun getPackages(flags: Int): ParcelableListSlice<PackageInfo> {
-            val list = getInstalledPackagesAll(flags)
-            Log.i(TAG, "getPackages: ${list.size}")
+        override fun getPackagesForAppList(readHyperOsMetadata: Boolean): ParcelableListSlice<PackageInfo> {
+            val list = loadPackagesForAppList(readHyperOsMetadata)
+            Log.i(TAG, "getPackagesForAppList: ${list.size}")
             return ParcelableListSlice(list)
         }
 

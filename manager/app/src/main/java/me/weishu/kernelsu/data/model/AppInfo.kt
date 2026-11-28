@@ -7,6 +7,7 @@ import me.weishu.kernelsu.Natives
 
 const val WEBVIEW_ZYGOTE_UID = 1053
 const val WEBVIEW_ZYGOTE_PROFILE_KEY = "webview_zygote"
+internal const val HYPEROS_PACKAGE = "hyperos_package"
 
 @Parcelize
 data class AppInfo(
