@@ -18,7 +18,8 @@ bool only_root(void)
 
 bool require_load_policy_perm(void)
 {
-    return ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__LOAD_POLICY, NULL) == 0;
+    return ksu_avc_has_perm_compat(current_sid(), SECINITSID_SECURITY, SECCLASS_SECURITY, SECURITY__LOAD_POLICY,
+                                   NULL) == 0;
 }
 
 bool manager_or_root(void)
