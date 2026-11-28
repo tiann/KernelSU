@@ -61,6 +61,11 @@ interface SettingsRepository {
     suspend fun getShellSuAdbOnlyValue(): Long?
     fun setShellSuAdbOnlyEnabled(enabled: Boolean): Boolean
 
+    suspend fun getFastbootdRescueStatus(): String
+    suspend fun getFastbootdRescuePersistValue(): Long?
+    suspend fun getFastbootdRescueValue(): Long?
+    fun setFastbootdRescueEnabled(enabled: Boolean): Boolean
+
     fun isDefaultUmountModules(): Boolean
     fun setDefaultUmountModules(enabled: Boolean): Boolean
 
