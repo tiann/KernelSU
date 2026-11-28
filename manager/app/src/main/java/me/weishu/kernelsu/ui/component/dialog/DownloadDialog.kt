@@ -39,6 +39,7 @@ fun DownloadDialog(
     when (LocalUiMode.current) {
         UiMode.Miuix -> DownloadDialogMiuix(show, onConfirm, onDismiss)
         UiMode.Material -> DownloadDialogMaterial(show, onConfirm, onDismiss)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.DownloadDialogMochi(show, onConfirm, onDismiss)
     }
 }
 

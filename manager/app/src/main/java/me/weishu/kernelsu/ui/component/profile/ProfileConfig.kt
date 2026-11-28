@@ -23,6 +23,13 @@ fun AppProfileConfig(
             onProfileChange = onProfileChange
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.AppProfileConfigMochi(
+            fixedName = fixedName,
+            enabled = enabled,
+            profile = profile,
+            onProfileChange = onProfileChange
+        )
+
         UiMode.Material -> AppProfileConfigMaterial(
             modifier = modifier,
             fixedName = fixedName,
@@ -50,6 +57,13 @@ fun RootProfileConfig(
             onProfileChange = onProfileChange
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.RootProfileConfigMochi(
+            fixedName = fixedName,
+            enabled = enabled,
+            profile = profile,
+            onProfileChange = onProfileChange
+        )
+
         UiMode.Material -> RootProfileConfigMaterial(
             modifier = modifier,
             enabled = enabled,
@@ -70,6 +84,13 @@ fun TemplateConfig(
     when (LocalUiMode.current) {
         UiMode.Miuix -> TemplateConfigMiuix(
             modifier = modifier,
+            profile = profile,
+            onViewTemplate = onViewTemplate,
+            onManageTemplate = onManageTemplate,
+            onProfileChange = onProfileChange
+        )
+
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.TemplateConfigMochi(
             profile = profile,
             onViewTemplate = onViewTemplate,
             onManageTemplate = onManageTemplate,

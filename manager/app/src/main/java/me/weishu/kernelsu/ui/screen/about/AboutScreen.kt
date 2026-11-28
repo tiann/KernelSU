@@ -33,5 +33,6 @@ fun AboutScreen() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> AboutScreenMiuix(state, actions)
         UiMode.Material -> AboutScreenMaterial(state, actions)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.AboutScreenMochi(state, actions)
     }
 }

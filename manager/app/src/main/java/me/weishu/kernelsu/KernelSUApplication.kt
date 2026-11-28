@@ -21,7 +21,12 @@ lateinit var ksuApp: KernelSUApplication
 class KernelSUApplication : Application(), ViewModelStoreOwner {
 
     companion object {
+        /** Value last passed to setEnableOnBackInvokedCallback in this process. */
+        var appliedPredictiveBack: Boolean? = null
+            private set
+
         fun setEnableOnBackInvokedCallback(appInfo: ApplicationInfo, enable: Boolean) {
+            appliedPredictiveBack = enable
             runCatching {
                 val applicationInfoClass = ApplicationInfo::class.java
                 val method = applicationInfoClass.getDeclaredMethod("setEnableOnBackInvokedCallback", Boolean::class.javaPrimitiveType)

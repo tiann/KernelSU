@@ -146,6 +146,8 @@ fun AppProfileScreen(uid: Int) {
             actions = actions,
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.AppProfileScreenMochi(state = state, actions = actions)
+
         UiMode.Material -> AppProfileScreenMaterial(
             state = state,
             actions = actions,

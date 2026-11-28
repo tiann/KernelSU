@@ -24,6 +24,8 @@ appiconloader = "1.5.0"
 protobuf = "4.36.1"
 commons-compress = "1.28.0"
 xz = "1.12"
+mochi = "0.3.0"
+collectionsImmutable = "0.5.2"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -36,6 +38,10 @@ lsplugin-apksign = { id = "org.lsposed.lsplugin.apksign", version.ref = "apksign
 protobuf = { id = "com.google.protobuf", version = "0.10.0" }
 
 [libraries]
+mochi-compose = { group = "io.github.feice11", name = "mochi-compose", version.ref = "mochi" }
+mochi-icons = { group = "io.github.feice11", name = "mochi-icons", version.ref = "mochi" }
+mochi-ios = { group = "io.github.feice11", name = "mochi-ios", version.ref = "mochi" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "collectionsImmutable" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 

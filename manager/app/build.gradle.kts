@@ -232,6 +232,11 @@ dependencies {
     implementation(libs.miuix.preference)
     implementation(libs.miuix.blur)
 
+    implementation(libs.mochi.compose)
+    implementation(libs.mochi.icons)
+    implementation(libs.mochi.ios)
+    implementation(libs.kotlinx.collections.immutable)
+
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
 

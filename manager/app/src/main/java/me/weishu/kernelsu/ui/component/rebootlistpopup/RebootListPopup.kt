@@ -62,5 +62,6 @@ fun RebootListPopup() {
     when (LocalUiMode.current) {
         UiMode.Miuix -> RebootListPopupMiuix()
         UiMode.Material -> RebootListPopupMaterial()
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.RebootListPopupMochi()
     }
 }

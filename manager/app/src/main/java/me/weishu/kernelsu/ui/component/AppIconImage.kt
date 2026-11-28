@@ -106,6 +106,7 @@ private fun PlaceHolderBox(modifier: Modifier = Modifier) {
     val containerColor = when (LocalUiMode.current) {
         UiMode.Material -> MaterialTheme.colorScheme.secondaryContainer
         UiMode.Miuix -> MiuixTheme.colorScheme.secondaryContainer
+        UiMode.Mochi -> ui.feice.mochi.theme.MochiTheme.colorScheme.secondaryContainer
     }
 
     Box(

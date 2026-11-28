@@ -118,6 +118,7 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
         when (uiMode) {
             UiMode.Miuix -> ExecuteModuleActionScreenMiuix(outputState, outputActions)
             UiMode.Material -> ExecuteModuleActionScreenMaterial(outputState, outputActions, snackbarHost)
+            UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ExecuteModuleActionScreenMochi(outputState, outputActions)
         }
         return
     }
@@ -142,6 +143,7 @@ fun ScriptRunScreen(arg: ScriptRunArg, onBackEnabledChange: (Boolean) -> Unit) {
     when (uiMode) {
         UiMode.Miuix -> ScriptRunScreenMiuix(state, actions)
         UiMode.Material -> ScriptRunScreenMaterial(state, actions)
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.ScriptRunScreenMochi(state, actions)
     }
 }
 

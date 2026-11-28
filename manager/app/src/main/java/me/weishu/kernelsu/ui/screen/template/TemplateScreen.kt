@@ -46,7 +46,7 @@ fun AppProfileTemplateScreen() {
     LaunchedEffect(Unit) {
         navigator.observeResult<Boolean>(requestKey).collect { success ->
             if (success) {
-                if (uiMode == UiMode.Miuix) {
+                if (uiMode == UiMode.Miuix || uiMode == UiMode.Mochi) {
                     navigator.clearResult(requestKey)
                 }
                 viewModel.fetchTemplates()
@@ -62,6 +62,8 @@ fun AppProfileTemplateScreen() {
         scope.launch {
             if (uiMode == UiMode.Material) {
                 snackBarHost.showSnackbar(message)
+            } else if (uiMode == UiMode.Mochi) {
+                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
             } else {
                 miuixSnackbarHost.showSnackbar(message)
             }
@@ -110,7 +112,7 @@ fun AppProfileTemplateScreen() {
         },
         onCreateTemplate = {
             when (uiMode) {
-                UiMode.Miuix -> navigator.navigateForResult(
+                UiMode.Miuix, UiMode.Mochi -> navigator.navigateForResult(
                     Route.TemplateEditor(TemplateViewModel.TemplateInfo(), false),
                     requestKey,
                 )
@@ -122,7 +124,7 @@ fun AppProfileTemplateScreen() {
         },
         onOpenTemplate = { template ->
             when (uiMode) {
-                UiMode.Miuix -> navigator.navigateForResult(
+                UiMode.Miuix, UiMode.Mochi -> navigator.navigateForResult(
                     Route.TemplateEditor(template, !template.local),
                     requestKey,
                 )
@@ -140,6 +142,8 @@ fun AppProfileTemplateScreen() {
             actions = actions,
             snackBarHost = miuixSnackbarHost,
         )
+
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.TemplateScreenMochi(state = uiState, actions = actions)
 
         UiMode.Material -> AppProfileTemplateScreenMaterial(
             state = uiState,

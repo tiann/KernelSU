@@ -427,6 +427,7 @@ fun SegmentedDropdownItem(
     onClick: (() -> Unit)? = null,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
+    titleTrailing: (@Composable () -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
@@ -451,7 +452,19 @@ fun SegmentedDropdownItem(
             enabled = enabled,
             colors = colors,
             leadingContent = icon?.let { { Icon(it, title) } },
-            headlineContent = { Text(text = title) },
+            headlineContent = {
+                if (titleTrailing == null) {
+                    Text(text = title)
+                } else {
+                    androidx.compose.foundation.layout.Row(
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(text = title, modifier = Modifier.weight(1f, fill = false))
+                        titleTrailing()
+                    }
+                }
+            },
             supportingContent = summary?.let { { Text(it) } },
             trailingContent = {
                 Text(

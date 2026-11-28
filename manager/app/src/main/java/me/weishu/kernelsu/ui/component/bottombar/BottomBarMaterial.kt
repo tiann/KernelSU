@@ -98,6 +98,8 @@ internal fun NavigationIconWithBadge(
                     ) {
                         Text(badge.count.toString())
                     }
+
+                    BadgeTone.Dot -> me.weishu.kernelsu.ui.mochi.NewUiDot()
                 }
             }
         ) {

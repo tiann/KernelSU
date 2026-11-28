@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -135,6 +136,17 @@ private fun LoadingContent() {
                 contentAlignment = Alignment.Center
             ) {
                 androidx.compose.material3.LoadingIndicator()
+            }
+        }
+
+        UiMode.Mochi -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(ui.feice.mochi.theme.MochiDefaults.groupedBackground()),
+                contentAlignment = Alignment.Center
+            ) {
+                ui.feice.mochi.basic.MochiActivityIndicator(size = 28.dp)
             }
         }
     }

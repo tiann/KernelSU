@@ -87,6 +87,8 @@ fun SuperUserPager(
             bottomInnerPadding = bottomInnerPadding,
         )
 
+        UiMode.Mochi -> me.weishu.kernelsu.ui.mochi.SuperUserPagerMochi(uiState = uiState, actions = actions)
+
         UiMode.Material -> SuperUserPagerMaterial(
             uiState = uiState,
             actions = actions,

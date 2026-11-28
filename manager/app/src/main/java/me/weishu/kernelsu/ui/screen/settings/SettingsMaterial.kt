@@ -129,8 +129,13 @@ fun SettingPagerMaterial(
                             title = stringResource(id = R.string.settings_ui_mode),
                             summary = stringResource(id = R.string.settings_ui_mode_summary),
                             items = UiMode.entries.map { it.name },
-                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
-                            onItemSelected = actions.onSetUiModeIndex
+                            selectedIndex = UiMode.entries.indexOf(UiMode.fromValue(uiState.uiMode)),
+                            onItemSelected = actions.onSetUiModeIndex,
+                            titleTrailing = if (me.weishu.kernelsu.ui.mochi.MochiNews.unseen(androidx.compose.ui.platform.LocalContext.current)) {
+                                { me.weishu.kernelsu.ui.mochi.NewUiDot() }
+                            } else {
+                                null
+                            },
                         )
                     }
                     add {
