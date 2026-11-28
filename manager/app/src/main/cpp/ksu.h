@@ -28,6 +28,8 @@ bool is_lkm_bundled();
 
 bool is_late_load_mode();
 
+bool is_shell_root_forced();
+
 bool is_manager();
 
 bool is_pr_build();

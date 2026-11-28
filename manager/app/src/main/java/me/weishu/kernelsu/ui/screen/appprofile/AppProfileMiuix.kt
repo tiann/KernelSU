@@ -188,6 +188,7 @@ private fun AppProfileInner(
     onProfileChange: (Natives.Profile) -> Unit,
 ) {
     val isRootGranted = !isSpecialApp && profile.allowSu
+    val isRootForced = appUid == 2000 && Natives.isShellRootForced
     val userId = appUid / 100000
     val appId = appUid % 100000
     val templates = remember { listAppProfileTemplates() }
@@ -321,6 +322,7 @@ private fun AppProfileInner(
                     },
                     title = stringResource(id = R.string.superuser),
                     checked = isRootGranted,
+                    enabled = !isRootForced,
                     onCheckedChange = { onProfileChange(profile.copy(allowSu = it)) },
                 )
             }
@@ -338,7 +340,7 @@ private fun AppProfileInner(
         }
         val nonRootMode = if (profile.nonRootUseDefault) Mode.Default else Mode.Custom
         val dropdownMode = if (isRootGranted) rootMode else nonRootMode
-        ProfileBox(dropdownMode, isRootGranted) { mode ->
+        ProfileBox(dropdownMode, isRootGranted, enabled = !isRootForced) { mode ->
             if (isRootGranted) {
                 when (mode) {
                     Mode.Default, Mode.Custom -> {
@@ -570,6 +572,7 @@ private fun TopBar(
 private fun ProfileBox(
     mode: Mode,
     hasTemplate: Boolean,
+    enabled: Boolean = true,
     onModeChange: (Mode) -> Unit,
 ) {
     val defaultText = stringResource(R.string.profile_default)
@@ -604,6 +607,7 @@ private fun ProfileBox(
         OverlayDropdownPreference(
             title = stringResource(R.string.profile),
             items = list,
+            enabled = enabled,
             startAction = {
                 Icon(
                     Icons.Rounded.AccountCircle,
