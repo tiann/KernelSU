@@ -257,11 +257,7 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
     if (error)
         return error;
 
-    new = prepare_creds();
-    if (!new)
-        return -ENOMEM;
-
-    /* Obtain a SID for the context, if one was specified. */
+  
     if (size && str[0] && str[0] != '\n') {
         if (str[size - 1] == '\n') {
             str[size - 1] = 0;
@@ -269,17 +265,19 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         }
         error = security_context_to_sid_live(value, size, &sid);
         if (error == -EAGAIN) {
-            // stale type mark, use the dual parse
             error2 = security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL,
                                                          GFP_ATOMIC, &sid, &error);
-            if (error2) {
-                error = error2;
-                goto abort_change;
-            }
+            if (error2 || error)
+                return error2 ?: error;
+        } else if (error) {
+            return error;
         }
-        if (error)
-            goto abort_change;
     }
+
+
+    new = prepare_creds();
+    if (!new)
+        return -ENOMEM;
 
     tsec = selinux_cred(new);
     error = -EINVAL;
@@ -318,6 +316,7 @@ abort_change:
 call_orig:
     return ((setprocattr_fn)selinux_setprocattr_hook.original)(name, value, size);
 }
+
 
 
 static int (*inode_doinit_with_dentry_fn)(struct inode *inode, struct dentry *dentry);
@@ -869,26 +868,29 @@ static int security_context_to_sid_with_policy(struct selinux_policy *policy, co
     struct selinux_policy *orig_policy;
     struct policydb *policydb, *orig_policydb;
     struct sidtab *sidtab, *orig_sidtab;
+    char stack_buf[128];
     char *scontext2;
     struct context context, orig_context;
     int rc = 0, orig_rc = -EINVAL;
     u32 orig_sid;
 
-    /* An empty security context is never valid. */
     if (!scontext_len)
         return -EINVAL;
 
-    /* Copy the string to allow changes and ensure a NUL terminator */
-    scontext2 = kmemdup_nul(scontext, scontext_len, gfp_flags);
-    if (!scontext2)
-        return -ENOMEM;
+    if (likely(scontext_len < sizeof(stack_buf))) {
+        memcpy(stack_buf, scontext, scontext_len);
+        stack_buf[scontext_len] = '\0';
+        scontext2 = stack_buf;
+    } else {
+        scontext2 = kmemdup_nul(scontext, scontext_len, gfp_flags);
+        if (!scontext2)
+            return -ENOMEM;
+    }
 
-    // removed: if (!selinux_initialized())
     *sid = SECSID_NULL;
     if (orig_sid_p)
         *orig_sid_p = SECSID_NULL;
 
-    // removed: if (force)
 retry:
     rcu_read_lock();
     policydb = &policy->policydb;
@@ -897,20 +899,17 @@ retry:
     orig_policydb = &orig_policy->policydb;
     orig_sidtab = orig_policy->sidtab;
 
-    // parse both policies together
     orig_rc = -EINVAL;
     rc = string_to_context_struct(policydb, orig_policydb, sidtab, orig_sidtab, scontext2, scontext, scontext_len,
                                   &context, &orig_context, orig_policy->latest_granting, def_sid, &orig_rc);
     if (rc)
         goto out_unlock;
 
-    // update backup sidtab first
     rc = sidtab_context_to_sid(sidtab, &context, sid);
     context_destroy(&context);
     if (rc) {
         if (!orig_rc)
             context_destroy(&orig_context);
-        // backup sidtab is not reloaded
         orig_rc = rc;
         goto out_unlock;
     }
@@ -918,14 +917,11 @@ retry:
     if (orig_rc)
         goto out_unlock;
 
-    // only sync valid contexts
-    // sync to live sidtab
     orig_rc = sidtab_context_to_sid(orig_sidtab, &orig_context, &orig_sid);
     context_destroy(&orig_context);
     if (!orig_rc && orig_sid_p)
         *orig_sid_p = orig_sid;
     if (orig_rc == -ESTALE) {
-        // retry after live policy reload
         rcu_read_unlock();
         memcpy(scontext2, scontext, scontext_len);
         scontext2[scontext_len] = '\0';
@@ -935,9 +931,11 @@ out_unlock:
     rcu_read_unlock();
     if (orig_rc_p)
         *orig_rc_p = orig_rc;
-    kfree(scontext2);
+    if (unlikely(scontext2 != stack_buf))
+        kfree(scontext2);
     return rc;
 }
+
 
 /*
  * Caveat:  Mutates scontext.
