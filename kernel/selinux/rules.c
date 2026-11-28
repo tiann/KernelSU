@@ -163,6 +163,9 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
+    if (!ksu_mark_new_types_hidden(db, &old_pol->policydb, pol->latest_granting))
+        pr_warn("failed to mark new types hidden\n");
+
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
@@ -525,6 +528,8 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
     pol->latest_granting = old_pol->latest_granting + 1;
     if (!ksu_advance_original_types(db, &old_pol->policydb, old_pol->latest_granting, pol->latest_granting))
         pr_warn("failed to carry original type metadata, use backup lookups\n");
+    if (!ksu_mark_new_types_hidden(db, &old_pol->policydb, pol->latest_granting))
+        pr_warn("failed to mark new types hidden\n");
 
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();

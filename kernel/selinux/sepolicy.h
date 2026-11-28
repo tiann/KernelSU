@@ -22,6 +22,8 @@ int ksu_type_is_original(struct policydb *db, u32 policy_generation, u32 type_va
 bool ksu_set_original_types(struct policydb *db, struct policydb *orig_db, u32 policy_generation);
 bool ksu_advance_original_types(struct policydb *db, struct policydb *old_db, u32 old_policy_generation,
                                 u32 policy_generation);
+bool ksu_type_is_hidden(const struct type_datum *type);
+bool ksu_mark_new_types_hidden(struct policydb *db, struct policydb *old_db, u32 policy_generation);
 
 // Access vector rules
 bool ksu_allow(struct policydb *db, const char *src, const char *tgt, const char *cls, const char *perm);

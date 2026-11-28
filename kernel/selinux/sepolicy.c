@@ -4,9 +4,12 @@
 #include "ss/hashtab.h"
 #include "ss/policydb.h"
 #include "ss/services.h"
+#include <linux/build_bug.h>
+#include <linux/compiler.h>
 #include <linux/gfp.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
+#include <linux/stddef.h>
 #include <linux/version.h>
 #include <linux/vmalloc.h>
 
@@ -15,6 +18,15 @@
 #include "ss/symtab.h"
 
 #define KSU_SUPPORT_ADD_TYPE
+
+// SELinux type_datum has two bytes of tail padding after attribute
+#define KSU_TYPE_DATUM_HIDDEN_OFFSET 10
+#define KSU_TYPE_DATUM_HIDDEN_MASK 0x01
+
+static_assert(offsetof(struct type_datum, attribute) == 9);
+static_assert(offsetof(struct type_datum, attribute) + sizeof(((struct type_datum *)0)->attribute) ==
+              KSU_TYPE_DATUM_HIDDEN_OFFSET);
+static_assert(sizeof(struct type_datum) == 12);
 
 //////////////////////////////////////////////////////
 // Declaration
@@ -880,6 +892,60 @@ int ksu_type_is_original(struct policydb *db, u32 policy_generation, u32 type_va
         return -1;
 
     return type_value && type_value <= original_types_limit ? 1 : 0;
+}
+
+bool ksu_type_is_hidden(const struct type_datum *type)
+{
+    const u8 *bytes;
+
+    if (!type)
+        return false;
+    bytes = (const u8 *)type;
+    return READ_ONCE(bytes[KSU_TYPE_DATUM_HIDDEN_OFFSET]) & KSU_TYPE_DATUM_HIDDEN_MASK;
+}
+
+static void ksu_type_set_hidden(struct type_datum *type, bool hidden)
+{
+    u8 *bytes = (u8 *)type;
+
+    WRITE_ONCE(bytes[KSU_TYPE_DATUM_HIDDEN_OFFSET], hidden ? KSU_TYPE_DATUM_HIDDEN_MASK : 0);
+}
+
+// Policydb serialization does not keep this in-memory marker
+bool ksu_mark_new_types_hidden(struct policydb *db, struct policydb *old_db, u32 policy_generation)
+{
+    struct hashtab_node *node;
+    bool success = true;
+
+    if (!db)
+        return false;
+
+    ksu_hashtab_for_each(db->p_types.table, node)
+    {
+        struct type_datum *type = (struct type_datum *)node->datum;
+        int is_original;
+
+        if (!type) {
+            success = false;
+            continue;
+        }
+
+        is_original = ksu_type_is_original(db, policy_generation, type->value);
+        if (is_original < 0) {
+            struct type_datum *old_type = old_db ? symtab_search(&old_db->p_types, node->key) : NULL;
+            bool hidden = !type->attribute && !old_type;
+
+            if (old_type && !old_type->attribute)
+                hidden = !type->attribute && ksu_type_is_hidden(old_type);
+            ksu_type_set_hidden(type, hidden);
+            success = false;
+            continue;
+        }
+
+        ksu_type_set_hidden(type, !type->attribute && !is_original);
+    }
+
+    return success;
 }
 
 // Access vector rules

@@ -7,4 +7,8 @@ void ksu_selinux_hide_drop_backup_if_unused();
 void ksu_selinux_hide_handle_second_stage();
 void ksu_selinux_hide_handle_post_fs_data();
 
+int ksu_selinux_hide_hook_parser(void *lookup_replacement, void **lookup_original);
+int ksu_selinux_hide_unhook_parser(void);
+void ksu_selinux_hide_exit_parser(void);
+
 #endif
