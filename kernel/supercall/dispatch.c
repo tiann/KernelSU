@@ -833,7 +833,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .cmd = KSU_IOCTL_SET_SEPOLICY,
         .name = "SET_SEPOLICY",
         .handler = do_set_sepolicy,
-        .perm_check = only_root
+        .perm_check = require_load_policy_perm
     },
     {
         .cmd = KSU_IOCTL_CHECK_SAFEMODE,
