@@ -17,16 +17,19 @@ on:
         required: false
         type: boolean
         default: false
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v7.0.1
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Download artifacts
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@v8.0.2
     
     - name: Prepare LKM files
       if: ${{ inputs.pack_lkm }}
@@ -47,7 +50,7 @@ jobs:
         if [[ ${{ inputs.target }} == *"-apple-darwin" ]]; then
           rustup target add ${{ inputs.target }}
         fi
-    - uses: Swatinem/rust-cache@v2
+    - uses: Swatinem/rust-cache@v2.9.3
       with:
         workspaces: userspace/ksud
         cache-targets: false
@@ -67,7 +70,7 @@ jobs:
       run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v7.0.2
       with:
         name: ksud-${{ inputs.target }}
         path: target/${{ inputs.target }}/release/ksud*

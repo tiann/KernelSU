@@ -18,22 +18,36 @@ on:
         default: ''
         type: string
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   build-lkm:
+    name: build-lkm (${{ matrix.kmi }})
     strategy:
       matrix:
-        kmi:
-          - android12-5.10
-          - android13-5.10
-          - android13-5.15
-          - android14-5.15
-          - android14-6.1
-          - android15-6.6
-          - android16-6.12
-          - android17-6.18
+        # ddk_sha256 is the digest of ghcr.io/ylarod/ddk-min:<kmi>-<ddk_release>.
+        # The digest is what gets pulled, update it together with ddk_release.
+        include:
+          - kmi: android12-5.10
+            ddk_sha256: 272ada1e61c525116032246df2a790d1ccec1804b7a9e0b09203c5e650dcb78e
+          - kmi: android13-5.10
+            ddk_sha256: e5ce038ba38408ad26aae1f2622cfb44dfbf6634b025bf197aa08beac0794f5b
+          - kmi: android13-5.15
+            ddk_sha256: 9e68cd9fcab748584755d31ba88ef134efc938dbde17f258c2652315f6cd81cd
+          - kmi: android14-5.15
+            ddk_sha256: bbf697a8fe995704268eef710921c9d2ea4f146954690d7ea97887f3a4014a6a
+          - kmi: android14-6.1
+            ddk_sha256: 1dd6ac340b627a90a4031d6d0df6b129d8cc949b139fb56032c898f023d3d5d3
+          - kmi: android15-6.6
+            ddk_sha256: 51159bc935c75a282fc65bc87e02f16bd098d1cdf55dc558c4fdd0fcf7a132e2
+          - kmi: android16-6.12
+            ddk_sha256: fd3ec5cc71d7f2716212e9df8d5674a9afe68fb769282fcac87b83f207f949ee
+          - kmi: android17-6.18
+            ddk_sha256: fb8b66200bf402cf65a751060fc1aa29524b9fa8840feef16c7b196a4f3f0e6e
     uses: ./.github/workflows/ddk-lkm.yml
     with:
       kmi: ${{ matrix.kmi }}
+      ddk_sha256: ${{ matrix.ddk_sha256 }}
       package_name: ${{ inputs.package_name || '' }}
       expected_size: ${{ inputs.expected_size || '' }}
       expected_hash: ${{ inputs.expected_hash || '' }}
