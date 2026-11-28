@@ -240,25 +240,29 @@ static u32 ptrace_parent_sid(void)
 typedef int (*setprocattr_fn)(const char *name, void *value, size_t size);
 static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
 {
-    if (likely(current_uid().val < 10000)) {
-        goto call_orig;
-    }
-
-    if (strcmp(name, "current")) {
-        goto call_orig;
-    }
-
     struct ksu_task_security_struct *tsec;
     struct cred *new;
-    u32 mysid = current_sid(), sid = 0, tmp_sid, ptsid;
+    u32 mysid, sid = 0, tmp_sid, ptsid;
     int error, error2;
     char *str = value;
 
+    if (likely(current_uid().val < 10000))
+        goto call_orig;
+
+    
+    if (name[0] != 'c' || strcmp(name, "current"))
+        goto call_orig;
+
+    mysid = current_sid();
     error = ksu_avc_has_perm_compat(mysid, mysid, SECCLASS_PROCESS, PROCESS__SETCURRENT, NULL);
     if (error)
         return error;
 
-    /* Obtain a SID for the context, if one was specified. */
+    
+    new = prepare_creds();
+    if (!new)
+        return -ENOMEM;
+
     if (size && str[0] && str[0] != '\n') {
         if (str[size - 1] == '\n') {
             str[size - 1] = 0;
@@ -266,35 +270,22 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         }
         error = security_context_to_sid_live(value, size, &sid);
         if (error == -EAGAIN) {
-            // stale type mark, use the dual parse
             error2 = security_context_to_sid_with_policy(backup_sepolicy, value, size, &tmp_sid, SECSID_NULL,
-                                                         GFP_KERNEL, &sid, &error);
-            if (error2 || error)
-                return error2 ?: error;
-        } else if (error) {
-            return error;
+                                                         GFP_ATOMIC, &sid, &error);
+            if (error2) {
+                error = error2;
+                goto abort_change;
+            }
         }
+        if (error)
+            goto abort_change;
     }
 
-    new = prepare_creds();
-    if (!new)
-        return -ENOMEM;
-
-    /* Permission checking based on the specified context is
-	   performed during the actual operation (execve,
-	   open/mkdir/...), when we know the full context of the
-	   operation.  See selinux_bprm_creds_for_exec for the execve
-	   checks and may_create for the file creation checks. The
-	   operation will then fail if the context is not permitted. */
     tsec = selinux_cred(new);
     error = -EINVAL;
     if (sid == 0)
         goto abort_change;
 
-    if (!current_is_single_threaded()) {
-        error = ksu_security_bounded_transition_compat(tsec->sid, sid);
-        if (error)
-            goto abort_change;
     }
 
     /* Check permissions for the transition. */
@@ -1034,18 +1025,24 @@ static int security_context_to_sid_live(const char *scontext, u32 scontext_len, 
 {
     struct selinux_policy *policy;
     struct context context;
+    char stack_buf[128];
     char *scontext2;
     u32 backup_sid;
     int rc;
 
-    /* An empty security context is never valid. */
     if (!scontext_len)
         return -EINVAL;
 
-    /* Copy the string to allow changes and ensure a NUL terminator */
-    scontext2 = kmemdup_nul(scontext, scontext_len, GFP_KERNEL);
-    if (!scontext2)
-        return -ENOMEM;
+
+    if (likely(scontext_len < sizeof(stack_buf))) {
+        memcpy(stack_buf, scontext, scontext_len);
+        stack_buf[scontext_len] = '\0';
+        scontext2 = stack_buf;
+    } else {
+        scontext2 = kmemdup_nul(scontext, scontext_len, GFP_ATOMIC);
+        if (!scontext2)
+            return -ENOMEM;
+    }
 
     *sid = SECSID_NULL;
 retry:
@@ -1056,13 +1053,11 @@ retry:
     if (rc)
         goto out_unlock;
 
-    // update backup sidtab first
     rc = sidtab_context_to_sid(backup_sepolicy->sidtab, &context, &backup_sid);
     if (!rc)
         rc = sidtab_context_to_sid(policy->sidtab, &context, sid);
     context_destroy(&context);
     if (rc == -ESTALE) {
-        // retry after live policy reload
         rcu_read_unlock();
         memcpy(scontext2, scontext, scontext_len);
         scontext2[scontext_len] = '\0';
@@ -1070,9 +1065,11 @@ retry:
     }
 out_unlock:
     rcu_read_unlock();
-    kfree(scontext2);
+    if (unlikely(scontext2 != stack_buf))
+        kfree(scontext2);
     return rc;
 }
+
 
 /*
  * Write the security context string representation of
